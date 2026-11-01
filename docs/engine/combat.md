@@ -21,7 +21,7 @@ object-pool update, src/main/17AFC.c:4325). It branches on fighter 0's state
   2. `fighter_ResolveBodyOverlap` (src/main/17AFC.c:896): the body-overlap push (its
      comment at :886): two points per fighter tested pairwise against the
      radii `g_fighter_body_overlap_radii[0..1]`, an overlap pushing both apart along x/z
-     through `decaying_xz_velocity`.
+     through `decaying_velocity`.
   3. `g_fight_weapon_contact_result = fighter_ProcessWeaponContacts()` (src/main/17AFC.c:1218): the blade
      contact test between the two fighters (comment at :1203); it returns
      `(fighter-1 grid << 1) | fighter-0 grid` on contact, else -1.
@@ -70,7 +70,7 @@ target, with the opponent as the attacker:
    attacker has `weapon_id` 6 or 7 or `character_roster_index` 0x1D / 0xE, or the attacker is in an attack
    state (2, 0x1B, 0x28, 0x26) within three frames before a window start, it
    pushes the target along x/z through
-   `decaying_xz_velocity` when the facing difference is under 0x400.
+   `decaying_velocity` when the facing difference is under 0x400.
 5. If the attacker's `weapon_hit_window_open` is set and (with `wielded_object_live_state`) its frame `move_frame`
    is inside the window `weapon_hit_start_frames[k]..weapon_hit_end_frames[k]`, it calls
    `fighter_ResolveBoneHit(0, target, limb, facing difference, ...)`.

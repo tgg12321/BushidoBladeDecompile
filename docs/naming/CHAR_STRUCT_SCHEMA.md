@@ -124,7 +124,7 @@ e->world_pos.z = z;
 (9F9C.c:3993, :5412) sum them. `collision_pos` (+0xB8) is the collision-space
 position. `base_pos` is also passed by address to fight_GetStartPosition /
 fight_SearchRadialFlatSurfacePointOrUseStartPositionPair / fight_PickRandomStartPositionExcludingNearestAndFarthest (9F9C.c:1210, :3962-3986), stepped by `base_velocity`
-and `decaying_xz_velocity` (:5179-5181, :5226-5228) and differenced between records 0 and 1
+and `decaying_velocity` (:5179-5181, :5226-5228) and differenced between records 0 and 1
 (17AFC.c:2240-2241, :2340-2341).
 
 ### 4. Two-arm flag pattern (`X || sibling`)

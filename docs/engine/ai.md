@@ -98,7 +98,7 @@ an opponent order; the code does not name it.
   position, with a weight that shrinks from 60 to 10 as the counter `reposition_count`
   (capped at 0x40) grows; otherwise the entry
   `fight_GetStartPositionPairTable()[g_fight_stage_index * 12 + index * 3]`. It then zeroes `base_velocity` /
-  `decaying_xz_velocity`, switches its move (the script `motion_ResolveMoveData` resolves from
+  `decaying_velocity`, switches its move (the script `motion_ResolveMoveData` resolves from
   `cur_move->event_move_table_id` and that record's halfword 0x1D, made current by
   `fighter_StartMoveScript`) and plays
   cue 0x30.

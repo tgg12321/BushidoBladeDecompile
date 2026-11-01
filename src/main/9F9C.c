@@ -4657,7 +4657,7 @@ extern void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *);
  * 4.12 weight move_frame_frac, otherwise the first one's (by the weight
  * pose_blend_progress) with saved_motion_frame's less pose_blend_base_shift (by
  * 0x1000 - pose_blend_progress), integrates the velocities (base_velocity /
- * decaying_xz_velocity) into the position, resolves it
+ * decaying_velocity) into the position, resolves it
  * (fighter_ResolveMovement), then refreshes the bone points, the flags
  * frame_flags, weapon_hit_window_open and weapon_hit_phases, the damping and
  * the per-frame side effects. */

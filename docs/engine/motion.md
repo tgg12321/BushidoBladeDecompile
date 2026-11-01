@@ -89,7 +89,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
 3. turns the two root offsets into a position delta (heading and distance
    through `Judge`, scaled by `size_scale`), blended by `move_frame_frac` or by
    `pose_blend_progress` against the held frame `saved_motion_frame`; the weight goes to `pose_interp_weight`;
-4. integrates the velocities `base_velocity` / `decaying_xz_velocity`, resolves the position
+4. integrates the velocities `base_velocity` / `decaying_velocity`, resolves the position
    (`fighter_ResolveMovement`, src/main/9F9C.c:4164), and builds the pose:
    `slot_BlendTwoPosesIntoNodeMatrices(fighter_index, &pose_frames[0], &pose_frames[1], pose_interp_weight, ...)` (src/main/9F9C.c:5434) and
    `func_80040D48` (src/main/9F9C.c:5438).

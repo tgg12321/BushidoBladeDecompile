@@ -8,11 +8,11 @@ no header, uploaded as two rectangles in the VRAM column x = 896..1023.
 
 ## Loader (`eff_LoadImagesAndSetup`, `src/main/51268.c`)
 
-It reads one BNK into a buffer, picked by `g_working_record.fight_mode` (the row
+It reads one BNK into a buffer, picked by `g_working_record.menu_mode` (the row
 `menu_UpdateRowMenuStoreResult` stores from the main row menu), and uploads it with
 `LoadImage`:
 
-| `fight_mode` | CD table entry | File           |
+| `menu_mode` | CD table entry | File           |
 |-----------|----------------|----------------|
 | 0         | group 2 + 0x3C | `GAMESTO.BNK`  |
 | 3         | group 2 + 0x2F | `GAMECHAN.BNK` |

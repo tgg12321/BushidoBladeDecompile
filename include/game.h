@@ -537,7 +537,7 @@ typedef struct {
    reach every field off that one base (596CC g_row_menu_working_record_ptr,
    5ED34 g_entry_menu_working_record_ptr, SelWork.sel_result_record). Bit fields
    are named by bit offset until named.
-   - unk14_*: the word at +0x14. fight_mode (`& 0xF`;
+   - unk14_*: the word at +0x14. menu_mode (`& 0xF`;
    menu_UpdateRowMenuStoreResult stores it), stage_index (6 bits),
    match_count_index (the round count - 3; also picks the results-screen
    layout), time_limit_index (`== 2` tests), win_target_index (the win target

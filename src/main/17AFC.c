@@ -892,7 +892,7 @@ static inline s32 math_SqrtLut(s32 x) {
  * characters apart along x/z, scaled by the distance. After an overlap, the
  * move_kind states and the orientation.vy difference (folded to 0..0x800) pick
  * the reaction (pending_move_event, D_800A38A8 / D_800A3876). The push is added
- * to decaying_xz_velocity.vx / .vz. */
+ * to decaying_velocity.vx / .vz. */
 void fighter_ResolveBodyOverlap(void) {
     s32 var_1;
     s32 i;
