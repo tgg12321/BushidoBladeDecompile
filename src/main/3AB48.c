@@ -32,7 +32,7 @@ INCLUDE_ASM("asm/funcs", gpu_EmitOtCutoffFlatLitTexturedQuads);
 INCLUDE_ASM("asm/funcs", func_8004D634);
 INCLUDE_ASM("asm/funcs", func_8004D838);
 INCLUDE_ASM("asm/funcs", gpu_ProjectStridedNodeVerticesAndDispatchPackets);
-INCLUDE_ASM("asm/funcs", func_8004DDB4);
+INCLUDE_ASM("asm/funcs", gpu_ColorNormalsAndProjectPerMatrixSectionVerticesAndDispatchPackets);
 
 void func_8004E564(void) {}
 

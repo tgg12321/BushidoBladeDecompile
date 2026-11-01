@@ -5,7 +5,7 @@ glabel replay_Start
     /* 29FE0 800397E0 00000000 */   nop
     /* 29FE4 800397E4 8BF8000C */  jal        gpu_RestoreObjectClutOffsets
     /* 29FE8 800397E8 00000000 */   nop
-    /* 29FEC 800397EC 86FC000C */  jal        func_8003F218
+    /* 29FEC 800397EC 86FC000C */  jal        gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear
     /* 29FF0 800397F0 21200000 */   addu      $a0, $zero, $zero
     /* 29FF4 800397F4 B159000C */  jal        math_FovToScreenDist
     /* 29FF8 800397F8 2D000424 */   addiu     $a0, $zero, 0x2D

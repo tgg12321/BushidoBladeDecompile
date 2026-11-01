@@ -476,14 +476,17 @@ void math_MatrixToAnglesYXZ(MATRIX *matrix, SVECTOR *angles) {
     }
 }
 
-extern void func_8004DDB4(s32, s32, s32, s32);
+extern void
+    gpu_ColorNormalsAndProjectPerMatrixSectionVerticesAndDispatchPackets(
+        s32, s32, s32, s32);
 extern MATRIX g_gpu_flush_view_matrix;
 extern void (*D_800951D8[])();
 extern void (*D_80095280[])();
 extern void (*g_gpu_default_primitive_handlers[])();
 extern Unk800F62E0Rec *g_light_selected_setup;
 
-void func_800430E4(s32 arg0, s32 arg1, s16 light_setup_index, u8 *arg3) {
+void gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift(
+    s32 arg0, s32 arg1, s16 light_setup_index, u8 *arg3) {
     MATRIX *dst = (MATRIX *)0x1F8003A0;
     s32 t0;
 
@@ -505,7 +508,8 @@ void func_800430E4(s32 arg0, s32 arg1, s16 light_setup_index, u8 *arg3) {
         *(s32 *)0x1F80001C = (s32)&D_800951D8;
     }
 
-    func_8004DDB4(arg0, arg1, (s32)dst, t0);
+    gpu_ColorNormalsAndProjectPerMatrixSectionVerticesAndDispatchPackets(
+        arg0, arg1, (s32)dst, t0);
 
     *(s32 *)0x1F80001C = (s32)&g_gpu_default_primitive_handlers;
 }
@@ -1222,9 +1226,10 @@ void node_InitFrameEntriesFromWorldTranslations(void) {
  * follow), in address order: five
  * primitive-type handler tables (gpu_FailCheckOnUnhandledPrimitiveType, which
  * calls sys_StoreZeroPastScratchpadOnFailedCheck, is the default entry; the
- * others are 3AB48.c's draw routines) that func_800430E4 installs at scratchpad
- * word 0x1F80001C and 3AB48.c's gpu_DrawQueuedEntries selects from, then
- * gpu_OffsetTexPrimStream's per-type halfword sizes
+ * others are 3AB48.c's draw routines) that
+ * gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift installs at
+ * scratchpad word 0x1F80001C and 3AB48.c's gpu_DrawQueuedEntries selects from,
+ * then gpu_OffsetTexPrimStream's per-type halfword sizes
  * g_gpu_prim_type_halfword_sizes. Sizes from the data labels. Defined after
  * every function. */
 void gpu_EmitOtCutoffFlatLitTexturedTriangles();

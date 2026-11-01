@@ -1071,7 +1071,7 @@ void fight_InitNearestStartPairPlayback(void) {
     gpu_ResetGraphMode1();
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     gpu_RestoreObjectClutOffsets();
-    func_8003F218(0);
+    gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear(0);
     SetGeomScreen(math_FovToScreenDist(0x2D));
     var_1 = g_fight_followup_fighter_index;
     {
@@ -2310,7 +2310,8 @@ void gpu_SetFarViewGridFogControlAndCoordinateShift(s32 a0) {
     }
 }
 
-void func_8003F218(s32 a0) {
+void gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear(
+    s32 a0) {
     if ((u32)a0 >= 2) {
         return;
     }

@@ -16,7 +16,7 @@ glabel fight_InitNearestStartPairPlayback
     /* 2D650 8003CE50 21380000 */   addu      $a3, $zero, $zero
     /* 2D654 8003CE54 8BF8000C */  jal        gpu_RestoreObjectClutOffsets
     /* 2D658 8003CE58 00000000 */   nop
-    /* 2D65C 8003CE5C 86FC000C */  jal        func_8003F218
+    /* 2D65C 8003CE5C 86FC000C */  jal        gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear
     /* 2D660 8003CE60 21200000 */   addu      $a0, $zero, $zero
     /* 2D664 8003CE64 B159000C */  jal        math_FovToScreenDist
     /* 2D668 8003CE68 2D000424 */   addiu     $a0, $zero, 0x2D

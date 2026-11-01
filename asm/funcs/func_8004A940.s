@@ -482,7 +482,7 @@ glabel func_8004A940
     /* 3B8A8 8004B0A8 0000058D */  lw         $a1, 0x0($t0)
     /* 3B8AC 8004B0AC 5800448E */  lw         $a0, 0x58($s2)
     /* 3B8B0 8004B0B0 0A004686 */  lh         $a2, 0xA($s2)
-    /* 3B8B4 8004B0B4 390C010C */  jal        func_800430E4
+    /* 3B8B4 8004B0B4 390C010C */  jal        gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift
     /* 3B8B8 8004B0B8 21384002 */   addu      $a3, $s2, $zero
     /* 3B8BC 8004B0BC 21804000 */  addu       $s0, $v0, $zero
     /* 3B8C0 8004B0C0 74290108 */  j          .L8004A5D0

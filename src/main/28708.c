@@ -1310,7 +1310,7 @@ void replay_AdvanceFrame(void) {
 void replay_Start(void) {
     gpu_ResetGraphMode1();
     gpu_RestoreObjectClutOffsets();
-    func_8003F218(0);
+    gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear(0);
     SetGeomScreen(math_FovToScreenDist(0x2D));
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);

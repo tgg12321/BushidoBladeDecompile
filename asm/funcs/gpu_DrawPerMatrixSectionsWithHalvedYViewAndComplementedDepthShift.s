@@ -1,4 +1,4 @@
-glabel func_800430E4
+glabel gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift
     /* 338E4 800430E4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 338E8 800430E8 21508000 */  addu       $t2, $a0, $zero
     /* 338EC 800430EC 2158A000 */  addu       $t3, $a1, $zero
@@ -79,7 +79,7 @@ glabel func_800430E4
     /* 33A10 80043210 21204001 */  addu       $a0, $t2, $zero
     /* 33A14 80043214 21286001 */  addu       $a1, $t3, $zero
     /* 33A18 80043218 21302001 */  addu       $a2, $t1, $zero
-    /* 33A1C 8004321C 6D37010C */  jal        func_8004DDB4
+    /* 33A1C 8004321C 6D37010C */  jal        gpu_ColorNormalsAndProjectPerMatrixSectionVerticesAndDispatchPackets
     /* 33A20 80043220 21380001 */   addu      $a3, $t0, $zero
     /* 33A24 80043224 0980023C */  lui        $v0, %hi(g_gpu_default_primitive_handlers)
     /* 33A28 80043228 28534224 */  addiu      $v0, $v0, %lo(g_gpu_default_primitive_handlers)
@@ -89,4 +89,4 @@ glabel func_800430E4
     /* 33A38 80043238 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 33A3C 8004323C 0800E003 */  jr         $ra
     /* 33A40 80043240 00000000 */   nop
-endlabel func_800430E4
+endlabel gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift

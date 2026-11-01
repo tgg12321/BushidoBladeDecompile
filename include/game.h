@@ -1346,7 +1346,8 @@ typedef union {
  * - 9F9C fighter_UpdateBoneWorldData keeps collision_TestSegmentWithWork's
  * whole argument record at 0x1F8002B8: from, to, hit, normal, then that work
  * area.
- * - 32D04 func_800430E4 keeps a MATRIX at 0x1F8003A0.
+ * - 32D04 gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift
+ * keeps a MATRIX at 0x1F8003A0.
  * - 3AB48 gpu_ProjectStridedNodeVerticesAndDispatchPackets fills, and the
  * renderers gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedTriangles ..
  * gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedQuadPacketsToOt256 read, an s16

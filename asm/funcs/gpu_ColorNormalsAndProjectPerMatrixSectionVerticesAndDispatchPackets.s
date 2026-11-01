@@ -1,4 +1,4 @@
-glabel func_8004DDB4
+glabel gpu_ColorNormalsAndProjectPerMatrixSectionVerticesAndDispatchPackets
     /* 3E5B4 8004DDB4 74FFBD27 */  addiu      $sp, $sp, -0x8C
     /* 3E5B8 8004DDB8 8800BFAF */  sw         $ra, 0x88($sp)
     /* 3E5BC 8004DDBC 8400BEAF */  sw         $fp, 0x84($sp)
@@ -510,4 +510,4 @@ glabel func_8004DDB4
     /* 3ED58 8004E558 0800E003 */  jr         $ra
     /* 3ED5C 8004E55C 8C00BD27 */   addiu     $sp, $sp, 0x8C
     /* 3ED60 8004E560 00000000 */  nop
-endlabel func_8004DDB4
+endlabel gpu_ColorNormalsAndProjectPerMatrixSectionVerticesAndDispatchPackets

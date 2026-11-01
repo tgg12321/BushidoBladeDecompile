@@ -1897,7 +1897,8 @@ void fight_Init(void) {
     gpu_RestoreObjectClutOffsets();
     object_ResetPool();
     fight_ClearBallisticRecords();
-    func_8003F218(g_fight_tracked_view_setting);
+    gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear(
+        g_fight_tracked_view_setting);
     SetGeomScreen(
         math_FovToScreenDist(g_fight_tracked_view_setting != 0 ? 0x50 : 0x2D));
     for (i = 0; i < 2; i++) {
@@ -2098,7 +2099,8 @@ void camera_ApplyFightView(void) {
         } else {
             view_record = &g_camera_default_view_record;
         }
-        func_8003F218(g_camera_fight_view_mode < 1);
+        gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear(
+            g_camera_fight_view_mode < 1);
 
         SetGeomScreen(
             math_FovToScreenDist(g_camera_fight_view_mode == 0 ? 0x50 : 0x2D));

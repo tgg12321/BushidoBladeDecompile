@@ -11,8 +11,9 @@
  * group in address order; calls run from here into 3AB48.c's GTE helpers
  * (gte_SumSquares3, gte_ReadIR1IR2Sra2,
  * gte_TransformPointDifferenceWithInheritedLastRow), back only once
- * (func_8004DDB4 -> gte_ColorGroupedNormalStreamWithSelectedMatrices); three
- * NOPs follow gte_ReadIR1IR2Sra2. A control cut inside this group (before
+ * (gpu_ColorNormalsAndProjectPerMatrixSectionVerticesAndDispatchPackets ->
+ * gte_ColorGroupedNormalStreamWithSelectedMatrices); three NOPs follow
+ * gte_ReadIR1IR2Sra2. A control cut inside this group (before
  * collision_TestCellKeepingNearestHitScalarProjection) does not byte-match: the
  * shared statics lose gp access. End: before motion_UpdatePlayback (seam #85,
  * moved there from motion_StartPlayback), so motion_StartPlayback's printf
@@ -809,7 +810,7 @@ s32 motion_StartPlayback(s32 playback_index, s32 start_pair, s32 a2, s32 a3,
         softbody_RequestRebuild(slot_object);
     }
     s->start_pair_index = start_pair;
-    func_8003F218(0);
+    gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear(0);
     SetGeomScreen(math_FovToScreenDist(0x2D));
     if (s->control_word & 0x3F) {
         n = (s->control_word & 0x3F) - 1;

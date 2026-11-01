@@ -844,7 +844,8 @@ extern void gpu_SetViewOriginSegmentCellsGateBit(s32, s32);
 extern void
     gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(s32);
 extern void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *, s32);
-extern void func_8003F218(s32);
+extern void
+    gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear(s32);
 extern s32 gpu_GetTrackedFighterViewFlag(void);
 extern void gpu_SetCellForceBit(s16 *);
 extern void gpu_ReplaceCellAttributesWithMaskedValue(s32, s32, s32);
