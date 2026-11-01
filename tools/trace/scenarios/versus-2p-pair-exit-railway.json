@@ -1,0 +1,43 @@
+{
+  "description": "controlled stage pair with an exit: versus-2p-pair-railway unchanged through 10199 (fight_tail 10150-10199), then P1 presses SELECT at 10200 and concedes (concession cutscene, P2 +1 win), the Rematch menu, DOWN 11200 + CROSS 11300 (Return to Sub Menu) to Select Character (char_select_2 11900-12400): the run leaves the stage before it ends, so a function hit through t_sub_menu is followed by a phase on the other side of a pair. Same script for every stage but the stage_select cursor presses",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "stage:railway",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "menu:rematch",
+    "event:concede"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-pair-exit-railway-1/spec.json",
+    "docs/naming/runtime/versus-2p-pair-exit-railway-2/spec.json"
+  ],
+  "extends": "versus-2p-pair-railway",
+  "end_frame": 12400,
+  "inputs": [
+    "10200:SELECT",
+    "11200:DOWN",
+    "11300:CROSS"
+  ],
+  "phases": [
+    "10200:concede",
+    "10520:cutscene",
+    "11120:rematch_menu",
+    "11300:t_sub_menu",
+    "11900:char_select_2"
+  ],
+  "shots": [
+    "10300:concede.10300",
+    "10519:concede.last",
+    "10800:cutscene.10800",
+    "11119:cutscene.last",
+    "11199:rematch_menu.11199",
+    "11299:rematch_menu.last",
+    "11600:t_sub_menu.mid",
+    "11899:t_sub_menu.last",
+    "11900:char_select_2.first",
+    "12399:char_select_2.last"
+  ]
+}
