@@ -43,7 +43,7 @@ glabel gpu_PrepareViewAndFlushDrawQueue
   .L800445A4:
     /* 34DA4 800445A4 C91B010C */  jal        math_SetLightPlaneProjection
     /* 34DA8 800445A8 00000000 */   nop
-    /* 34DAC 800445AC C406838F */  lw         $v1, %gp_rel(D_800A3790)($gp)
+    /* 34DAC 800445AC C406838F */  lw         $v1, %gp_rel(g_gpu_draw_option_mask)($gp)
     /* 34DB0 800445B0 0980023C */  lui        $v0, %hi(g_gpu_default_primitive_handlers)
     /* 34DB4 800445B4 28534224 */  addiu      $v0, $v0, %lo(g_gpu_default_primitive_handlers)
     /* 34DB8 800445B8 801F013C */  lui        $at, (0x1F80001C >> 16)

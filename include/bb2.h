@@ -35,7 +35,7 @@ extern u8 g_local_ot_draw_mode;
 extern u8 g_gpu_jitter_burst_enabled;
 extern s16 D_800F665C;
 extern s16 g_gpu_view_coordinate_shift;
-extern s32 D_800A3790;
+extern s32 g_gpu_draw_option_mask;
 extern s16 g_loaded_resource_selector;
 extern s16 g_resource_has_retained_subblocks;
 extern Unk800F1198Record g_eff_billboards[];

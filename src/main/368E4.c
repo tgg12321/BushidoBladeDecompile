@@ -443,7 +443,7 @@ void func_80046B44(void) {
     g_gpu_view_coordinate_shift = 2;
     D_800F665A = 1;
     D_800F665C = 0;
-    D_800A3790 = 0x23;
+    g_gpu_draw_option_mask = 0x23;
     D_800A33BC = 0;
 }
 
@@ -540,7 +540,7 @@ s32 gpu_GetRaisedOtCutoffRequested(void) {
     return g_gpu_raised_ot_cutoff_requested;
 }
 
-void func_80046E8C(void) { D_800A3790 = 0x23; }
+void func_80046E8C(void) { g_gpu_draw_option_mask = 0x23; }
 
 void gpu_RunGridDrawPassAndQueueFogMoves(s32 eye_distance) {
     gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(

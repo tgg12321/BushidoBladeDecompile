@@ -21,8 +21,8 @@ glabel gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets
     /* 3CC50 8004C450 2436298D */  lw         $t1, %lo(D_80103624)($t1)
     /* 3CC54 8004C454 00000000 */  nop
     /* 3CC58 8004C458 C80169AE */  sw         $t1, (0x1F8001C8 & 0xFFFF)($s3)
-    /* 3CC5C 8004C45C 0A80043C */  lui        $a0, %hi(D_800A3790)
-    /* 3CC60 8004C460 9037848C */  lw         $a0, %lo(D_800A3790)($a0)
+    /* 3CC5C 8004C45C 0A80043C */  lui        $a0, %hi(g_gpu_draw_option_mask)
+    /* 3CC60 8004C460 9037848C */  lw         $a0, %lo(g_gpu_draw_option_mask)($a0)
     /* 3CC64 8004C464 00000000 */  nop
     /* 3CC68 8004C468 C00164AE */  sw         $a0, (0x1F8001C0 & 0xFFFF)($s3)
     /* 3CC6C 8004C46C 0000C88C */  lw         $t0, 0x0($a2)

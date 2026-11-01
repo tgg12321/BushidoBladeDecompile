@@ -657,11 +657,11 @@ dlabel g_gpu_ot_offset_ptr
     /* 93F8C 800A378C 00000000 */ .word 0x00000000
 enddlabel g_gpu_ot_offset_ptr
 
-nonmatching D_800A3790
+nonmatching g_gpu_draw_option_mask
 
-dlabel D_800A3790
+dlabel g_gpu_draw_option_mask
     /* 93F90 800A3790 00000000 */ .word 0x00000000
-enddlabel D_800A3790
+enddlabel g_gpu_draw_option_mask
 
 nonmatching g_memcard_fd
 

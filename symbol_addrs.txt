@@ -146,7 +146,7 @@ g_gpu_view_coordinate_shift = 0x800F6658; // shift count on camera-relative coor
 D_800A3370 = 0x800A3370; // write-only word (0; ClearSavedWordPairsAndTwoWriteOnlyWords / softbody_FreeAllAndClearWriteOnlyWords)  // data-wave 2026-10-08: was g_game_flag_a
 D_800A3374 = 0x800A3374; // write-only word (0; ClearSavedWordPairsAndTwoWriteOnlyWords / softbody_FreeAllAndClearWriteOnlyWords)  // data-wave 2026-10-08: was g_game_flag_b
 g_gpu_raised_ot_cutoff_requested = 0x800F6654; // 0/1 request for the raised OT cutoff; read by gpu_GetRaisedOtCutoffRequested  // data-wave 2026-09-25: was g_game_pause
-D_800A3790 = 0x800A3790; // game timer  // data-wave 2026-09-25: was g_game_timer
+g_gpu_draw_option_mask = 0x800A3790; // game timer  // data-wave 2026-09-25: was g_game_timer
 
 // === Sound Config ===
 D_800A33B0 = 0x800A33B0; // current BGM track  // data-wave 2026-09-25: was g_snd_bgm_id
@@ -643,7 +643,7 @@ D_800A1500 = 0x800A1500; /* D_800A14D0.tslmode; named only by cb_read */  /* dat
 Vcount = 0x800A2634; /* data-wave 2026-09-07: was g_sys_dma_region */
 g_loaded_resource_selector = 0x80099478; /* data-wave 2026-10-08: was g_stage_id */
 g_resource_has_retained_subblocks = 0x8009947A; /* data-wave 2026-10-08: was g_stage_variant */
-D_800A3790 = 0x800A3790; /* data-wave 2026-09-25: was g_game_timer */
+g_gpu_draw_option_mask = 0x800A3790; /* data-wave 2026-09-25: was g_game_timer */
 g_local_ot_draw_mode = 0x800A3768; /* data-wave 2026-10-08: was g_disp_enable */
 g_gpu_jitter_burst_enabled = 0x800A36A8; /* data-wave 2026-10-08: was g_disp_fade */
 gpu_ResetGraphMode1 = 0x80016868; /* body = ResetGraph(1) only; retired names katinuki_* (Kengo) and gpu_EnableDisplay (false: never enables the display) - naming sweep 2026-09-24 */

@@ -36,8 +36,8 @@ glabel func_80046B44
     /* 373CC 80046BCC 586623A4 */  sh         $v1, %lo(g_gpu_view_coordinate_shift)($at)
     /* 373D0 80046BD0 0F80013C */  lui        $at, %hi(D_800F665C)
     /* 373D4 80046BD4 5C6620A4 */  sh         $zero, %lo(D_800F665C)($at)
-    /* 373D8 80046BD8 0A80013C */  lui        $at, %hi(D_800A3790)
-    /* 373DC 80046BDC 903722AC */  sw         $v0, %lo(D_800A3790)($at)
+    /* 373D8 80046BD8 0A80013C */  lui        $at, %hi(g_gpu_draw_option_mask)
+    /* 373DC 80046BDC 903722AC */  sw         $v0, %lo(g_gpu_draw_option_mask)($at)
     /* 373E0 80046BE0 F00280AF */  sw         $zero, %gp_rel(D_800A33BC)($gp)
     /* 373E4 80046BE4 1000BF8F */  lw         $ra, 0x10($sp)
     /* 373E8 80046BE8 1800BD27 */  addiu      $sp, $sp, 0x18

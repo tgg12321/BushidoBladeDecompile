@@ -1144,7 +1144,7 @@ void gpu_PrepareViewAndFlushDrawQueue(u32 *ot) {
     math_SetLightPlaneProjection();
     *(s32 *)0x1F80001C = (s32)&g_gpu_default_primitive_handlers;
     *(s32 *)0x1F80000C = (s32)ot;
-    if (D_800A3790 & 8) {
+    if (g_gpu_draw_option_mask & 8) {
         *(s32 *)0x1F800010 = gpu_GetLastFogOtIndex();
     } else {
         *(s32 *)0x1F800010 = 0x7FFFFFFF;
@@ -1515,6 +1515,6 @@ s16 g_gpu_prim_type_halfword_sizes[44] = {
  * gp-relative. */
 Unk80101DF0Record *g_view_camera_root_ptr;
 u32 *g_gpu_ot_offset_ptr;
-s32 D_800A3790;
+s32 g_gpu_draw_option_mask;
 void **g_draw_queue_cursor;
 Unk800F62E0Rec *g_light_selected_setup;

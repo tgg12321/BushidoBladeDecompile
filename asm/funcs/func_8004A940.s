@@ -872,8 +872,8 @@ glabel func_8004A940
     /* 3BEB0 8004B6B0 0010CA48 */  ctc2       $t2, $2 /* handwritten instruction */
     /* 3BEB4 8004B6B4 0018CB48 */  ctc2       $t3, $3 /* handwritten instruction */
     /* 3BEB8 8004B6B8 0020CC48 */  ctc2       $t4, $4 /* handwritten instruction */
-    /* 3BEBC 8004B6BC 0A80053C */  lui        $a1, %hi(D_800A3790)
-    /* 3BEC0 8004B6C0 9037A58C */  lw         $a1, %lo(D_800A3790)($a1)
+    /* 3BEBC 8004B6BC 0A80053C */  lui        $a1, %hi(g_gpu_draw_option_mask)
+    /* 3BEC0 8004B6C0 9037A58C */  lw         $a1, %lo(g_gpu_draw_option_mask)($a1)
     /* 3BEC4 8004B6C4 00000000 */  nop
     /* 3BEC8 8004B6C8 C00125AE */  sw         $a1, 0x1C0($s1)
     /* 3BECC 8004B6CC F81E010C */  jal        wave_Draw
