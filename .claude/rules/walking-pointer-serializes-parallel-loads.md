@@ -46,7 +46,7 @@ and GCC folds constant offsets into the displacement) — the lever cannot apply
 ## Extensions
 
 - **Re-read batch:** use a second walking pointer (`s32 *ap = p, *bp = p;`) for a later re-read of the same
-  elements; intervening global stores already block CSE — no volatile needed (func_8006517C).
+  elements; intervening global stores already block CSE — no volatile needed (eff_InitTwoAnimatedQuadsFirstSlot).
 - **Independent store into a load-delay slot:** load into a named temp, then the required independent store,
   then the dependent store (`t = *ap; D_800F0BC0 = 0; D_800F0D38 = t;`). Legitimate only when the interleaved
   store is a real, always-required instruction — the load-delay analog of
