@@ -1936,7 +1936,7 @@ void gpu_SetViewOriginSegmentCellsGateBit(s32 end_x, s32 end_z) {
                                g_view_camera_root_node.work.t[2], end_x, end_z);
 }
 
-extern s32 D_800A322C;
+extern s32 g_gpu_tracked_fighter_view_active;
 extern s32 D_800927C0[65][32];
 extern s32 D_80090740[65][32];
 extern s32 D_80094840[];
@@ -1992,7 +1992,7 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
     x = cx - 0xF;
     z = cz - 0xF;
     idx = (ang >> 6) & 0x3F;
-    if (D_800A322C != 0) {
+    if (g_gpu_tracked_fighter_view_active != 0) {
         mask = D_800927C0[idx];
     } else if (g_gpu_grid_and_fog_control & 1) {
         mask = D_80090740[idx];
@@ -2068,7 +2068,8 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
         }
     }
 
-    if ((g_gpu_grid_and_fog_control & 1) && D_800A322C == 0) {
+    if ((g_gpu_grid_and_fog_control & 1) &&
+        g_gpu_tracked_fighter_view_active == 0) {
         out = gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes(
             x, z, out);
     }
@@ -2313,17 +2314,19 @@ void func_8003F218(s32 a0) {
     if ((u32)a0 >= 2) {
         return;
     }
-    if (a0 == D_800A322C) {
+    if (a0 == g_gpu_tracked_fighter_view_active) {
         return;
     }
-    D_800A322C = a0;
+    g_gpu_tracked_fighter_view_active = a0;
     if (!a0) {
         gpu_SetFarViewGridFogControlAndCoordinateShift(0);
     }
-    D_800F665C = (s16)D_800A322C;
+    D_800F665C = (s16)g_gpu_tracked_fighter_view_active;
 }
 
-s32 gpu_GetTrackedFighterViewFlag(void) { return D_800A322C; }
+s32 gpu_GetTrackedFighterViewFlag(void) {
+    return g_gpu_tracked_fighter_view_active;
+}
 
 void gpu_ResetAndStampViewCenteredCellAttributes(void) {
     s32 i, j;
@@ -3320,7 +3323,7 @@ s32 g_font_buf_index = 0;
 s32 g_font_enabled = 1;
 RECT g_font_rect = {0x3F0, 0x1DC, 0x10, 0x24};
 s32 g_gpu_fog_clut_object = -1;
-s32 D_800A322C = 0;
+s32 g_gpu_tracked_fighter_view_active = 0;
 /* reached gp-relative by gpu_UnpackGridRecordsNodesAndCellRuns: size from the
  * blob label */
 s32 g_gpu_grid_cell_run_entry_peak = 0;
