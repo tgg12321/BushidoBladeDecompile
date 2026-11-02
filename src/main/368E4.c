@@ -676,17 +676,25 @@ s16 *camera_CalcAngles(void) {
     return g_camera_calculated_angles;
 }
 
-void func_8004746C(void) { node_InitFrameEntriesFromWorldTranslations(); }
+void node_InitSelector4FrameEntriesFromWorldTranslations(void) {
+    node_InitFrameEntriesFromWorldTranslations();
+}
 
-void func_8004748C(void) { node_AdvanceFrameAnimatedEntriesAndQueueDraws(); }
+void node_AdvanceSelector4FrameAnimatedEntriesAndQueueDraws(void) {
+    node_AdvanceFrameAnimatedEntriesAndQueueDraws();
+}
 
 void gpu_InitSelector5VramScroll(void) { gpu_InitVramScroll(0, 0); }
 
 void gpu_QueueSelector5VramScroll(void) { gpu_QueueVramScroll(0); }
 
-void func_800474F0(void) { node_InitFrameEntriesFromWorldTranslations(); }
+void node_InitBambooThicketFrameEntriesFromWorldTranslations(void) {
+    node_InitFrameEntriesFromWorldTranslations();
+}
 
-void func_80047510(void) { node_AdvanceFrameAnimatedEntriesAndQueueDraws(); }
+void node_AdvanceSelector7FrameAnimatedEntriesAndQueueDraws(void) {
+    node_AdvanceFrameAnimatedEntriesAndQueueDraws();
+}
 
 void wave_InitCallback(void) { wave_Init(); }
 

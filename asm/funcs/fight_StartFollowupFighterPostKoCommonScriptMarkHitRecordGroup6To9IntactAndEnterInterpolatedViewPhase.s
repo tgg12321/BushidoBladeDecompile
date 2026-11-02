@@ -1,4 +1,4 @@
-glabel func_8001EEB4
+glabel fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase
     /* F6B4 8001EEB4 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* F6B8 8001EEB8 0A80043C */  lui        $a0, %hi(g_fight_followup_fighter_index)
     /* F6BC 8001EEBC 48378480 */  lb         $a0, %lo(g_fight_followup_fighter_index)($a0)
@@ -59,4 +59,4 @@ glabel func_8001EEB4
     /* F794 8001EF94 2000BD27 */  addiu      $sp, $sp, 0x20
     /* F798 8001EF98 0800E003 */  jr         $ra
     /* F79C 8001EF9C 00000000 */   nop
-endlabel func_8001EEB4
+endlabel fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase

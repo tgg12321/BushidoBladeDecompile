@@ -2355,7 +2355,8 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
     }
 }
 
-void func_8001EEB4(void) {
+void fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase(
+    void) {
     s8 idx = g_fight_followup_fighter_index;
     Unk80101EC8Record *entry = &D_80101EC8[idx];
     u16 a1 = entry->move_kind;

@@ -43,7 +43,7 @@ __asm__(
     "    .word fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange\n"
     "    .word func_80035430\n"
     "    .word ExecMovieOverlayAndReinitialize\n"
-    "    .word func_8001EEB4\n"
+    "    .word fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase\n"
     "    .word fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress\n"
     "    .word fight_InitImageAndPlaybackPresentation\n"
     "    .word fight_UpdateSplitWipeImageAndPlaybackPresentation\n"

@@ -1,4 +1,4 @@
-glabel func_8004748C
+glabel node_AdvanceSelector4FrameAnimatedEntriesAndQueueDraws
     /* 37C8C 8004748C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 37C90 80047490 1000BFAF */  sw         $ra, 0x10($sp)
     /* 37C94 80047494 0012010C */  jal        node_AdvanceFrameAnimatedEntriesAndQueueDraws
@@ -7,4 +7,4 @@ glabel func_8004748C
     /* 37CA0 800474A0 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 37CA4 800474A4 0800E003 */  jr         $ra
     /* 37CA8 800474A8 00000000 */   nop
-endlabel func_8004748C
+endlabel node_AdvanceSelector4FrameAnimatedEntriesAndQueueDraws
