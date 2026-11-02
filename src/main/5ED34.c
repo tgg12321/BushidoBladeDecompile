@@ -26,7 +26,7 @@ static s32 D_800A3538; /* not named by any code or data: size from the gap */
 static s32 D_800A353C; /* not named by any code or data: size from the gap */
 static s16 g_entry_menu_row_cursor_cell_counts[2];
 static s16 g_entry_menu_row_pulse_shifts[2];
-static s32 D_800A3548;
+static s32 g_entry_menu_held_buttons;
 static s32 g_entry_menu_pressed_buttons;
 static s16 g_entry_menu_darken_level;
 static s16 g_entry_menu_grid_phase_extra_slot_count;
@@ -246,7 +246,7 @@ s32 StepSlideBuildFrameRecordAndDispatchStateHandler(
     s32 temp_v1;
 
     g_entry_menu_gpu_db = &g_gpu_db[g_gpu_presented_frame_count & 1];
-    D_800A3548 = arg0;
+    g_entry_menu_held_buttons = arg0;
     g_entry_menu_pressed_buttons = pad_buttons;
     if (g_entry_menu_mode == 2) {
         g_entry_menu_pressed_buttons = pad_buttons & 0xFFFF;
