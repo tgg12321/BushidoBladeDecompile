@@ -1,0 +1,39 @@
+rc=0
+==============================================================================
+NAMING WAVE — 2 operations (0 RESET, 2 RENAME)
+  4 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — volatile_extern_allowlist.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (6) --
+  (root): 1 files, 2 substitutions
+      symbol_addrs.txt  (2)
+  asm: 3 files, 5 substitutions
+      asm/funcs/func_80048744.s  (2)
+      asm/funcs/func_80069E18.s  (2)
+      asm/funcs/gpu_DrawWhiteTileAndSheetsTestPadMask.s  (1)
+  src: 2 files, 4 substitutions
+      src/main/368E4.c  (1)
+      src/main/596CC.c  (3)
+
+-- .s file renames (2) --
+  asm/funcs/func_80048744.s -> asm/funcs/gpu_SetColorMode.s
+  asm/funcs/func_80069E18.s -> asm/funcs/gpu_DrawWhiteTileAndSheets.s
+
+-- ledger directory renames (1) --
+  memory/grind/_completed/func_80069E18 -> memory/grind/_completed/gpu_DrawWhiteTileAndSheets
+
+-- symbol-registry line deletions (2) --
+  symbol_addrs.txt:1231  set_color_mode_80048744 = 0x80048744; /* 2-line setter for g_color_mode */
+  symbol_addrs.txt:1362  draw_bg_and_sprites_80069E18 = 0x80069E18; /* full-screen overlay tile + saMotionSet sprite + initTexPage + 3x
+
+-- JSON key/field edits (1) --
+  memory/grind/_completed/func_80069E18/layer2.jsonl: 6 changes
+      line 1: func func_80069E18 -> gpu_DrawWhiteTileAndSheets
+      line 2: func func_80069E18 -> gpu_DrawWhiteTileAndSheets
+      line 3: func func_80069E18 -> gpu_DrawWhiteTileAndSheets
+      line 4: func func_80069E18 -> gpu_DrawWhiteTileAndSheets
+      line 5: func func_80069E18 -> gpu_DrawWhiteTileAndSheets
+      ... and 1 more
+
+DRY RUN — nothing written. Re-run with --apply.

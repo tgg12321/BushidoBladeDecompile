@@ -1,0 +1,47 @@
+wave121 (func-second-pass-30): 2 RENAME kept; 0 dropped; 6 NO_NAME (notes only, not in FUNCS). Verdicts are PENDING: the naming-reviewer sets them.
+Wave id: wave121 (lane naming-b). Drafted 2026-11-01 at HEAD f613d4089 (the research file says "7 NO_NAME" in the task line but lists six addresses; 0x80049710, 0x8004A938, 0x8004E564, 0x8004E56C, 0x80030D48, 0x80035430 = 6 rows).
+Research input tmp/codex/func-second-pass-30-research.md (untrusted); every claim below re-derived at HEAD in the lane worktree unless marked. Research tag for the NO_NAME record at land: w121.
+Kept rows:
+ 0x80048744 func_80048744 -> gpu_SetColorMode
+ 0x80069E18 func_80069E18 -> gpu_DrawWhiteTileAndSheets
+
+CORRECTIONS to the research file
+ - 0x80048744 definition is at 368E4.c:1453-1459 (sibling gpu_RefreshGrayscaleMode :1444-1451; g_color_mode extern :315); the research file's 1453 matches.
+ - Alias lines are in symbol_addrs.txt only at this HEAD (1231 set_color_mode_80048744, 1362 draw_bg_and_sprites_80069E18); named_syms.txt holds none of the eight aliases. The census function-names.csv rows 623 / 911 still quote old "named_syms.txt:178 / :3184" wording in their evidence (stale, history only).
+ - 0x80069E18: all THREE gpu_AddSpriteCells results are stored back (596CC.c:659-670); consistent with the research.
+ - 0x80035430 reachability (slot 14 never set) is the research's claim and was NOT re-derived here; the draft records it as a NO_NAME note only (no rename depends on it).
+
+ALIAS HANDLING (naming_wave.py): the census row for an alias-only function lists the alias in its aliases column, and naming_wave.py:523-539 puts those aliases into the set of names retired by the op; the dry run prints the symbol-registry line deletions (see dry.txt) for set_color_mode_80048744 and draw_bg_and_sprites_80069E18, the dry run shows both deletions (symbol_addrs.txt:1231, :1362) and 4 identifiers remapped; the link map is reported STALE, which apply.sh already tolerates with --stale-map-ok. The six NO_NAME rows keep their aliases (stub_80030D48, stub_80049710, stub_8004A938, stub_8004E564, stub_8004E56C, mode_handler_14_NoOp at symbol_addrs.txt:1357-1361 and :1318): no op touches them.
+
+### 0x80048744 -> gpu_SetColorMode (RENAME)
+- HOMES: definition src/main/368E4.c:1453; glabel asm/funcs/func_80048744.s:1; alias symbol_addrs.txt:1231; census function-names.csv:623; runtime hitmap rows under docs/naming/runtime/** (old name, recorded data: leave).
+- USES: none. Raw scan of disc/SLUS_006.63 and disc/STR/MOVOVL.EXE (jal, j, address word, lui/addiu|ori pair within 8 insns) = 0 hits; git grep -w over src include asm = definition + glabel only; no table word.
+- BODY: g_color_mode = grayscale_flag ? 1 : 0; no call, no return.
+- g_color_mode (landed, wave17 KEEP data_keep.csv:17): writers = func_80046B44 (368E4.c:439, = 0), gpu_RefreshGrayscaleMode (1 iff gpu_GetSavedGrayscaleFlag, 6CF8.c:114 g_saved_record.flags & 1; returns it), this body. No code reads the variable except through gpu_RefreshGrayscaleMode()'s return, and every such consumer (31D3C.c:115/269/468/508, 32D04.c:18, 368E4.c:336/1283/1350) selects a grayscale path.
+- NOUN: the code supports "grayscale" as the meaning of 1 (argument name, saved-flag source, consumers). "ColorMode" is only the global's landed name. The draft keeps the assigned gpu_SetColorMode (matches g_color_mode one-to-one) and flags gpu_SetGrayscaleMode as the better-supported alternative for the reviewer.
+- TRACE: never hit (facts.tsv:826 per the research file).
+
+### 0x80069E18 -> gpu_DrawWhiteTileAndSheets (RENAME)
+- HOMES: definition 596CC.c:623; unprototyped declaration :40 and comment :35-37; call :224; glabel; alias symbol_addrs.txt:1362; census :911.
+- USES: one call (596CC.c:224 in gpu_DrawWhiteTileAndSheetsTestPadMask; raw scan: one jal word at file offset 0x59A78, no j / address word / lui pair; MOVOVL.EXE 0). That caller's own caller: 64FD8.c:1385 DrawWhiteTileAndSheetsAndResetFlowOnPadMatch.
+- BODY: opaque white 0x280 x 0xF0 TILE at OT +0x14, DR_MODE (sheet 0 tpage) at +0x11, three gpu_AddSpriteCells batches at OT 0x10; advances ctx +0x18 / +0x1C / +0x14.
+- FAKE comment in the body (single-use holder p1) is a completion note, not a naming matter.
+
+### The six NO_NAME rows (recorded in the NO_NAME ledger at land from the research file; none in FUNCS)
+Each body verified at HEAD: asm/funcs/func_<addr>.s is exactly `jr $ra; nop`; C `void func_<addr>(void) {}`.
+- 0x80049710 (368E4.c:1944): uses none (raw scans of both EXEs 0 hits; git grep -w = definition + glabel). Matches the research.
+- 0x8004E564 (3AB48.c:37) and 0x8004E56C (3AB48.c:39): uses none, identical twins. Matches.
+- 0x80030D48 (17AFC.c:4309): uses none. Matches.
+- 0x8004A938 (3AB48.c:18): one use, jal at asm/funcs/gpu_DrawQueuedEntries.s:150 (EXE jal word at file offset 0x3AF08). Matches (one use).
+- 0x80035430 (25788.c:155): one use, the slot-14 word in d_7D870.c:44 (EXE address word at file offset 0x7D8C8); no jal. Matches. Slot-14 unreachability not re-derived.
+No row has more uses than the research claims.
+
+DRY RUN: see dry.txt. The dry run stages a CONFIRM copy under phase3/zz-wave121-dry (removed) and restores function-names.csv; the generated docs/naming/phase3/wave121/ is kept for the lander (build.py regenerates it); tmp/p3w121 is scratch.
+HAZARD (old names in recorded data, must stay): docs/naming/runtime/** (matrix tsvs, hitmaps), docs/naming/function-names.csv evidence text, older wave manifests, docs/naming/phase3/backlog.tsv.
+LAND steps: the lander copies the latest tmp/p3w*/gates.sh into tmp/p3w121 before gates.ps1; record the six NO_NAME rows with naming_noname.py add tmp/codex/func-second-pass-30-research.md --tag w121 (dropping any RENAME the reviewer fails).
+
+Weak spots for the reviewer
+ (1) gpu_SetColorMode vs gpu_SetGrayscaleMode (see NOUN above).
+ (2) Both functions are never hit at runtime; names rest on bodies and callers only.
+ (3) The "White" and "Sheets" words are the landed caller's; "Draw" covers queueing into the OT, not a GPU submit.
+Dry run result (dry.txt): rc=0, 2 RENAME, edits: symbol_addrs.txt (2 = the two alias line deletions), 3 asm files, src/main/368E4.c (1), src/main/596CC.c (3); 2 .s renames; 1 ledger dir rename (memory/grind/_completed/func_80069E18 only; func_80048744 has no ledger dir) and its layer2 retarget; FATAL/REJECT: none. Note: main HEAD moved during the run (lane_guard report; not caused by this drafter, which only touched the worktree).
