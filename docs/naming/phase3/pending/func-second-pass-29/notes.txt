@@ -1,0 +1,38 @@
+func-second-pass-29 (wave120), lane naming-c 2026-11-01, HEAD f613d4089. Draft: 3 RENAME rows kept, 0 dropped; 3 NO_NAME (not rows: see below).
+research: tmp/codex/func-second-pass-29-research.md (untrusted); every use re-derived by git grep over src, include, asm, symbol_addrs.txt, named_syms.txt,
+undefined_syms_auto.txt, docs/engine, and the bodies re-read (28514.c:18-101, 28708.c:282-330 and :462-469, 9F9C.c:1279-1325 and :1399-1428, 6CF8.c:36-44,
+:236-241, :497-499, 35000.c:253-270, asm/funcs/func_800164F8.s, psxsdk/libsn/73E98.c:30-33, libsn.h:18). Freshness: git grep -i -w = 0 hits for
+memcard_StepCardInfoAndLoad, fight_ResetFighter0ToStartPosition, sys_PollHost10000Times and the fallback sys_PollHostRepeatedly.
+Rows (full evidence text in rows.py):
+- 0x80037D14 -> memcard_StepCardInfoAndLoad (no census row; only call 28708.c:464 in memcard_Update, jal memcard_Update.s:8; 5-state _card_info/_card_load/_card_clear
+  machine; consumer memcard_StepRequest 28708.c:293-326). A memcard_ name makes 28514.c's only function memcard (file-names-3 lead (a); memcard.c exists, so the file
+  name must differ; D_800109C8 "bu%1d%1d:" is read only by memcard_Format).
+- 0x8001C624 -> fight_ResetFighter0ToStartPosition (no census row; only call 9F9C.c:1425 in fight_UpdateDefeatDelayAndModeProgress, case 3 at :1399, pair-changed
+  branch; jal ...DefeatDelayAndModeProgress.s:198). Dead fight_GetStartPosition(1,..) read (:1286, :1308) has no effect and is recorded as counter-evidence.
+- 0x800164F8 -> sys_PollHost10000Times (3 jal sites: sys_Panic 6CF8.c:239, main 6CF8.c:498, ndata_ReadChecked 35000.c:268; data word D_800A2674[0] = SNMAIN __text).
+  Fallback if the count in the name is refused: sys_PollHostRepeatedly. Note the research's named_syms.txt:2591 cite is stale (that alias lives in symbol_addrs.txt:1353).
+ALIAS TREATMENT (tooling, read from tools/naming_wave.py plan_symbol_file and confirmed by the dry run): a RENAME of an alias-only census row puts the alias in
+sym_owner, so naming_wave deletes the registry line `breakpoint_trap_loop_800164F8 = 0x800164F8;` (dry.txt: "symbol-registry line deletions (1) symbol_addrs.txt:1353").
+No separate step is needed; the census row (function-names.csv:3, KEEP) is superseded by the manifest row.
+STUBS: func_80044E64 (const_return_0x25_80044E64, symbol_addrs.txt:1354), func_80044E6C (const_return_0x26_80044E6C, :1355), func_800457D4 (empty_stub_800457D4, :1356)
+have no jal, no data word and no lui/addiu pair in the EXE (research binary scan; git grep finds no ref beyond def/asm/alias), so they are dead and neutral
+(Q132 constant-return / empty-hook test). They are NOT given RESET rows: the only RESET precedent for an alias-only stub is wave03 0x80046954 (empty_stub), which was
+reset-contradicted (the name was contradicted by a use, snd_SeNullCallback/legacy claim). Here the aliases only restate the bodies (census CORROBORATED computation-restatement,
+function-names.csv:505/506/530) and contradict nothing; other restating stub aliases are likewise KEPT (function-names.csv:204, 638, 651, 668, 669), and no earlier wave retired
+an alias for a NO_NAME function (git log -S on symbol_addrs.txt: only dfb0aa135 and 985b0a16a touch these strings, neither a naming wave). So: NO_NAME only, aliases
+untouched; the lander records the three with naming_noname.py add reading the research file (evidence_class computation-restatement, matrix/facts.tsv:800/801/804 never_hit).
+gates: tmp/p3w120/gates.sh does not exist in this worktree (no tmp/p3w118 here); gates.ps1 expects it from the lane, so the lander copies the latest tmp/p3w*/gates.sh
+(from another worktree or main tmp) into tmp/p3w120/ before running gates.ps1, as in earlier waves.
+build.py: census.get fallback added (as pending/sony-residue/build.py) because 0x80037D14 and 0x8001C624 have no function-names.csv row; the manifest rows then carry
+tier NO-CENSUS-ROW. homes() also matches the full alias breakpoint_trap_loop_800164F8.
+Dry run: engine/test_engine.py also takes 5 substitutions (4092-4096, a fixture using the name func_800164F8 for a cheat-asm word test) and tools/canonical_asm_regions.json
+and inline_asm_canonical.txt are rewritten by the tool; after apply run `test` (engine suite) and confirm it stays green.
+Comment pass after apply (names the old func_ names or the retired alias; the tool edits code/asm only, check each):
+- src/main/28514.c:1 and :9 comments (func_80037D14); src/main/6CF8.c:36 comment (func_800164F8); src/main/9F9C.c:1278 comment is generic, no old name.
+- symbol_addrs.txt comments naming func_80037D14 (:924, :940, :1225, :1886) and sys_Panic_80016C3C comment naming func_800164F8 (:1235); named_syms.txt:368, :1049, :1107
+  (RESET/old notes: keep as retired-name notes unless the keycheck flags them) and named_syms.txt:1 (RETIRED note mentions breakpoint_trap_loop_800164F8 as the live alias: update to say it was renamed).
+- docs/engine/README.md:111 and cross_reference.md:23 (func_80037D14); docs/engine/file_io.md:158 and main_loop.md:54 (also stale cite 488-499, now 6CF8.c:497-499) and :73
+  (func_800164F8; :73 wrongly says eff_Init and snd_InitAndLoadCommonVab call it, the 35000.c caller is ndata_ReadChecked); docs/naming/CHAR_STRUCT_SCHEMA.md:100 (func_8001C624).
+- Historical, leave: docs/naming/README.md:89, docs/audits/INLINE-ASM-AUDIT-2026-10-01.md, docs/grind/rodata-align-2026-09-30.md, docs/naming/MISNOMERS.md:727, wave manifests.
+Verdict is PENDING: the naming-reviewer sets CONFIRM; dry.sh stages a CONFIRM copy only for the dry run. build.py writes docs/naming/phase3/wave120/ (untracked); it was removed
+after the dry run so the tree holds only the pending dir.

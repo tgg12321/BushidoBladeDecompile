@@ -1,0 +1,61 @@
+wave120 dry run (dry.sh, lane naming-c, HEAD f613d4089, 2026-11-01)
+==============================================================================
+NAMING WAVE — 3 operations (0 RESET, 3 RENAME)
+  4 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — volatile_extern_allowlist.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (16) --
+  (root): 2 files, 2 substitutions
+      inline_asm_canonical.txt  (1)
+      symbol_addrs.txt  (1)
+  asm: 6 files, 7 substitutions
+      asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (1)
+      asm/funcs/func_800164F8.s  (2)
+      asm/funcs/func_80016C3C.s  (1)
+      asm/funcs/main.s  (1)
+      asm/funcs/memcard_Update.s  (1)
+      asm/funcs/ndata_ReadChecked.s  (1)
+  engine: 1 files, 5 substitutions
+      engine/test_engine.py  (5)
+  include: 1 files, 2 substitutions
+      include/bb2.h  (2)
+  src: 6 files, 11 substitutions
+      src/main/28514.c  (1)
+      src/main/28708.c  (1)
+      src/main/35000.c  (1)
+      src/main/6CF8.c  (4)
+      src/main/9F9C.c  (2)
+      src/main/psxsdk/libsn/73E98.c  (2)
+
+-- .s file renames (1) --
+  asm/funcs/func_800164F8.s -> asm/funcs/sys_PollHost10000Times.s
+
+-- ledger directory renames (5) --
+  memory/grind/func_800164F8 -> memory/grind/sys_PollHost10000Times
+  memory/grind/func_8001C624 -> memory/grind/fight_ResetFighter0ToStartPosition
+  memory/grind/func_80037D14 -> memory/grind/memcard_StepCardInfoAndLoad
+  memory/grind/_completed/func_800164F8 -> memory/grind/_completed/sys_PollHost10000Times
+  memory/grind/_completed/func_8001C624 -> memory/grind/_completed/fight_ResetFighter0ToStartPosition
+
+-- symbol-registry line deletions (1) --
+  symbol_addrs.txt:1353  breakpoint_trap_loop_800164F8 = 0x800164F8;
+
+-- JSON key/field edits (6) --
+  tools/canonical_asm_regions.json: 1 changes
+      func_800164F8
+  memory/grind/func_800164F8/layer2.jsonl: 1 changes
+      line 1: func func_800164F8 -> sys_PollHost10000Times
+  memory/grind/func_8001C624/layer2.jsonl: 2 changes
+      line 1: func func_8001C624 -> fight_ResetFighter0ToStartPosition
+      line 2: func func_8001C624 -> fight_ResetFighter0ToStartPosition
+  memory/grind/func_80037D14/layer2.jsonl: 1 changes
+      line 1: func func_80037D14 -> memcard_StepCardInfoAndLoad
+  memory/grind/_completed/func_800164F8/layer2.jsonl: 1 changes
+      line 1: func func_800164F8 -> sys_PollHost10000Times
+  memory/grind/_completed/func_8001C624/layer2.jsonl: 3 changes
+      line 1: func func_8001C624 -> fight_ResetFighter0ToStartPosition
+      line 2: func func_8001C624 -> fight_ResetFighter0ToStartPosition
+      line 3: func func_8001C624 -> fight_ResetFighter0ToStartPosition
+
+DRY RUN — nothing written. Re-run with --apply.
