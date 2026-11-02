@@ -341,11 +341,11 @@ typedef struct {
     Unk8006ECF4Rec *selected_entry_header_block;
     Unk8009B0E0Record **row_choice_sheets;
     Unk8009B0E0Record **unk_5C;
-    Unk8009B0E0Record **unk_60;
+    Unk8009B0E0Record **entry_grid_sheets;
     Unk8009B0E0Record **entry_row_sheets;
-    Unk8009B0E0Record **unk_68;
-    Unk8009B0E0Record **unk_6C;
-    Unk8009B0E0Record **unk_70;
+    Unk8009B0E0Record **choice_grid_page1_sheets;
+    Unk8009B0E0Record **choice_grid_page2_sheets;
+    Unk8009B0E0Record **choice_grid_page3_sheets;
     Unk8009B0E0Record **unk_74;
     s32 *unk_78;
     RECT *row_choice_upload_rects;

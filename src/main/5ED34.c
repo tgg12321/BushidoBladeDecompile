@@ -224,12 +224,16 @@ s32 resource_RelocateNineOffsetListsAndLoadVabPack(
     reloc_RelocateOffsetList(
         (s32 *)resource_root, (s32)resource_root->row_choice_sheets);
     reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_5C);
-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_60);
+    reloc_RelocateOffsetList(
+        (s32 *)resource_root, (s32)resource_root->entry_grid_sheets);
     reloc_RelocateOffsetList(
         (s32 *)resource_root, (s32)resource_root->entry_row_sheets);
-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_68);
-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_6C);
-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_70);
+    reloc_RelocateOffsetList(
+        (s32 *)resource_root, (s32)resource_root->choice_grid_page1_sheets);
+    reloc_RelocateOffsetList(
+        (s32 *)resource_root, (s32)resource_root->choice_grid_page2_sheets);
+    reloc_RelocateOffsetList(
+        (s32 *)resource_root, (s32)resource_root->choice_grid_page3_sheets);
     reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_74);
     snd_LoadVabPack(resource_root->resource_head.sound_pack, 1,
                     resource_root->resource_head.free_ram_start);
@@ -735,7 +739,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
     s.scale_y = 0x100;
     s.semi = 0;
     s.col_r = s.col_g = s.col_b = 0x70;
-    var_3 = g_entry_menu_resources->unk_60;
+    var_3 = g_entry_menu_resources->entry_grid_sheets;
     s.header = var_3[0];
     SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
@@ -1540,7 +1544,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
             }
         }
     }
-    var_0 = g_entry_menu_resources->unk_60;
+    var_0 = g_entry_menu_resources->entry_grid_sheets;
     s->header = var_0[0];
     s->scale_x = 0x80;
     s->scale_y = 0x80;
@@ -1717,15 +1721,18 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
 void menu_UpdateChoiceGrid(Unk8006EACCRec *, Unk8009B0E0Record **, s32);
 
 void menu_UpdateChoiceGridPage1(Unk8006EACCRec *draw_context) {
-    menu_UpdateChoiceGrid(draw_context, g_entry_menu_resources->unk_68, 0);
+    menu_UpdateChoiceGrid(
+        draw_context, g_entry_menu_resources->choice_grid_page1_sheets, 0);
 }
 
 void menu_UpdateChoiceGridPage2(Unk8006EACCRec *draw_context) {
-    menu_UpdateChoiceGrid(draw_context, g_entry_menu_resources->unk_6C, 1);
+    menu_UpdateChoiceGrid(
+        draw_context, g_entry_menu_resources->choice_grid_page2_sheets, 1);
 }
 
 void menu_UpdateChoiceGridPage3(Unk8006EACCRec *draw_context) {
-    menu_UpdateChoiceGrid(draw_context, g_entry_menu_resources->unk_70, 2);
+    menu_UpdateChoiceGrid(
+        draw_context, g_entry_menu_resources->choice_grid_page3_sheets, 2);
 }
 
 void menu_UpdateChoiceGrid(
