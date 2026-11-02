@@ -1,4 +1,4 @@
-glabel func_80069E18
+glabel gpu_DrawWhiteTileAndSheets
     /* 5A618 80069E18 A8FFBD27 */  addiu      $sp, $sp, -0x58
     /* 5A61C 80069E1C 4C00B1AF */  sw         $s1, 0x4C($sp)
     /* 5A620 80069E20 21888000 */  addu       $s1, $a0, $zero
@@ -89,4 +89,4 @@ glabel func_80069E18
     /* 5A774 80069F74 5800BD27 */  addiu      $sp, $sp, 0x58
     /* 5A778 80069F78 0800E003 */  jr         $ra
     /* 5A77C 80069F7C 00000000 */   nop
-endlabel func_80069E18
+endlabel gpu_DrawWhiteTileAndSheets

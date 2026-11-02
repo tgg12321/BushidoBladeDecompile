@@ -1450,7 +1450,7 @@ s32 gpu_RefreshGrayscaleMode(void) {
     return g_color_mode;
 }
 
-void func_80048744(s32 grayscale_flag) {
+void gpu_SetColorMode(s32 grayscale_flag) {
     if (grayscale_flag) {
         g_color_mode = 1;
     } else {

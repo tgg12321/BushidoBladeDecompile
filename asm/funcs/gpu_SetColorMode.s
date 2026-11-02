@@ -1,4 +1,4 @@
-glabel func_80048744
+glabel gpu_SetColorMode
     /* 38F44 80048744 05008010 */  beqz       $a0, .L8004875C
     /* 38F48 80048748 01000224 */   addiu     $v0, $zero, 0x1
     /* 38F4C 8004874C 0F80013C */  lui        $at, %hi(D_800F6652)
@@ -11,4 +11,4 @@ glabel func_80048744
   .L80048764:
     /* 38F64 80048764 0800E003 */  jr         $ra
     /* 38F68 80048768 00000000 */   nop
-endlabel func_80048744
+endlabel gpu_SetColorMode

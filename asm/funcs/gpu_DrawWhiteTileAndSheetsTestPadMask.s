@@ -9,7 +9,7 @@ glabel gpu_DrawWhiteTileAndSheetsTestPadMask
     /* 59A6C 8006926C E4B8010C */  jal        gpu_AdvanceBufferCounterAndBuildDrawContext
     /* 59A70 80069270 1000A427 */   addiu     $a0, $sp, 0x10
     /* 59A74 80069274 1000A427 */  addiu      $a0, $sp, 0x10
-    /* 59A78 80069278 86A7010C */  jal        func_80069E18
+    /* 59A78 80069278 86A7010C */  jal        gpu_DrawWhiteTileAndSheets
     /* 59A7C 8006927C 21280000 */   addu      $a1, $zero, $zero
     /* 59A80 80069280 4000023C */  lui        $v0, (0x400040 >> 16)
     /* 59A84 80069284 40004234 */  ori        $v0, $v0, (0x400040 & 0xFFFF)

@@ -1228,7 +1228,7 @@ g_memcard_info_load_pending_result = 0x800A37F4; /* result func_80037D14 copies 
 D_80088BA0 = 0x80088BA0;
 D_800A33CA = 0x800A33CA;
 D_800100B4 = 0x800100B4; /* data-wave 2026-10-09: was g_str_sound_id_fmt */
-set_color_mode_80048744 = 0x80048744; /* 2-line setter for g_color_mode */
+// RENAME 0x80048744: retired name 'set_color_mode_80048744' — preserved note: 2-line setter for g_color_mode
 math_Distance3D_80017748 = 0x80017748; /* vec3 sub + >>2 + sum-after-helper + <<2 == magnitude-with-overflow-guard. Exact match with legacy `math_Distance3D`. */
 disp_Init_80016918 = 0x80016918; /* full PSX display init: SetMode/SetDebugLevel/InitDrawEnv*2/InitDispEnv*2/SetFramebufferMode */
 sys_Init_80016A18 = 0x80016A18; /* top-level: irq_DisableInterrupts + bios_ChangeClearPad + disp_Init + pad_press_control */
@@ -1359,7 +1359,7 @@ stub_80049710 = 0x80049710; /* structural role; n=2 */
 stub_8004A938 = 0x8004A938; /* structural role; n=2 */
 stub_8004E564 = 0x8004E564; /* structural role; n=2 */
 stub_8004E56C = 0x8004E56C; /* structural role; n=2 */
-draw_bg_and_sprites_80069E18 = 0x80069E18; /* full-screen overlay tile + saMotionSet sprite + initTexPage + 3x gpu_AddSpriteCells; composite screen render */
+// RENAME 0x80069E18: retired name 'draw_bg_and_sprites_80069E18' — preserved note: full-screen overlay tile + saMotionSet sprite + initTexPage + 3x gpu_AddSpriteCells; composite screen render
 
 // pins-drop: names a linked object defines at this address (moved out of the linker pin files by tools/pins_drop.py)
 D_8007A4C0 = 0x8007A4C0;

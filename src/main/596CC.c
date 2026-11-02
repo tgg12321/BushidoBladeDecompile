@@ -34,10 +34,10 @@ extern void AddPrim(void *, void *);
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
 /* Declared unprototyped: the callers below pass an s32 where the definition
  * takes a pointer, and gpu_DrawWhiteTileAndSheetsTestPadMask calls
- * func_80069E18 with 2 of its 1 args.
+ * gpu_DrawWhiteTileAndSheets with 2 of its 1 args.
  */
 s32 reloc_RelocateTwelveListsAndLoadVabPack();
-void func_80069E18();
+void gpu_DrawWhiteTileAndSheets();
 extern void gpu_LoadVramBottomStrip();
 
 void menu_SetEnabledRows(s32 arg0) {
@@ -221,7 +221,7 @@ s32 gpu_DrawWhiteTileAndSheetsTestPadMask(s32 arg0, s32 arg1) {
     g_row_menu_pulse_counter = 0;
     gpu_AdvanceBufferCounterAndBuildDrawContext(
         sp10, &g_menu_draw_buffer_counter);
-    func_80069E18(sp10, 0);
+    gpu_DrawWhiteTileAndSheets(sp10, 0);
     if ((arg1 & 0x400040) != 0) {
         snd_QueueSound(1, 0x7F, 0x7F);
         return 1;
@@ -620,7 +620,7 @@ void gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(
     draw_context[3] = (s32)poly;
 }
 
-void func_80069E18(s32 draw_context_addr) {
+void gpu_DrawWhiteTileAndSheets(s32 draw_context_addr) {
     TILE *tile;
     Unk8009B0E0Record **ptr;
     Unk8007352CRec s;
