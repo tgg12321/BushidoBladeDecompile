@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-kimigaura-throw-tatsumi re-run unchanged with D_8008E5A8 data watches (read 0x8008E5A8/36, write 0x800A30FC/2, g_fight_config/16, 0x800A30FC/2 read at every phase start): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-D_8008E5A8-versus-2p-kimigaura-throw-tatsumi-1/spec.json"
+  ],
+  "extends": "versus-2p-kimigaura-throw-tatsumi",
+  "refines": "versus-2p-kimigaura-throw-tatsumi"
+}
