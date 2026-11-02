@@ -1046,7 +1046,7 @@
 /* === Init flags + CD-audio fade words (2026-05-17) -- 4 highs === */
 
 /* === Memcard async operation state machine (2026-05-17) -- 4 highs === */
-/* From 28514.c memcard_StepCardInfoAndLoad: 5-state machine driving memcard */
+/* From memcard_info_load.c memcard_StepCardInfoAndLoad: 5-state machine driving memcard */
 /* bios_A0_0xAB / 0xAC operations with event polling and completion. */
 
 /* === func_80016D78 reset cluster (2026-05-17) -- 6 highs === */
