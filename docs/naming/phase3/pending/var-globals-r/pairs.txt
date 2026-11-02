@@ -1,0 +1,3 @@
+D_800A37D2=g_fight_first_fighter_win_count
+D_800A37D3=g_fight_second_fighter_win_count
+D_8008E5A8=g_fight_character_vab_and_ground_quad_classes

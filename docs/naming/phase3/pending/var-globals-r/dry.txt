@@ -1,0 +1,32 @@
+==============================================================================
+DATA WAVE — 3 addresses, 3 identifiers remapped
+  0x800a37d2: D_800A37D2 -> g_fight_first_fighter_win_count
+  0x800a37d3: D_800A37D3 -> g_fight_second_fighter_win_count
+  0x8008e5a8: D_8008E5A8 -> g_fight_character_vab_and_ground_quad_classes
+
+-- file edits (16) --
+  asm/data/93E18.data.s  (6)
+  asm/funcs/ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests.s  (4)
+  asm/funcs/fight_ResetGraphAndReloadResourcesOnCachedKeyChange.s  (12)
+  asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (12)
+  asm/funcs/fight_UpdateModeDisplaysAndMatchProgress.s  (4)
+  asm/funcs/fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams.s  (4)
+  asm/funcs/fighter_DispatchFrameEvent.s  (4)
+  asm/funcs/fighter_InitCpuControl.s  (8)
+  include/bb2.h  (3)
+  src/main/17AFC.c  (2)
+  src/main/24BF0.c  (2)
+  src/main/2B344.c  (2)
+  src/main/4510C.c  (4)
+  src/main/9F9C.c  (14)
+  src/main/d_7D920.c  (1)
+  symbol_addrs.txt  (5)
+
+-- registry lines --
+  symbol_addrs.txt:293 D_800A37D2 -> g_fight_first_fighter_win_count
+  symbol_addrs.txt:294 D_800A37D3 -> g_fight_second_fighter_win_count
+  symbol_addrs.txt:858 D_8008E5A8 -> g_fight_character_vab_and_ground_quad_classes
+  symbol_addrs.txt:1172 D_800A37D2 -> g_fight_first_fighter_win_count
+  symbol_addrs.txt:1173 D_800A37D3 -> g_fight_second_fighter_win_count
+
+DRY RUN — nothing written. Re-run with --apply.
