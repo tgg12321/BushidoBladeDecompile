@@ -1,14 +1,14 @@
 #!/bin/bash
-# Apply naming wave120 (functions) in the ln-naming-b worktree (naming-aar steps 3-4). Stops at the first failure.
+# Apply naming wave122 (functions) in the ln-naming-b worktree (naming-aar steps 3-4). Stops at the first failure.
 set -eu
 cd /mnt/c/Users/Trenton/Desktop/bb2-worktrees/ln-naming-b
 source .venv/bin/activate
-T="/mnt/c/Users/Trenton/Desktop/bb2-worktrees/ln-naming-b/tmp/p3w120"
+T="/mnt/c/Users/Trenton/Desktop/bb2-worktrees/ln-naming-b/tmp/p3w122"
 START=$(git rev-parse HEAD); echo "start $START"
-W=docs/naming/phase3/wave120
+W=docs/naming/phase3/wave122
 python3 docs/naming/build_census.py > /dev/null
 git add $W docs/naming/function-names.csv
-git commit -q -m "wip: wave120 manifest + census (temporary, squashed into the wave commit)"
+git commit -q -m "wip: wave122 manifest + census (temporary, squashed into the wave commit)"
 ADDRS=$(python3 -c "import csv;print(','.join(r['addr'] for r in csv.DictReader(open('$W/func_manifest.csv'))))")
 python3 tools/naming_wave.py --from-census --only "$ADDRS" --apply --stale-map-ok --manifest "$T/fn.json" > "$T/naming_wave.out" 2>&1 || { tail -20 "$T/naming_wave.out"; git reset -q --soft "$START"; exit 1; }
 grep -E "FATAL|APPLIED|REJECT" "$T/naming_wave.out" || true

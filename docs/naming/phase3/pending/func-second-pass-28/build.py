@@ -1,6 +1,6 @@
-"""wave120 manifests: func_manifest.csv (rows.py FUNCS; func-second-pass-28 draft) and
+"""wave122 manifests: func_manifest.csv (rows.py FUNCS; func-second-pass-28 draft) and
 data_manifest.csv (none). HOMES / USES enumerated live as
-tmp/p3w46/build.py. Writes <WT>/docs/naming/phase3/wave120/."""
+tmp/p3w46/build.py. Writes <WT>/docs/naming/phase3/wave122/."""
 import csv
 import glob
 import os
@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from rows import FUNCS, DATA, VERDICT, VERIFIER_NOTE, NOTES  # noqa: E402
 
 WT = os.environ.get("P3WT", r"C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-b")
-OUT = os.path.join(WT, "docs", "naming", "phase3", "wave120")
+OUT = os.path.join(WT, "docs", "naming", "phase3", "wave122")
 HERE = os.path.dirname(os.path.abspath(__file__))
 os.chdir(WT)
 BASE = os.popen("git rev-parse --short=9 HEAD").read().strip()

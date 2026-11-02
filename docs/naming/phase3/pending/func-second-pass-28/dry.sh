@@ -1,13 +1,13 @@
 #!/bin/bash
-# wave120 dry run. The manifest's verdict is PENDING (the reviewer sets CONFIRM later) and the census only
-# reads CONFIRMed rows, so stage a CONFIRM copy under phase3/zz-wave120-dry/, run the census with it, the
+# wave122 dry run. The manifest's verdict is PENDING (the reviewer sets CONFIRM later) and the census only
+# reads CONFIRMed rows, so stage a CONFIRM copy under phase3/zz-wave122-dry/, run the census with it, the
 # naming_wave dry run, then restore the census file and remove the staged copy. Needs build.py run first.
 set -u
 cd /mnt/c/Users/Trenton/Desktop/bb2-worktrees/ln-naming-b
 source .venv/bin/activate
-T="/mnt/c/Users/Trenton/Desktop/bb2-worktrees/ln-naming-b/tmp/p3w120"
-W=docs/naming/phase3/wave120
-S=docs/naming/phase3/zz-wave120-dry
+T="/mnt/c/Users/Trenton/Desktop/bb2-worktrees/ln-naming-b/tmp/p3w122"
+W=docs/naming/phase3/wave122
+S=docs/naming/phase3/zz-wave122-dry
 mkdir -p "$T" $S
 python3 - "$W/func_manifest.csv" "$S/func_manifest.csv" <<'PY'
 import csv, sys
