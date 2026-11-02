@@ -1,0 +1,8 @@
+{
+  "description": "versus-cpu-tatsumi re-run unchanged with CPU pad-script watches (read 0x8009A8AC/28 = D_8009A8AC / D_8009A8B4 / D_8009A8C0; breakpoint fighter_StartCpuPadScript with the script bytes at a1 and the starting record's roster/weapon, carried-object/ammo/throw-charge and cpu_profile bytes): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-D_8009A8AC-versus-cpu-tatsumi-1/spec.json"
+  ],
+  "extends": "versus-cpu-tatsumi",
+  "refines": "versus-cpu-tatsumi"
+}
