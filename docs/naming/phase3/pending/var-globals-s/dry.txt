@@ -1,0 +1,9 @@
+==============================================================================
+DATA WAVE — 1 addresses, 2 identifiers remapped
+  0x8009b3c8: D_8009B3C8, g_gpu_time_field_cells -> g_gpu_time_and_counter_cells
+
+-- file edits (2) --
+  asm/funcs/gpu_DrawTimeFieldsAndDecimalCounter.s  (8)
+  src/main/4D0A8.c  (6)
+
+DRY RUN — nothing written. Re-run with --apply.
