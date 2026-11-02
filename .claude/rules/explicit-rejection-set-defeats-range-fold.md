@@ -43,7 +43,7 @@ grows), the lever does not apply.
 - the chain's first compare is not on the same variable;
 - the variable is not a halfword load (the andi mechanism is lhu-specific).
 
-Example: func_8001EEB4 (code6cac.c) — 3 → 0 after [[hoist-call-arg-local-flips-jal-delay]]. Narrow
+Example: func_8001EEB4 (now fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase, main/9F9C.c) — 3 → 0 after [[hoist-call-arg-local-flips-jal-delay]]. Narrow
 type casts ((s16), (unsigned short), (char)) that try to force the same effect are rejected coercions.
 
 Related: [[register-alloc-pure-c]] · [[u16-global-lhu-lbu-low-byte]]
