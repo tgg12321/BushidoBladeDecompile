@@ -88,7 +88,9 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   with `research: Codex <run id>` once the file is checked. A row it claims is
   skipped like any claimed row; never wait for it.
 - **Tracks run in parallel, batches don't.** A track (locals, globals, members) has at most one
-  open row (`idea` .. `reviewed`) at a time, and parallel lanes take different rows. Names can
+  open row (`idea` .. `reviewed`) at a time, and parallel lanes take different rows. The function
+  track may hold up to **3** open rows at once when their target functions are defined in
+  disjoint TUs (owner 2026-11-01); a session queueing a new function row checks that. Names can
   still meet across tracks (a local and a global in one TU), so two lanes never hold one
   `topic:tu` claim during a LAND (§Claims).
 - **Pick order:** LAND first (oldest `reviewed` row that no other lane claims and whose TUs no
@@ -255,7 +257,8 @@ every datum it defines agree on that subsystem; a mixed file keeps its ROM-offse
      (it also prunes rows named since; commits stay `-` until the wave is on main, and the next
      `add` or `prune` fills them). Commit `docs/naming/phase3/no_name.tsv` together with the
      backlog row set to `landed`, in one commit.
-   - If the track still has unnamed targets and no open row (`idea` .. `reviewed`), add its next
+   - If the track still has unnamed targets and an open-row slot (none open; function track:
+     fewer than 3, in TUs disjoint from the open ones), add its next
      batch as an `idea` row in that same commit (`var-globals-c`, `var-members-rest-4`, ...): the
      note says what is left and what this wave left neutral on purpose.
    - Run `python tools/lanes/lanes.py land <lane>`. It rebuilds, regenerates the census, runs
