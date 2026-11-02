@@ -1,0 +1,2 @@
+Unk1F8000B8_800678A8.squared_distance_limit=base_squared_distance_limit
+Unk80101EC8Record.release_frame=command_82_frame

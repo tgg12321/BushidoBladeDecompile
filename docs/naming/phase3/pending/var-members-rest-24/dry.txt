@@ -1,0 +1,49 @@
+PASS Unk1F8000B8_800678A8.squared_distance_limit=base_squared_distance_limit, Unk80101EC8Record.release_frame=command_82_frame
+decl Unk1F8000B8_800678A8.squared_distance_limit -> base_squared_distance_limit  include/game.h:1132
+decl Unk80101EC8Record.release_frame -> command_82_frame  include/game.h:1672
+  round 0: 7 member error line(s)
+    src/main/17AFC.c:836 release_frame x1
+    src/main/17AFC.c:4860 release_frame x1
+    src/main/17AFC.c:4882 release_frame x1
+    src/main/51268.c:2788 squared_distance_limit x1
+    src/main/51268.c:2929 squared_distance_limit x1
+    src/main/9F9C.c:5785 release_frame x1
+    src/main/9F9C.c:5813 release_frame x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1132 +1132 @@
+-    u32 squared_distance_limit;
++    u32 base_squared_distance_limit;
+@@ -1672 +1672 @@
+-    u8 release_frame;
++    u8 command_82_frame;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -836 +836 @@
+-            fighter_record->move_frame != fighter_record->release_frame) {
++            fighter_record->move_frame != fighter_record->command_82_frame) {
+@@ -4860 +4860 @@
+-    fighter_record->release_frame = 0;
++    fighter_record->command_82_frame = 0;
+@@ -4882 +4882 @@
+-                fighter_record->release_frame = command_frame;
++                fighter_record->command_82_frame = command_frame;
+--- a/src/main/51268.c
++++ b/src/main/51268.c
+@@ -2788 +2788 @@
+-    u32 *p4 = &var_0->squared_distance_limit;
++    u32 *p4 = &var_0->base_squared_distance_limit;
+@@ -2929 +2929 @@
+-    var_1 = &var_0->squared_distance_limit;
++    var_1 = &var_0->base_squared_distance_limit;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -5785 +5785 @@
+-                fighter_record->move_frame == fighter_record->release_frame) {
++                fighter_record->move_frame == fighter_record->command_82_frame) {
+@@ -5813 +5813 @@
+-            fighter_record->move_frame == fighter_record->release_frame &&
++            fighter_record->move_frame == fighter_record->command_82_frame &&
+DRY RUN: 4 file(s) would change; nothing written
+OK: every member access renamed

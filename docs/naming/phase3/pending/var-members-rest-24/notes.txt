@@ -1,0 +1,17 @@
+var-members-rest-24 -- draft notes (research tmp/codex/var-members-rest-24-research.md, re-derived by the drafter in ln-naming-a at 5292c3a60; research treated as hints only)
+
+BASIS: 2 RENAME rows, both kept with the research names (0 name changes, 0 dropped). verdict / verifier_note empty (the reviewer decides). Every use re-read with git grep -n -w over src include (types checked: one declaration each, game.h:1132 and game.h:1672; all accesses through Unk1F8000B8_800678A8 * / Unk80101EC8Record * pointers). Freshness: both new names 0 hits over src include asm tools symbol_addrs.txt named_syms.txt docs, except docs/naming/phase3/backlog.tsv plan rows 118 / 154, which cite the proposals themselves.
+
+Comment-pass list (old-name mentions in comments / docs; verified at 5292c3a60)
+- Unk1F8000B8_800678A8.squared_distance_limit:
+  - include/game.h:1121 (shared-layout comment: "values cross the calls (squared_distance_limit,")
+  - src/main/51268.c:2781 (/* FAKE */ pointer-access comment list)
+  - src/main/51268.c:2899 (direct-member score comment: "var_1 / squared_distance_limit 101")
+- Unk80101EC8Record.release_frame:
+  - docs/engine/combat.md:113 (metadata-command destination list)
+- Old docs/naming/phase3/pending/var-members-rest-8,-9 and foundation/backlog.tsv / var-locals-28 hits are history and stay.
+- Post-apply survival grep: \bsquared_distance_limit\b and \brelease_frame\b over src include (the new names contain neither as a whole word) = 0. Clang-format: the longer names may push lines past 80 columns; run python tools/format.py on touched files (include/game.h, src/main/51268.c, 17AFC.c, 9F9C.c).
+
+Weakest rows: command_82_frame is a provenance name (meaning of command 0x82 unresolved); base_squared_distance_limit is generic about what the base scales.
+
+LAND claim list: topic:type:Unk1F8000B8_800678A8, topic:type:Unk80101EC8Record; topic:tu:main/51268, topic:tu:main/17AFC, topic:tu:main/9F9C (+ include/game.h; docs/engine/combat.md for the comment pass).
