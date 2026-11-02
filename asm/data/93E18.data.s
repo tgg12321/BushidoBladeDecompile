@@ -794,17 +794,17 @@ dlabel g_replay_playback_frame
     /* 93FD1 800A37D1 */ .byte 0x00
 enddlabel g_replay_playback_frame
 
-nonmatching D_800A37D2
+nonmatching g_fight_first_fighter_win_count
 
-dlabel D_800A37D2
+dlabel g_fight_first_fighter_win_count
     /* 93FD2 800A37D2 */ .byte 0x00
-enddlabel D_800A37D2
+enddlabel g_fight_first_fighter_win_count
 
-nonmatching D_800A37D3
+nonmatching g_fight_second_fighter_win_count
 
-dlabel D_800A37D3
+dlabel g_fight_second_fighter_win_count
     /* 93FD3 800A37D3 */ .byte 0x00
-enddlabel D_800A37D3
+enddlabel g_fight_second_fighter_win_count
 
 nonmatching g_eff_quad_cursor
 

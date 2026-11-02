@@ -1170,11 +1170,14 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
     if (flag != 0 || (g_pad_state.pressed & 0x400040) != 0) {
         motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock();
         if (g_fight_mode_selector == 4 || g_fight_mode_selector == 6) {
-            /* FAKE: indexes past D_800A37D2 into D_800A37D3 by player number
-             * (Q63, this byte pair only); no single array or struct gives the
-             * target's per-symbol access: score 16 */
-            (&D_800A37D2)[g_fight_followup_fighter_index] =
-                (&D_800A37D2)[g_fight_followup_fighter_index] + 1;
+            /* FAKE: indexes past g_fight_first_fighter_win_count into
+             * g_fight_second_fighter_win_count by player number (Q63, this byte
+             * pair only); no single array or struct gives the target's
+             * per-symbol access: score 16 */
+            (&g_fight_first_fighter_win_count)[g_fight_followup_fighter_index] =
+                (&g_fight_first_fighter_win_count)
+                    [g_fight_followup_fighter_index] +
+                1;
         }
         motion_InitStream(0, g_motion_common_sections.motion_bitstream);
         motion_InitStream(1, g_motion_fighter_sections[0].motion_bitstream);

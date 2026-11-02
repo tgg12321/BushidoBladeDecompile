@@ -1439,15 +1439,17 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
         u8 *p;
         if ((t = D_80101EC8[0].is_defeated) == 0 ||
             D_80101EC8[1].is_defeated == 0) {
-            /* FAKE: second handle to D_800A37D2 (pointer-alias-fake-exception,
-             * Q63): the target sets the pair's base in its own register before
-             * the index; indexing &D_800A37D2 at both sites: score 17; each
+            /* FAKE: second handle to g_fight_first_fighter_win_count
+             * (pointer-alias-fake-exception, Q63): the target sets the pair's
+             * base in its own register before the index; indexing
+             * &g_fight_first_fighter_win_count at both sites: score 17; each
              * byte by its own symbol: score 27. */
-            p = &D_800A37D2;
-            /* FAKE: indexes past D_800A37D2 into D_800A37D3 (owner Q63, this
-             * byte pair only): the target also reaches each byte by its own
-             * symbol, which no single array or struct gives; each byte by its
-             * own symbol here: score 13. */
+            p = &g_fight_first_fighter_win_count;
+            /* FAKE: indexes past g_fight_first_fighter_win_count into
+             * g_fight_second_fighter_win_count (owner Q63, this byte pair
+             * only): the target also reaches each byte by its own symbol, which
+             * no single array or struct gives; each byte by its own symbol
+             * here: score 13. */
             p[t != 0]++;
         }
     }
@@ -1462,11 +1464,12 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
         u8 *p;
         if ((t = D_80101EC8[0].is_defeated) == 0 ||
             D_80101EC8[1].is_defeated == 0) {
-            /* FAKE: second handle, as above (owner Q63); indexing &D_800A37D2
-             * here: score 8. */
-            p = &D_800A37D2;
-            /* FAKE: indexes past D_800A37D2 into D_800A37D3, as above (owner
-             * Q63); each byte by its own symbol here: score 14. */
+            /* FAKE: second handle, as above (owner Q63); indexing
+             * &g_fight_first_fighter_win_count here: score 8. */
+            p = &g_fight_first_fighter_win_count;
+            /* FAKE: indexes past g_fight_first_fighter_win_count into
+             * g_fight_second_fighter_win_count, as above (owner Q63); each byte
+             * by its own symbol here: score 14. */
             p[t != 0]++;
         }
     } break;
@@ -1475,11 +1478,11 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
     }
     g_main_loop_handler_index = 4;
 end:
-    if (D_800A37D2 >= 100) {
-        D_800A37D2 = 99;
+    if (g_fight_first_fighter_win_count >= 100) {
+        g_fight_first_fighter_win_count = 99;
     }
-    if (D_800A37D3 >= 100) {
-        D_800A37D3 = 99;
+    if (g_fight_second_fighter_win_count >= 100) {
+        g_fight_second_fighter_win_count = 99;
     }
 }
 
@@ -1549,7 +1552,8 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                g_fight_mode_selector == 4) {
         g_prim_buf_cursor +=
             gpu_DrawTwoDigitCounterWithOptionalSecondSide(
-                D_800A37D2, D_800A37D3, (s32)g_prim_buf_cursor, 1) /
+                g_fight_first_fighter_win_count,
+                g_fight_second_fighter_win_count, (s32)g_prim_buf_cursor, 1) /
             4;
     } else if (g_fight_mode_selector == 5) {
         /* temp holds two values (Ruling 11, ordinary-c-judge-decidable): the
@@ -1727,8 +1731,12 @@ void fight_ResetGraphAndReloadResourcesOnCachedKeyChange(void) {
     gpu_ResetGraphMode1();
 
     if (g_fight_stage_index != g_fight_loaded_stage_index ||
-        D_8008E5A8[(s8)g_fight_config.unk_4[0]] != D_800A30FC ||
-        D_8008E5A8[(s8)g_fight_config.unk_4[1]] != D_800A30FD) {
+        g_fight_character_vab_and_ground_quad_classes[(s8)g_fight_config
+                                                          .unk_4[0]] !=
+            D_800A30FC ||
+        g_fight_character_vab_and_ground_quad_classes[(s8)g_fight_config
+                                                          .unk_4[1]] !=
+            D_800A30FD) {
         motion_InvalidateMarkedNdataPackAndClearSlot1Id();
         resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
             g_fight_stage_index, load_addr);
@@ -1737,12 +1745,18 @@ void fight_ResetGraphAndReloadResourcesOnCachedKeyChange(void) {
 
         copy_size = snd_ReloadListedVabsFromFileAndInstallBillboards(
             load_addr, g_fight_stage_index,
-            D_8008E5A8[(s8)g_fight_config.unk_4[0]],
-            D_8008E5A8[(s8)g_fight_config.unk_4[1]]);
+            g_fight_character_vab_and_ground_quad_classes[(s8)g_fight_config
+                                                              .unk_4[0]],
+            g_fight_character_vab_and_ground_quad_classes[(s8)g_fight_config
+                                                              .unk_4[1]]);
 
         g_fight_loaded_stage_index = g_fight_stage_index;
-        D_800A30FC = D_8008E5A8[(s8)g_fight_config.unk_4[0]];
-        D_800A30FD = D_8008E5A8[(s8)g_fight_config.unk_4[1]];
+        D_800A30FC =
+            g_fight_character_vab_and_ground_quad_classes[(s8)g_fight_config
+                                                              .unk_4[0]];
+        D_800A30FD =
+            g_fight_character_vab_and_ground_quad_classes[(s8)g_fight_config
+                                                              .unk_4[1]];
 
         if (copy_size >= 0x2519) {
             sys_Panic();

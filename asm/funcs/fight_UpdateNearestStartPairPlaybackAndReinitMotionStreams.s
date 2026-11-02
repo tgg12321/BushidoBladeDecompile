@@ -161,14 +161,14 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
   .L8003D1DC:
     /* 2D9DC 8003D1DC 0A80033C */  lui        $v1, %hi(g_fight_followup_fighter_index)
     /* 2D9E0 8003D1E0 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
-    /* 2D9E4 8003D1E4 0A80013C */  lui        $at, %hi(D_800A37D2)
+    /* 2D9E4 8003D1E4 0A80013C */  lui        $at, %hi(g_fight_first_fighter_win_count)
     /* 2D9E8 8003D1E8 21082300 */  addu       $at, $at, $v1
-    /* 2D9EC 8003D1EC D2372290 */  lbu        $v0, %lo(D_800A37D2)($at)
+    /* 2D9EC 8003D1EC D2372290 */  lbu        $v0, %lo(g_fight_first_fighter_win_count)($at)
     /* 2D9F0 8003D1F0 00000000 */  nop
     /* 2D9F4 8003D1F4 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2D9F8 8003D1F8 0A80013C */  lui        $at, %hi(D_800A37D2)
+    /* 2D9F8 8003D1F8 0A80013C */  lui        $at, %hi(g_fight_first_fighter_win_count)
     /* 2D9FC 8003D1FC 21082300 */  addu       $at, $at, $v1
-    /* 2DA00 8003D200 D23722A0 */  sb         $v0, %lo(D_800A37D2)($at)
+    /* 2DA00 8003D200 D23722A0 */  sb         $v0, %lo(g_fight_first_fighter_win_count)($at)
   .L8003D204:
     /* 2DA04 8003D204 1080053C */  lui        $a1, %hi(g_motion_common_sections + 0x10)
     /* 2DA08 8003D208 7027A58C */  lw         $a1, %lo(g_motion_common_sections + 0x10)($a1)

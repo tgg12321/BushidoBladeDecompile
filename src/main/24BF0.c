@@ -29,8 +29,8 @@ void ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests(void) {
     D_800A376B = 0;
     g_fight_menu_restart_count = 0;
     D_800A38D4 = 2;
-    D_800A37D3 = 0;
-    D_800A37D2 = 0;
+    g_fight_second_fighter_win_count = 0;
+    g_fight_first_fighter_win_count = 0;
 }
 
 void ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests(void);

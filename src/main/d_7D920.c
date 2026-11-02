@@ -471,8 +471,9 @@ u16 D_8008E4D0[27][4] = {
 /* [g_fight_config.unk_4[i]] (9F9C.c: D_800A30FC / D_800A30FD,
  * snd_ReloadListedVabsFromFileAndInstallBillboards; 17AFC.c); size from the
  * gap. */
-u8 D_8008E5A8[36] = {0, 0, 0, 1, 3, 1, 2, 2, 0, 3, 2, 2, 2, 4, 2, 0, 0, 0,
-                     2, 2, 2, 1, 0, 3, 1, 0, 0, 0, 2, 0, 2, 0, 2, 0, 0, 0};
+u8 g_fight_character_vab_and_ground_quad_classes[36] = {
+    0, 0, 0, 1, 3, 1, 2, 2, 0, 3, 2, 2, 2, 4, 2, 0, 0, 0,
+    2, 2, 2, 1, 0, 3, 1, 0, 0, 0, 2, 0, 2, 0, 2, 0, 0, 0};
 
 /* [character_data_index][weapon_id] of D_80101EC8 */
 u8 g_resource_default_pair_selections[27][8] = {

@@ -15,18 +15,18 @@ glabel fight_ResetGraphAndReloadResourcesOnCachedKeyChange
     /* DFC4 8001D7C4 00085236 */   ori       $s2, $s2, (0x80190800 & 0xFFFF)
     /* DFC8 8001D7C8 1080023C */  lui        $v0, %hi(g_fight_config + 0x4)
     /* DFCC 8001D7CC 7C274280 */  lb         $v0, %lo(g_fight_config + 0x4)($v0)
-    /* DFD0 8001D7D0 0980013C */  lui        $at, %hi(D_8008E5A8)
+    /* DFD0 8001D7D0 0980013C */  lui        $at, %hi(g_fight_character_vab_and_ground_quad_classes)
     /* DFD4 8001D7D4 21082200 */  addu       $at, $at, $v0
-    /* DFD8 8001D7D8 A8E52390 */  lbu        $v1, %lo(D_8008E5A8)($at)
+    /* DFD8 8001D7D8 A8E52390 */  lbu        $v1, %lo(g_fight_character_vab_and_ground_quad_classes)($at)
     /* DFDC 8001D7DC 30008283 */  lb         $v0, %gp_rel(D_800A30FC)($gp)
     /* DFE0 8001D7E0 00000000 */  nop
     /* DFE4 8001D7E4 0A006214 */  bne        $v1, $v0, .L8001D810
     /* DFE8 8001D7E8 00000000 */   nop
     /* DFEC 8001D7EC 1080023C */  lui        $v0, %hi(g_fight_config + 0x5)
     /* DFF0 8001D7F0 7D274280 */  lb         $v0, %lo(g_fight_config + 0x5)($v0)
-    /* DFF4 8001D7F4 0980013C */  lui        $at, %hi(D_8008E5A8)
+    /* DFF4 8001D7F4 0980013C */  lui        $at, %hi(g_fight_character_vab_and_ground_quad_classes)
     /* DFF8 8001D7F8 21082200 */  addu       $at, $at, $v0
-    /* DFFC 8001D7FC A8E52390 */  lbu        $v1, %lo(D_8008E5A8)($at)
+    /* DFFC 8001D7FC A8E52390 */  lbu        $v1, %lo(g_fight_character_vab_and_ground_quad_classes)($at)
     /* E000 8001D800 31008283 */  lb         $v0, %gp_rel(D_800A30FD)($gp)
     /* E004 8001D804 00000000 */  nop
     /* E008 8001D808 37006210 */  beq        $v1, $v0, .L8001D8E8
@@ -49,12 +49,12 @@ glabel fight_ResetGraphAndReloadResourcesOnCachedKeyChange
     /* E048 8001D848 00000282 */  lb         $v0, 0x0($s0)
     /* E04C 8001D84C 1080033C */  lui        $v1, %hi(g_fight_config + 0x5)
     /* E050 8001D850 7D276380 */  lb         $v1, %lo(g_fight_config + 0x5)($v1)
-    /* E054 8001D854 0980013C */  lui        $at, %hi(D_8008E5A8)
+    /* E054 8001D854 0980013C */  lui        $at, %hi(g_fight_character_vab_and_ground_quad_classes)
     /* E058 8001D858 21082200 */  addu       $at, $at, $v0
-    /* E05C 8001D85C A8E52690 */  lbu        $a2, %lo(D_8008E5A8)($at)
-    /* E060 8001D860 0980013C */  lui        $at, %hi(D_8008E5A8)
+    /* E05C 8001D85C A8E52690 */  lbu        $a2, %lo(g_fight_character_vab_and_ground_quad_classes)($at)
+    /* E060 8001D860 0980013C */  lui        $at, %hi(g_fight_character_vab_and_ground_quad_classes)
     /* E064 8001D864 21082300 */  addu       $at, $at, $v1
-    /* E068 8001D868 A8E52790 */  lbu        $a3, %lo(D_8008E5A8)($at)
+    /* E068 8001D868 A8E52790 */  lbu        $a3, %lo(g_fight_character_vab_and_ground_quad_classes)($at)
     /* E06C 8001D86C A36E010C */  jal        snd_ReloadListedVabsFromFileAndInstallBillboards
     /* E070 8001D870 21204002 */   addu      $a0, $s2, $zero
     /* E074 8001D874 0A80033C */  lui        $v1, %hi(g_fight_stage_index)
@@ -62,16 +62,16 @@ glabel fight_ResetGraphAndReloadResourcesOnCachedKeyChange
     /* E07C 8001D87C 00000482 */  lb         $a0, 0x0($s0)
     /* E080 8001D880 0A80013C */  lui        $at, %hi(g_fight_loaded_stage_index)
     /* E084 8001D884 0E3923A0 */  sb         $v1, %lo(g_fight_loaded_stage_index)($at)
-    /* E088 8001D888 0980013C */  lui        $at, %hi(D_8008E5A8)
+    /* E088 8001D888 0980013C */  lui        $at, %hi(g_fight_character_vab_and_ground_quad_classes)
     /* E08C 8001D88C 21082400 */  addu       $at, $at, $a0
-    /* E090 8001D890 A8E52390 */  lbu        $v1, %lo(D_8008E5A8)($at)
+    /* E090 8001D890 A8E52390 */  lbu        $v1, %lo(g_fight_character_vab_and_ground_quad_classes)($at)
     /* E094 8001D894 1080043C */  lui        $a0, %hi(g_fight_config + 0x5)
     /* E098 8001D898 7D278480 */  lb         $a0, %lo(g_fight_config + 0x5)($a0)
     /* E09C 8001D89C 21884000 */  addu       $s1, $v0, $zero
     /* E0A0 8001D8A0 300083A3 */  sb         $v1, %gp_rel(D_800A30FC)($gp)
-    /* E0A4 8001D8A4 0980013C */  lui        $at, %hi(D_8008E5A8)
+    /* E0A4 8001D8A4 0980013C */  lui        $at, %hi(g_fight_character_vab_and_ground_quad_classes)
     /* E0A8 8001D8A8 21082400 */  addu       $at, $at, $a0
-    /* E0AC 8001D8AC A8E52390 */  lbu        $v1, %lo(D_8008E5A8)($at)
+    /* E0AC 8001D8AC A8E52390 */  lbu        $v1, %lo(g_fight_character_vab_and_ground_quad_classes)($at)
     /* E0B0 8001D8B0 1925222A */  slti       $v0, $s1, 0x2519
     /* E0B4 8001D8B4 310083A3 */  sb         $v1, %gp_rel(D_800A30FD)($gp)
     /* E0B8 8001D8B8 03004014 */  bnez       $v0, .L8001D8C8

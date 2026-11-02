@@ -5210,7 +5210,8 @@ void fighter_DispatchFrameEvent(
                 eff_StartYawedQuadSlotCommand(
                     pos, fighter_record->ground_probe_0_yaw,
                     g_eff_yawed_quad_tex_selector_command_bits
-                        [D_8008E5A8[fighter_record->character_roster_index]],
+                        [g_fight_character_vab_and_ground_quad_classes
+                             [fighter_record->character_roster_index]],
                     fighter_record->index);
                 if ((0x60 >> fighter_record->collision_hit_tag) & 1) {
                     fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -5239,7 +5240,8 @@ void fighter_DispatchFrameEvent(
                 eff_StartYawedQuadSlotCommand(
                     pos, fighter_record->ground_probe_1_yaw,
                     g_eff_yawed_quad_tex_selector_command_bits
-                        [D_8008E5A8[fighter_record->character_roster_index]],
+                        [g_fight_character_vab_and_ground_quad_classes
+                             [fighter_record->character_roster_index]],
                     fighter_record->index);
                 if ((0x60 >> fighter_record->collision_hit_tag) & 1) {
                     fight_RecordReplayEventAndDispatchSoundOrEffect(

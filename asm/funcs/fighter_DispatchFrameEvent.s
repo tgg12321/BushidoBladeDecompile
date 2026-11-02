@@ -142,9 +142,9 @@ glabel fighter_DispatchFrameEvent
     /* 23660 80032E60 1800A2AF */  sw         $v0, 0x18($sp)
     /* 23664 80032E64 0C000286 */  lh         $v0, 0xC($s0)
     /* 23668 80032E68 BA010586 */  lh         $a1, 0x1BA($s0)
-    /* 2366C 80032E6C 0980013C */  lui        $at, %hi(D_8008E5A8)
+    /* 2366C 80032E6C 0980013C */  lui        $at, %hi(g_fight_character_vab_and_ground_quad_classes)
     /* 23670 80032E70 21082200 */  addu       $at, $at, $v0
-    /* 23674 80032E74 A8E52290 */  lbu        $v0, %lo(D_8008E5A8)($at)
+    /* 23674 80032E74 A8E52290 */  lbu        $v0, %lo(g_fight_character_vab_and_ground_quad_classes)($at)
     /* 23678 80032E78 04000786 */  lh         $a3, 0x4($s0)
     /* 2367C 80032E7C 80100200 */  sll        $v0, $v0, 2
     /* 23680 80032E80 0980013C */  lui        $at, %hi(g_eff_yawed_quad_tex_selector_command_bits)
@@ -211,9 +211,9 @@ glabel fighter_DispatchFrameEvent
     /* 2376C 80032F6C 1800A2AF */  sw         $v0, 0x18($sp)
     /* 23770 80032F70 0C000286 */  lh         $v0, 0xC($s0)
     /* 23774 80032F74 C2010586 */  lh         $a1, 0x1C2($s0)
-    /* 23778 80032F78 0980013C */  lui        $at, %hi(D_8008E5A8)
+    /* 23778 80032F78 0980013C */  lui        $at, %hi(g_fight_character_vab_and_ground_quad_classes)
     /* 2377C 80032F7C 21082200 */  addu       $at, $at, $v0
-    /* 23780 80032F80 A8E52290 */  lbu        $v0, %lo(D_8008E5A8)($at)
+    /* 23780 80032F80 A8E52290 */  lbu        $v0, %lo(g_fight_character_vab_and_ground_quad_classes)($at)
     /* 23784 80032F84 04000786 */  lh         $a3, 0x4($s0)
     /* 23788 80032F88 80100200 */  sll        $v0, $v0, 2
     /* 2378C 80032F8C 0980013C */  lui        $at, %hi(g_eff_yawed_quad_tex_selector_command_bits)

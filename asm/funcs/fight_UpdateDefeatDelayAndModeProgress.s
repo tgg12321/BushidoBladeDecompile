@@ -236,8 +236,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D43C 8001CC3C 09004014 */  bnez       $v0, .L8001CC64
     /* D440 8001CC40 00000000 */   nop
   .L8001CC44:
-    /* D444 8001CC44 0A80023C */  lui        $v0, %hi(D_800A37D2)
-    /* D448 8001CC48 D2374224 */  addiu      $v0, $v0, %lo(D_800A37D2)
+    /* D444 8001CC44 0A80023C */  lui        $v0, %hi(g_fight_first_fighter_win_count)
+    /* D448 8001CC48 D2374224 */  addiu      $v0, $v0, %lo(g_fight_first_fighter_win_count)
     /* D44C 8001CC4C 2B180300 */  sltu       $v1, $zero, $v1
     /* D450 8001CC50 21186200 */  addu       $v1, $v1, $v0
     /* D454 8001CC54 00006290 */  lbu        $v0, 0x0($v1)
@@ -279,8 +279,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D4DC 8001CCDC 0A004014 */  bnez       $v0, .L8001CD08
     /* D4E0 8001CCE0 04000224 */   addiu     $v0, $zero, 0x4
   .L8001CCE4:
-    /* D4E4 8001CCE4 0A80023C */  lui        $v0, %hi(D_800A37D2)
-    /* D4E8 8001CCE8 D2374224 */  addiu      $v0, $v0, %lo(D_800A37D2)
+    /* D4E4 8001CCE4 0A80023C */  lui        $v0, %hi(g_fight_first_fighter_win_count)
+    /* D4E8 8001CCE8 D2374224 */  addiu      $v0, $v0, %lo(g_fight_first_fighter_win_count)
     /* D4EC 8001CCEC 2B180300 */  sltu       $v1, $zero, $v1
     /* D4F0 8001CCF0 21186200 */  addu       $v1, $v1, $v0
     /* D4F4 8001CCF4 00006290 */  lbu        $v0, 0x0($v1)
@@ -293,23 +293,23 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D508 8001CD08 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* D50C 8001CD0C 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
   jlabel .L8001CD10
-    /* D510 8001CD10 0A80023C */  lui        $v0, %hi(D_800A37D2)
-    /* D514 8001CD14 D2374290 */  lbu        $v0, %lo(D_800A37D2)($v0)
+    /* D510 8001CD10 0A80023C */  lui        $v0, %hi(g_fight_first_fighter_win_count)
+    /* D514 8001CD14 D2374290 */  lbu        $v0, %lo(g_fight_first_fighter_win_count)($v0)
     /* D518 8001CD18 00000000 */  nop
     /* D51C 8001CD1C 6400422C */  sltiu      $v0, $v0, 0x64
     /* D520 8001CD20 03004014 */  bnez       $v0, .L8001CD30
     /* D524 8001CD24 63000224 */   addiu     $v0, $zero, 0x63
-    /* D528 8001CD28 0A80013C */  lui        $at, %hi(D_800A37D2)
-    /* D52C 8001CD2C D23722A0 */  sb         $v0, %lo(D_800A37D2)($at)
+    /* D528 8001CD28 0A80013C */  lui        $at, %hi(g_fight_first_fighter_win_count)
+    /* D52C 8001CD2C D23722A0 */  sb         $v0, %lo(g_fight_first_fighter_win_count)($at)
   .L8001CD30:
-    /* D530 8001CD30 0A80023C */  lui        $v0, %hi(D_800A37D3)
-    /* D534 8001CD34 D3374290 */  lbu        $v0, %lo(D_800A37D3)($v0)
+    /* D530 8001CD30 0A80023C */  lui        $v0, %hi(g_fight_second_fighter_win_count)
+    /* D534 8001CD34 D3374290 */  lbu        $v0, %lo(g_fight_second_fighter_win_count)($v0)
     /* D538 8001CD38 00000000 */  nop
     /* D53C 8001CD3C 6400422C */  sltiu      $v0, $v0, 0x64
     /* D540 8001CD40 03004014 */  bnez       $v0, .L8001CD50
     /* D544 8001CD44 63000224 */   addiu     $v0, $zero, 0x63
-    /* D548 8001CD48 0A80013C */  lui        $at, %hi(D_800A37D3)
-    /* D54C 8001CD4C D33722A0 */  sb         $v0, %lo(D_800A37D3)($at)
+    /* D548 8001CD48 0A80013C */  lui        $at, %hi(g_fight_second_fighter_win_count)
+    /* D54C 8001CD4C D33722A0 */  sb         $v0, %lo(g_fight_second_fighter_win_count)($at)
   .L8001CD50:
     /* D550 8001CD50 1800BF8F */  lw         $ra, 0x18($sp)
     /* D554 8001CD54 1400B18F */  lw         $s1, 0x14($sp)

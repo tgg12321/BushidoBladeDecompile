@@ -70,10 +70,10 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D75C 8001CF5C 0B006214 */  bne        $v1, $v0, .L8001CF8C
     /* D760 8001CF60 05000224 */   addiu     $v0, $zero, 0x5
   .L8001CF64:
-    /* D764 8001CF64 0A80043C */  lui        $a0, %hi(D_800A37D2)
-    /* D768 8001CF68 D2378490 */  lbu        $a0, %lo(D_800A37D2)($a0)
-    /* D76C 8001CF6C 0A80053C */  lui        $a1, %hi(D_800A37D3)
-    /* D770 8001CF70 D337A590 */  lbu        $a1, %lo(D_800A37D3)($a1)
+    /* D764 8001CF64 0A80043C */  lui        $a0, %hi(g_fight_first_fighter_win_count)
+    /* D768 8001CF68 D2378490 */  lbu        $a0, %lo(g_fight_first_fighter_win_count)($a0)
+    /* D76C 8001CF6C 0A80053C */  lui        $a1, %hi(g_fight_second_fighter_win_count)
+    /* D770 8001CF70 D337A590 */  lbu        $a1, %lo(g_fight_second_fighter_win_count)($a1)
     /* D774 8001CF74 0A80063C */  lui        $a2, %hi(g_prim_buf_cursor)
     /* D778 8001CF78 B438C68C */  lw         $a2, %lo(g_prim_buf_cursor)($a2)
     /* D77C 8001CF7C 2678010C */  jal        gpu_DrawTwoDigitCounterWithOptionalSecondSide

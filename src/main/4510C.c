@@ -281,10 +281,10 @@ void fighter_InitCpuControl(
     s32 bit;
     s32 lo, hi1, hi2;
     /* temp holds six values in turn, each read before the next write: case 2's
-     * level D_800A37D2 / 5; case 2's practice level D_800A37D2 / 3 (0 once it
-     * reaches 3); case 3's row in D_8009A9B4; a move entry's byte-assembled
-     * character mask; the entry's stat bytes e[1] and e[2] (Ruling 11,
-     * ordinary-c-judge-decidable). */
+     * level g_fight_first_fighter_win_count / 5; case 2's practice level
+     * g_fight_first_fighter_win_count / 3 (0 once it reaches 3); case 3's row
+     * in D_8009A9B4; a move entry's byte-assembled character mask; the entry's
+     * stat bytes e[1] and e[2] (Ruling 11, ordinary-c-judge-decidable). */
     s32 temp;
     u32 var_15;
     s32 lo_val, hi1_val, hi2_val;
@@ -314,18 +314,18 @@ void fighter_InitCpuControl(
         break;
     case 2:
         if (D_800A389A) {
-            temp = D_800A37D2 / 5;
+            temp = g_fight_first_fighter_win_count / 5;
             p->cpu_level = temp * 0x180 + 0x280;
             if (p->cpu_level > 0x1000) {
                 p->cpu_level = 0x1000;
             }
-            if (D_800A37D2 % 5 == 0) {
+            if (g_fight_first_fighter_win_count % 5 == 0) {
                 fighter_ClearCpuTally(p->index);
             }
         } else {
-            temp = D_800A37D2 / 3;
+            temp = g_fight_first_fighter_win_count / 3;
             if (temp >= 3) {
-                D_800A37D2 = 0;
+                g_fight_first_fighter_win_count = 0;
                 temp = 0;
             }
             p->cpu_profile = 0x19;

@@ -40,10 +40,10 @@ glabel ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests
     /* 24C88 80034488 0C3820AC */  sw         $zero, %lo(g_fight_menu_restart_count)($at)
     /* 24C8C 8003448C 0A80013C */  lui        $at, %hi(D_800A38D4)
     /* 24C90 80034490 D43822A0 */  sb         $v0, %lo(D_800A38D4)($at)
-    /* 24C94 80034494 0A80013C */  lui        $at, %hi(D_800A37D3)
-    /* 24C98 80034498 D33720A0 */  sb         $zero, %lo(D_800A37D3)($at)
-    /* 24C9C 8003449C 0A80013C */  lui        $at, %hi(D_800A37D2)
-    /* 24CA0 800344A0 D23720A0 */  sb         $zero, %lo(D_800A37D2)($at)
+    /* 24C94 80034494 0A80013C */  lui        $at, %hi(g_fight_second_fighter_win_count)
+    /* 24C98 80034498 D33720A0 */  sb         $zero, %lo(g_fight_second_fighter_win_count)($at)
+    /* 24C9C 8003449C 0A80013C */  lui        $at, %hi(g_fight_first_fighter_win_count)
+    /* 24CA0 800344A0 D23720A0 */  sb         $zero, %lo(g_fight_first_fighter_win_count)($at)
     /* 24CA4 800344A4 1000BF8F */  lw         $ra, 0x10($sp)
     /* 24CA8 800344A8 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 24CAC 800344AC 0800E003 */  jr         $ra

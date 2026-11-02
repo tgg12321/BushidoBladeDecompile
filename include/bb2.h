@@ -229,7 +229,7 @@ extern u16 g_fighter_lost_bone_group_step_scales[28];
 extern u16 D_8008E3F8[27][4];
 /* [character_data_index][i] -> Unk80101EC8Record.unk_27E[i] */
 extern u16 D_8008E4D0[27][4];
-extern u8 D_8008E5A8[];
+extern u8 g_fight_character_vab_and_ground_quad_classes[];
 /* [character_data_index][weapon_id] of D_80101EC8 */
 extern u8 g_resource_default_pair_selections[][8];
 /* [character_data_index][weapon_id] of D_80101EC8 */
@@ -406,8 +406,8 @@ extern s32 g_handler_frame_counter;
 extern u8 D_800A37BC;
 extern s32 g_fight_stage_list_step_timer;
 extern u8 g_fight_skip_first_defeats_left_expiry;
-extern u8 D_800A37D2;
-extern u8 D_800A37D3;
+extern u8 g_fight_first_fighter_win_count;
+extern u8 g_fight_second_fighter_win_count;
 extern u8 D_800A37E0;
 extern u8 D_800A37E1;
 extern s16 D_800A37E8;

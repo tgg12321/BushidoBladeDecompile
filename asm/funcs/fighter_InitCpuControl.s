@@ -104,8 +104,8 @@ glabel fighter_InitCpuControl
     /* 45ABC 800552BC 00000000 */  nop
     /* 45AC0 800552C0 25004010 */  beqz       $v0, .L80055358
     /* 45AC4 800552C4 00000000 */   nop
-    /* 45AC8 800552C8 0A80023C */  lui        $v0, %hi(D_800A37D2)
-    /* 45ACC 800552CC D2374290 */  lbu        $v0, %lo(D_800A37D2)($v0)
+    /* 45AC8 800552C8 0A80023C */  lui        $v0, %hi(g_fight_first_fighter_win_count)
+    /* 45ACC 800552CC D2374290 */  lbu        $v0, %lo(g_fight_first_fighter_win_count)($v0)
     /* 45AD0 800552D0 CCCC043C */  lui        $a0, (0xCCCCCCCD >> 16)
     /* 45AD4 800552D4 CDCC8434 */  ori        $a0, $a0, (0xCCCCCCCD & 0xFFFF)
     /* 45AD8 800552D8 19004400 */  multu      $v0, $a0
@@ -124,8 +124,8 @@ glabel fighter_InitCpuControl
     /* 45B0C 8005530C 00100224 */   addiu     $v0, $zero, 0x1000
     /* 45B10 80055310 380402A6 */  sh         $v0, 0x438($s0)
   .L80055314:
-    /* 45B14 80055314 0A80033C */  lui        $v1, %hi(D_800A37D2)
-    /* 45B18 80055318 D2376390 */  lbu        $v1, %lo(D_800A37D2)($v1)
+    /* 45B14 80055314 0A80033C */  lui        $v1, %hi(g_fight_first_fighter_win_count)
+    /* 45B18 80055318 D2376390 */  lbu        $v1, %lo(g_fight_first_fighter_win_count)($v1)
     /* 45B1C 8005531C 00000000 */  nop
     /* 45B20 80055320 19006400 */  multu      $v1, $a0
     /* 45B24 80055324 10A80000 */  mfhi       $s5
@@ -142,8 +142,8 @@ glabel fighter_InitCpuControl
     /* 45B50 80055350 4C550108 */  j          .L80055530
     /* 45B54 80055354 00000000 */   nop
   .L80055358:
-    /* 45B58 80055358 0A80033C */  lui        $v1, %hi(D_800A37D2)
-    /* 45B5C 8005535C D2376390 */  lbu        $v1, %lo(D_800A37D2)($v1)
+    /* 45B58 80055358 0A80033C */  lui        $v1, %hi(g_fight_first_fighter_win_count)
+    /* 45B5C 8005535C D2376390 */  lbu        $v1, %lo(g_fight_first_fighter_win_count)($v1)
     /* 45B60 80055360 AAAA023C */  lui        $v0, (0xAAAAAAAB >> 16)
     /* 45B64 80055364 ABAA4234 */  ori        $v0, $v0, (0xAAAAAAAB & 0xFFFF)
     /* 45B68 80055368 19006200 */  multu      $v1, $v0
@@ -153,8 +153,8 @@ glabel fighter_InitCpuControl
     /* 45B78 80055378 0300C228 */  slti       $v0, $a2, 0x3
     /* 45B7C 8005537C 04004014 */  bnez       $v0, .L80055390
     /* 45B80 80055380 19000224 */   addiu     $v0, $zero, 0x19
-    /* 45B84 80055384 0A80013C */  lui        $at, %hi(D_800A37D2)
-    /* 45B88 80055388 D23720A0 */  sb         $zero, %lo(D_800A37D2)($at)
+    /* 45B84 80055384 0A80013C */  lui        $at, %hi(g_fight_first_fighter_win_count)
+    /* 45B88 80055388 D23720A0 */  sb         $zero, %lo(g_fight_first_fighter_win_count)($at)
     /* 45B8C 8005538C 21300000 */  addu       $a2, $zero, $zero
   .L80055390:
     /* 45B90 80055390 430402A2 */  sb         $v0, 0x443($s0)

@@ -290,8 +290,8 @@ g_fight_opponent_order_cursor = 0x800A3783;  // data-wave 2026-10-28: was D_800A
 g_fight_operand_tint_green = 0x800A37B5;  // data-wave 2026-10-28: was D_800A37B5
 g_fight_operand_tint_blue = 0x800A37B6;  // data-wave 2026-10-28: was D_800A37B6
 g_fight_skip_first_defeats_left_expiry = 0x800A37C6;  // data-wave 2026-10-28: was D_800A37C6
-D_800A37D2 = 0x800A37D2;
-D_800A37D3 = 0x800A37D3;
+g_fight_first_fighter_win_count = 0x800A37D2;  // data-wave 2026-11-01: was D_800A37D2
+g_fight_second_fighter_win_count = 0x800A37D3;  // data-wave 2026-11-01: was D_800A37D3
 g_comb_handshake_retry_count = 0x800A37D8;  // data-wave 2026-10-28: was D_800A37D8
 D_800A37E1 = 0x800A37E1;
 D_800A37EA = 0x800A37EA;
@@ -855,7 +855,7 @@ g_entry_menu_handlers = 0x8009BC1C; /* 7-entry handler table (menu_UpdateEntryGr
 D_8009BF08 = 0x8009BF08; /* 5 VRAM heights indexed by GPU type (paired with D_8009BEF4); g_gpu_ctx.height = D[type] (sys.c:169) */  /* data-wave 2026-10-09: was g_gpu_mode_heights_table */
 _gpucb = 0x8009BE2C; /* the GPU callback table: rcsid + 15 entry points (GpuDevTable, sys.c:12-29), reached via D_8009BE6C; ResetGraph prints its address as 'jtb=%08x' (sys.c:160) */  /* data-wave 2026-10-09: was g_gpu_init_msg_buf */
 g_fight_stage_index = 0x800A36A4; /* selector = g_fight_config.pending_stage_index or a per-mode constant; indexes tables (e.g. fight_GetStartPositionPairTable's block) */  /* data-wave 2026-10-08: was g_stage_id_current */
-D_8008E5A8 = 0x8008E5A8; /* u8 lookup, values 0..4, indexed by g_fight_config.unk_4[0] / [1] (D_8010277C) or fighter_record->character_roster_index; fight_ResetGraphAndReloadResourcesOnCachedKeyChange passes the values to snd_ReloadListedVabsFromFileAndInstallBillboards, fighter_DispatchFrameEvent indexes g_eff_yawed_quad_tex_selector_command_bits with one */  /* data-wave 2026-10-08: was g_char_class_table */
+g_fight_character_vab_and_ground_quad_classes = 0x8008E5A8; /* u8 lookup, values 0..4, indexed by g_fight_config.unk_4[0] / [1] (D_8010277C) or fighter_record->character_roster_index; fight_ResetGraphAndReloadResourcesOnCachedKeyChange passes the values to snd_ReloadListedVabsFromFileAndInstallBillboards, fighter_DispatchFrameEvent indexes g_eff_yawed_quad_tex_selector_command_bits with one */  /* data-wave 2026-10-08: was g_char_class_table */
 g_fight_tracked_fighter_index = 0x800A36F6; /* fighter index, written 0 or (g_comb_local_side != 0) (24BF0.c:19, :46, 25788.c:115); read as D_80101EC8[it] and compared with camera_StartTurnEasingOnLargeHeadingChange's fighter_index (9F9C.c:887) */  /* data-wave 2026-10-08: was g_gnd_init_arg_saved */
 g_fight_config_id_data_rows = 0x8008D538; /* 36-byte u8 table, values 0..0x1A: fight_BuildOpponentOrder clears bit (1 << value) of 0x3EF3DF (17AFC.c:5747-5748); fighter_Init stores it in character_data_index (9F9C.c:3896), the row of g_resource_default_pair_selections / g_resource_alternate_pair_selections */  /* data-wave 2026-10-09: was g_char_class_id_table */
 D_8008D55C = 0x8008D55C; /* byte map from a table index into the g_fight_config.unk_4 id space (skips 0-2 and 0x0F-0x11) */  /* data-wave 2026-10-08: was g_char_lesson_idx_table */
@@ -1169,8 +1169,8 @@ D_800A3658 = 0x800A3658; /* data-wave 2026-10-09: was g_display_addr_800A3658 */
 g_fight_reinit_reuses_assets = 0x800A3670; /* data-wave 2026-10-08: was g_global_flag_A3670 */
 g_fight_second_fighter_initial_defeats_left = 0x800A3671; /* data-wave 2026-10-08: was g_global_flag_A3671 */
 g_fight_match_result_timer = 0x800A36E8; /* data-wave 2026-10-08: was g_text1b_counter_800A36E8 */
-D_800A37D2 = 0x800A37D2; /* data-wave 2026-10-08: was g_pad_analog_substate_plus_8_plus_2 */
-D_800A37D3 = 0x800A37D3; /* data-wave 2026-10-08: was g_pad_analog_substate_plus_8_plus_3 */
+g_fight_first_fighter_win_count = 0x800A37D2; /* data-wave 2026-10-08: was g_pad_analog_substate_plus_8_plus_2 */
+g_fight_second_fighter_win_count = 0x800A37D3; /* data-wave 2026-10-08: was g_pad_analog_substate_plus_8_plus_3 */
 g_camera_eye_blocked_flags = 0x800A30F0; /* u8[4] per-fighter flag that camera_UpdateTwoFighterView sets and clears */  /* data-wave 2026-10-08: was g_ot_used_max_plus_8_800A30F0 */
 g_fighter_body_overlap_radii = 0x800A3144; /* 11 refs; gp-relative; two radii: fighter_ResolveBodyOverlap adds [i] + [j] and compares the sum with the separation of the two characters' points (17AFC.c:944-951) */  /* data-wave 2026-10-08: was g_game_pad_index_800A3144 */
 D_800A3207 = 0x800A3207; /* 20 refs; u8 state, values 0-5 */  /* data-wave 2026-10-08: was g_motion_init_flag_800A3207 */
