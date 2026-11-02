@@ -1,0 +1,13 @@
+==============================================================================
+DATA WAVE — 1 addresses, 1 identifiers remapped
+  0x800a3548: D_800A3548 -> g_entry_menu_held_buttons
+
+-- file edits (3) --
+  asm/funcs/StepSlideBuildFrameRecordAndDispatchStateHandler.s  (1)
+  src/main/5ED34.c  (2)
+  symbol_addrs.txt  (1)
+
+-- registry lines --
+  symbol_addrs.txt:1475 D_800A3548 -> g_entry_menu_held_buttons
+
+DRY RUN — nothing written. Re-run with --apply.

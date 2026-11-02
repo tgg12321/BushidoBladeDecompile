@@ -1,0 +1,12 @@
+# var-globals-t notes (cites at c538ae101; worktree ln-naming-a; research tmp/codex/var-globals-t-research.md (Opus, same HEAD), re-derived by the drafter)
+0x800A3548: PROPOSED g_entry_menu_held_buttons (current D_800A3548, NO_NAME in var-globals-n). Confidence medium (fallback keep D_800A3548). Revived by trace captures 47ba62616 (data-lead-D_800A3548-*). Evidence in data_manifest.csv.
+Result: 1 row proposed.
+
+NO_NAME targets (b03b4cbeb..c538ae101: 10 docs-only commits, no src/include/registry change; only D_800A3548 among the var-globals-m..s leftovers appears in the new trace rows)
+- Every other leftover of pending/var-globals-{m,n,o,p,q,r,s}/notes.txt keeps its reason (D_8009A8AC / D_8009A8B4 / D_8009A8C0 pad scripts; D_800F665A / D_800F665C write-only; D_80103624 / D_8010367E table-extent defects; the rest unchanged).
+- Lead: Unk80101EC8Record.unk_27E[4] is a copy of a D_8008E4D0 row (fighter_Init 9F9C.c:4092, captures 8253f0034); if var-members-rest-25 names unk_27E, D_8008E4D0 can revive from that member.
+
+Comment pass
+- symbol_addrs.txt:1475 (data_wave rewrites the line). No comment mention in src, include, docs/formats or .claude/rules. docs/engine/menus.md:100 (optional). History, leave: wave08/data_manifest.csv:113, pending/var-globals-{n,o}, var-locals-p1/notes.txt:56, backlog.tsv, trace scenario specs and docs/naming/runtime/data-lead-D_800A3548-* (they watch the address).
+
+Leads (local track): StepSlideBuildFrameRecordAndDispatchStateHandler:arg0 (5ED34.c:243) and StepThenCloseVab1OnNonzero:arg0 (64FD8.c:1432) -> held_buttons once this lands.
