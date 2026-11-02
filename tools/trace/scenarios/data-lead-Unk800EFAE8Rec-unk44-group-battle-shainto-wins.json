@@ -1,0 +1,8 @@
+{
+  "description": "group-battle-shainto-wins re-run unchanged with motion-playback watches (access 0x800EFB2C/8 = g_motion_playback_record.unk44[2] / unk48[2]; breakpoints motion_StartPlayback (stack args a4, a5, dest_addr) and motion_StartPlaybackAtIndexedBasePlusOffset (stack args a4..dest_addr)): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-Unk800EFAE8Rec-unk44-group-battle-shainto-wins-1/spec.json"
+  ],
+  "extends": "group-battle-shainto-wins",
+  "refines": "group-battle-shainto-wins"
+}
