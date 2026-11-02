@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-effects re-run unchanged with D_800A38A8 / D_800A3876 watches (write and read 0x800A38A8/2 and 0x800A3876/2; breakpoint fighter_StartMoveScript with its args): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-D_800A38A8-versus-2p-effects-1/spec.json"
+  ],
+  "extends": "versus-2p-effects",
+  "refines": "versus-2p-effects"
+}
