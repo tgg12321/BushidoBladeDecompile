@@ -1,0 +1,1 @@
+D_8008E4D0=g_fighter_summed_tally_step_scales
