@@ -63,7 +63,7 @@ with exactly the shape of an `.SE` file ([SE.md](SE.md)).
 ### Loader (`snd_ReloadListedVabsFromFileAndInstallBillboards`, `src/main/4BC3C.c`)
 
 The stage load in `src/main/9F9C.c` calls `snd_ReloadListedVabsFromFileAndInstallBillboards(buf, stage, a, b)`
-with `a` and `b` read from `D_8008E5A8` for the two fighter slots. It
+with `a` and `b` read from `g_fight_character_vab_and_ground_quad_classes` for the two fighter slots. It
 reads group-2 file `stage + 9` (`cdrom_GetFileIndex(2, stage + 9)`) into
 `buf`, rebases header word 12 and passes it to `eff_SetBillboardList`
 (`src/main/51268.c`), then hands record 0, record `a + 1` and record `b + 1`
@@ -267,7 +267,7 @@ and feed any TIMs to `inspect_tim.py`.
 
 ## Unverified / TODO
 
-* What `D_8008E5A8` maps a fighter slot to (which of `STAGE*.BIN` records
+* What `g_fight_character_vab_and_ground_quad_classes` maps a fighter slot to (which of `STAGE*.BIN` records
   1..5 it loads), and what each billboard type draws.
 * Semantics of the 9-u32 secondary table in the `wrap5` family — confirmed
   to vary per file (mix of sizes and offsets), needs per-loader trace.

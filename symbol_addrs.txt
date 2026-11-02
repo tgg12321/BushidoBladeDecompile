@@ -872,7 +872,7 @@ g_fight_stage_list_step_timer = 0x800A37C0; /* per-step timer of gpu_DrawDisplay
 g_fight_toggle_option_bits = 0x800A3788; /* 3-bit set toggled per menu line (var_2 3..5) by menu_RunPauseMenu, passed as var_2 | D << 16 to gpu_DrawModeSizedPanelWithSelectedCellOpaque; column index of D_8009A9F0 in fighter_UpdateCpuNavigationChooseScriptsAndHeldInput */  /* data-wave 2026-10-08: was g_intro_select_packed_state */
 _spu_rev_reserve_wa = 0x800A2880; /* current allocator a0 (0 = none); compared against incoming alloc requests */  /* data-wave 2026-09-07: was g_spu_voice_alloc_current_a0 */
 _spu_rev_offsetaddr = 0x800A2884; /* offset for voice-address calc; (0x10000 - D) << g_spu_addr_shift */  /* data-wave 2026-09-07: was g_spu_voice_alloc_offset */
-D_800A30FC = 0x800A30FC; /* caches D_8008E5A8[(s8)g_fight_config.unk_4[0]]; fight_ResetGraphAndReloadResourcesOnCachedKeyChange reloads the 0x80190800 block through snd_ReloadListedVabsFromFileAndInstallBillboards when it changes */  /* data-wave 2026-10-08: was g_char_pose_id_p1 */
+D_800A30FC = 0x800A30FC; /* caches g_fight_character_vab_and_ground_quad_classes[(s8)g_fight_config.unk_4[0]]; fight_ResetGraphAndReloadResourcesOnCachedKeyChange reloads the 0x80190800 block through snd_ReloadListedVabsFromFileAndInstallBillboards when it changes */  /* data-wave 2026-10-08: was g_char_pose_id_p1 */
 D_800A36F2 = 0x800A36F2; /* u8[2]: object_InitKindQueue stores the first entry of row g_fighter_initial_carried_object_kinds[character_data_index] (5-byte stride) in [fighter_record->index]; [0] is XORed with object kinds (or 0xE) as fight_RecordReplayEventAndDispatchSoundOrEffect's first argument */  /* data-wave 2026-10-08: was g_char_class_state_array */
 g_comb_handshake_retry_count = 0x800A37D8; /* retry counter of comb_HandshakeStep's link-cable (COMB) handshake: zeroed in state 1, ++ per nonzero _comb_control(3, 1, 0), gives up at 4 */  /* data-wave 2026-10-08: was g_overlay_load_counter */
 g_memcard_fd = 0x800A3794; /* current open file handle from bios_FileOpen_B (saved across read/write) */  /* data-wave 2026-09-24: was g_memcard_file_handle_current */
@@ -900,7 +900,7 @@ D_800A3712 = 0x800A3712; /* 0/1: cleared by fight_ConfigureFighter1FromLookupAnd
 g_fight_operand_tint_red = 0x800A37B4; /* operands[2] passthrough (fight_ConfigureFighter1FromLookupAndOperandsAndLoad) */  /* data-wave 2026-10-08: was g_lesson_extra_arg_b */
 g_fight_operand_tint_green = 0x800A37B5; /* data-wave 2026-10-08: was g_lesson_extra_arg_c */
 g_fight_operand_tint_blue = 0x800A37B6; /* data-wave 2026-10-08: was g_lesson_extra_arg_d */
-D_800A30FD = 0x800A30FD; /* caches D_8008E5A8[(s8)g_fight_config.unk_4[1]] for fight_ResetGraphAndReloadResourcesOnCachedKeyChange's reload test (pair of D_800A30FC at -1) */  /* data-wave 2026-10-08: was g_char_pose_id_p2 */
+D_800A30FD = 0x800A30FD; /* caches g_fight_character_vab_and_ground_quad_classes[(s8)g_fight_config.unk_4[1]] for fight_ResetGraphAndReloadResourcesOnCachedKeyChange's reload test (pair of D_800A30FC at -1) */  /* data-wave 2026-10-08: was g_char_pose_id_p2 */
 D_800A3778 = 0x800A3778; /* stores camera_GetViewMatrixWithHalvedMiddleRow()'s return (&g_camera_halved_row_view_matrix); no reader */  /* data-wave 2026-10-07: was g_cam_bone_data_cached */
 g_fighter_dpad_angle_offsets = 0x8008EB40; /* s16 2D table, both indices from bits 12-15 of the fighter's unk_24.held; the value is added to opponent_bearing (9F9C.c:4247, :4340) */  /* data-wave 2026-10-08: was g_attack_angle_offset_table */
 g_gpu_asset_draw_move_masks = 0x80094B48; /* byte mask indexed by the object's asset_index (`mask &= D[asset_index]`); each set bit i calls gpu_AddDrawMove(slot_index, 4 - i) */  /* data-wave 2026-10-08: was g_sprite_class_mask_table */
@@ -1177,9 +1177,9 @@ D_800A3207 = 0x800A3207; /* 20 refs; u8 state, values 0-5 */  /* data-wave 2026-
 g_fight_paired_move_flags = 0x800A36CA; /* 15 refs; copy of the buffered move's command word */  /* data-wave 2026-10-08: was g_char_id_saved_d_plus_2_800A36CA */
 g_fight_paired_move = 0x800A36D8; /* 19 refs; +4 from D_800A36D4 */  /* data-wave 2026-10-08: was g_pad_rec_prev_hash_plus_4_800A36D8 */
 g_cd_result = 0x800A3760; /* u8[8] result buffer of CdSync(1, .) / CdReady(1, .) in cdrom_update.c (e.g. :47, :106) */  /* data-wave 2026-09-24: was g_cpu_side_move_dir_4_arg1_800A3760 */
-D_800A37E8 = 0x800A37E8; /* 35 refs; s16 paired with g_round_timer; reload value */  /* data-wave 2026-09-25: was g_round_timer_reload_800A37E8 */
+D_800A37E8 = 0x800A37E8; /* s16 x of the x,y,z vector at D_800A37E8 (17AFC.c:1727 stores -qx; 17AFC.c:408 dot with bone_y_axis.x) */  /* data-wave 2026-09-25: was g_round_timer_reload_800A37E8 */
 D_800A37EA = 0x800A37EA; /* 11 refs; s16 y of the x,y,z vector at D_800A37E8 (17AFC.c:1728 stores -qy; 17AFC.c:409 dot with bone_y_axis.y) */  /* data-wave 2026-09-25: was g_round_timer_plus_2_800A37EA */
-D_800A37EC = 0x800A37EC; /* 11 refs; +4 from timer base */  /* data-wave 2026-09-29: was g_round_timer_plus_4_800A37EC */
+D_800A37EC = 0x800A37EC; /* s16 z of the x,y,z vector at D_800A37E8 (17AFC.c:1729 stores -qz; 17AFC.c:410 dot with bone_y_axis.z) */  /* data-wave 2026-09-29: was g_round_timer_plus_4_800A37EC */
 g_cpu_pad_metadata_nibble_dpad_bits = 0x800A3258; /* 7 refs; constant table of four bit numbers: fighter_BuildCpuPad sets pad.held |= 1 << bits.bit[rec->motion_metadata_nibble] (4510C.c:867) */  /* data-wave 2026-10-08: was g_game_state_field_0_800A3258 */
 D_800A325C = 0x800A325C; /* 7 refs; constant 4-byte table fighter_UpdateCpuNavigationChooseScriptsAndHeldInput indexes by p->other->motion_metadata_nibble when p->other->unk_6A == 0x19 (4510C.c:2154) */  /* data-wave 2026-10-08: was g_game_state_field_4_800A325C */
 D_800A3260 = 0x800A3260; /* 7 refs; sibling constant table, indexed when p->other->unk_6A == 0x1A (4510C.c:2158) */  /* data-wave 2026-10-08: was g_game_state_field_8_800A3260 */
