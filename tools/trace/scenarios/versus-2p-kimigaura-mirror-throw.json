@@ -1,0 +1,45 @@
+{
+  "description": "versus-2p-kimigaura-throw's menus (KANNUKI vs GENGORO, Kimigaura Coast); at 8430 both pads press R2 (held 4) and at 8433 CIRCLE (held 4): each fighter throws (event 42 for both, 8467-8469) and the two objects hit their targets 4 frames apart (event 3 at 8473 and 8477), so eff_StartRecycledCommandWithRoseLight's second call finds command 9 still running and takes its second slot, command 0xA (func_80064FB4, then func_80065434 on 6 frames to 8490); retail inputs, no poke; cut at 8700",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-kimigaura-mirror-throw-1/spec.json",
+    "docs/naming/runtime/eff-slot-versus-2p-kimigaura-mirror-throw-1/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 8700,
+  "inputs": [
+    "7300:LEFT",
+    "7450:CROSS",
+    "8430:R2/4",
+    "8430:R2/4@2",
+    "8433:CIRCLE/4",
+    "8433:CIRCLE/4@2"
+  ],
+  "phases": [
+    "7450:t_load",
+    "8230:fight",
+    "8430:throws"
+  ],
+  "shots": [
+    "7299:stage_select.7299",
+    "7325:stage_select.7325",
+    "7355:stage_select.7355",
+    "7449:stage_select.last",
+    "7900:t_load.mid",
+    "8229:t_load.last",
+    "8230:fight.first",
+    "8429:fight.last",
+    "8445:throws.8445",
+    "8460:throws.8460",
+    "8470:throws.8470",
+    "8475:throws.8475",
+    "8480:throws.8480",
+    "8490:throws.8490",
+    "8520:throws.8520",
+    "8600:throws.8600",
+    "8699:throws.last"
+  ]
+}
