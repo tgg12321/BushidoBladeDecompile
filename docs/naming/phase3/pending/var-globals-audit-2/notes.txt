@@ -1,0 +1,9 @@
+# var-globals-audit-2 notes (cites at e4f670cfb; worktree ln-naming-a; verdict left empty for the reviewer)
+0x800A35BC: PROPOSED g_entry_menu_fight_mode -> g_entry_menu_mode. The global is a write-once copy (5ED34.c:70) of working_record->menu_mode, the member var-members-audit-1 (wave115) renamed from fight_mode because the value is the top row-menu result 0..7 (7 = options, 25C38.c:182; table g_menu_mode_selector_and_extra_slot_counts[8], d_8C4E4.c:73), written by menu_UpdateRowMenuStoreResult (64FD8.c:1401). 5ED34.c compares it with 0, 1, 2, 3, 4, 6, < 2, < 4 and selects pack, handler index and grid layout; nothing shows a fight type. Confidence high.
+Names changed from lead: none. Rows dropped: none (1 kept). Freshness: g_entry_menu_mode has zero hits in src, include, asm, registries and .claude.
+
+## Comment / doc occurrences of the old spelling (R6 comment pass)
+- symbol_addrs.txt:1392 is the registry line itself (renamed by data_wave); its note text 'mode = working_record->menu_mode (InitDisplayStateLoadPackAndSetEntryFlags), compared with 0..6 across 5ED34.c' is already true and needs no change (the 'data-wave 2026-10-08: was g_replay_motion_shared_state_c' tail is history).
+- symbol_addrs.txt:1433 (g_entry_menu_pressed_buttons note): '(masked with 0xFFFF when g_entry_menu_fight_mode == 2)' -> NOT edited by data_wave (dry run edits only symbol_addrs.txt:1392); hand-edit in the wave's comment pass to g_entry_menu_mode (naming_keycheck --sub-comments).
+- src, include, .claude/rules, named_syms.txt: no comment hit of the old spelling (code tokens only: src/main/5ED34.c lines 57, 70, 81, 133, 134, 251, 400, 491, 833-835, 1054, 1131, 1142, 1236, 1319, 1354, 1392, 1435, 1561, 1581, 1633, 1687, 1691, 1693, 1781, 1791, 1951, 2001; asm/funcs 22 lw + 1 sw sites).
+- Not touched (history, not a build file): docs/naming/phase3/pending/* and wave manifests naming the old spelling.

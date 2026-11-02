@@ -1,0 +1,1 @@
+g_entry_menu_fight_mode=g_entry_menu_mode

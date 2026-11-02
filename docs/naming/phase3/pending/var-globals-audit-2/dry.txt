@@ -1,0 +1,22 @@
+==============================================================================
+DATA WAVE — 1 addresses, 2 identifiers remapped
+  0x800a35bc: D_800A35BC, g_entry_menu_fight_mode -> g_entry_menu_mode
+
+-- file edits (12) --
+  asm/funcs/DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections.s  (2)
+  asm/funcs/DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection.s  (1)
+  asm/funcs/InitDisplayStateLoadPackAndSetEntryFlags.s  (3)
+  asm/funcs/StepSlideBuildFrameRecordAndDispatchStateHandler.s  (1)
+  asm/funcs/gpu_UploadAndDrawSelectedEntryQuads.s  (1)
+  asm/funcs/menu_UpdateChoiceGrid.s  (4)
+  asm/funcs/menu_UpdateEntryGrid.s  (1)
+  asm/funcs/menu_UpdateEntryGridCursors.s  (3)
+  asm/funcs/menu_UpdateRow.s  (1)
+  asm/funcs/menu_UpdateRowCursors.s  (6)
+  src/main/5ED34.c  (30)
+  symbol_addrs.txt  (1)
+
+-- registry lines --
+  symbol_addrs.txt:1392 g_entry_menu_fight_mode -> g_entry_menu_mode
+
+DRY RUN — nothing written. Re-run with --apply.
