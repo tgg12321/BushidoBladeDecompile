@@ -117,8 +117,20 @@ def no_name_rows(path):
             yield r[0], r[5], r[6]
 
 
+def src_name(c):
+    """The function's name in src/: a census alias (name_layer '... alias only')
+    is a lead, not a name, so such a row is still its func_ glabel."""
+    if 'alias only' in (c.get('name_layer') or '') and c.get('glabel', '').startswith('func_'):
+        return c['glabel']
+    return c.get('current_name', '')
+
+
+def unnamed(c):
+    return src_name(c).startswith('func_')
+
+
 def prune(rows, census):
-    gone = [a for a in rows if not census.get(a, {}).get('current_name', '').startswith('func_')]
+    gone = [a for a in rows if not unnamed(census.get(a, {}))]
     for a in gone:
         del rows[a]
     return gone
@@ -164,7 +176,7 @@ def cmd_add(args):
     for addr, evclass, ev in no_name_rows(args.source):
         a = norm(addr)
         c = census.get(a)
-        if not c or not c['current_name'].startswith('func_'):
+        if not c or not unnamed(c):
             continue
         r = rows.get(a)
         waves = r['waves'].split(',') if r else []
@@ -173,7 +185,7 @@ def cmd_add(args):
                 r['commit'] = args.commit
             continue
         rows[a] = {
-            'address': a, 'name': c['current_name'], 'kind': 'func',
+            'address': a, 'name': src_name(c), 'kind': 'func',
             'rounds': str(len(waves) + 1), 'waves': ','.join(waves + [args.tag]),
             'reason': reason_of(ev),
             'evidence_tried': 'codex research' + (f' {evclass}' if evclass else '')
