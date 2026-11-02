@@ -235,6 +235,46 @@ class RegeneratePrefixTest(unittest.TestCase):
                     matches.assert_called_once_with(path, entry["inputs"])
 
 
+class WslRunnerEnvTest(unittest.TestCase):
+    """The WSL runner forwards the capture-store variables into run.sh (wsl bash drops them)."""
+
+    def run_wsl(self, env):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as d:
+            wt = Path(d)
+            done = SimpleNamespace(returncode=0, stdout="", stderr="")
+            with patch.dict(os.environ, env, clear=False), \
+                    patch.object(lanes.subprocess, "run", return_value=done) as run, \
+                    redirect_stdout(io.StringIO()):
+                for name in lanes.WSL_FORWARD_ENV:
+                    if name not in env:
+                        os.environ.pop(name, None)
+                rc = lanes.run_shell(SimpleNamespace(cfg={"runner": "wsl"}), wt, "true",
+                                     io.StringIO())
+            self.assertEqual(rc, 0)
+            self.assertEqual(run.call_args.args[0][:2], ["wsl", "bash"])
+            return (wt / "tmp" / "lanes" / "run.sh").read_bytes().decode("utf-8")
+
+    def test_store_variables_are_exported_quoted_before_the_command(self):
+        text = self.run_wsl({"BB2_CAPTURE_STORE": r"C:\Users\Some One\bb2 cap's",
+                             "BB2_CAPTURE_STORE_WRITE": "0"})
+        lines = text.split("\n")
+        self.assertEqual(lines[0], "set -e")
+        self.assertEqual(lines[1], "export BB2_CAPTURE_STORE='C:\\Users\\Some One\\bb2 cap'\"'\"'s'")
+        self.assertEqual(lines[2], "export BB2_CAPTURE_STORE_WRITE=0")
+        self.assertTrue(lines[3].startswith("cd '"))
+        self.assertEqual(lines[-2], "true")
+        self.assertNotIn("\r", text)
+        import shlex
+        self.assertEqual(shlex.split(lines[1]),
+                         ["export", r"BB2_CAPTURE_STORE=C:\Users\Some One\bb2 cap's"])
+
+    def test_unset_or_empty_variables_are_not_exported(self):
+        self.assertNotIn("export", self.run_wsl({}))
+        self.assertNotIn("export", self.run_wsl({"BB2_CAPTURE_STORE": ""}))
+
+
 class InputCheckTest(unittest.TestCase):
     """Dispatch tests independent of shell transport and lane fixture setup."""
 

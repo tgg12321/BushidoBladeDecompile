@@ -58,6 +58,7 @@ import json
 import math
 import os
 import re
+import shlex
 import subprocess
 import sys
 import time
@@ -560,6 +561,20 @@ def release_lock(ctx: Ctx):
 
 # ---------------------------------------------------------------- runner
 
+# Environment the WSL runner passes on: `wsl bash` starts without the caller's variables
+# (no WSLENV), so a capture store chosen on the Windows side would otherwise be ignored by a
+# land's gates, which then read the default store. tools/trace/store.py turns a drive path into
+# its /mnt form itself.
+WSL_FORWARD_ENV = ("BB2_CAPTURE_STORE", "BB2_CAPTURE_STORE_WRITE")
+
+
+def wsl_env_exports(env=None) -> str:
+    """`export NAME=value` lines for the set, non-empty WSL_FORWARD_ENV variables."""
+    env = os.environ if env is None else env
+    return "".join(f"export {name}={shlex.quote(env[name])}\n"
+                   for name in WSL_FORWARD_ENV if env.get(name))
+
+
 def run_shell(ctx: Ctx, wt: Path, cmd: str, log) -> int:
     """Run one shell line at the root of worktree `wt` (WSL + venv, or local for tests)."""
     print(f"lanes:   $ {cmd}", flush=True)
@@ -571,7 +586,8 @@ def run_shell(ctx: Ctx, wt: Path, cmd: str, log) -> int:
         script_dir.mkdir(parents=True, exist_ok=True)
         script = script_dir / "run.sh"
         script.write_text("set -e\n"
-                          f"cd '{wsl_path(wt)}'\n"
+                          + wsl_env_exports()
+                          + f"cd '{wsl_path(wt)}'\n"
                           ". .venv/bin/activate\n"
                           f"{cmd}\n", encoding="utf-8", newline="\n")
         r = subprocess.run(["wsl", "bash", wsl_path(script)], capture_output=True, text=True,
