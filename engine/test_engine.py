@@ -4089,7 +4089,7 @@ def test_include_asm_whole_body() -> None:
     eq("include_asm: instruction-less glabel marker NOT attributed",
        inlineasm.func_cheat_asm_count(marker, "D_80081F1C"), -1)
     # A body encoded entirely as byte-emitting `.word`s IS a body, not a marker
-    # (ings.c ships func_800164F8 that way: 0x03E00008 is `jr ra`).
+    # (ings.c shipped sys_PollHost10000Times that way: 0x03E00008 is `jr ra`).
     words = ('__asm__(\n    ".set noreorder\\n"\n    "glabel sys_PollHost10000Times\\n"\n'
              '    ".word 0x2402270F\\n"\n    ".word 0x03E00008\\n"\n);\n')
     eq("include_asm: .word-encoded body attributed as a body",

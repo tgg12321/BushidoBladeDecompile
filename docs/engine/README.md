@@ -108,7 +108,7 @@ address is the stable key.
 | `code6cac_b5.c` | 0x80036140-0x80036D88 | The game CD module's two state-machine steppers |
 | `code6cac_b5_post.c` | 0x80036D88-0x800375EC | Game-side CD wrappers (`cdrom_StartRead`, `cdrom_LoadExec`), `sys_Exec`, `func_80036F40` |
 | `code6cac_c.c` | 0x800375EC-0x80037D14 | Memory-card wrappers (`memcard_Init` .. `memcard_WriteFile`) |
-| `code6cac_c0.c` | 0x80037D14-0x80037F08 | func_80037D14 (memory card; calls libcard `_card_*`) |
+| `code6cac_c0.c` | 0x80037D14-0x80037F08 | memcard_StepCardInfoAndLoad (memory card; calls libcard `_card_*`) |
 | `code6cac_c_mid.c` | 0x80037F08-0x8003AB44 | Mixed: game-side link-cable `comb_*` wrappers, motion-shift mode setters, file-I/O state machine, `mode_handler_04` |
 | `code6cac_c2.c` | 0x8003AB44-0x800401CC | Menu/mode handlers (VS-mode init, logo init), mode handlers 06-33 (post-battle, teardown, reboot), stage collision/lighting (`stage_*`), bitstream reader |
 | `text1a_pre.c` | 0x800401CC-0x80040D48 | Player-model ("rob") init, draw-move list (`gpu_AddDrawMove`) |

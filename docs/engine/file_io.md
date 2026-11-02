@@ -154,9 +154,9 @@ are described in [replay.md](replay.md).
   (`main`, src/main/6CF8.c:440) and shows it as a 15-bit image. From frame
   0x79 of 0x96 it halves each RGB channel of the image per frame.
 
-`sys_Panic` (src/main/6CF8.c:239) prints `"OVER FLOW\n"` and then calls
-`func_800164F8` forever. That function runs `pollhost()` (`break 1024`)
-10000 times (src/main/6CF8.c:39).
+`sys_Panic` (src/main/6CF8.c:237) prints `"OVER FLOW\n"` and then calls
+`sys_PollHost10000Times` forever. That function runs `pollhost()` (`break 1024`)
+10000 times (src/main/6CF8.c:39-44).
 
 ## libcd (Sony)
 

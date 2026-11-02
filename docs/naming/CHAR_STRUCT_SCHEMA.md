@@ -97,7 +97,7 @@ if (temp_a0 < 0x400U) {
     distance = ((u32)(g_sqrt_table_u8[temp_a0])) >> 3;
 ```
 
-and func_8001C624 (src/main/9F9C.c:1309-1316) copies `base_pos` into
+and fight_ResetFighter0ToStartPosition (src/main/9F9C.c:1294-1296) copies `base_pos` into
 `world_pos` with a -0x384 bias on y:
 
 ```c

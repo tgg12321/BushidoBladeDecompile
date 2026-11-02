@@ -51,7 +51,7 @@ start-up code, in order:
    - checks the primitive buffer: the space left
      (`D_800A3770[idx] + 0x13400 - g_prim_buf_cursor`) updates the low-water
      mark `g_main_prim_buffer_min_remaining`; below 0 it prints `g_str_prim_overflow` and stops in
-     `func_800164F8` (src/main/6CF8.c:488-499);
+     `sys_PollHost10000Times` (src/main/6CF8.c:497-499);
    - decrements `g_main_present_skip_frames`, or else submits the OT (`DrawOTag`) and
      increments `g_gpu_presented_frame_count`;
    - in mode 1, when no frame was skipped, Start (`0x08000800`) or the
@@ -69,9 +69,10 @@ start-up code, in order:
   src/main/6CF8.c:265), `pad_ResetStateMarkValid`, `font_LoadImage`,
   `fight_InitSettings`, `func_80046B44`, sets `g_main_frame_period = 2` and clears the
   start-up flags and `g_comb_abort_request`.
-- `sys_Panic` (src/main/6CF8.c:239) prints `g_str_overflow` and stops in
-  `func_800164F8`; `eff_Init` and `snd_InitAndLoadCommonVab` call it when
-  their data is too large.
+- `sys_Panic` (src/main/6CF8.c:237) prints `g_str_overflow` and stops in
+  `sys_PollHost10000Times`. The other callers of that function are `main`
+  (src/main/6CF8.c:497-499, primitive buffer overflow) and `ndata_ReadChecked`
+  (src/main/35000.c:268).
 
 ## The pause menu: `menu_RunPauseMenu`
 

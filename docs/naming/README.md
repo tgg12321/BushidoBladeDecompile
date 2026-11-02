@@ -183,7 +183,7 @@ earlier draft let the SUSPECT rule silently overwrite VERIFIED rows.)
 **A misname flag condemns only the symbol it is attached to.** Where the flag sits on a
 *sibling* alias, the currently-displayed name is frequently the **correction** that flag
 points to — e.g. `syscall_wrapper_break_800164F8` is flagged MISNAMED and
-`breakpoint_trap_loop` is its fix. Demoting the fix because of its own flag would be
+`breakpoint_trap_loop_800164F8` was its fix (now sys_PollHost10000Times). Demoting the fix because of its own flag would be
 backwards. Those rows carry a `CONTEXT:` note instead of a demotion.
 
 ### Origin taxonomy

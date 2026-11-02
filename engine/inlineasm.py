@@ -140,7 +140,7 @@ def include_asm_spans(text: str) -> list[tuple[str, int, int]]:
 # only alignment padding does not make a block a body.
 #
 # The inverse allowlist was the first draft and it misfiled real code: ings.c
-# ships func_800164F8 as a raw word stream (0x2402270F = `addiu v0,0x270F`,
+# shipped sys_PollHost10000Times as a raw word stream (0x2402270F = `addiu v0,0x270F`,
 # 0x03E00008 = `jr ra`) and func_800164AC as a 19-entry `.word` pointer table.
 # Treating every `.`-prefixed line as a non-instruction called both bare symbol
 # markers. Census of every directive head across all `__asm__` blocks in src/:

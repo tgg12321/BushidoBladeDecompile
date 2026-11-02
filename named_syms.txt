@@ -1,4 +1,4 @@
-/* RETIRED 0x800164F8 (naming sweep 2026-09-25b): alias 'syscall_wrapper_break_800164F8' removed — body is a counted loop of `break` instrs, no syscall, no calls; breakpoint_trap_loop_800164F8 below is the live alias */
+/* RETIRED 0x800164F8 (naming sweep 2026-09-25b): alias 'syscall_wrapper_break_800164F8' removed — body is a counted loop of `break` instrs, no syscall, no calls; the function is now named sys_PollHost10000Times (its alias breakpoint_trap_loop_800164F8 was retired in wave120) */
 /* RESET 0x8003043C: retired name 'psyq_memset_8003043C' — preserved note: MISNAMED: not a memset; loops 12x writing -1 (s16) to D_80106A78[i].unk_02 and 0xFF (u8) to D_80106A78[i].unk_0A */
 /* RESET 0x80038148: retired name 'psyq_memset_80038148' — preserved note: MISNAMED: clears g_shared_buffer (512 bytes) — specific buffer clear, not generic memset; see also pad_clear_buffer_80038148 sibling */
 /* RESET 0x8005509C: retired name 'psyq_memset_8005509C' — preserved note: MISNAMED: clears 16 bytes at offset 0x414 of g_practice_menu_table per-record (indexed by a0, stride 0x44C) — not generic memset */
@@ -1046,7 +1046,7 @@
 /* === Init flags + CD-audio fade words (2026-05-17) -- 4 highs === */
 
 /* === Memcard async operation state machine (2026-05-17) -- 4 highs === */
-/* From code6cac_c0.c func_80037D14: 5-state machine driving memcard */
+/* From 28514.c memcard_StepCardInfoAndLoad: 5-state machine driving memcard */
 /* bios_A0_0xAB / 0xAC operations with event polling and completion. */
 
 /* === func_80016D78 reset cluster (2026-05-17) -- 6 highs === */
@@ -1104,7 +1104,7 @@
 /* combined into a 12-bit packed value (R | G<<4 | B<<8). */
 
 /* === D_80101EC8[0] unk_B8 / unk_C8 / prev_root_offset words (2026-05-17) -- 4 highs === */
-/* func_8001C624 sets unk_B8 from unk_D8, then copies unk_C8 = unk_B8 */
+/* fight_ResetFighter0ToStartPosition sets unk_B8 from unk_D8, then copies unk_C8 = unk_B8 */
 /* and prev_root_offset = unk_E8 (9F9C.c:1317-1321; also :4085-4086, :5291, :5305). */
 
 /* === Sound voice-init block byte fields + callback ptr (2026-05-17) -- 6 highs === */
