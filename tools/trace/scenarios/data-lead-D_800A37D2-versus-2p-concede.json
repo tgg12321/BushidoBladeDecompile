@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-concede re-run unchanged with D_800A37D2 data watches (write 0x800A37D2/2, read 0x800A37D2/2, 0x800A37D2/2 read at every phase start): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-D_800A37D2-versus-2p-concede-1/spec.json"
+  ],
+  "extends": "versus-2p-concede",
+  "refines": "versus-2p-concede"
+}

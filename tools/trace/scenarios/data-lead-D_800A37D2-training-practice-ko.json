@@ -1,0 +1,8 @@
+{
+  "description": "training-practice-ko re-run unchanged with D_800A37D2 data watches (write 0x800A37D2/2, read 0x800A37D2/2, 0x800A37D2/2 read at every phase start): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-D_800A37D2-training-practice-ko-1/spec.json"
+  ],
+  "extends": "training-practice-ko",
+  "refines": "training-practice-ko"
+}
