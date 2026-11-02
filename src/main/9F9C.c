@@ -4653,8 +4653,8 @@ void fighter_UpdateGroundYByMoveKind(Unk80101EC8Record *fighter_record) {
     }
 }
 
-/* [character_data_index][min(unk_272, 3)]: 4.12 scale of base_power into power
- * (fighter_Update).
+/* [character_data_index][min(power_scale_tally, 3)]: 4.12 scale of base_power
+ * into power (fighter_Update).
  */
 extern s16 g_fighter_power_scales[27][4];
 /* [g_fighter_group_flags[character_data_index]][weapon_id]: the object_kind
