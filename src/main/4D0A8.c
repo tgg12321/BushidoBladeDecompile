@@ -459,7 +459,7 @@ s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32 ft4_out_addr, s32 arg1) {
 
 /* gpu_DrawTimeFieldsAndDecimalCounter's 7 sprite cells: [0..2] drawn with
  * header D_8009B398[0], [3..4] with [1], [5] / [6] with [2] / [3] */
-extern Unk8009B400Record g_gpu_time_field_cells[7];
+extern Unk8009B400Record g_gpu_time_and_counter_cells[7];
 
 s32 gpu_DrawTimeFieldsAndDecimalCounter(
     Unk8001CD68Rec *time_fields, s32 arg1, s32 arg2, s32 ot_index) {
@@ -489,14 +489,14 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
     dr_mode = &draw_chunk->chunk_draw_mode;
     end_off = arg2 + sizeof(Unk8005D814Rec);
     for (i = 0; i < 3; i++) {
-        s.table = &g_gpu_time_field_cells[i];
+        s.table = &g_gpu_time_and_counter_cells[i];
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
     }
 
     s.header = &D_8009B398[1];
     for (i = 0; i < 2; i++) {
-        s.table = &g_gpu_time_field_cells[3 + i];
+        s.table = &g_gpu_time_and_counter_cells[3 + i];
         if (i != 0) {
             if (arg1 == 1) {
                 s.table->w = 0x2D;
@@ -611,11 +611,11 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
         tile++;
         s.y = g_gpu_time_and_counter_line_origins[j].y;
         s.header = &D_8009B398[2];
-        s.table = &g_gpu_time_field_cells[5];
+        s.table = &g_gpu_time_and_counter_cells[5];
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
         s.header = &D_8009B398[3];
-        s.table = &g_gpu_time_field_cells[6];
+        s.table = &g_gpu_time_and_counter_cells[6];
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
     }
@@ -2018,7 +2018,7 @@ Unk8009B0E0Record D_8009B398[4] = {
     {0x1F, 0x00, 1, 0x00, 0x3C0, 0x1FE, 0x0, 0x0},
     {0x1F, 0x00, 1, 0x00, 0x3D0, 0x1FE, 0x0, 0x0},
 };
-Unk8009B400Record g_gpu_time_field_cells[7] = {
+Unk8009B400Record g_gpu_time_and_counter_cells[7] = {
     {459, 22, 0xFC, 0x00, 0x04, 0x05}, {513, 22, 0xFC, 0x00, 0x04, 0x05},
     {508, 22, 0xFC, 0x00, 0x04, 0x05}, {565, 23, 0xC0, 0x1C, 0x3C, 0x0E},
     {565, 42, 0xC0, 0x2A, 0x3C, 0x0E}, {568, 0, 0xC0, 0xDB, 0x23, 0x01},
