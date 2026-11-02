@@ -1,0 +1,57 @@
+rc=0
+==============================================================================
+NAMING WAVE — 3 operations (0 RESET, 3 RENAME)
+  4 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — volatile_extern_allowlist.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (12) --
+  (root): 1 files, 1 substitutions
+      symbol_addrs.txt  (1)
+  asm: 6 files, 9 substitutions
+      asm/funcs/camera_ApplyFightView.s  (1)
+      asm/funcs/camera_ApplyReplayView.s  (1)
+      asm/funcs/fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams.s  (1)
+      asm/funcs/func_80061064.s  (2)
+      asm/funcs/func_800650EC.s  (2)
+      asm/funcs/func_80065134.s  (2)
+  include: 1 files, 1 substitutions
+      include/bb2.h  (1)
+  src: 4 files, 10 substitutions
+      src/main/2B344.c  (1)
+      src/main/51268.c  (3)
+      src/main/9F9C.c  (2)
+      src/main/d_8BC50.c  (4)
+
+-- .s file renames (3) --
+  asm/funcs/func_80061064.s -> asm/funcs/eff_UpdateCommands.s
+  asm/funcs/func_800650EC.s -> asm/funcs/eff_InitQuadMirroredByViewSettingOutsideReplay.s
+  asm/funcs/func_80065134.s -> asm/funcs/eff_InitQuadNotMirroredByViewSetting.s
+
+-- ledger directory renames (5) --
+  memory/grind/func_800650EC -> memory/grind/eff_InitQuadMirroredByViewSettingOutsideReplay
+  memory/grind/func_80065134 -> memory/grind/eff_InitQuadNotMirroredByViewSetting
+  memory/grind/_completed/func_80061064 -> memory/grind/_completed/eff_UpdateCommands
+  memory/grind/_completed/func_800650EC -> memory/grind/_completed/eff_InitQuadMirroredByViewSettingOutsideReplay
+  memory/grind/_completed/func_80065134 -> memory/grind/_completed/eff_InitQuadNotMirroredByViewSetting
+
+-- symbol-registry line deletions (1) --
+  symbol_addrs.txt:1315  eff_FrameUpdate = 0x80061064; /* per-frame effect-system update: processes 28 effect slots, reports "eff prim 
+
+-- JSON key/field edits (5) --
+  memory/grind/func_800650EC/layer2.jsonl: 1 changes
+      line 1: func func_800650EC -> eff_InitQuadMirroredByViewSettingOutsideReplay
+  memory/grind/func_80065134/layer2.jsonl: 1 changes
+      line 1: func func_80065134 -> eff_InitQuadNotMirroredByViewSetting
+  memory/grind/_completed/func_80061064/layer2.jsonl: 5 changes
+      line 1: func func_80061064 -> eff_UpdateCommands
+      line 2: func func_80061064 -> eff_UpdateCommands
+      line 3: func func_80061064 -> eff_UpdateCommands
+      line 4: func func_80061064 -> eff_UpdateCommands
+      line 5: func func_80061064 -> eff_UpdateCommands
+  memory/grind/_completed/func_800650EC/layer2.jsonl: 1 changes
+      line 1: func func_800650EC -> eff_InitQuadMirroredByViewSettingOutsideReplay
+  memory/grind/_completed/func_80065134/layer2.jsonl: 1 changes
+      line 1: func func_80065134 -> eff_InitQuadNotMirroredByViewSetting
+
+DRY RUN — nothing written. Re-run with --apply.
