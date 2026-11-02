@@ -136,7 +136,7 @@ glabel menu_UpdateRow
     /* 61680 80070E80 2110A200 */  addu       $v0, $a1, $v0
     /* 61684 80070E84 05004014 */  bnez       $v0, .L80070E9C
     /* 61688 80070E88 02000224 */   addiu     $v0, $zero, 0x2
-    /* 6168C 80070E8C F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 6168C 80070E8C F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 61690 80070E90 00000000 */  nop
     /* 61694 80070E94 03006214 */  bne        $v1, $v0, .L80070EA4
     /* 61698 80070E98 05010224 */   addiu     $v0, $zero, 0x105

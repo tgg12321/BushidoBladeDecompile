@@ -26,10 +26,10 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5ED94 8006E594 A00490AF */  sw         $s0, %gp_rel(g_entry_menu_arena_cursor)($gp)
     /* 5ED98 8006E598 DC0490AF */  sw         $s0, %gp_rel(g_entry_menu_resources)($gp)
     /* 5ED9C 8006E59C 0F004230 */  andi       $v0, $v0, 0xF
-    /* 5EDA0 8006E5A0 F00482AF */  sw         $v0, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 5EDA0 8006E5A0 F00482AF */  sw         $v0, %gp_rel(g_entry_menu_mode)($gp)
     /* 5EDA4 8006E5A4 A81A010C */  jal        resource_FreeSlotsAndBlocksAndInvalidateEntryCache
     /* 5EDA8 8006E5A8 00000000 */   nop
-    /* 5EDAC 8006E5AC F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 5EDAC 8006E5AC F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 5EDB0 8006E5B0 00000000 */  nop
     /* 5EDB4 8006E5B4 0700622C */  sltiu      $v0, $v1, 0x7
     /* 5EDB8 8006E5B8 1B004010 */  beqz       $v0, .L8006E628
@@ -122,7 +122,7 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5EEF4 8006E6F4 16004228 */  slti       $v0, $v0, 0x16
     /* 5EEF8 8006E6F8 E9FF4014 */  bnez       $v0, .L8006E6A0
     /* 5EEFC 8006E6FC 00140500 */   sll       $v0, $a1, 16
-    /* 5EF00 8006E700 F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 5EF00 8006E700 F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 5EF04 8006E704 00000000 */  nop
     /* 5EF08 8006E708 04006228 */  slti       $v0, $v1, 0x4
     /* 5EF0C 8006E70C 17004010 */  beqz       $v0, .L8006E76C

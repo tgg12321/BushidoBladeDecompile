@@ -38,7 +38,7 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 624D8 80071CD8 0A80013C */  lui        $at, %hi(g_entry_menu_slot_records + 0x2)
     /* 624DC 80071CDC 21083100 */  addu       $at, $at, $s1
     /* 624E0 80071CE0 62352290 */  lbu        $v0, %lo(g_entry_menu_slot_records + 0x2)($at)
-    /* 624E4 80071CE4 F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 624E4 80071CE4 F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 624E8 80071CE8 80100200 */  sll        $v0, $v0, 2
     /* 624EC 80071CEC 21105500 */  addu       $v0, $v0, $s5
     /* 624F0 80071CF0 0000468C */  lw         $a2, 0x0($v0)
@@ -187,7 +187,7 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 62708 80071F08 AC0490A7 */  sh         $s0, %gp_rel(g_entry_menu_slide_phase)($gp)
     /* 6270C 80071F0C 9471010C */  jal        snd_QueueSound
     /* 62710 80071F10 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 62714 80071F14 F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 62714 80071F14 F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 62718 80071F18 00000000 */  nop
     /* 6271C 80071F1C 0200622C */  sltiu      $v0, $v1, 0x2
     /* 62720 80071F20 0E004010 */  beqz       $v0, .L80071F5C

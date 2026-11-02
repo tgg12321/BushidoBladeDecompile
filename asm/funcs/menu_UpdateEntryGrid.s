@@ -297,7 +297,7 @@ glabel menu_UpdateEntryGrid
     /* 605EC 8006FDEC 40B81200 */  sll        $s7, $s2, 1
     /* 605F0 8006FDF0 43B40200 */  sra        $s6, $v0, 17
   .L8006FDF4:
-    /* 605F4 8006FDF4 F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 605F4 8006FDF4 F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 605F8 8006FDF8 00000000 */  nop
     /* 605FC 8006FDFC 0200622C */  sltiu      $v0, $v1, 0x2
     /* 60600 8006FE00 05004014 */  bnez       $v0, .L8006FE18

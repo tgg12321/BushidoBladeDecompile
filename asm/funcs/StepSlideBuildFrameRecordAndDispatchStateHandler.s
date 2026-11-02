@@ -11,7 +11,7 @@ glabel StepSlideBuildFrameRecordAndDispatchStateHandler
     /* 5F2F0 8006EAF0 0F80033C */  lui        $v1, %hi(g_gpu_db)
     /* 5F2F4 8006EAF4 38746324 */  addiu      $v1, $v1, %lo(g_gpu_db)
     /* 5F2F8 8006EAF8 21104300 */  addu       $v0, $v0, $v1
-    /* 5F2FC 8006EAFC F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 5F2FC 8006EAFC F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 5F300 8006EB00 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 5F304 8006EB04 3800BFAF */  sw         $ra, 0x38($sp)
     /* 5F308 8006EB08 7C0484AF */  sw         $a0, %gp_rel(D_800A3548)($gp)

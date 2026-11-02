@@ -1388,7 +1388,7 @@ g_memcard_status5_retries_exhausted = 0x800A3338; /* u8 flag (28708.c:574): 0 on
 g_eff_rotated_quad_cluster_slot_mask = 0x800A3460; /* s32 live-slot bit mask for the six slots eff_SpawnRotatedQuadCluster spawns and eff_DrawAndAdvanceRotatedQuadClusters draws */  /* data-wave 2026-10-08: was g_text1b_state_record_table_4x36 */
 g_entry_menu_slide_phase = 0x800A3578; /* 5ED34.c selection-screen state; StepSlideProgressCommitPendingStateAndQueueSound reads its low byte as the slide phase/leg */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_a */
 g_entry_menu_exit_result = 0x800A35A0; /* StepSlideBuildFrameRecordAndDispatchStateHandler's result (0 / -1 / 1) */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_b */
-g_entry_menu_fight_mode = 0x800A35BC; /* mode = working_record->menu_mode (InitDisplayStateLoadPackAndSetEntryFlags), compared with 0..6 across 5ED34.c */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_c */
+g_entry_menu_mode = 0x800A35BC; /* mode = working_record->menu_mode (InitDisplayStateLoadPackAndSetEntryFlags), compared with 0..6 across 5ED34.c */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_c */
 g_entry_menu_slot_records = 0x800A3560; /* 2x3-byte per-slot records (union Unk800A3560Slots, include/game.h) */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_e */
 g_entry_menu_darken_level = 0x800A3550; /* shorts; full-screen tile intensity ramp */  /* data-wave 2026-10-08: was g_motion_shift_state_a */
 g_menu_packed_cursors = 0x800A34F8; /* packed cursor state: bits 0-3, 10-12 and 13-15 step over 8, 6 and 3 entries (596CC.c:303-326, :1325-1339, :1435-1448) */  /* data-wave 2026-10-09: was g_menuctl_state_bitfield */

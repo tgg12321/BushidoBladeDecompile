@@ -84,7 +84,7 @@ glabel menu_UpdateChoiceGrid
     /* 62A44 80072244 03000324 */  addiu      $v1, $zero, 0x3
     /* 62A48 80072248 08004314 */  bne        $v0, $v1, .L8007226C
     /* 62A4C 8007224C 40181700 */   sll       $v1, $s7, 1
-    /* 62A50 80072250 F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 62A50 80072250 F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 62A54 80072254 06000224 */  addiu      $v0, $zero, 0x6
     /* 62A58 80072258 03006214 */  bne        $v1, $v0, .L80072268
     /* 62A5C 8007225C 02000224 */   addiu     $v0, $zero, 0x2
@@ -120,7 +120,7 @@ glabel menu_UpdateChoiceGrid
   .L800722C8:
     /* 62AC8 800722C8 07002216 */  bne        $s1, $v0, .L800722E8
     /* 62ACC 800722CC 06000224 */   addiu     $v0, $zero, 0x6
-    /* 62AD0 800722D0 F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 62AD0 800722D0 F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 62AD4 800722D4 00000000 */  nop
     /* 62AD8 800722D8 03006214 */  bne        $v1, $v0, .L800722E8
     /* 62ADC 800722DC 02000224 */   addiu     $v0, $zero, 0x2
@@ -555,7 +555,7 @@ glabel menu_UpdateChoiceGrid
     /* 63128 80072928 03000224 */  addiu      $v0, $zero, 0x3
     /* 6312C 8007292C 07006214 */  bne        $v1, $v0, .L8007294C
     /* 63130 80072930 06000224 */   addiu     $v0, $zero, 0x6
-    /* 63134 80072934 F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 63134 80072934 F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 63138 80072938 00000000 */  nop
     /* 6313C 8007293C 03006214 */  bne        $v1, $v0, .L8007294C
     /* 63140 80072940 02000224 */   addiu     $v0, $zero, 0x2
@@ -686,7 +686,7 @@ glabel menu_UpdateChoiceGrid
     /* 63310 80072B10 FF001032 */  andi       $s0, $s0, 0xFF
     /* 63314 80072B14 05000216 */  bne        $s0, $v0, .L80072B2C
     /* 63318 80072B18 06000224 */   addiu     $v0, $zero, 0x6
-    /* 6331C 80072B1C F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 6331C 80072B1C F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 63320 80072B20 00000000 */  nop
     /* 63324 80072B24 0B006210 */  beq        $v1, $v0, .L80072B54
     /* 63328 80072B28 0FFC0424 */   addiu     $a0, $zero, -0x3F1

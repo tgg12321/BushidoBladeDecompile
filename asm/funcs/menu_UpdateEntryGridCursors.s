@@ -433,7 +433,7 @@ glabel menu_UpdateEntryGridCursors
     /* 60FF0 800707F0 0F000224 */  addiu      $v0, $zero, 0xF
     /* 60FF4 800707F4 FC0482A7 */  sh         $v0, %gp_rel(g_entry_menu_selection_offset_countdowns)($gp)
     /* 60FF8 800707F8 14000224 */  addiu      $v0, $zero, 0x14
-    /* 60FFC 800707FC F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 60FFC 800707FC F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 61000 80070800 02000824 */  addiu      $t0, $zero, 0x2
     /* 61004 80070804 FE0482A7 */  sh         $v0, %gp_rel(D_800A35CA)($gp)
     /* 61008 80070808 7C006814 */  bne        $v1, $t0, .L800709FC
@@ -681,7 +681,7 @@ glabel menu_UpdateEntryGridCursors
     /* 61390 80070B90 00000000 */  nop
     /* 61394 80070B94 27004014 */  bnez       $v0, .L80070C34
     /* 61398 80070B98 02000224 */   addiu     $v0, $zero, 0x2
-    /* 6139C 80070B9C F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 6139C 80070B9C F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 613A0 80070BA0 00000000 */  nop
     /* 613A4 80070BA4 09006214 */  bne        $v1, $v0, .L80070BCC
     /* 613A8 80070BA8 0200033C */   lui       $v1, (0x20000 >> 16)
@@ -712,7 +712,7 @@ glabel menu_UpdateEntryGridCursors
     /* 61404 80070C04 0B004014 */  bnez       $v0, .L80070C34
     /* 61408 80070C08 01000424 */   addiu     $a0, $zero, 0x1
   .L80070C0C:
-    /* 6140C 80070C0C F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 6140C 80070C0C F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 61410 80070C10 02000224 */  addiu      $v0, $zero, 0x2
     /* 61414 80070C14 AC0484A7 */  sh         $a0, %gp_rel(g_entry_menu_slide_phase)($gp)
     /* 61418 80070C18 8C0480A7 */  sh         $zero, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)

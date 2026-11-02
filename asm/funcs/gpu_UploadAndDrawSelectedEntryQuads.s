@@ -172,7 +172,7 @@ glabel gpu_UploadAndDrawSelectedEntryQuads
     /* 5F760 8006EF60 02004230 */  andi       $v0, $v0, 0x2
     /* 5F764 8006EF64 0F004014 */  bnez       $v0, .L8006EFA4
     /* 5F768 8006EF68 00141100 */   sll       $v0, $s1, 16
-    /* 5F76C 8006EF6C F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
+    /* 5F76C 8006EF6C F004838F */  lw         $v1, %gp_rel(g_entry_menu_mode)($gp)
     /* 5F770 8006EF70 02000224 */  addiu      $v0, $zero, 0x2
     /* 5F774 8006EF74 08006214 */  bne        $v1, $v0, .L8006EF98
     /* 5F778 8006EF78 0200033C */   lui       $v1, (0x20000 >> 16)
