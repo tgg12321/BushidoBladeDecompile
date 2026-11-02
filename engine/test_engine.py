@@ -4090,10 +4090,10 @@ def test_include_asm_whole_body() -> None:
        inlineasm.func_cheat_asm_count(marker, "D_80081F1C"), -1)
     # A body encoded entirely as byte-emitting `.word`s IS a body, not a marker
     # (ings.c ships func_800164F8 that way: 0x03E00008 is `jr ra`).
-    words = ('__asm__(\n    ".set noreorder\\n"\n    "glabel func_800164F8\\n"\n'
+    words = ('__asm__(\n    ".set noreorder\\n"\n    "glabel sys_PollHost10000Times\\n"\n'
              '    ".word 0x2402270F\\n"\n    ".word 0x03E00008\\n"\n);\n')
     eq("include_asm: .word-encoded body attributed as a body",
-       inlineasm.func_cheat_asm_count(words, "func_800164F8"), 1)
+       inlineasm.func_cheat_asm_count(words, "sys_PollHost10000Times"), 1)
     # A block carrying BOTH a glabel and an asm/funcs `.include` is a body, and
     # must not also be reported as a marker — the two sets must stay disjoint,
     # or _not_a_c_function could call an attributed function "not a function".
@@ -11765,9 +11765,9 @@ def test_layer2_addresses() -> None:
                (layer2.addr_of("func_PR"), layer2.addr_index().get("func_PR")),
                ("80015000", "80015000"))
             with open("build/bb2.map", "a") as fh:            # a map that disagrees with
-                fh.write("                0x8001c630                func_8001C624\n")
+                fh.write("                0x8001c630                fight_ResetFighter0ToStartPosition\n")
             eq("addresses: ...an auto-name's own address beats the link map in both",
-               (layer2.addr_of("func_8001C624"), layer2.addr_index().get("func_8001C624")),
+               (layer2.addr_of("fight_ResetFighter0ToStartPosition"), layer2.addr_index().get("fight_ResetFighter0ToStartPosition")),
                ("8001C624", "8001C624"))
 
             # round-9 hardening: the dates record() steps past are the audit's

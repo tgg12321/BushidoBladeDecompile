@@ -12,7 +12,7 @@
 #include <psxsdk/libsn.h>
 #include <psxsdk/libgpu.h>
 
-extern void func_800164F8(void);
+extern void sys_PollHost10000Times(void);
 extern u8 D_8008D070[];
 extern SPRT_8 g_font_sprites[2][32];
 
@@ -28,9 +28,12 @@ u32 __heapsize = 0;
  * length up to D_801078E0. The lengths are literal link-time values, as they
  * were in the asm: a layout change must recompute them. */
 u32 D_800A2674[6] = {
-    (u32)func_800164F8,  0x00076B78, /* __text, __textlen */
-    (u32)D_8008D070,     0x0001605C, /* __data, __datalen */
-    (u32)g_font_sprites, 0x00063FB0, /* __bss, __bsslen */
+    (u32)sys_PollHost10000Times,
+    0x00076B78, /* __text, __textlen */
+    (u32)D_8008D070,
+    0x0001605C, /* __data, __datalen */
+    (u32)g_font_sprites,
+    0x00063FB0, /* __bss, __bsslen */
 };
 
 /* LIBSN SNDEF .data (0x800A268C, a data-only module directly after

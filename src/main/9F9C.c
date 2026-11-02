@@ -1276,7 +1276,7 @@ void func_8001C51C(void) {
 }
 
 /* Initialise record 0 of D_80101EC8 (Unk80101EC8Record). */
-void func_8001C624(void) {
+void fight_ResetFighter0ToStartPosition(void) {
     Unk80101EC8Record *fighter_record = D_80101EC8;
     VECTOR local;
     s32 x, y, z;
@@ -1422,7 +1422,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
         }
         if (g_fight_start_position_pair_changed =
                 prev != g_fight_start_position_pair_index) {
-            func_8001C624();
+            fight_ResetFighter0ToStartPosition();
             current_script = motion_GetCurrentVariantScript(0);
             D_80101EC8[0].move_is_common = 0;
             fighter_StartMoveScript(0, current_script, 0);

@@ -461,7 +461,7 @@ fail_store:
 
 s32 memcard_Update(void) {
     if ((u32)g_memcard_request_state < 2) {
-        D_800A31F8 = func_80037D14(0, 0);
+        D_800A31F8 = memcard_StepCardInfoAndLoad(0, 0);
     }
     memcard_StepRequest();
     memcard_PollFileCompletion();

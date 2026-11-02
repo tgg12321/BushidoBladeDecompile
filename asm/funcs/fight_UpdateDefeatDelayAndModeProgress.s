@@ -195,7 +195,7 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D3A0 8001CBA0 FF004230 */  andi       $v0, $v0, 0xFF
     /* D3A4 8001CBA4 0B004010 */  beqz       $v0, .L8001CBD4
     /* D3A8 8001CBA8 00000000 */   nop
-    /* D3AC 8001CBAC 8971000C */  jal        func_8001C624
+    /* D3AC 8001CBAC 8971000C */  jal        fight_ResetFighter0ToStartPosition
     /* D3B0 8001CBB0 00000000 */   nop
     /* D3B4 8001CBB4 4186000C */  jal        motion_GetCurrentVariantScript
     /* D3B8 8001CBB8 21200000 */   addu      $a0, $zero, $zero

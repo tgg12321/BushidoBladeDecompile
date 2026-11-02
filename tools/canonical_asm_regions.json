@@ -361,7 +361,7 @@
         "7421912c9b1a80d95a0366d63abd0417187f7e5008177aac346f0c971d139543"
       ]
     },
-    "func_800164F8": {
+    "sys_PollHost10000Times": {
       "file": "main/6CF8",
       "sha256": [
         "4142a4bba198df862057732c6dd0ca471c6d33fbb3aedcaa7f711c55cc44ec0f"

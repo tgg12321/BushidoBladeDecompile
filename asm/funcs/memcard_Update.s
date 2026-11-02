@@ -5,7 +5,7 @@ glabel memcard_Update
     /* 28F40 80038740 05004010 */  beqz       $v0, .L80038758
     /* 28F44 80038744 1000BFAF */   sw        $ra, 0x10($sp)
     /* 28F48 80038748 21200000 */  addu       $a0, $zero, $zero
-    /* 28F4C 8003874C 45DF000C */  jal        func_80037D14
+    /* 28F4C 8003874C 45DF000C */  jal        memcard_StepCardInfoAndLoad
     /* 28F50 80038750 21280000 */   addu      $a1, $zero, $zero
     /* 28F54 80038754 2C0182AF */  sw         $v0, %gp_rel(D_800A31F8)($gp)
   .L80038758:

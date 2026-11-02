@@ -1350,7 +1350,6 @@ g_eff_top_right_uv = 0x800A34D8; /* -> 0x1F80009A */  // data-wave 2026-10-28: w
 g_eff_bottom_left_uv = 0x800A34DC; /* -> 0x1F80009C */  // data-wave 2026-10-28: was g_scratchpad_ptr_9c
 g_eff_bottom_right_uv = 0x800A34E0; /* -> 0x1F80009E */  // data-wave 2026-10-28: was g_scratchpad_ptr_9e
 D_800A34F2 = 0x800A34F2; /* g_eff_yawed_particle_alternate_texture_flags[1] */  /* data-wave 2026-10-08: was g_scratchpad_ptr_b8_plus_6 */
-breakpoint_trap_loop_800164F8 = 0x800164F8;
 const_return_0x25_80044E64 = 0x80044E64; /* stub: returns literal 0x25 (37) */
 const_return_0x26_80044E6C = 0x80044E6C; /* stub: returns literal 0x26 (38) */
 empty_stub_800457D4 = 0x800457D4; /* stub: jr $ra; nop (empty body) */

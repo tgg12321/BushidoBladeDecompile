@@ -265,7 +265,7 @@ s32 ndata_ReadChecked(s32 ndata_index, s32 dest_addr) {
         if (len < var_0) {
             printf(D_8001528C, ndata_index, var_0 - len);
             while (1) {
-                func_800164F8();
+                sys_PollHost10000Times();
             }
         }
     } else {

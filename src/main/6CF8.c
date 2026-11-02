@@ -22,7 +22,7 @@ const char g_str_limit[12] = "LIMIT:%08x\n";
 const char g_str_prim_overflow[24] = "common prim over flow\n";
 const char D_8001004C[28] = "Fri Aug  7 22:26:32 1998\n";
 
-extern void func_800164F8(void);
+extern void sys_PollHost10000Times(void);
 
 extern u8 g_softbody_slot_high_water;
 extern RECT g_gpu_cd_file_image_rect;
@@ -33,9 +33,10 @@ extern void __main(void);
  * this call passes it unextended (an s16 prototype adds sll/sra here). */
 extern s32 gpu_DrawSpriteAtPackedTablePosition(s32, s32, s32);
 
-/* func_800164F8 -- polls the PC host 10000 times: pollhost() is PsyQ LIBSN.H's
- * `break 1024`, which ASPSX (and maspsx) encode as `break 1,0` (0x0001000D). */
-void func_800164F8(void) {
+/* sys_PollHost10000Times -- polls the PC host 10000 times: pollhost() is PsyQ
+ * LIBSN.H's `break 1024`, which ASPSX (and maspsx) encode as `break 1,0`
+ * (0x0001000D). */
+void sys_PollHost10000Times(void) {
     s32 i;
 
     for (i = 9999; i >= 0; i--) {
@@ -236,7 +237,7 @@ void gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth(
 void sys_Panic(void) {
     printf(g_str_overflow);
     while (1) {
-        func_800164F8();
+        sys_PollHost10000Times();
     }
 }
 
@@ -495,7 +496,7 @@ void main(void) {
             if (remaining < 0) {
                 printf(g_str_prim_overflow);
                 while (1) {
-                    func_800164F8();
+                    sys_PollHost10000Times();
                 }
             }
         }
