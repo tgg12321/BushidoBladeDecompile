@@ -101,7 +101,7 @@ live session owns, and say which one you took.
 - **fake**: one TU per unit, claimed as `path:src/main/<tu>.c`. Naming lanes may still rename
   symbols in it; that merges line by line on land.
 - **assets / trace** (also trace-a, trace-b, trace-c: parallel trace lanes, each its own row; each
-  agent runs its own headless emulators via the shared runner): tools and docs only, no build input. `land` still runs the full gates when
+  agent runs its own headless emulators via the shared runner): tools and docs only, no build input. A capture unit adds an evidence line to the naming row it feeds; when that row is `blocked`, the same commit moves its stage to `idea` (blocked rows are never picked up). Each trace row claims its own `tools/trace/scenarios/<prefix>-*` glob, never the whole directory. `land` still runs the full gates when
   anything outside `docs/` or `memory/` changes (a `tools/` script can be a build input).
 
 ## Hard limits
