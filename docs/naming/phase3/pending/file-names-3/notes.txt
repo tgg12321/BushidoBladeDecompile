@@ -1,0 +1,7 @@
+file-names-3: main/28514 -> main/memcard_info_load (fallback main/memcard_card_info_load, the function's exact words). Verified 2026-11-01 at eeab2e0e8 (clean).
+Verified: src/main/28514.c defines only memcard_StepCardInfoAndLoad (:18) and data D_800109C8 (:11), g_memcard_card_loaded (:104), g_memcard_info_load_state (:105), g_memcard_info_load_pending_result (:107), D_800A3890 (:108), g_memcard_poll_count (:109) plus an unnamed switch jump table. Caller memcard_Update 28708.c:464. Map build/bb2.map lists build/src/main/28514.o (map current enough; no rebuild done). git ls-files: no memcard_info_load clash (only src/main/memcard.c).
+Keep: top comment (28514.c:1-3, ROM 0x28514 + LEGACY boundary) and the D_800109C8 comment (:7-10, memcard_Format's string); name claims only the card info+load step, not format.
+Only live citation: named_syms.txt:1049 (rewrite at LAND). move_tu rewrites bb2.ld, oracle/manifest.json, tools/cc1_tu_expectation.txt, tools/tu_renames.tsv; no flag lists. Run verify-oracle --rebuild after apply.
+LAND claim list: topic:tu:main/28514 (no other src/ TU cites it, so no other topic:tu:<id> claims; named_syms.txt is not a TU).
+
+Pre-apply naming-reviewer 2026-11-01: PASS (primary name; fallback not needed). LAND also rewrites the live citation docs/engine/cross_reference.md:23 (dry.txt's grep did not cover docs/engine); docs/naming/function-names.csv:289 updates on the census regen; docs/grind, memory/grind and the tools/tu_renames.tsv:41 comment are history.

@@ -1,0 +1,2 @@
+old_id	new_id	evidence
+main/28514	main/memcard_info_load	1 fn memcard_StepCardInfoAndLoad (CORROBORATED; sole caller memcard_Update 28708.c:464): 5-state _card_info/_card_load/_card_clear machine; data = .rodata D_800109C8 "bu%1d%1d:" (memcard_Format's path format) + its own jump table (no symbol); .sdata g_memcard_card_loaded, g_memcard_info_load_state; COMMON g_memcard_info_load_pending_result, D_800A3890, g_memcard_poll_count; all memcard; name uses the file's own g_memcard_info_load_* state prefix; no memcard_info_load.* file; memcard.c exists

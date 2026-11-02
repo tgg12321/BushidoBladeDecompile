@@ -1,0 +1,21 @@
+### python tools/move_tu.py main/28514 main/memcard_info_load (dry run, clean lane worktree ln-naming-c @ eeab2e0e8)
+move_tu: src/main/28514.c -> src/main/memcard_info_load.c (dry run)
+  bb2.ld: 5 section line(s)
+  flag lists: none
+  canonical_asm_regions: 0 grant(s)
+  oracle/manifest.json: 1 key(s)
+  cc1_tu_expectation: 1 line(s)
+  queue.json: 0 item(s)
+  lanes.json regenerate: 0 path(s), 0 command(s), 0 subject(s), 0 input(s)
+  rule paths: 0 file(s)
+  files rewritten: bb2.ld, oracle/manifest.json, tools/cc1_tu_expectation.txt, tools/tu_renames.tsv
+  (dry run: pass --apply to perform)
+
+### git grep -n -w -E "28514(\.c)?" -- src include symbol_addrs.txt named_syms.txt .claude/rules
+named_syms.txt:1049:/* From 28514.c memcard_StepCardInfoAndLoad: 5-state machine driving memcard */
+
+CLASSIFICATION
+- named_syms.txt:1049: LIVE citation of the file name (comment in a symbol list); rewrite to memcard_info_load.c at LAND (or by hand; move_tu does not touch it).
+- No other hits. Non-word hit (git grep without -w): src/main/28514.c:2 "ROM 0x28514" = ROM-offset boundary evidence, LEAVE (keep top comment incl. LEGACY note).
+- No other src/ TU, include/, symbol_addrs.txt or .claude/rules citation. No rule paths rewritten (0).
+
