@@ -1260,8 +1260,9 @@ void menu_UpdateRow(Unk8006EACCRec *draw_context) {
 void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
     /* several values of one kind, a sprite-sheet header table:
      * g_entry_menu_resources->unk_74 (loaded at entry and again in the
-     * selected-slot arm) and g_entry_menu_resources->unk_60 (the table the last
-     * loop draws from) (Ruling 11, ordinary-c-judge-decidable). */
+     * selected-slot arm) and g_entry_menu_resources->entry_grid_sheets (the
+     * table the last loop draws from) (Ruling 11, ordinary-c-judge-decidable).
+     */
     Unk8009B0E0Record **var_0;
     s32 flag;
     /* the cell table following a sheet header (s->header->cells in the two
