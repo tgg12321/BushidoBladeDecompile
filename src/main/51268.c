@@ -265,7 +265,7 @@ void eff_BindScratchpad(s16 *arg0, s32 *arg1);
 /* the message, alignment and an empty trailing string */
 const char D_800158E0[24] = "eff prim over :%d \n";
 
-void func_80061064(s16 *src_rotation, s32 *src_position) {
+void eff_UpdateCommands(s16 *src_rotation, s32 *src_position) {
     s32 quad_count;
     s32 command_index;
     eff_BindScratchpad(src_rotation, src_position);
@@ -1843,7 +1843,7 @@ void eff_InitQuadPairNotMirroredByViewSetting(void) {
     g_eff_animated_quad_counters[7] = 0;
 }
 
-void func_800650EC(void) {
+void eff_InitQuadMirroredByViewSettingOutsideReplay(void) {
     g_eff_animated_quad_positions[10].world_x = g_eff_command_position[0];
     g_eff_animated_quad_positions[10].world_y = g_eff_command_position[1];
     g_eff_animated_quad_positions[10].world_z = g_eff_command_position[2];
@@ -1851,7 +1851,7 @@ void func_800650EC(void) {
     g_eff_animated_quad_counters[10] = 0;
 }
 
-void func_80065134(void) {
+void eff_InitQuadNotMirroredByViewSetting(void) {
     g_eff_animated_quad_positions[11].world_x = g_eff_command_position[0];
     g_eff_animated_quad_positions[11].world_y = g_eff_command_position[1];
     g_eff_animated_quad_positions[11].world_z = g_eff_command_position[2];

@@ -1,4 +1,4 @@
-glabel func_800650EC
+glabel eff_InitQuadMirroredByViewSettingOutsideReplay
     /* 558EC 800650EC B003838F */  lw         $v1, %gp_rel(g_eff_command_position)($gp)
     /* 558F0 800650F0 00000000 */  nop
     /* 558F4 800650F4 0000628C */  lw         $v0, 0x0($v1)
@@ -17,4 +17,4 @@ glabel func_800650EC
     /* 55928 80065128 200D23AC */  sw         $v1, %lo(D_800F0D20)($at)
     /* 5592C 8006512C 0800E003 */  jr         $ra
     /* 55930 80065130 00000000 */   nop
-endlabel func_800650EC
+endlabel eff_InitQuadMirroredByViewSettingOutsideReplay

@@ -132,7 +132,7 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2D970 8003D170 2354010C */  jal        node_GetRootNodeMatrixTranslation
     /* 2D974 8003D174 21804000 */   addu      $s0, $v0, $zero
     /* 2D978 8003D178 21200002 */  addu       $a0, $s0, $zero
-    /* 2D97C 8003D17C 1984010C */  jal        func_80061064
+    /* 2D97C 8003D17C 1984010C */  jal        eff_UpdateCommands
     /* 2D980 8003D180 21284000 */   addu      $a1, $v0, $zero
     /* 2D984 8003D184 DA53010C */  jal        motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush
     /* 2D988 8003D188 00000000 */   nop

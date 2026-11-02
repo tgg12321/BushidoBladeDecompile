@@ -1,4 +1,4 @@
-glabel func_80061064
+glabel eff_UpdateCommands
     /* 51864 80061064 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 51868 80061068 1800BFAF */  sw         $ra, 0x18($sp)
     /* 5186C 8006106C 1400B1AF */  sw         $s1, 0x14($sp)
@@ -73,4 +73,4 @@ glabel func_80061064
     /* 5196C 8006116C 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 51970 80061170 0800E003 */  jr         $ra
     /* 51974 80061174 00000000 */   nop
-endlabel func_80061064
+endlabel eff_UpdateCommands

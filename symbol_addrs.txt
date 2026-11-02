@@ -1312,7 +1312,7 @@ g_str_wait_wrdy_h_l_800163F8 = 0x800163F8; /* 'wait (wrdy H -> L)' */
 g_str_wait_dmaf_clear_w_8001640C = 0x8001640C; /* 'wait (dmaf clear/W)' */
 D_80081F1C = 0x80081F1C; /* code: the entry of cdrom_IrqHandler (bios.c:584), passed to InterruptCallback(2, ...) by CD_initintr / CD_init (bios.c:447, :466) */  /* data-wave 2026-10-09: was g_irq_handler_block_80081F1C */
 D_800A358A = 0x800A358A; /* slot 1's column cursor, g_entry_menu_grid_column_cursors[1] */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_d */
-eff_FrameUpdate = 0x80061064; /* per-frame effect-system update: processes 28 effect slots, reports "eff prim over" if primitive budget (~450) exceeded */
+// RENAME 0x80061064: retired name 'eff_FrameUpdate' — preserved note: per-frame effect-system update: processes 28 effect slots, reports "eff prim over" if primitive budget (~450) exceeded
 D_800A323A = 0x800A323A; /* 12-bit fixed-point green channel ((a1 >> 8) & 0xFF) << 12 / 255 */  /* data-wave 2026-10-08: was g_text1a_color_green */
 D_800A323C = 0x800A323C; /* 12-bit fixed-point blue channel (a1 & 0xFF) << 12 / 255 */  /* data-wave 2026-10-08: was g_text1a_color_blue */
 mode_handler_14_NoOp = 0x80035430; /* empty body -- no-op */

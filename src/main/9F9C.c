@@ -2155,7 +2155,7 @@ void camera_ApplyFightView(void) {
         &local.focus_point, &local.camera_angles, local.eye_distance);
     {
         camera_CalcEye(&local, &view_record->eye_x);
-        func_80061064(&local.camera_angles.vx, &view_record->eye_x);
+        eff_UpdateCommands(&local.camera_angles.vx, &view_record->eye_x);
     }
     gpu_SetCellForceBit(view_record->forced_cell_coordinates[0]);
     gpu_SetCellForceBit(view_record->forced_cell_coordinates[1]);
@@ -2196,7 +2196,7 @@ void camera_ApplyReplayView(s32 playback_fraction) {
 
     {
         camera_CalcEye(&local, &view_record->eye_x);
-        func_80061064(&local.camera_angles.vx, &view_record->eye_x);
+        eff_UpdateCommands(&local.camera_angles.vx, &view_record->eye_x);
     }
 
     g_listener_cam = view_record;

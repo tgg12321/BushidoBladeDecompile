@@ -60,7 +60,7 @@ glabel camera_ApplyReplayView
     /* EFC8 8001E7C8 4E69000C */  jal        camera_CalcEye
     /* EFCC 8001E7CC 21280002 */   addu      $a1, $s0, $zero
     /* EFD0 8001E7D0 21202002 */  addu       $a0, $s1, $zero
-    /* EFD4 8001E7D4 1984010C */  jal        func_80061064
+    /* EFD4 8001E7D4 1984010C */  jal        eff_UpdateCommands
     /* EFD8 8001E7D8 21280002 */   addu      $a1, $s0, $zero
     /* EFDC 8001E7DC 0A80013C */  lui        $at, %hi(g_listener_cam)
     /* EFE0 8001E7E0 B43632AC */  sw         $s2, %lo(g_listener_cam)($at)

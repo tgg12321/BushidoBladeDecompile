@@ -1,4 +1,4 @@
-glabel func_80065134
+glabel eff_InitQuadNotMirroredByViewSetting
     /* 55934 80065134 B003838F */  lw         $v1, %gp_rel(g_eff_command_position)($gp)
     /* 55938 80065138 00000000 */  nop
     /* 5593C 8006513C 0000628C */  lw         $v0, 0x0($v1)
@@ -17,4 +17,4 @@ glabel func_80065134
     /* 55970 80065170 2C0D23AC */  sw         $v1, %lo(D_800F0D2C)($at)
     /* 55974 80065174 0800E003 */  jr         $ra
     /* 55978 80065178 00000000 */   nop
-endlabel func_80065134
+endlabel eff_InitQuadNotMirroredByViewSetting

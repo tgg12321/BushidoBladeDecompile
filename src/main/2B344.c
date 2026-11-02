@@ -1163,7 +1163,7 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
     }
     view_angles = motion_GetPlaybackViewAngles();
     root_translation = node_GetRootNodeMatrixTranslation();
-    func_80061064(view_angles, root_translation);
+    eff_UpdateCommands(view_angles, root_translation);
     if (motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush() == 0) {
         flag = 1;
     }

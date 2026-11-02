@@ -233,9 +233,9 @@ void eff_InitQuadPairWithFirstMirroredByViewSettingOutsideReplay(void);
 u8 eff_DrawAndAdvanceQuadPairWithFirstMirroredByViewSettingOutsideReplay(void);
 void eff_InitQuadPairNotMirroredByViewSetting(void);
 u8 eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting(void);
-void func_800650EC(void);
+void eff_InitQuadMirroredByViewSettingOutsideReplay(void);
 u8 eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay(void);
-void func_80065134(void);
+void eff_InitQuadNotMirroredByViewSetting(void);
 u8 eff_DrawAndAdvanceQuadNotMirroredByViewSetting(void);
 void eff_InitTwoAnimatedQuadsFirstSlot(void);
 s32 eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires(void);
@@ -297,9 +297,9 @@ s32 g_eff_command_handlers[62] = {
     (s32)eff_DrawAndAdvanceQuadPairWithFirstMirroredByViewSettingOutsideReplay,
     (s32)eff_InitQuadPairNotMirroredByViewSetting,
     (s32)eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting,
-    (s32)func_800650EC,
+    (s32)eff_InitQuadMirroredByViewSettingOutsideReplay,
     (s32)eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay,
-    (s32)func_80065134,
+    (s32)eff_InitQuadNotMirroredByViewSetting,
     (s32)eff_DrawAndAdvanceQuadNotMirroredByViewSetting,
     (s32)eff_InitTwoAnimatedQuadsFirstSlot,
     (s32)eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires,

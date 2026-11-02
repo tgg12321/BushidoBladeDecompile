@@ -650,8 +650,8 @@ extern u8 g_arena;
 extern s16 g_eff_jittered_billboard_ages[];
 extern s16 g_eff_billboard_pair_ages[];
 extern s32 g_eff_command_phase[];
-/* A 16-byte vector: thirteen functions store x / y / z; func_80061064 passes
- * it to light_SetPointLight, which copies all 16 bytes to
+/* A 16-byte vector: thirteen functions store x / y / z; eff_UpdateCommands
+ * passes it to light_SetPointLight, which copies all 16 bytes to
  * g_light_point_position. */
 extern VECTOR g_eff_point_light_position;
 extern Unk800F1B18Rec g_motion_decoders[];
@@ -1021,7 +1021,7 @@ extern void gpu_ResetGrowingBarProgress(void);
 extern s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(s32, s32, s32);
 extern s32 eff_LoadImagesAndSetup(s32, s32);
 extern void eff_SelectQuadBuffer(s32);
-extern void func_80061064(s16 *, s32 *);
+extern void eff_UpdateCommands(s16 *, s32 *);
 extern void eff_StartRotatedQuadClusterWithNearWhiteLight(s32 *, s16 *);
 extern void eff_StartRecycledCommandWithRoseLight(s32 *);
 extern s32 eff_StartCosineScaledQuadWithPaleBlueLight(s32 *);
