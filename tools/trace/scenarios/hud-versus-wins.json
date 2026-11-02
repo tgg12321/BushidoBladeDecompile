@@ -1,0 +1,20 @@
+{
+  "description": "versus-2p-bamboo's run cut at 8700, screenshots over the fight's first 350 frames, before any fight input: the fight HUD's two WINS counters (gpu_DrawTwoDigitCounterWithOptionalSecondSide) stand still; poked variants move one 0x8009B400 / 0x8009B458 sprite cell's y so the cell it places can be told apart",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/hud-versus-wins-1/baseline/spec.json",
+    "docs/naming/runtime/hud-versus-wins-1/B458-0-0-y/spec.json",
+    "docs/naming/runtime/hud-versus-wins-1/B458-0-1-y/spec.json",
+    "docs/naming/runtime/hud-versus-wins-1/B458-1-0-y/spec.json",
+    "docs/naming/runtime/hud-versus-wins-1/B458-1-1-y/spec.json",
+    "docs/naming/runtime/hud-versus-wins-1/B458-2-0-y/spec.json",
+    "docs/naming/runtime/hud-versus-wins-1/B458-2-1-y/spec.json",
+    "docs/naming/runtime/hud-versus-wins-1/B400-0-y/spec.json"
+  ],
+  "extends": "versus-2p-bamboo",
+  "end_frame": 8700,
+  "shots": [
+    "8500:fight.8500",
+    "8699:fight.8699"
+  ]
+}

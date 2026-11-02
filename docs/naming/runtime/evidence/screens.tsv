@@ -129516,6 +129516,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8005D554	gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle	versus-cpu-tatsumi-1@016e75c2a56c	opp2	8910	8910	1	opp2.9200@9200#d3c3c0478b43	hitmap:first 1 hits per phase only	0	
 0x8005D554	gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle	versus-cpu-tatsumi-1@016e75c2a56c	opp3	10585	10585	1	opp3.10800@10800#2a6301f92dcd	hitmap:first 1 hits per phase only	0	
 0x8005D554	gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle	versus-cpu-tatsumi-1@016e75c2a56c	t_load	7650	7650	1	t_load.mid@8000#aa39ad949db8	hitmap:first 1 hits per phase only	0	
+0x8005E098	gpu_DrawTwoDigitCounterWithOptionalSecondSide	hud-versus-wins-1/baseline@ca22cf509b46	t_load	8312	8322	6	t_load.last@8349#d31546a4e459	recorded hits only; capture limits apply	1	max_hits_reached:Z0:gpu_DrawTwoDigitCounterWithOptionalSecondSide:6
 0x8005E098	gpu_DrawTwoDigitCounterWithOptionalSecondSide	lib-versus-2p-kimigaura-effects-1@19e872f6ca37	fight	8230	8230	1	fight.8330@8330#a507f1381f38	hitmap:first 1 hits per phase only	0	
 0x8005E098	gpu_DrawTwoDigitCounterWithOptionalSecondSide	lib-versus-2p-kimigaura-effects-1@19e872f6ca37	t_load	8221	8221	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
 0x8005E098	gpu_DrawTwoDigitCounterWithOptionalSecondSide	lib-versus-2p-kimigaura-kick-2p-1@fd688595c842	fight	8230	8230	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
