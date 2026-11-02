@@ -475,8 +475,8 @@ glabel fighter_Init
     /* 13474 80022C74 0980073C */  lui        $a3, %hi(D_8008E3F8)
     /* 13478 80022C78 F8E3E724 */  addiu      $a3, $a3, %lo(D_8008E3F8)
     /* 1347C 80022C7C 0A000286 */  lh         $v0, 0xA($s0)
-    /* 13480 80022C80 0980063C */  lui        $a2, %hi(D_8008E4D0)
-    /* 13484 80022C84 D0E4C624 */  addiu      $a2, $a2, %lo(D_8008E4D0)
+    /* 13480 80022C80 0980063C */  lui        $a2, %hi(g_fighter_summed_tally_step_scales)
+    /* 13484 80022C84 D0E4C624 */  addiu      $a2, $a2, %lo(g_fighter_summed_tally_step_scales)
     /* 13488 80022C88 40100200 */  sll        $v0, $v0, 1
     /* 1348C 80022C8C 0980013C */  lui        $at, %hi(g_fighter_lost_bone_group_step_scales)
     /* 13490 80022C90 21082200 */  addu       $at, $at, $v0

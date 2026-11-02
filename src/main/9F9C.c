@@ -4089,7 +4089,8 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
     for (i = 0; i < 4; i++) {
         p->hit_record_group_10_13_step_scales[i] =
             D_8008E3F8[p->character_data_index][i];
-        p->summed_tally_step_scales[i] = D_8008E4D0[p->character_data_index][i];
+        p->summed_tally_step_scales[i] =
+            g_fighter_summed_tally_step_scales[p->character_data_index][i];
     }
     p->attack_early_frame_limit = 8;
     p->queued_move = 0;

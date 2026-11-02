@@ -228,7 +228,7 @@ extern u16 g_fighter_lost_bone_group_step_scales[28];
  * Unk80101EC8Record.hit_record_group_10_13_step_scales[i] */
 extern u16 D_8008E3F8[27][4];
 /* [character_data_index][i] -> Unk80101EC8Record.summed_tally_step_scales[i] */
-extern u16 D_8008E4D0[27][4];
+extern u16 g_fighter_summed_tally_step_scales[27][4];
 extern u8 g_fight_character_vab_and_ground_quad_classes[];
 /* [character_data_index][weapon_id] of D_80101EC8 */
 extern u8 g_resource_default_pair_selections[][8];
