@@ -749,8 +749,8 @@ typedef struct {
     /* 0x34 */ s32 motion_streams[2];
     /* per player; relocated by motion_RebasePlayback when nonzero */
     /* 0x3C */ s32 draw_set_tracks[2];
-    /* 0x44 */ s16 unk44[2]; /* per player */
-    /* 0x48 */ s16 unk48[2]; /* per player */
+    /* 0x44 */ s16 weapon_entry_ids[2]; /* per player */
+    /* 0x48 */ s16 unk48[2];            /* per player */
 } Unk800EFAE8Rec;
 
 /* 0x800A3560: two 3-byte records, one per selection slot i (slot i at
@@ -1760,10 +1760,10 @@ typedef struct Unk80101EC8Record {
     s16 hit_record_group_6_9_intact;
     s16 hit_record_group_14_21_hit_tally;
     s16 hit_record_group_10_13_hit_tally;
-    s16 unk_272;
+    s16 power_scale_tally;
     s16 hit_record_group_6_9_lost_step_scale;
     s16 hit_record_group_10_13_step_scales[4];
-    s16 unk_27E[4];
+    s16 summed_tally_step_scales[4];
     s16 pending_move_event;
     /* per blade (weapon_hit_start_frames / weapon_hit_end_frames bounds),
      * fighter_Update */

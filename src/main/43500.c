@@ -790,16 +790,16 @@ s32 motion_StartPlayback(s32 playback_index, s32 start_pair, s32 a2, s32 a3,
     s->origin_z = *start_position_cursor++;
     s->rotation_x = 0;
     s->rotation_z = 0;
-    s->unk44[0] = a2;
-    s->unk44[1] = a3;
+    s->weapon_entry_ids[0] = a2;
+    s->weapon_entry_ids[1] = a3;
     s->unk48[0] = a4;
     s->unk48[1] = a5;
     s->rotation_y = (((s->control_word >> 8) & 0x7F) << 14) / 360;
     if (s->control_word >= 0) {
-        s->unk44[0] = -1;
+        s->weapon_entry_ids[0] = -1;
     }
     if (!(s->control_word & 0x40000000)) {
-        s->unk44[1] = -1;
+        s->weapon_entry_ids[1] = -1;
     }
     slot_object = slot_GetObject(0);
     if (slot_object != 0) {

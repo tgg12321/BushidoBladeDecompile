@@ -2777,12 +2777,12 @@ multpath_start:
     frame_step = (frame_step * factor) >> 12;
 defaultpath: {
     s32 var_8 = fighter_record->hit_record_group_14_21_hit_tally;
-    s32 var_9 = fighter_record->unk_272;
+    s32 var_9 = fighter_record->power_scale_tally;
     s32 sum = var_8 + var_9;
     s32 sum_or_3 = (sum < 4) ? sum : 3;
     idx = sum_or_3;
 }
-    factor = fighter_record->unk_27E[idx];
+    factor = fighter_record->summed_tally_step_scales[idx];
     frame_step = (frame_step * factor) >> 12;
     fighter_record->move_frame_step = frame_step;
 }
@@ -2943,7 +2943,7 @@ void fight_UpdatePairedMoves(void) {
         rec->move_started = 2;
         rec->other->move_started = 2;
         rec->other->variant_index = rec->other->default_variant_index;
-        rec->other->unk_272 += 1;
+        rec->other->power_scale_tally += 1;
         pos[0] = (rec->world_pos.x + rec->other->world_pos.x) / 2;
         pos[1] = (rec->world_pos.y + rec->other->world_pos.y) / 2;
         pos[2] = (rec->world_pos.z + rec->other->world_pos.z) / 2;
@@ -3907,7 +3907,7 @@ void fighter_ResetBoneGroupHitState(Unk80101EC8Record *fighter_record) {
     fighter_record->hit_record_group_6_9_intact = 1;
     fighter_record->hit_record_group_14_21_hit_tally = 0;
     fighter_record->hit_record_group_10_13_hit_tally = 0;
-    fighter_record->unk_272 = 0;
+    fighter_record->power_scale_tally = 0;
 }
 
 void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
@@ -4089,7 +4089,7 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
     for (i = 0; i < 4; i++) {
         p->hit_record_group_10_13_step_scales[i] =
             D_8008E3F8[p->character_data_index][i];
-        p->unk_27E[i] = D_8008E4D0[p->character_data_index][i];
+        p->summed_tally_step_scales[i] = D_8008E4D0[p->character_data_index][i];
     }
     p->attack_early_frame_limit = 8;
     p->queued_move = 0;
@@ -4744,9 +4744,10 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
     }
     fighter_record->power =
         (fighter_record->base_power *
-         g_fighter_power_scales
-             [fighter_record->character_data_index]
-             [fighter_record->unk_272 >= 4 ? 3 : fighter_record->unk_272]) >>
+         g_fighter_power_scales[fighter_record->character_data_index]
+                               [fighter_record->power_scale_tally >= 4
+                                    ? 3
+                                    : fighter_record->power_scale_tally]) >>
         12;
     if (fighter_record->move_started == 1) {
         fighter_record->move_started = 0;

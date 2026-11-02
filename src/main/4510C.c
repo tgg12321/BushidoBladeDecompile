@@ -173,11 +173,11 @@ s32 motion_UpdatePlayback(void) {
             vec.vz += s->origin_z;
             func_80040D48(i, 0, &vec.vx, &s->rotation_x, decoded_motion_frame,
                           s->origin_y);
-            if (s->unk44[i] >= 0) {
+            if (s->weapon_entry_ids[i] >= 0) {
                 node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
-                    s->unk44[i], (i * 2) | 0x8000, 0, 0);
+                    s->weapon_entry_ids[i], (i * 2) | 0x8000, 0, 0);
                 node_QueueTableEntryNodePairUnderSlotNode(
-                    s->unk44[i], i * 2, 0);
+                    s->weapon_entry_ids[i], i * 2, 0);
             }
             if (s->unk48[i] >= 0) {
                 node_QueueTableEntryNodePairUnderSlotNode(
@@ -1998,7 +1998,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 s32 a, b, c;
                 a = p->hit_record_group_14_21_hit_tally;
                 b = p->hit_record_group_10_13_hit_tally;
-                c = p->unk_272;
+                c = p->power_scale_tally;
                 work3 =
                     0x1000 - (((p->hit_record_group_6_9_intact == 0 ? a + 4 + b
                                                                     : a + b) +

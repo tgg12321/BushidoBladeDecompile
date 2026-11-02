@@ -133,7 +133,7 @@ void fighter_AccumulateOrClearByBoneGroup(
     case 3:
     case 4:
     case 5:
-        fighter_record->unk_272 += increment;
+        fighter_record->power_scale_tally += increment;
         break;
     case 6:
     case 7:
@@ -360,10 +360,10 @@ static inline s32 fighter_ResolveBoneHitTail(
     s32 arg0, Tbl8008E194 *var_0, Unk80101EC8Record *fighter_record,
     s32 fighter_index, s32 *hit_point) {
     if (arg0 == 1 && var_0->unkD == 2) {
-        fighter_record->unk_272++;
+        fighter_record->power_scale_tally++;
     }
     if (g_fight_mode_selector != 5) {
-        fighter_record->unk_272++;
+        fighter_record->power_scale_tally++;
     }
     fighter_record->pending_move_event = 5;
     fight_RecordReplayEventAndDispatchSoundOrEffect(
