@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-kimigaura-paired re-run unchanged with Unk80101EC8Record.unk_272 / unk_27E watches (write and read 0x8010213A/2 and 0x80102586/2 = D_80101EC8[0] / [1].unk_272; write and read 0x80102146/8 and 0x80102592/8 = .unk_27E[4]; breakpoints fighter_AccumulateOrClearByBoneGroup and fighter_ResetBoneGroupHitState with their args): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-Unk80101EC8Record-unk_272-versus-2p-kimigaura-paired-1/spec.json"
+  ],
+  "extends": "versus-2p-kimigaura-paired",
+  "refines": "versus-2p-kimigaura-paired"
+}

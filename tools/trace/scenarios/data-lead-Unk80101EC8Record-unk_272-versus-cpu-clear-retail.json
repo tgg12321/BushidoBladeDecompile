@@ -1,0 +1,9 @@
+{
+  "description": "versus-cpu-clear-retail re-run unchanged with Unk80101EC8Record.unk_272 / unk_27E watches (write and read 0x8010213A/2 and 0x80102586/2 = D_80101EC8[0] / [1].unk_272; write and read 0x80102146/8 and 0x80102592/8 = .unk_27E[4]; breakpoints fighter_AccumulateOrClearByBoneGroup and fighter_ResetBoneGroupHitState with their args): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-Unk80101EC8Record-unk_272-versus-cpu-clear-retail-1/spec.json",
+    "docs/naming/runtime/data-lead-Unk80101EC8Record-unk_272-versus-cpu-clear-retail-2/spec.json"
+  ],
+  "extends": "versus-cpu-clear-retail",
+  "refines": "versus-cpu-clear-retail"
+}
