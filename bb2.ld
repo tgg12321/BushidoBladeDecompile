@@ -55,7 +55,7 @@ SECTIONS
         build/src/main/cdrom_update.o(.rodata);
         build/src/main/cdrom.o(.rodata);
         build/src/main/memcard.o(.rodata);
-        build/src/main/28514.o(.rodata);
+        build/src/main/memcard_info_load.o(.rodata);
         build/src/main/28708.o(.rodata);
         build/src/main/2B344.o(.rodata);
         build/src/main/309CC.o(.rodata);
@@ -111,7 +111,7 @@ SECTIONS
         build/src/main/cdrom_update.o(.text);
         build/src/main/cdrom.o(.text);
         build/src/main/memcard.o(.text);
-        build/src/main/28514.o(.text);
+        build/src/main/memcard_info_load.o(.text);
         build/src/main/28708.o(.text);
         build/src/main/2B344.o(.text);
         build/src/main/309CC.o(.text);
@@ -344,7 +344,7 @@ SECTIONS
         build/src/main/d_7D920.o(.data);
         build/src/main/cdrom.o(.data);
         build/src/main/memcard.o(.data);
-        build/src/main/28514.o(.data);
+        build/src/main/memcard_info_load.o(.data);
         build/src/main/28708.o(.data);
         build/src/main/2B344.o(.data);
         build/src/main/d_80DF8.o(.data);
@@ -588,7 +588,7 @@ SECTIONS
         build/asm/data/939DC.data.o(.data);
         build/src/main/267A8.o(.sdata);
         . = ALIGN(4);
-        build/src/main/28514.o(.sdata);
+        build/src/main/memcard_info_load.o(.sdata);
         build/src/main/28708.o(.sdata);
         . = ALIGN(4);
         build/src/main/2B344.o(.sdata);
@@ -657,7 +657,7 @@ SECTIONS
         build/src/main/cdrom_update.o(.bss);
         build/src/main/cdrom.o(.bss);
         build/src/main/memcard.o(.bss);
-        build/src/main/28514.o(.bss);
+        build/src/main/memcard_info_load.o(.bss);
         build/src/main/28708.o(.bss);
         build/src/main/2B344.o(.bss);
         build/src/main/309CC.o(.bss);
