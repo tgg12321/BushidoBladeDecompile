@@ -1,0 +1,15 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	byte-identical to training-practice-ko-1's same-named screenshot; not viewed	5200:START	capture.boot_intro.last.png
+t_menu	5490	6049	transition; no screen claim	5500:CROSS,5800:START	-
+top_menu	6050	6199	byte-identical to training-practice-ko-1's same-named screenshot; not viewed	6080:DOWN,6140:DOWN	capture.top_menu.first.png
+t_training	6200	6299	transition; no screen claim	6200:CROSS	-
+training_menu	6300	6999	no screenshot	6500:START,6800:CROSS	-
+t_char	7000	7049	transition; no screen claim	-	-
+char_select	7050	7399	char_select.first viewed: Select Character, the P1 cursor on KANNUKI (left column: KANNUKI, MIKADO, TATSUMI; right: GENGORO, KAUN, JO); byte-identical to training-practice-ko-1's	7100:START	capture.char_select.first.png
+t_weapon	7400	7449	transition; no screen claim	7400:CROSS	-
+weapon_select	7450	8499	weapon_select.7690 viewed: Select Weapon, KANNUKI's portrait, the cursor on the Nodachi (labelled Nodachi top left)	7500:RIGHT/4,7700:START,8000:CROSS,8300:START	capture.weapon_select.7690.png
+t_load	8500	9499	transition; no screen claim	8500:CROSS,8800:CROSS,9100:CROSS	-
+pause_menu	9500	9759	pause_menu.first viewed: the Pause Menu over the plank-floored stage (KANNUKI left, the Ninja right), Frontal Attack / Reverse Attack / Dash all off, cursor on Continue; pause_menu.last: Frontal Attack on, Reverse Attack off, Dash off, cursor on Continue	9540:UP,9570:UP,9600:UP,9630:LEFT,9660:DOWN,9690:DOWN,9720:DOWN	capture.pause_menu.first.png,capture.pause_menu.last.png
+t_fight	9760	9799	transition; no screen claim	9760:CROSS	-
+fight	9800	11539	fight.first viewed: KANNUKI (left, Nodachi) and the Ninja (right) far apart on the plank floor; fight.10400 / 11000 / last: the two closer, both weapons raised or extended	9820..11532:CROSS/4 every 8 (215 presses)	capture.fight.first.png,capture.fight.10400.png,capture.fight.11000.png,capture.fight.last.png
+trade	11540	11799	trade.11556-11576 viewed: the two blades meet, KANNUKI crouches with the Nodachi forward under the Ninja's raised blade, then both weapons fly up out of the hands; trade.11584: an orange burst on each fighter at once (both orange commands drawn); trade.11600 / 11700 / last: the weapons in the air, then both fighters standing apart with weapons raised	11540..11796:CROSS/4 every 8 (33 presses)	capture.trade.11556.png,capture.trade.11562.png,capture.trade.11566.png,capture.trade.11570.png,capture.trade.11576.png,capture.trade.11584.png,capture.trade.11600.png,capture.trade.11700.png,capture.trade.last.png

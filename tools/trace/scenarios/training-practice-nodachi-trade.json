@@ -1,0 +1,80 @@
+{
+  "description": "Training Mode Practice, KANNUKI with the Nodachi (Select Weapon RIGHT x1), Frontal Attack set on in the Pause Menu, P1 CROSS every 8 frames from 9820: P1 and the Ninja flag-hit each other on one frame (11562, both fighter_StoreBoneLocalVectorAndArmEventTrigger), both armed bone events send event 4 on the next drawn frame (11564), and the second eff_StartRecycledCommandWithOrangeLight finds command 0x10 running and takes its second slot, command 0x11 (0x800651F0 at 11564, 0x800656EC on 11 drawn frames 11566-11586; both blades fly, an orange burst on each fighter at 11584); retail inputs, no poke; cut at 11800",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/training-practice-nodachi-trade-1/spec.json",
+    "docs/naming/runtime/eff-slot-training-practice-nodachi-trade-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 11800,
+  "inputs": [
+    "6080:DOWN",
+    "6140:DOWN",
+    "6200:CROSS",
+    "6500:START",
+    "6800:CROSS",
+    "7100:START",
+    "7400:CROSS",
+    "7500:RIGHT/4",
+    "7700:START",
+    "8000:CROSS",
+    "8300:START",
+    "8500:CROSS",
+    "8800:CROSS",
+    "9100:CROSS",
+    "9540:UP",
+    "9570:UP",
+    "9600:UP",
+    "9630:LEFT",
+    "9660:DOWN",
+    "9690:DOWN",
+    "9720:DOWN",
+    "9760:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 9820,
+      "every": 8,
+      "count": 248,
+      "steps": [
+        "+0:CROSS/4"
+      ]
+    }
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6200:t_training",
+    "6300:training_menu",
+    "7000:t_char",
+    "7050:char_select",
+    "7400:t_weapon",
+    "7450:weapon_select",
+    "8500:t_load",
+    "9500:pause_menu",
+    "9760:t_fight",
+    "9800:fight",
+    "11540:trade"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "7050:char_select.first",
+    "7690:weapon_select.7690",
+    "9500:pause_menu.first",
+    "9755:pause_menu.last",
+    "9800:fight.first",
+    "10400:fight.10400",
+    "11000:fight.11000",
+    "11539:fight.last",
+    "11556:trade.11556",
+    "11562:trade.11562",
+    "11566:trade.11566",
+    "11570:trade.11570",
+    "11576:trade.11576",
+    "11584:trade.11584",
+    "11600:trade.11600",
+    "11700:trade.11700",
+    "11799:trade.last"
+  ]
+}
