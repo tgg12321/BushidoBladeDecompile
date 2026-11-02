@@ -1,0 +1,4 @@
+Unk8006EA28Rec.unk_60=entry_grid_sheets
+Unk8006EA28Rec.unk_68=choice_grid_page1_sheets
+Unk8006EA28Rec.unk_6C=choice_grid_page2_sheets
+Unk8006EA28Rec.unk_70=choice_grid_page3_sheets

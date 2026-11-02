@@ -1,0 +1,7 @@
+var-members-rest-27 -- draft notes (research: Opus, inline in session naming-b 2026-11-02, tmp/codex/var-members-rest-27-research.md; every use re-read on c0b22aa27 with git grep -w over src include).
+
+BASIS: 5 RENAME rows on Unk8006EA28Rec (SEL.BIN resource root). unk_74 (5ED34.c:937, 1274, 1446, 1773) and unk_78 are left neutral (not in this row).
+Comment pass: include/game.h:327-331 cites 'row_choice_sheets..unk_74' (range, stays true); src/main/5ED34.c:1259 'g_entry_menu_resources->unk_60' -> entry_grid_sheets.
+LAND claim list: topic:type:Unk8006EA28Rec; topic:tu:main/5ED34 (+ include/game.h).
+
+PRE-APPLY (naming-reviewer 2026-11-02): 4 PASS; unk_5C -> shared_layer_sheets FAILED (R4: row_choice_sheets and entry_grid_sheets are also read under more than one handler, so 'shared' does not set it apart). unk_5C stays NO_NAME here; reviewer-suggested mirrored_and_tinted_layer_sheets (its only two readers, gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset 5ED34.c:576 and gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer :2241) needs a fresh row.

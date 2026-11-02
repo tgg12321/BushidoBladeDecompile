@@ -1,0 +1,57 @@
+PASS Unk8006EA28Rec.unk_60=entry_grid_sheets, Unk8006EA28Rec.unk_68=choice_grid_page1_sheets, Unk8006EA28Rec.unk_6C=choice_grid_page2_sheets, Unk8006EA28Rec.unk_70=choice_grid_page3_sheets
+decl Unk8006EA28Rec.unk_60 -> entry_grid_sheets  include/game.h:344
+decl Unk8006EA28Rec.unk_68 -> choice_grid_page1_sheets  include/game.h:346
+decl Unk8006EA28Rec.unk_6C -> choice_grid_page2_sheets  include/game.h:347
+decl Unk8006EA28Rec.unk_70 -> choice_grid_page3_sheets  include/game.h:348
+  round 0: 9 member error line(s)
+    src/main/5ED34.c:227 unk_60 x1
+    src/main/5ED34.c:230 unk_68 x1
+    src/main/5ED34.c:231 unk_6C x1
+    src/main/5ED34.c:232 unk_70 x1
+    src/main/5ED34.c:738 unk_60 x1
+    src/main/5ED34.c:1543 unk_60 x1
+    src/main/5ED34.c:1720 unk_68 x1
+    src/main/5ED34.c:1724 unk_6C x1
+    src/main/5ED34.c:1728 unk_70 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -344 +344 @@
+-    Unk8009B0E0Record **unk_60;
++    Unk8009B0E0Record **entry_grid_sheets;
+@@ -346,3 +346,3 @@
+-    Unk8009B0E0Record **unk_68;
+-    Unk8009B0E0Record **unk_6C;
+-    Unk8009B0E0Record **unk_70;
++    Unk8009B0E0Record **choice_grid_page1_sheets;
++    Unk8009B0E0Record **choice_grid_page2_sheets;
++    Unk8009B0E0Record **choice_grid_page3_sheets;
+--- a/src/main/5ED34.c
++++ b/src/main/5ED34.c
+@@ -227 +227 @@
+-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_60);
++    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->entry_grid_sheets);
+@@ -230,3 +230,3 @@
+-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_68);
+-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_6C);
+-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_70);
++    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->choice_grid_page1_sheets);
++    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->choice_grid_page2_sheets);
++    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->choice_grid_page3_sheets);
+@@ -738 +738 @@
+-    var_3 = g_entry_menu_resources->unk_60;
++    var_3 = g_entry_menu_resources->entry_grid_sheets;
+@@ -1543 +1543 @@
+-    var_0 = g_entry_menu_resources->unk_60;
++    var_0 = g_entry_menu_resources->entry_grid_sheets;
+@@ -1720 +1720 @@
+-    menu_UpdateChoiceGrid(draw_context, g_entry_menu_resources->unk_68, 0);
++    menu_UpdateChoiceGrid(draw_context, g_entry_menu_resources->choice_grid_page1_sheets, 0);
+@@ -1724 +1724 @@
+-    menu_UpdateChoiceGrid(draw_context, g_entry_menu_resources->unk_6C, 1);
++    menu_UpdateChoiceGrid(draw_context, g_entry_menu_resources->choice_grid_page2_sheets, 1);
+@@ -1728 +1728 @@
+-    menu_UpdateChoiceGrid(draw_context, g_entry_menu_resources->unk_70, 2);
++    menu_UpdateChoiceGrid(draw_context, g_entry_menu_resources->choice_grid_page3_sheets, 2);
+DRY RUN: 2 file(s) would change; nothing written
+OK: every member access renamed
