@@ -1,0 +1,17 @@
+var-members-rest-25 -- draft notes (research tmp/codex/var-members-rest-25-research.md, re-derived by the drafter in ln-naming-b at c538ae101; research treated as hints only)
+
+BASIS: 3 RENAME rows, all kept with the research names (0 name changes, 0 dropped). verdict / verifier_note empty (the reviewer decides). Every use re-read with git grep -n -w over src include asm (types checked; unk44/unk48 hits in game.h:1140, game.h:1266, libsnd_i.h, libsnd cres.c/decre.c, 51268.c:2933 are other types). No INCLUDE_ASM body touches g_motion_playback_record, D_80101EC8, or the 0x272/0x27E displacements. Freshness: the three new names have 0 hits over src include asm tools docs symbol_addrs.txt named_syms.txt. unk_27E depends on unk_272 (drop both together if unk_272 fails).
+
+NO_NAME row (not in manifest/pairs): Unk800EFAE8Rec.unk48 (game.h:753 s16[2]). W 43500.c:795-796 (=a4,=a5, never cleared by control_word); R 4510C.c:182 (>=0), 184 (node_QueueTableEntryNodePairUnderSlotNode(unk48[i], (i*2)|1, 1)). Every caller passes -1,-1 (2B344.c:554, 747, 1101; asm fight_StartDescriptorPlaybackAndAudio.s and fight_InitImageAndPlaybackPresentation.s), so the reader branch is dead and a role would be borrowed from the wielded-object analogue (9F9C.c:5603-5605). SETTLE CONDITION: a caller passing a real (non -1) value, or a reviewer ruling that the reader's call shape alone names it (neutral candidate second_slot_entry_ids).
+
+Comment-pass list (old-name mentions in comments / docs; verified at c538ae101)
+- Unk80101EC8Record.unk_272: src/main/9F9C.c:4656 (comment "[character_data_index][min(unk_272, 3)]" above g_fighter_power_scales).
+- Unk80101EC8Record.unk_27E: include/bb2.h:230 and src/main/d_7D920.c:454 (both "-> Unk80101EC8Record.unk_27E[i]").
+- Unk800EFAE8Rec.unk44: none by name.
+- Offset-form comments (no old name, so a rename does not touch them; optional follow-up): src/main/9F9C.c:2707 (fighter_record+0x27E) and 2708 (fighter_record+0x272), in the motion_UpdateFrameStep header comment. The research listed these as name mentions; they are offsets only. The +0x44 in that same comment (9F9C.c:2701-2702) is move_frame_step, not Unk800EFAE8Rec.unk44.
+- Docs: no docs/engine or docs/formats mentions; tools/trace scenario names and docs/naming/runtime captures keep the old names as history and stay.
+- Post-apply survival grep: -w unk_272 and -w unk_27E over src include = 0 after the comment pass; -w unk44 still hits the other types listed above.
+
+Weakest rows: power_scale_tally (use-based qualifier; writers differ in cause; fallback NO_NAME if rejected); summed_tally_step_scales is wording-only and rides on it; weapon_entry_ids rests on the C, runtime values not cross-dumped.
+
+LAND claim list: topic:type:Unk800EFAE8Rec, topic:type:Unk80101EC8Record; topic:tu:main/43500, topic:tu:main/4510C, topic:tu:main/17AFC, topic:tu:main/9F9C (+ include/game.h, include/bb2.h and src/main/d_7D920.c for the comment pass).

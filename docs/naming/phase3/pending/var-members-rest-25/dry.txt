@@ -1,0 +1,94 @@
+PASS Unk800EFAE8Rec.unk44=weapon_entry_ids, Unk80101EC8Record.unk_272=power_scale_tally, Unk80101EC8Record.unk_27E=summed_tally_step_scales
+decl Unk800EFAE8Rec.unk44 -> weapon_entry_ids  include/game.h:752
+decl Unk80101EC8Record.unk_272 -> power_scale_tally  include/game.h:1763
+decl Unk80101EC8Record.unk_27E -> summed_tally_step_scales  include/game.h:1766
+  round 0: 17 member error line(s)
+    src/main/17AFC.c:136 unk_272 x1
+    src/main/17AFC.c:363 unk_272 x1
+    src/main/17AFC.c:366 unk_272 x1
+    src/main/43500.c:793 unk44 x1
+    src/main/43500.c:794 unk44 x1
+    src/main/43500.c:799 unk44 x1
+    src/main/43500.c:802 unk44 x1
+    src/main/4510C.c:176 unk44 x1
+    src/main/4510C.c:178 unk44 x1
+    src/main/4510C.c:180 unk44 x1
+    src/main/4510C.c:2001 unk_272 x1
+    src/main/9F9C.c:2780 unk_272 x1
+    src/main/9F9C.c:2785 unk_27E x1
+    src/main/9F9C.c:2946 unk_272 x1
+    src/main/9F9C.c:3910 unk_272 x1
+    src/main/9F9C.c:4092 unk_27E x1
+    src/main/9F9C.c:4749 unk_272 x2
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -752 +752 @@
+-    /* 0x44 */ s16 unk44[2]; /* per player */
++    /* 0x44 */ s16 weapon_entry_ids[2]; /* per player */
+@@ -1763 +1763 @@
+-    s16 unk_272;
++    s16 power_scale_tally;
+@@ -1766 +1766 @@
+-    s16 unk_27E[4];
++    s16 summed_tally_step_scales[4];
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -136 +136 @@
+-        fighter_record->unk_272 += increment;
++        fighter_record->power_scale_tally += increment;
+@@ -363 +363 @@
+-        fighter_record->unk_272++;
++        fighter_record->power_scale_tally++;
+@@ -366 +366 @@
+-        fighter_record->unk_272++;
++        fighter_record->power_scale_tally++;
+--- a/src/main/43500.c
++++ b/src/main/43500.c
+@@ -793,2 +793,2 @@
+-    s->unk44[0] = a2;
+-    s->unk44[1] = a3;
++    s->weapon_entry_ids[0] = a2;
++    s->weapon_entry_ids[1] = a3;
+@@ -799 +799 @@
+-        s->unk44[0] = -1;
++        s->weapon_entry_ids[0] = -1;
+@@ -802 +802 @@
+-        s->unk44[1] = -1;
++        s->weapon_entry_ids[1] = -1;
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -176 +176 @@
+-            if (s->unk44[i] >= 0) {
++            if (s->weapon_entry_ids[i] >= 0) {
+@@ -178 +178 @@
+-                    s->unk44[i], (i * 2) | 0x8000, 0, 0);
++                    s->weapon_entry_ids[i], (i * 2) | 0x8000, 0, 0);
+@@ -180 +180 @@
+-                    s->unk44[i], i * 2, 0);
++                    s->weapon_entry_ids[i], i * 2, 0);
+@@ -2001 +2001 @@
+-                c = p->unk_272;
++                c = p->power_scale_tally;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -2780 +2780 @@
+-    s32 var_9 = fighter_record->unk_272;
++    s32 var_9 = fighter_record->power_scale_tally;
+@@ -2785 +2785 @@
+-    factor = fighter_record->unk_27E[idx];
++    factor = fighter_record->summed_tally_step_scales[idx];
+@@ -2946 +2946 @@
+-        rec->other->unk_272 += 1;
++        rec->other->power_scale_tally += 1;
+@@ -3910 +3910 @@
+-    fighter_record->unk_272 = 0;
++    fighter_record->power_scale_tally = 0;
+@@ -4092 +4092 @@
+-        p->unk_27E[i] = D_8008E4D0[p->character_data_index][i];
++        p->summed_tally_step_scales[i] = D_8008E4D0[p->character_data_index][i];
+@@ -4749 +4749 @@
+-             [fighter_record->unk_272 >= 4 ? 3 : fighter_record->unk_272]) >>
++             [fighter_record->power_scale_tally >= 4 ? 3 : fighter_record->power_scale_tally]) >>
+DRY RUN: 5 file(s) would change; nothing written
+OK: every member access renamed
