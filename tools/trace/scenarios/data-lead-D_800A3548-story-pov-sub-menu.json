@@ -1,0 +1,8 @@
+{
+  "description": "story-pov-sub-menu re-run unchanged with D_800A3548 watches (access 0x800A3548/4; breakpoint StepSlideBuildFrameRecordAndDispatchStateHandler with its args): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-D_800A3548-story-pov-sub-menu-1/spec.json"
+  ],
+  "extends": "story-pov-sub-menu",
+  "refines": "story-pov-sub-menu"
+}

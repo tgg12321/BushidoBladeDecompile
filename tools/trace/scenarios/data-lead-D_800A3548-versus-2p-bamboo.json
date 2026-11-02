@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-bamboo re-run unchanged with D_800A3548 watches (access 0x800A3548/4; breakpoint StepSlideBuildFrameRecordAndDispatchStateHandler with its args): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-D_800A3548-versus-2p-bamboo-1/spec.json"
+  ],
+  "extends": "versus-2p-bamboo",
+  "refines": "versus-2p-bamboo"
+}
