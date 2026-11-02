@@ -11765,10 +11765,10 @@ def test_layer2_addresses() -> None:
                (layer2.addr_of("func_PR"), layer2.addr_index().get("func_PR")),
                ("80015000", "80015000"))
             with open("build/bb2.map", "a") as fh:            # a map that disagrees with
-                fh.write("                0x8001c630                fight_ResetFighter0ToStartPosition\n")
+                fh.write("                0x8001c630                func_8001C628\n")
             eq("addresses: ...an auto-name's own address beats the link map in both",
-               (layer2.addr_of("fight_ResetFighter0ToStartPosition"), layer2.addr_index().get("fight_ResetFighter0ToStartPosition")),
-               ("8001C624", "8001C624"))
+               (layer2.addr_of("func_8001C628"), layer2.addr_index().get("func_8001C628")),
+               ("8001C628", "8001C628"))
 
             # round-9 hardening: the dates record() steps past are the audit's
             # own (running max per ledger), and a date it can't step past is
