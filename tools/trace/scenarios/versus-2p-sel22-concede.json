@@ -1,0 +1,25 @@
+{
+  "description": "versus-2p-pair-exit-bamboo with the stage poked to selector 0x22 (Slash Mode's tatami room; a modified game): after the stage pick (CROSS 7840) the working record's stage_index (0x8009BD38 bits 4-9, 7 here) is poked to 0x22 at 7860 (bytes 24 02: menu_mode 4 kept), ApplyWorkingRecordToPendingConfigAndInitializeMode copies it at 7874 and the versus fight loads selector 0x22, which sets g_resource_has_retained_subblocks (368E4.c:166-170) and, as the one selector the non-Story load leaves it set for (368E4.c:183-186), keeps it; P1 concedes with SELECT at 10200 and the concession scene's playback (block 0xA, opened last by motion_StartPlayback) is moved when motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock resizes block 7 in the cutscene: func_80046A80 -> motion_RebasePlayback; the Rematch menu, Return to Sub Menu, Select Character",
+  "covers": [
+    "mode:vs_2p",
+    "char:kannuki",
+    "char:gengoro",
+    "event:concede",
+    "menu:rematch"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-sel22-concede-1/spec.json"
+  ],
+  "extends": "versus-2p-pair-exit-bamboo",
+  "end_frame": 12400,
+  "phases": [
+    "7860:t_load_poked"
+  ],
+  "pokes": [
+    {
+      "at": "0x8009BD38",
+      "hex": "2402",
+      "phase": "t_load_poked"
+    }
+  ]
+}
