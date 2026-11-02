@@ -96,12 +96,12 @@ Cited by function name.
 
 ## The selection screen (src/main/5ED34.c)
 
-- `StepSlideBuildFrameRecordAndDispatchStateHandler(arg0, pad)` (src/main/5ED34.c:216) keeps the pad word in
-  `g_entry_menu_pressed_buttons`, runs `StepSlideProgressCommitPendingStateAndQueueSound`, calls `gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset`
-  (src/main/5ED34.c:503) unless the screen mode
+- `StepSlideBuildFrameRecordAndDispatchStateHandler(arg0, pad)` (src/main/5ED34.c:242) keeps the held word `arg0` in
+  `g_entry_menu_held_buttons` (nothing reads it) and the pad word in `g_entry_menu_pressed_buttons`, runs `StepSlideProgressCommitPendingStateAndQueueSound`, calls `gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset`
+  (src/main/5ED34.c:559) unless the screen mode
   `g_entry_menu_handler_index` is 2 or 3, and calls `g_entry_menu_handlers[g_entry_menu_handler_index]`; it returns
-  `g_entry_menu_exit_result`. Its caller is `StepThenCloseVab1OnNonzero` (src/main/64FD8.c:1307).
-- `StepSlideProgressCommitPendingStateAndQueueSound` (src/main/5ED34.c:249) slides `g_entry_menu_slide_displacement` by 0x20 a frame:
+  `g_entry_menu_exit_result`. Its caller is `StepThenCloseVab1OnNonzero` (src/main/64FD8.c:1432).
+- `StepSlideProgressCommitPendingStateAndQueueSound` (src/main/5ED34.c:282) slides `g_entry_menu_slide_displacement` by 0x20 a frame:
   states 1 / 3 (low byte of `g_entry_menu_slide_phase`) slide in to 0x1E8 and then switch
   `g_entry_menu_handler_index` to `g_entry_menu_next_handler_index`; states 2 / 4 slide back to 0, playing sound 5
   as they start.
