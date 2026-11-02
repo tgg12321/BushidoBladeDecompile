@@ -1981,7 +1981,8 @@ Unk8009B2BCRecord g_panel_frame_sizes[3] = {
  * their cells D_8009B340 / D_8009B358 / D_8009B388; the sheet headers
  * D_8009B398 that gpu_DrawTimeFieldsAndDecimalCounter ..
  * gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells draw with, the cells
- * g_gpu_time_field_cells, and the ten digit cells g_gpu_decimal_digit_cells. */
+ * g_gpu_time_and_counter_cells, and the ten digit cells
+ * g_gpu_decimal_digit_cells. */
 Unk8009B0E0Record D_8009B2C8[2][5] = {
     {
         {0x1F, 0x00, 3, 0x00, 0x3C0, 0x1FE, 0x0, 0x64},
