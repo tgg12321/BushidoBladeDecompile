@@ -5782,7 +5782,8 @@ skip_62:
             g_fight_mode_selector != 3 &&
             (g_fight_mode_selector != 0 || D_800A385C == 0)) {
             if (fighter_record->move_kind == 0xB &&
-                fighter_record->move_frame == fighter_record->release_frame) {
+                fighter_record->move_frame ==
+                    fighter_record->command_82_frame) {
                 if (fighter_record->character_roster_index == 0x1B) {
                     if (fighter_record->throw_charges_left != 0) {
                         fighter_record->throw_charges_left--;
@@ -5810,7 +5811,7 @@ skip_62:
             fighter_record->object_variant_enabled = 1;
         }
         if (fighter_record->move_kind == 0x12 &&
-            fighter_record->move_frame == fighter_record->release_frame &&
+            fighter_record->move_frame == fighter_record->command_82_frame &&
             ((0x78 >> fighter_record->collision_hit_tag) & 1) &&
             fighter_record->hit_record_group_6_9_intact != 0) {
             fight_CreateBallisticRecordAndDispatchEvent(

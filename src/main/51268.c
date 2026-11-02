@@ -2785,7 +2785,7 @@ u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
      * scores 6, p4 2, p80 2, p2 24, p6C 38; all five 49) (Q129). */
     u16 *p0 = &var_0->tex_right_u_offset;
     u16 *p2 = &var_0->tex_bottom_v_offset;
-    u32 *p4 = &var_0->squared_distance_limit;
+    u32 *p4 = &var_0->base_squared_distance_limit;
     s16 *p6C = &var_0->particle_scan_count;
     POLY_FT4 **p80 = &var_0->particle_quad_cursor;
 
@@ -2926,7 +2926,7 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
     D_800A3724 = &var_0->random_accumulator;
     var_10 = &var_0->random_accumulator;
     *var_10 = rand();
-    var_1 = &var_0->squared_distance_limit;
+    var_1 = &var_0->base_squared_distance_limit;
     p_out = var_0->unk10.t;
     p_work = &var_0->unk34;
     var_13 = var_0->unk44;

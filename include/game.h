@@ -1129,7 +1129,7 @@ typedef struct {
     u16 tex_bottom_v_offset; /* eff_PrepareParticles: added to the texture v */
     /* eff_PrepareParticles stores 0x895440; eff_UpdateParticles compares
      * against it */
-    u32 squared_distance_limit;
+    u32 base_squared_distance_limit;
     u8 unk08[8]; /* no access */
     /* eff_UpdateParticles: only its translation (+0x24) is used: the
        gte_ApplyRotMatrix / gte_Square0 output, loaded by gte_SetTransMatrix */
@@ -1669,7 +1669,7 @@ typedef struct Unk80101EC8Record {
     u8 weapon_hit_end_frames[2];
     u8 frame_window_start;
     u8 frame_window_end;
-    u8 release_frame;
+    u8 command_82_frame;
     u8 object_pickup_frame;
     u8 opponent_turn_frame;
     u8 paired_move_hit_frame;

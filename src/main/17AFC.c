@@ -833,7 +833,7 @@ void fighter_TriggerOpponentResponseOnMoveFrame(void) {
         if (fighter_record->character_roster_index != 0x1B ||
             fighter_record->move_frame_unchanged != 0 ||
             fighter_record->move_kind != 0xB ||
-            fighter_record->move_frame != fighter_record->release_frame) {
+            fighter_record->move_frame != fighter_record->command_82_frame) {
             continue;
         }
         state = fighter_record->other->move_kind;
@@ -4857,7 +4857,7 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *fighter_record) {
     fighter_record->weapon_hit_start_frames[1] = 0xFF;
     fighter_record->weapon_hit_end_frames[1] = 0xFF;
     fighter_record->paired_move_hit_frame = 0;
-    fighter_record->release_frame = 0;
+    fighter_record->command_82_frame = 0;
     fighter_record->object_pickup_frame = 0;
     fighter_record->frame_window_start = 0;
     fighter_record->frame_window_end = 0xFF;
@@ -4879,7 +4879,7 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *fighter_record) {
                 fighter_record->weapon_hit_end_frames[0] = command_frame;
                 break;
             case 0x82:
-                fighter_record->release_frame = command_frame;
+                fighter_record->command_82_frame = command_frame;
                 break;
             case 0x83:
                 fighter_record->object_pickup_frame = command_frame;
