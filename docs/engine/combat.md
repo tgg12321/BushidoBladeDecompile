@@ -110,7 +110,7 @@ Both walk the byte stream at `rec->motion_metadata + 4`; 0 ends it.
 - `fighter_ReadFrameMetadata` (src/main/17AFC.c:4849; called at src/main/9F9C.c:3624)
   resets the window fields and reads: 0xFF skips six bytes, a byte below 0x80
   skips one, and 0x80..0x8B take the next byte into `weapon_hit_start_frames[0]`,
-  `weapon_hit_end_frames[0]`, `release_frame`, `object_pickup_frame`,
+  `weapon_hit_end_frames[0]`, `command_82_frame`, `object_pickup_frame`,
   `opponent_turn_frame`, `frame_window_start`, `frame_window_end`, `weapon_hit_start_frames[1]`,
   `weapon_hit_end_frames[1]`, `paired_move_hit_frame`, `opponent_transition_start_frame`, `weapon_reload_frame`
   (src/main/17AFC.c:4867-4913). `weapon_hit_start_frames[k]` /

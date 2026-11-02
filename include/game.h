@@ -1118,7 +1118,7 @@ typedef struct {
  * share (Unk1F8000B8Union.v800678A8): each of the wrappers
  * eff_DrawAndAdvanceConeMultiQuadParticlesFirstSlot ..
  * eff_DrawAndAdvanceAdditiveSingleQuadParticlesSecondSlot calls the three in
- * turn, and values cross the calls (squared_distance_limit,
+ * turn, and values cross the calls (base_squared_distance_limit,
  * particle_scan_count, particle_quad_cursor, the quad_ot_index_table;
  * eff_PrepareParticles and eff_UpdateParticles each use unk70 for their own
  * value). eff_PrepareParticles sets it up, eff_UpdateParticles builds the quads

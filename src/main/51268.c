@@ -2778,11 +2778,12 @@ extern s16 g_eff_particle_mode_position_counts[];
 u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *var_0 = &g_eff_work_area->v800678A8;
-    /* FAKE: tex_right_u_offset / tex_bottom_v_offset / squared_distance_limit /
-     * particle_scan_count / particle_quad_cursor are reached through the
-     * plain pointers p0 / p2 / p4 / p6C / p80: member stores are
-     * MEM_IN_STRUCT_P and let scalar accesses move across them (as members, p0:
-     * scores 6, p4 2, p80 2, p2 24, p6C 38; all five 49) (Q129). */
+    /* FAKE: tex_right_u_offset / tex_bottom_v_offset /
+     * base_squared_distance_limit / particle_scan_count / particle_quad_cursor
+     * are reached through the plain pointers p0 / p2 / p4 / p6C / p80: member
+     * stores are MEM_IN_STRUCT_P and let scalar accesses move across them (as
+     * members, p0: scores 6, p4 2, p80 2, p2 24, p6C 38; all five 49) (Q129).
+     */
     u16 *p0 = &var_0->tex_right_u_offset;
     u16 *p2 = &var_0->tex_bottom_v_offset;
     u32 *p4 = &var_0->base_squared_distance_limit;
@@ -2896,7 +2897,7 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
      * Replacing p_count alone spills the unk70 address from s8 to 96(sp),
      * adding stack reloads before its halfword loads (1052 vs 1047 insns).
      * Single-pointer direct-member scores (pointer / member): var_1 /
-     * squared_distance_limit 101, var_2 / group_position 112, p_count /
+     * base_squared_distance_limit 101, var_2 / group_position 112, p_count /
      * particle_scan_count 94, p_idx / unk6E 109, p_r / particle_red 119, p_g /
      * particle_green 102, p_b / particle_blue 104, var_8 /
      * group_position_entry 99, var_10 / random_accumulator 91, p_work / unk34
