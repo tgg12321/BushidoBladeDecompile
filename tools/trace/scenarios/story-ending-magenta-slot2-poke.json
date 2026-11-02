@@ -1,0 +1,24 @@
+{
+  "description": "story-ending-poke's run cut at 12800, screenshots over the fight's two magenta-light starts (12650, 12745: P1 KANNUKI's blade on fighter 0x1C, event 0x12); the baseline and poked captures differ only in poked's instrument poke at intro (the magenta-light starter's second slot, command 0x13)",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/story-ending-magenta-slot2-poke-1/baseline/spec.json",
+    "docs/naming/runtime/story-ending-magenta-slot2-poke-1/poked/spec.json"
+  ],
+  "extends": "story-ending-poke",
+  "end_frame": 12800,
+  "shots": [
+    "12653:fight.12653",
+    "12657:fight.12657",
+    "12661:fight.12661",
+    "12665:fight.12665",
+    "12669:fight.12669",
+    "12673:fight.12673",
+    "12748:fight.12748",
+    "12752:fight.12752",
+    "12757:fight.12757",
+    "12763:fight.12763",
+    "12767:fight.12767",
+    "12771:fight.12771"
+  ]
+}
