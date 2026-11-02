@@ -1,0 +1,8 @@
+{
+  "description": "story-pov-rematch re-run unchanged with D_800F665A data watches (write 0x800F665A/2, read 0x800F665A/2, value read at every phase start): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-D_800F665A-story-pov-rematch-1/spec.json"
+  ],
+  "extends": "story-pov-rematch",
+  "refines": "story-pov-rematch"
+}

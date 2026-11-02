@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-bamboo re-run unchanged with D_80103624 data watches (write 0x80103624/4, read 0x80103624/4, read 0x1F8001C8/4, value read at every phase start): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-D_80103624-versus-2p-bamboo-1/spec.json"
+  ],
+  "extends": "versus-2p-bamboo",
+  "refines": "versus-2p-bamboo"
+}
