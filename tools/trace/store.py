@@ -14,7 +14,7 @@ remove both indexed bulk and stored generations for a deliberate full removal.
 import hashlib
 import json
 import os
-from pathlib import Path, PureWindowsPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import subprocess
 import sys
 import argparse
@@ -926,6 +926,47 @@ def any_generation_exists(logical, name, bulk_key, folded_index, old_records, ex
             any(exists_folded(target) for target in old_targets))
 
 
+def moved_record_target(key, rec, proposed):
+    """The manifest key(s) a removed record moved to, or [] when it did not move.
+
+    key is the old manifest's tree key, proposed maps every manifest key of the
+    proposed tree to its parsed JSON (None when unreadable). A move needs every
+    other manifest of the same capture dir that records the name to carry the
+    same identity and store generation (so _manifest's pick order cannot matter),
+    and every manifest a reader pins for the name, when it still exists, to be
+    one of them: <stem>.manifest.json for a <stem>.* name (_manifest for
+    <stem>.jsonl; gdbtrace compare and legacy_diff for <stem>.<shot>.png;
+    readers of capture.manifest.json for capture.jsonl / capture.<shot>.png).
+    A destination must sit in exactly the old manifest's dir (the store key is
+    dir + name, case-sensitive on ext4); a dir differing only in case counts
+    for pinning and, if it records the name at all, refuses the move, so a
+    case-insensitive host can only see more manifests, never fewer.
+    """
+    name = PureWindowsPath(rec["path"]).name
+    parent = PurePosixPath(key).parent.as_posix()
+    found, pinned = [], []
+    for other, manifest in proposed.items():
+        # The old manifest, if kept, no longer records the name: pinned, it refuses.
+        other_parent = PurePosixPath(other).parent.as_posix()
+        if other_parent.casefold() != parent.casefold():
+            continue
+        own = PurePosixPath(other).name.casefold()
+        stem = own[:-len(".manifest.json")]
+        if name.casefold().startswith(stem + "."):
+            pinned.append(other)
+        records = _records(manifest, name)
+        if not records:
+            continue
+        if other_parent != parent or any(
+                record_identity(r) != record_identity(rec)
+                or r.get("store_name") != rec.get("store_name") for r in records):
+            return []
+        found.append(other)
+    if any(other not in found for other in pinned):
+        return []
+    return found
+
+
 def check_commit(root, revision=None):
     """Judge index vs HEAD, or a commit's immutable tree vs its first parent."""
     count = failed = legacy = 0
@@ -950,6 +991,13 @@ def check_commit(root, revision=None):
     blobs = git_blobs([entries[key] for entries in (indexed, previous)
                        for key in manifest_keys if key in entries])
     digests = git_blob_digests(blob for key, blob in indexed.items() if is_bulk(key))
+    proposed_manifests = {}
+    for key in manifest_keys:
+        if key in indexed:
+            try:
+                proposed_manifests[key] = json.loads(blobs[indexed[key]])
+            except (ValueError, UnicodeError):
+                proposed_manifests[key] = None  # refused in its own loop below
     if after_migration(parent):
         # Recorded or not, a new bulk blob would re-bloat git; carried-over
         # entries and deletions stay allowed.
@@ -985,6 +1033,12 @@ def check_commit(root, revision=None):
                     # host and two in git or an ext4 store.
                     print(f"REFUSE {path}: output record {name} renamed by case only")
                     failed += 1
+                    continue
+                moved = moved_record_target(key, rec, proposed_manifests)
+                if moved:
+                    # The destination's own loop verifies the record (index or store).
+                    print(f"MOVED {path}: output record {name} to "
+                          + ", ".join(Path(other).name for other in moved))
                     continue
                 logical = path.parent / name
                 bulk_key = (Path(key).parent / name).as_posix()

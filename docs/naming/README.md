@@ -448,7 +448,13 @@ clean tree; legacy never-published records are listed, not lost). `store.py chec
 runs on every replayed commit of a lane land touching `docs/naming/runtime/`: each bulk output
 record (legacy never-published ones and recorded absences excepted) must be in the index or the store with matching SHA1 and size (so a clone without the
 store, or a shallow one, is refused), and bulk added to git after the migration (`dab4c0fc1`)
-is refused. A `capture.manifest.json` SHA1 cited before the migration (knockout inventories,
+is refused. A bulk record dropped from a manifest is refused while any copy of the file is
+still indexed or stored, unless it moved: every other manifest of exactly the same capture dir (one whose dir differs
+only in case never counts and, recording the name, refuses the move) that records the name carries the same `path`, SHA1, size and `store_name` (the store key does not
+change), and a `<stem>.*` file (`capture.jsonl`, `<stem>.<shot>.png`) stays recorded in
+`<stem>.manifest.json` while that file exists (readers and `gdbtrace compare` look it up there); a legacy never-published record keeps its exemption only in
+a manifest that already recorded it at the legacy boundary. A
+`capture.manifest.json` SHA1 cited before the migration (knockout inventories,
 report / compare / knockout headers, naming evidence) names the manifest without its `stored`
 flags: `store.py manifest-sha1 <manifest>` prints the current and the pre-store digest, and
 `knockout.py check` accepts either; it reports an inventoried pre-migration file that no commit

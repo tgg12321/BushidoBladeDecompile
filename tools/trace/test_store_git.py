@@ -374,6 +374,136 @@ class PublicationGitTest(unittest.TestCase):
         self.assertIn("REMOVED ", output)
         self.assertIn("full removal", output)
 
+    def publish_shot(self, name="shot.png", where="compare"):
+        """A stored PNG recorded in <where>.manifest.json next to the trace, committed."""
+        shot = self.capture / name
+        shot.write_bytes(b"\x89PNG fixture")
+        manifest = self.seal()
+        manifest["outputs"].append(store.file_record(shot))
+        store.write_manifest(self.manifest_path, manifest)
+        store.offload(self.capture, manifest)
+        self.assertFalse(shot.exists())
+        trace, shot_rec = manifest["outputs"]
+        if where != "capture":
+            self.stage_manifests(dict(outputs=[trace]), {where: dict(outputs=[shot_rec])})
+        else:
+            self.stage_manifests(manifest, {})
+        self.git("commit", "-m", "Publish capture with a stored screenshot")
+        return trace, shot_rec
+
+    def stage_manifests(self, own, others):
+        """Write and stage capture.manifest.json (None: delete it) and <stem>.manifest.json."""
+        for stem, value in [("capture", own), *others.items()]:
+            path = self.capture / (stem + ".manifest.json")
+            if value is None:
+                if path.exists():
+                    # -f: an earlier stage of this test may have staged other content
+                    self.git("rm", "-q", "-f", "--", path.relative_to(self.repo).as_posix())
+                continue
+            store.write_manifest(path, value)
+            self.git("add", "--", path.relative_to(self.repo).as_posix())
+
+    def test_record_moved_between_unpinned_manifests_passes(self):
+        trace, shot = self.publish_shot()
+        self.stage_manifests(dict(outputs=[trace]), dict(compare=None, other=dict(outputs=[shot])))
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 0, output)
+        self.assertIn("MOVED ", output)
+        self.assertIn("output record shot.png to other.manifest.json", output)
+        self.assertIn("outputs=2 refused=0", output)
+        self.git("commit", "-m", "Move the shot record")
+        self.assertEqual(self.command("check-commit", "--rev", "HEAD")[0], 0)
+        self.assertEqual(self.command("verify")[0], 0)
+        for manifest in (None, json.loads((self.capture / "other.manifest.json").read_text())):
+            self.assertEqual(store.resolve(self.capture, "shot.png", manifest).read_bytes(),
+                             b"\x89PNG fixture")
+        # Into capture.manifest.json (pinned, and now recording it) is a move too.
+        self.stage_manifests(dict(outputs=[trace, shot]), dict(other=None))
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 0, output)
+        self.assertIn("output record shot.png to capture.manifest.json", output)
+
+    def test_record_move_refuses_a_different_destination_record(self):
+        trace, shot = self.publish_shot()
+        for changed in (dict(shot, sha1="0" * 40), dict(shot, size=shot["size"] + 1),
+                        dict(shot, store_name="shot.png.sha1-" + "1" * 40)):
+            with self.subTest(changed=changed):
+                self.stage_manifests(dict(outputs=[trace]),
+                                     dict(compare=None, other=dict(outputs=[changed])))
+                code, output = self.command("check-commit")
+                self.assertEqual(code, 1, output)
+                self.assertNotIn("MOVED ", output)
+                self.assertIn("removed output record shot.png still indexed or stored", output)
+        # Two destinations that disagree: the reader's pick order would decide.
+        self.stage_manifests(dict(outputs=[trace]),
+                             dict(compare=None, other=dict(outputs=[shot]),
+                                  knockout=dict(outputs=[dict(shot, sha1="0" * 40)])))
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 1, output)
+        self.assertNotIn("MOVED ", output)
+
+    def test_record_move_refuses_a_destination_in_another_dir(self):
+        trace, shot = self.publish_shot()
+        elsewhere = self.capture.parent / "sample-2" / "compare.manifest.json"
+        elsewhere.parent.mkdir()
+        store.write_manifest(elsewhere, dict(outputs=[shot]))
+        self.git("add", "--", elsewhere.relative_to(self.repo).as_posix())
+        self.stage_manifests(dict(outputs=[trace]), dict(compare=None))
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 1, output)
+        self.assertIn("removed output record shot.png still indexed or stored", output)
+
+    def test_moved_record_target_dir_case_and_unreadable_destinations(self):
+        rec = dict(path="shot.png", sha1="a" * 40, size=3)
+        old = "r/a/x.manifest.json"
+        def target(proposed):
+            return store.moved_record_target(old, rec, {old: dict(outputs=[]), **proposed})
+        self.assertEqual(target({"r/a/y.manifest.json": dict(outputs=[rec])}),
+                         ["r/a/y.manifest.json"])
+        # Same dir but for case: never a destination, and it vetoes an exact one.
+        self.assertEqual(target({"r/A/y.manifest.json": dict(outputs=[rec])}), [])
+        self.assertEqual(target({"r/a/y.manifest.json": dict(outputs=[rec]),
+                                 "r/A/z.manifest.json": dict(outputs=[rec])}), [])
+        # A case-variant dir's pinned manifest still pins.
+        self.assertEqual(store.moved_record_target(
+            "r/a/x.manifest.json", dict(rec, path="Shot.title.png"),
+            {"r/a/y.manifest.json": dict(outputs=[dict(rec, path="Shot.title.png")]),
+             "r/A/shot.manifest.json": dict(outputs=[])}), [])
+        self.assertEqual(target({"r/a/y.manifest.json": None}), [])
+
+    def test_record_move_refuses_while_a_pinned_manifest_lacks_it(self):
+        # capture.<shot>.png: compare reads it from capture.manifest.json.
+        trace, shot = self.publish_shot(name="capture.title.png", where="capture")
+        self.stage_manifests(dict(outputs=[trace]), dict(other=dict(outputs=[shot])))
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 1, output)
+        self.assertNotIn("MOVED ", output)
+        # capture.jsonl: _manifest takes capture.manifest.json whether or not it records it.
+        self.stage_manifests(dict(outputs=[shot]), dict(other=dict(outputs=[trace])))
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 1, output)
+        self.assertIn("removed output record capture.jsonl still indexed or stored", output)
+        self.stage_manifests(None, dict(other=dict(outputs=[trace, shot])))
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 0, output)
+        self.assertIn("output record capture.jsonl to other.manifest.json", output)
+        self.git("commit", "-m", "Fold the capture manifest into other")
+        self.assertEqual(store.resolve(self.capture, "capture.jsonl").read_bytes(),
+                         b'{"ev":"start"}\n')
+
+    def test_record_move_refuses_while_its_stem_manifest_lacks_it(self):
+        # gdbtrace compare and legacy_diff read <stem>.<shot>.png from <stem>.manifest.json.
+        trace, shot = self.publish_shot(name="run.title.png", where="run")
+        self.stage_manifests(dict(outputs=[trace]),
+                             dict(run=dict(outputs=[]), other=dict(outputs=[shot])))
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 1, output)
+        self.assertNotIn("MOVED ", output)
+        self.stage_manifests(dict(outputs=[trace]), dict(run=None, other=dict(outputs=[shot])))
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 0, output)
+        self.assertIn("output record run.title.png to other.manifest.json", output)
+
     def test_record_removal_refuses_any_stored_generation(self):
         manifest = self.seal()
         store.offload(self.capture, manifest)
