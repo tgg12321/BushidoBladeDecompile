@@ -1,7 +1,8 @@
 /* PsyQ LIBSND UT_VVOL: SsUtGetDetVVol, SsUtSetDetVVol, SsUtGetVVol and
- * SsUtSetVVol (at SsUtSetVVol's place). .text 0x80085FD8..0x800861BC. An
- * interim LIBSND build (between PsyQ 4.0 and 4.1); module start from the
- * libscan near tier (SsUtGetDetVVol at 0x80085FD8, XDEF +0x0; Q109). */
+ * SsUtSetVVol. .text 0x80085FD8..0x800861BC. An interim LIBSND build
+ * (between PsyQ 4.0 and 4.1); module start from the libscan near tier
+ * (SsUtGetDetVVol at 0x80085FD8, XDEF +0x0; Q109). SsUtSetVVol matches the
+ * PsyQ 3.5-3.7 body 0/35 words (func-sony-ident-1), not 4.0's. */
 #include "common.h"
 #include "libsnd_i.h"
 
