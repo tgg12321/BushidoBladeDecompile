@@ -2173,9 +2173,11 @@ again:
     case 3:
     case 4:
         if (g_eff_animated_quad_counters[mode_index] < 0x96) {
-            g_eff_current_tex_rec = D_8009B980;
+            g_eff_current_tex_rec =
+                g_eff_growing_quad_and_quad_pair_second_early_tex_rec;
         } else {
-            g_eff_current_tex_rec = D_8009B978;
+            g_eff_current_tex_rec =
+                g_eff_growing_quad_and_quad_pair_second_late_tex_rec;
         }
         prim->r0 = 0xFF;
         prim->g0 = g_eff_animated_quad_counters[mode_index];
@@ -2250,9 +2252,11 @@ again:
     case 8:
     case 9:
         if (g_eff_animated_quad_counters[mode_index - 2] < 0xC8) {
-            g_eff_current_tex_rec = D_8009B980;
+            g_eff_current_tex_rec =
+                g_eff_growing_quad_and_quad_pair_second_early_tex_rec;
         } else {
-            g_eff_current_tex_rec = D_8009B978;
+            g_eff_current_tex_rec =
+                g_eff_growing_quad_and_quad_pair_second_late_tex_rec;
         }
         prim->r0 = g_eff_animated_quad_counters[mode_index - 2] * 2 / 3;
         prim->g0 = g_eff_animated_quad_counters[mode_index - 2] / 2;

@@ -154,13 +154,13 @@ glabel eff_DrawAnimatedQuads
     /* 56248 80065A48 96004228 */  slti       $v0, $v0, 0x96
     /* 5624C 80065A4C 05004010 */  beqz       $v0, .L80065A64
     /* 56250 80065A50 00000000 */   nop
-    /* 56254 80065A54 0A80023C */  lui        $v0, %hi(D_8009B980)
-    /* 56258 80065A58 80B94224 */  addiu      $v0, $v0, %lo(D_8009B980)
+    /* 56254 80065A54 0A80023C */  lui        $v0, %hi(g_eff_growing_quad_and_quad_pair_second_early_tex_rec)
+    /* 56258 80065A58 80B94224 */  addiu      $v0, $v0, %lo(g_eff_growing_quad_and_quad_pair_second_early_tex_rec)
     /* 5625C 80065A5C 9B960108 */  j          .L80065A6C
     /* 56260 80065A60 00000000 */   nop
   .L80065A64:
-    /* 56264 80065A64 0A80023C */  lui        $v0, %hi(D_8009B978)
-    /* 56268 80065A68 78B94224 */  addiu      $v0, $v0, %lo(D_8009B978)
+    /* 56264 80065A64 0A80023C */  lui        $v0, %hi(g_eff_growing_quad_and_quad_pair_second_late_tex_rec)
+    /* 56268 80065A68 78B94224 */  addiu      $v0, $v0, %lo(g_eff_growing_quad_and_quad_pair_second_late_tex_rec)
   .L80065A6C:
     /* 5626C 80065A6C BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 56270 80065A70 FF000224 */  addiu      $v0, $zero, 0xFF
@@ -358,13 +358,13 @@ glabel eff_DrawAnimatedQuads
     /* 56530 80065D30 C8004228 */  slti       $v0, $v0, 0xC8
     /* 56534 80065D34 05004010 */  beqz       $v0, .L80065D4C
     /* 56538 80065D38 00000000 */   nop
-    /* 5653C 80065D3C 0A80023C */  lui        $v0, %hi(D_8009B980)
-    /* 56540 80065D40 80B94224 */  addiu      $v0, $v0, %lo(D_8009B980)
+    /* 5653C 80065D3C 0A80023C */  lui        $v0, %hi(g_eff_growing_quad_and_quad_pair_second_early_tex_rec)
+    /* 56540 80065D40 80B94224 */  addiu      $v0, $v0, %lo(g_eff_growing_quad_and_quad_pair_second_early_tex_rec)
     /* 56544 80065D44 55970108 */  j          .L80065D54
     /* 56548 80065D48 00000000 */   nop
   .L80065D4C:
-    /* 5654C 80065D4C 0A80023C */  lui        $v0, %hi(D_8009B978)
-    /* 56550 80065D50 78B94224 */  addiu      $v0, $v0, %lo(D_8009B978)
+    /* 5654C 80065D4C 0A80023C */  lui        $v0, %hi(g_eff_growing_quad_and_quad_pair_second_late_tex_rec)
+    /* 56550 80065D50 78B94224 */  addiu      $v0, $v0, %lo(g_eff_growing_quad_and_quad_pair_second_late_tex_rec)
   .L80065D54:
     /* 56554 80065D54 BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 56558 80065D58 5555043C */  lui        $a0, (0x55555556 >> 16)
