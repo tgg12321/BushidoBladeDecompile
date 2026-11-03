@@ -1273,6 +1273,25 @@ def macro_uses(text: str, name: str, body_only=False, name_only=False) -> bool:
     return not body_only and not name_only and name in pasted
 
 
+def expandable_macros(records, name, tokens):
+    """Names in tokens of the macros that can bring name into a span's expansion:
+    a macro whose replacement list names name other than as its own parameter
+    (the macro_uses body_only rule), closed over every macro whose replacement
+    list names such a macro. Name-based and over every record of every file, so
+    an #undef, a redefinition or a macro the span cannot see still counts
+    (over-approximate). Sound only with no token paste in any source
+    (c_sources_closed): a ## could build a macro name the span never spells."""
+    tainted = {m for m, ps, body in records if name in body and name not in (ps or ())}
+    grew = True
+    while grew:
+        grew = False
+        for m, ps, body in records:
+            if m not in tainted and any(t in tainted for t in body):
+                tainted.add(m)
+                grew = True
+    return sorted(tainted & set(tokens))
+
+
 def macro_analysis(text):
     logical = blank_comments(re.sub(r"\\\r?\n", "", text))
     records = []
@@ -2283,15 +2302,39 @@ def sentinel_namespaces(output, names):
             raise ValueError("member sentinel changed namespace in cpp output: " + token)
 
 
+def tu_code_tokens(text):
+    """Every token of text outside preprocessor directives: what cpp may expand
+    as code. The whole file counts, not just a prefix up to f: f's end in a
+    source parse can differ from cpp's (a macro or digraph supplying a brace,
+    an unclosed call, an #if branch), so anything short of the whole TU could
+    miss a macro that expands into f. Both branches of a conditional count.
+    Sound only where c_sources_closed holds (no paste, ASCII tokens)."""
+    ms = code_spans(text)
+    # A region is dropped only when its raw first line also opens with # / %:
+    # (pp_regions reads lines with literals blanked: '"q" %: ...' is code).
+    directives = [(a, b) for a, b in pp_regions(text)[0]
+                  if re.match(r"[ \t]*(?:#|%:)", text[text.rfind("\n", 0, a) + 1:])]
+    return [m[0] for m in ms if not any(a <= m.start() < b for a, b in directives)]
+
+
 def cpp_source_guards(output, tree, scoped):
     """Every static macro guard uses this TU's actual -dD definitions."""
     functions, objects = macro_table_records(output.macros)
     names = functions | objects.keys()
     for spec, dest in (scoped or {}).items():
         scope, _path, old = scoped_parts(spec)
-        for macro, params, body in output.macros:
-            if any(word in body and word not in (params or ()) for word in (old, dest)):
-                raise ValueError(f"{spec}={dest}: scoped name in cpp macro body: {macro}")
+        if "." in spec:
+            for macro, params, body in output.macros:
+                if any(word in body and word not in (params or ()) for word in (old, dest)):
+                    raise ValueError(f"{spec}={dest}: scoped name in cpp macro body: {macro}")
+        else:
+            # A body naming old or dest matters only in a macro this TU's code
+            # spells, directly or through another macro (scoped-plan-targets).
+            span = [t for path in output.sources for t in tu_code_tokens(tree[path])]
+            for word in (old, dest):
+                hit = expandable_macros(output.macros, word, span)
+                if hit:
+                    raise ValueError(f"{spec}={dest}: scoped name in cpp macro body: {hit[0]}")
         for path in output.sources:
             text = tree[path]
             spans = code_spans(text)
@@ -3040,8 +3083,12 @@ def c_sources_closed(cfiles):
     """True when every .c / .h source is plain_source, each #include in it
     resolves to a .c / .h source (no cpp input lies outside cfiles, which is all
     the macro checks read) and none pastes tokens: a ## (or %:%:) can build the
-    destination name, e.g. int CAT(n, v) declares nv, which no token check sees."""
+    destination name, e.g. int CAT(n, v) declares nv, which no token check sees.
+    Every token is ASCII: Python's \\w admits characters cpp keeps out of an
+    identifier (M then U+2E2F is one token here, M plus a stray to cpp), so a
+    spelled macro name could hide inside a longer token."""
     return (not any("%:%:" in t or macro_analysis(t)[1] for t in cfiles.values())
+            and all(m[0].isascii() for t in cfiles.values() for m in code_spans(t))
             and all(include_closure(cfiles, q) is not None for q in cfiles))
 
 
@@ -3674,13 +3721,15 @@ def file_scope_tokens(text, all_macros=frozenset(), known_types=frozenset()):
     return visible, enums
 
 
-def local_freshness(base, name, all_macros=frozenset(), known_types=None):
+def local_freshness(base, name, all_macros=frozenset(), known_types=None, bodies=True):
+    """bodies=False skips the #define-body test: the caller then refuses only a
+    macro the renamed span can expand (expandable_macros)."""
     if known_types is None:
         known_types = frozenset(declaration_types({p: t for p, t in base.items() if p.startswith(("src/", "include/")) and p.endswith((".c", ".h", ".inc"))}))
     for path, text in base.items():
         if not path.startswith(('src/', 'include/')) or not path.endswith(('.c', '.h', '.inc')):
             continue
-        if macro_uses(text, name, body_only=True) or macro_uses(text, name, name_only=True):
+        if bodies and macro_uses(text, name, body_only=True) or macro_uses(text, name, name_only=True):
             raise ValueError(f'{path}: destination {name} occurs in a #define name/body or token paste')
         visible, enums = file_scope_tokens(text, all_macros, known_types)
         if name in enums or name in visible:
@@ -3725,6 +3774,9 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
     typedef_names = typedef_words(cfiles)
     global_pat = re.compile(r"\b(?:" + ("|".join(map(re.escape, globals or {})) or "(?!)") + r")\b")
     transformed_base = {p: global_pat.sub(lambda m: globals[m[0]], t) for p, t in base.items()}
+    # The base and the global-renamed tree: a global pair of this wave may rename
+    # a macro or a name in a macro body.
+    both_records = macro_records + [r for p, t in transformed_base.items() if p in cfiles for r in macro_analysis(t)[0]]
     transformed_types = declaration_types({p: t for p, t in transformed_base.items() if p in cfiles or p.startswith(("src/", "include/")) and p.endswith(".inc")})
     for spec, new in pairs.items():
         if new in C_KEYWORDS:
@@ -3753,12 +3805,12 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
         member = "." in spec
         scope, member_path, old = scoped_parts(spec)
         scope = scoped_type_name(scope, globals)
-        for macro_path, macro_text in cfiles.items():
-            if not member and macro_uses(macro_text, new, body_only=True):
-                raise ValueError(f"{spec}: destination {new} occurs in a #define body or token paste in {macro_path}")
         sync = {} if member else prototype_sync(cfiles, scope, old, new, types | typedef_names | transformed_types,
                                                 frozenset(macros) | frozenset(object_macros))
         if sync:
+            for macro_path, macro_text in cfiles.items():
+                if macro_uses(macro_text, new, body_only=True):
+                    raise ValueError(f"{spec}: destination {new} occurs in a #define body or token paste in {macro_path}")
             # The local-pair source allowlist holds here too: fresh destination,
             # no macro naming either name, every C source closed and plain.
             local_freshness(transformed_base, new, frozenset(macros) | frozenset(object_macros), frozenset(transformed_types))
@@ -3767,7 +3819,7 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
             if sources_closed is None:
                 sources_closed = c_sources_closed(cfiles)
             if not sources_closed:
-                raise ValueError(f"{spec}: a C source is not plain, pastes tokens (##) or #includes a "
+                raise ValueError(f"{spec}: a C source is not plain, pastes tokens (##), has a non-ASCII token or #includes a "
                                  "file outside the .c / .h sources (macros there are unchecked)")
             # A prototype-only pair: f's definition already names the parameter new;
             # only the prototype-scope spellings of old change, and all must.
@@ -3788,7 +3840,8 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
             member_freshness(base, new)
             member_freshness(transformed_base, new)
         else:
-            local_freshness(transformed_base, new, frozenset(macros) | frozenset(object_macros), frozenset(transformed_types))
+            local_freshness(transformed_base, new, frozenset(macros) | frozenset(object_macros), frozenset(transformed_types),
+                            False)
         found = []
         for path, text in cfiles.items():
             ms = code_spans(text)
@@ -3882,10 +3935,25 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
             for macro_path, macro_text in cfiles.items():
                 if closure is not None and macro_path not in closure and macro_path.endswith(".c"):
                     continue
-                if (macro_uses(macro_text, old, body_only=True)
-                        or macro_uses(macro_text, old, name_only=True)):
+                if macro_uses(macro_text, old, name_only=True):
                     raise ValueError(f"{spec}: {old} occurs in a #define body or token paste in {macro_path}")
-            if macro_uses(text, old):
+            # A #define naming old (or new) matters only where f expands it: a
+            # macro f's tokens never spell, directly or through another macro,
+            # cannot capture f's local. Token paste is refused below
+            # (c_sources_closed), which keeps the spelled-name test sound.
+            # Every code token of f's TU: f's file and every file it can include
+            # (every file when the closure is inexact). A macro that expands into
+            # f is spelled there, whatever brace, call or #if wraps f.
+            span = [scope]
+            for q in (cfiles if closure is None else closure | {path}):
+                if q in cfiles:
+                    span += tu_code_tokens(cfiles[q])
+            span += [(globals or {}).get(t, t) for t in span]
+            for name in (old, new):
+                hit = expandable_macros(both_records, name, span)
+                if hit:
+                    raise ValueError(f"{spec}: {name} occurs in a #define body reaching {hit[0]}, which f's TU spells")
+            if old in macro_analysis(text)[1]:
                 raise ValueError(f"{spec}: {old} occurs in a #define in {path}")
             # L'a' / u"s" / u8"s": the lexer splits an encoding prefix off as an
             # identifier token, so a local named like a prefix would be renamed there.
@@ -3900,7 +3968,7 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
             if sources_closed is None:
                 sources_closed = c_sources_closed(cfiles)
             if not sources_closed:
-                raise ValueError(f"{spec}: a C source is not plain, pastes tokens (##) or #includes a "
+                raise ValueError(f"{spec}: a C source is not plain, pastes tokens (##), has a non-ASCII token or #includes a "
                                  "file outside the .c / .h sources (macros there are unchecked)")
             # Allowlist: macro_analysis reads #define lines with its own line scan, so
             # a local inside a call's parentheses (a possible macro argument) is

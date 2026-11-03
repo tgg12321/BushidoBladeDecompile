@@ -7503,11 +7503,58 @@ def test_naming_keycheck_scoped_pairs() -> None:
                          .replace("struct l", "struct fresh").replace("union l", "union fresh")
                          .replace("enum l", "enum fresh")})[0])
     for macro_path in ["include/macros.h", "src/macros.h", "src/macros.c"]:
+        # A #define body naming l counts only when f expands that macro
+        # (scoped-plan-targets): GET is defined but f never spells it.
         ok, why = proof("f:l=fresh", {"src/a.c": local,
                         macro_path: "#define GET(p) ((p)->l)\n"}, {"src/a.c": local_new})
-        # A .c nothing includes is not visible to f's TU (scoped-plan-bindings).
-        check("keycheck: local rejects visible macro " + macro_path, ok if macro_path.endswith(".c")
-              else not ok and macro_path in why and "#define body" in why)
+        check("keycheck: local ignores an unexpanded macro body " + macro_path + " (" + why + ")", ok)
+    expands = local.replace("return l + 1;", "return GET(0) + l;")
+    expands_new = local_new.replace("return fresh + 1;", "return GET(0) + fresh;")
+    for label, macros in [("direct", "#define GET(p) ((p)->l)\n"),
+                          ("through another macro", "#define GET G2\n#define G2(p) ((p)->l)\n"),
+                          ("object-like", "#define GET(p) (L0 + (p))\n#define L0 l\n"),
+                          ("#undef does not hide", "#define GET(p) ((p)->l)\n#undef GET\n")]:
+        for macro_path in ["include/macros.h", "src/macros.c"]:
+            ok, why = proof("f:l=fresh", {"src/a.c": expands, macro_path: macros}, {"src/a.c": expands_new})
+            check(f"keycheck: local rejects a macro f expands, {label} {macro_path} ({why})",
+                  not ok and "#define body reaching GET" in why)
+    ok, why = proof("f:l=fresh", {"src/a.c": expands, "include/macros.h": "#define GET(l) ((l) + 1)\n"},
+                    {"src/a.c": expands_new})
+    check("keycheck: a macro parameter named l is not a capture (" + why + ")", ok)
+    # A function-like macro named f expands at the definition head (review finding).
+    for word, head in [(w, "int x;\n#define f(p) g(p) { return " + w + "; } int h(void)\nint f(int x) { return 0; }\n")
+                       for w in ("x", "n")] + [
+            ("head macro", "int x;\n#define G(a) (*a(int n))\nint G (f)(int x) { return x; }\n"),
+            ("head macro, header", '#include "m.h"\nint x;\nint G (f)(int x) { return x; }\n'),
+            ("head macro after PRE(;)", "int x;\n#define G(a) (*a(int n))\n#define PRE(z) G\nint PRE(;) (f)(int x) { return x; }\n"),
+            ("head macro after PRE({})", "int x;\n#define G(a) (*a(int n))\n#define PRE(z) G\nint PRE({}) (f)(int x) { return x; }\n"),
+            # #if branches that balance a "(" only together (fourth review).
+            ("unclosed call across #if", "#define G(a, b) a ; { int n = 3 ; b }\n#if 1\nG(\n#else\n)\n#endif\n"
+             "; int f(int x) { int s; s = 0, s = x + 0; return s; }\n#if 0\n(\n#else\n)\n#endif\n"),
+            ("head macro across #if", "int x;\n#define G(a) (*a(int n))\nint\n#if 1\nG(\n#else\n);\n#endif\n"
+             "#if 0\n(\n#endif\nf)(int x) { return x; }\n"),
+            # f's source end differs from cpp's (fifth review): the whole TU counts.
+            ("brace macros", "#define OPEN {\n#define CLOSE }\n#define M x\nint x;\nint f(int x) { OPEN } return M; CLOSE\n"),
+            ("digraph braces", "#define M x\nint x;\nint f(int x) { <% } return M; %>\n"),
+            # A non-ASCII \w character glues onto a macro name cpp splits off (sixth review).
+            ("non-ASCII glued", "int x;\n#define FIRST(a) FIRST_(a)\n#define FIRST_(a, ...) a\n#define M int x; ,\n"
+             "int f(int x) { int r = x; { FIRST(Mⸯ) r += sizeof(x); } return r + x; }\n"),
+            # A code line that pp_regions reads as a %: directive (seventh review).
+            ("literal-led %: line", '#define c_plusplus 0\n#define M x\n#define S(a, b) b\nint x;\n'
+             'int f(int x) { int y = x; return S(\n"q" %: zz, M\n) + y; }\n'),
+            ("non-ASCII macro name","int x;\n#define FIRST(a) FIRST_(a)\n#define FIRST_(a, ...) a\n#define Mⸯ n\n"
+             "int f(int x) { return FIRST(M) + x; }\n")]:
+        if word == "head macro, header":
+            head = {"src/a.c": head, "include/m.h": "#define G(a) (*a(int n))\n"}
+        else:
+            head = {"src/a.c": head}
+        try:
+            nk.scoped_plan(head, {"f:x": "n"})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check(f"keycheck: plan refuses a body in a macro named f ({word}: {why})",
+              "#define body" in why or "not fresh" in why or "non-ASCII token" in why)
     text = 'int f(int l) { __asm__("add %[l], %[l]" : [l] "+r"(l)); return l; }'
     check("keycheck: asm string substitution forbidden", not proof("f:l=fresh", {"src/a.c": text},
           {"src/a.c": text.replace("[l]", "[fresh]").replace("int l", "int fresh")
@@ -7530,10 +7577,11 @@ def test_naming_keycheck_scoped_pairs() -> None:
     after = text.replace("int m;", "int n;").replace("->m", "->n")
     check("keycheck: aggregate interior is protected", not proof("T.m=n",
           {"src/a.c": text}, {"src/a.c": after})[0])
-    text = "int n;\n#define GET() n\nint f(int l) { return l + GET(); }"
-    ok, why = proof("f:l=n", {"src/a.c": text},
-                    {"src/a.c": text.replace("int l", "int n").replace("return l", "return n")})
-    check("keycheck: destination macro capture fails", not ok and "#define body" in why)
+    for text, reason in [("int n;\n#define GET() n\nint f(int l) { return l + GET(); }", "not fresh"),
+                         ("#define GET() n\nint f(int l) { return l + GET(); }", "#define body reaching GET")]:
+        ok, why = proof("f:l=n", {"src/a.c": text},
+                        {"src/a.c": text.replace("int l", "int n").replace("return l", "return n")})
+        check(f"keycheck: destination macro capture fails ({why})", not ok and reason in why)
     for path in ["src/b.c", "include/b.h", "asm/b.s"]:
         ok, why = proof("f:l=n", {"src/a.c": "int f(int l) { return l; }", path: "int n;"},
                         {"src/a.c": "int f(int n) { return n; }"})
@@ -7562,8 +7610,17 @@ def test_naming_keycheck_scoped_pairs() -> None:
             ("token paste", "#define X(x) x ## nbits\n")]:
         ok, why = proof("motion_InitStream:bits_left=nbits",
                         {"src/a.c": text, "include/b.h": other}, {"src/a.c": after})
-        check("keycheck: local destination visible via " + label,
-              ok if label in ("macro parameter", "prototype parameter") else not ok and "nbits" in why)
+        # A body naming nbits counts only in a macro f expands (scoped-plan-targets);
+        # any ## refuses every local pair (c_sources_closed).
+        check("keycheck: local destination visible via " + label + " (" + why + ")",
+              ok if label in ("macro parameter", "prototype parameter", "macro body")
+              else not ok and ("pastes tokens" if label == "token paste" else "nbits") in why)
+    for label, macros in [("direct", "#define X nn\n"), ("through another macro", "#define X Y\n#define Y nn\n"),
+                          ("function-like", "#define X (Y(0))\n#define Y(a) ((a) + nn)\n")]:
+        ok, why = proof("f:l=nn", {"src/a.c": "int f(int l) { return l + X; }\n", "include/b.h": macros},
+                        {"src/a.c": "int f(int nn) { return nn + X; }\n"})
+        check(f"keycheck: local destination in a macro f expands, {label} ({why})",
+              not ok and "nn occurs in a #define body reaching X" in why)
     for symbol in ["glabel nbits", "dlabel nbits", ".global nbits", "jal nbits"]:
         check("keycheck: unreferenced asm identifier permits local destination " + symbol, proof(
               "motion_InitStream:bits_left=nbits", {"src/a.c": text, "asm/b.s": symbol},
@@ -8360,6 +8417,31 @@ def test_naming_keycheck_scoped_pairs() -> None:
         except ValueError as e:
             why = str(e)
         check("keycheck: independent macro adjacency " + body, "adjacent to cpp macro" in why)
+    # scoped-plan-targets: the cpp-output guard counts a body naming l / n only in
+    # a macro the TU's code spells (anywhere in the TU: over-approximate).
+    for text, fails in [
+            ("#define GET() l\n#define UNUSED() n\nint f(int l){return l;}", False),
+            ("#define GET() l\nint g(void){return GET();}\nint f(int l){return l;}", True),
+            ("#define GET() n\nint f(int l){return l;}\nint g(void){return GET();}", True),
+            ("#define GET() l\nint f(int l){return l + GET();}", True),
+            ("#define GET() n\nint f(int l){return l + GET();}", True),
+            ("#define H() GET()\n#define GET() n\nint f(int l){return l + H();}", True),
+            ("#define GET(l) (l)\nint f(int l){return GET(l);}", False),
+            ("#define M l\nint f(int l, int a[M]);\nint f(int l, int a[]){return l;}", True),
+            ("#define M n\nint g(void);\nint f(int l, int a[M]);", True)]:
+        tree = nk.CppTree({"src/a.c": text}, "fixture")
+        output = nk.emitted_lines(cpp_preamble("src/a.c") + text, tree, "src/a.c")
+        try:
+            nk.cpp_source_guards(output, tree, {"f:l": "n"})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check(f"keycheck: cpp guard counts only a macro f expands ({text!r}: {why})",
+              ("scoped name in cpp macro body" in why) == fails)
+    recs = [("A", None, ("B",)), ("B", frozenset({"x"}), ("x", "+", "y")), ("C", None, ("z",))]
+    eq("keycheck: expandable_macros closes over macro names, skips own parameters",
+       (nk.expandable_macros(recs, "y", ["A", "C"]), nk.expandable_macros(recs, "x", ["A", "B"]),
+        nk.expandable_macros(recs, "z", ["A"])), (["A"], [], []))
     for text, fails in [
             ("#define FN(x) (x)\nstruct T{int m;}; int f(struct T*t){return FN(t->n);}", False),
             ("#define FN(x) (x)\nstruct T{int m;}; int f(struct T*t){return FN(t->m);}", False),
@@ -8380,19 +8462,21 @@ def test_naming_keycheck_scoped_pairs() -> None:
               {"src/a.c": text, "include/params.h": "#define COPY(" + param + ") (" + param + ")\n"},
               {"src/a.c": text.replace("int l", "int n").replace("return l", "return n")})[0])
     # scoped-plan-bindings: a #define body in a .c nothing includes cannot reach f;
-    # the same body in an included header still fails.
+    # the same body in an included file fails only when f expands the macro.
     text = "int f(int l){return l;}\n"
     other = "#define GET(x) { int l = 32 - (x); x = l; }\n"
     check("keycheck: local pair ignores a #define body in an unincluded .c", proof("f:l=n",
           {"src/a.c": text, "src/b.c": other}, {"src/a.c": text.replace("l", "n")})[0])
-    ok, why = proof("f:l=n", {"src/a.c": '#include "b.h"\n' + text, "include/b.h": other},
-                    {"src/a.c": '#include "b.h"\n' + text.replace("l", "n")})
-    check("keycheck: local pair still refuses a #define body in an included header",
-          not ok and "#define body" in why)
-    ok, why = proof("f:l=n", {"src/a.c": '#include "b.c"\n' + text, "src/b.c": other},
-                    {"src/a.c": '#include "b.c"\n' + text.replace("l", "n")})
-    check("keycheck: local pair still refuses a #define body in an included .c",
-          not ok and "#define body" in why)
+    # scoped-plan-targets: in a file f's TU sees, the body counts only when f expands GET.
+    expands = "int f(int l){int y = 0; GET(y); return l + y;}\n"
+    expands_new = expands.replace("int l", "int n").replace("return l", "return n")
+    for inc, path in [('#include "b.h"\n', "include/b.h"), ('#include "b.c"\n', "src/b.c")]:
+        ok, why = proof("f:l=n", {"src/a.c": inc + text, path: other},
+                        {"src/a.c": inc + text.replace("l", "n")})
+        check(f"keycheck: local pair ignores an unexpanded #define body in included {path} ({why})", ok)
+        ok, why = proof("f:l=n", {"src/a.c": inc + expands, path: other}, {"src/a.c": inc + expands_new})
+        check(f"keycheck: local pair still refuses a #define body f expands, included {path} ({why})",
+              not ok and "#define body reaching GET" in why)
     # A local passed to a plainly expanding macro is renamed in place; a macro
     # that stringizes, drops or moves it into a member/tag/label namespace fails.
     for body, reason in [("(((x) >> 2) << 2)", None), ("((s)->x)", "member/tag/label"),
@@ -8870,15 +8954,15 @@ def test_naming_keycheck_scoped_pairs() -> None:
     eq("keycheck: separated -D form exposes macro body", nk.command_line_macros(
        fixture_make.replace("-Dmips", "-D GET()=fresh")), "#define GET() fresh")
     for spec, text, definition in [("T.m=fresh", "struct T{int m;};", "-D MEMBER=fresh"),
-                                   ("f:l=fresh", "int f(int l){return l;}", "-D GET()=l")]:
+                                   ("f:l=fresh", "int f(int l){return l + GET();}", "-D GET()=l")]:
         ok, why = proof(spec, {"src/a.c": text, "Makefile": fixture_make.replace("-Dmips", definition)},
                         {"src/a.c": text.replace("int m;", "int fresh;").replace("int l", "int fresh").replace("return l", "return fresh")})
         check("keycheck: separated -D macro freshness " + spec, not ok and ("macros" in why or "#define" in why))
     for label, define, spec, text, reason in [
             ("member destination body", '-DMEMBER=fresh', 'T.m=fresh', 'struct T{int m;}; struct U{int MEMBER;};', 'macros'),
             ("member destination name", '-Dfresh=1', 'T.m=fresh', 'struct T{int m;};', 'macros'),
-            ("local destination body", '-DGET()=fresh', 'f:l=fresh', 'int f(int l){return l;}', '#define'),
-            ("local old body", '-DGET()=l', 'f:l=fresh', 'int f(int l){return l;}', '#define'),
+            ("local destination body", '-DGET()=fresh', 'f:l=fresh', 'int f(int l){return l + GET();}', '#define'),
+            ("local old body", '-DGET()=l', 'f:l=fresh', 'int f(int l){return l + GET();}', '#define'),
             ("local old name", '-Dl=outer', 'f:l=fresh', 'int f(int l){return l;}', '#define'),
             ("command-line hidden member", '-DMEMBER=fr\\#\\#esh', 'T.m=fresh', 'struct T{int m;}; struct U{int MEMBER;};', 'token paste')]:
         make = fixture_make.replace('-Dmips', '-Dmips ' + define)
