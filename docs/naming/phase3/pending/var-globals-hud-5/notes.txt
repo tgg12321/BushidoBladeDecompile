@@ -1,0 +1,18 @@
+# var-globals-hud-5 notes (cites at WT HEAD d56220993, lane ln-naming-a; research tmp/codex/var-globals-hud-5-research.md (Opus, read-only, d56220993); every access re-derived by the drafter by git grep -w over src, include, asm, bb2.ld, tools, engine, symbol_addrs.txt, named_syms.txt, docs; verdicts left empty for the reviewer)
+Result: 4 rows proposed (all research rows), 0 rows dropped, names changed from research: none. Access sets re-derived and equal to the research, no line number corrected (externs 4D0A8.c:1521-1524; readers 4D0A8.c:1538/1539/1545/1546 inside gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions, LoadImage uses :1541/1543/1548/1550; defs 4D0A8.c:2092-2095; asm listing lines .s:24-25/34-35/55-56/65-66; symbol_addrs.txt:1108-1111; none of the four in bb2.ld, tools, engine, named_syms.txt, include/). Geometry re-checked against d_8BC50.c:122-150 (strip header tp0 0x1F / vbase 0x80 / CLUT 0x3C0,0x1FF; picture headers [1]/[2] tp0 0x1E, vbase 0x7F, CLUT 0x390/0x380,0x1FF; picture cells u 0..0x7F v 0..0x7E; strip cells u 0..0xFF v 0..0x15). All four proposed names have 0 hits in the worktree outside pending/. dry.txt: data_wave dry run rc=0, 4 addresses, no refusals; git status shows only the new pending dir (output files under tmp/hud5/).
+Evidence added over the research: caller chain and sheet-reader chain condensed into each row; no runtime capture exists (code geometry only).
+
+NO_NAME / dropped: none this pass.
+
+Weakest rows for the reviewer
+1. All four: code geometry only, no capture; 'stage_card' rests on every fed sheet being read only by the card routine, while the RECTs are written by the stage loader that also runs at stream start (2B344.c:244). Fallbacks in each row's evidence.
+2. 0x800A32AC (picture_clut_rect): spans both 16-entry CLUTs (32 entries); singular 'clut_rect' names the one RECT.
+
+Comment pass (data_wave rewrites code, asm operands and registry lines, not comments):
+- src / include comments citing the four old spellings: none (only code tokens at 4D0A8.c:1521-1524, 1538-1539, 1545-1546, 2092-2095).
+- symbol_addrs.txt:1108-1111: registry lines, rewritten by data_wave (the "was g_text1b_..." notes stay).
+- History, leave: docs/naming/phase3/backlog.tsv:174, docs/naming/phase3/wave08/data_manifest.csv:92-95, pending/var-globals-hud-4/{notes.txt,data_manifest.csv}, docs/naming/remaining_data_classification.json (RECT entries), memory/grind/phase2-2026-10-03/lt/fimg/fimg1.py (layer-2 retarget is naming_wave's job).
+- Hazards: no interior aliases; no symbol at 0x800A3290..0x800A32B3 other than the four own-address D_ names.
+- Formatting: new names are longer; run tools/format.py on src/main/4D0A8.c (extern lines 1521-1524, reader lines 1538-1546, defs 2092-2095 are all under 80 columns by count, but confirm).
+
+Successor lead (outside this wave): D_800A327C {0x380, 0, 0x40, 0x100} / D_800A3284 {0x3E0, 0x1FF, 0x10, 1} (defs 4D0A8.c:2089-2090, externs :1323-1324, read at :1335-1336 by gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe; symbol_addrs.txt:789/:1013) match g_gpu_split_wipe_image_sheet_headers exactly (d_8BC50.c:101-103: tp0 0x0E => (896,0), vbase 0/0x80, cells u 0..0xFF v 0..0x7F = 256 x 256; CLUT (0x3E0,0x1FF)). Candidates g_gpu_split_wipe_image_rect / g_gpu_split_wipe_clut_rect for a later wave, not mined here.

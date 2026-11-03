@@ -1,0 +1,4 @@
+D_800A3294=g_gpu_stage_card_stage_strip_image_rect
+D_800A329C=g_gpu_stage_card_stage_strip_clut_rect
+D_800A32A4=g_gpu_stage_card_stage_picture_image_rect
+D_800A32AC=g_gpu_stage_card_stage_picture_clut_rect

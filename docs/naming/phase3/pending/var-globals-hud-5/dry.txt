@@ -1,0 +1,20 @@
+==============================================================================
+DATA WAVE — 4 addresses, 4 identifiers remapped
+  0x800a3294: D_800A3294 -> g_gpu_stage_card_stage_strip_image_rect
+  0x800a329c: D_800A329C -> g_gpu_stage_card_stage_strip_clut_rect
+  0x800a32a4: D_800A32A4 -> g_gpu_stage_card_stage_picture_image_rect
+  0x800a32ac: D_800A32AC -> g_gpu_stage_card_stage_picture_clut_rect
+
+-- file edits (3) --
+  asm/funcs/gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions.s  (8)
+  src/main/4D0A8.c  (12)
+  symbol_addrs.txt  (4)
+
+-- registry lines --
+  symbol_addrs.txt:1108 D_800A3294 -> g_gpu_stage_card_stage_strip_image_rect
+  symbol_addrs.txt:1109 D_800A329C -> g_gpu_stage_card_stage_strip_clut_rect
+  symbol_addrs.txt:1110 D_800A32A4 -> g_gpu_stage_card_stage_picture_image_rect
+  symbol_addrs.txt:1111 D_800A32AC -> g_gpu_stage_card_stage_picture_clut_rect
+
+DRY RUN — nothing written. Re-run with --apply.
+
