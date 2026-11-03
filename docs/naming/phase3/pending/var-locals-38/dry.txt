@@ -1,0 +1,42 @@
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (naming_member_apply.py handles T.m=n only; naming_wave.py is function-name only; same tool result as audit-5 and waves 16-37). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(base = every src/ and include/ .c/.h/.inc file plus Makefile read from the lane worktree ln-naming-c, HEAD e28649075 = main at draft time; NAMING_KEYCHECK_ROOT = the worktree)
+accepted all 22 pairs (92 token substitutions: 4D0A8.c 72, 43500.c 8, snd.c 8, 5ED34.c 2, 64FD8.c 2; no include/ file touched; comment edits needed, see notes.txt R6 WATCH). Each pair was also run alone: all 22 accepted, none rejected (alone-counts sum to 92, equal to the together total).
+The count of every pair equals an independent token scan of the binding in its definition (signature and body, comments and strings blanked, ./-> member tokens excluded; separate tokenizer, not the plan), pair by pair, line list and count: no mismatch (22/22 equal; the counts also equal the research file counts). The runs modified no file in the worktree (git status showed only this draft directory).
+Per-pair substitutions (function:old=new count):
+  gpu_DrawTwoDigitCounterWithOptionalSecondSide:arg0=left_count 7
+  gpu_DrawTwoDigitCounterWithOptionalSecondSide:arg1=right_count 3
+  gpu_DrawTwoDigitCounterWithOptionalSecondSide:arg2=draw_chunk_addr 5
+  gpu_DrawModeSizedPanelWithSelectedCellOpaque:arg2=draw_chunk_addr 4
+  gpu_DrawTimeFieldsAndDecimalCounter:arg2=draw_chunk_addr 5
+  gpu_DrawPackedComparisonRowsAndTotals:arg1=draw_chunk_addr 5
+  gpu_DrawPairedMarkRowsAndTimeFields:arg2=draw_chunk_addr 5
+  gpu_DrawSelectedStretchedSheetPair:arg1=draw_chunk_addr 4
+  gpu_DrawImageAndAdvanceSplitWipe:arg0=draw_chunk_addr 5
+  gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite:arg1=draw_chunk_addr 5
+  gpu_DrawSpriteAtPackedTablePosition:arg1=draw_chunk_addr 4
+  gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells:arg0=draw_chunk_addr 5
+  gpu_DrawIndexedCellsDigitPairsAndGrowingBars:arg0=draw_chunk_addr 14
+  gpu_DrawPackedComparisonRowsAndTotals:digit=var_4 1
+  snd_ReloadListedVabsFromFileAndInstallBillboards:arg2=first_vab_class 4
+  snd_ReloadListedVabsFromFileAndInstallBillboards:arg3=second_vab_class 4
+  StepSlideBuildFrameRecordAndDispatchStateHandler:arg0=held_buttons 2
+  StepThenCloseVab1OnNonzero:arg0=held_buttons 2
+  motion_StartPlayback:a2=first_weapon_entry_id 2
+  motion_StartPlayback:a3=second_weapon_entry_id 2
+  motion_StartPlaybackAtIndexedBasePlusOffset:a3=first_weapon_entry_id 2
+  motion_StartPlaybackAtIndexedBasePlusOffset:a4=second_weapon_entry_id 2
+  (sum 92; per-file: 4D0A8.c 7+3+5+4+5+5+5+4+5+5+4+5+14+1 = 72, snd.c 4+4, 43500.c 2+2+2+2, 5ED34.c 2, 64FD8.c 2)
+Same destination draw_chunk_addr for eleven pairs in eleven different functions, held_buttons for two, first_weapon_entry_id / second_weapon_entry_id for two functions each: scoped (local) names, no collision in one function (scoped_plan accepted the 22-pair set). draw_chunk_addr already exists as a parameter of gpu_DrawDecrementedSingleSideCounter (4D0A8.c:762) and in 6CF8.c: other functions, allowed.
+Comment lines that MUST change (Q133, pair word only; every one inside a FAKE comment; line numbers at e28649075, before var-locals-audit-5 lands):
+  4D0A8.c:483  (end_off - arg2)  -> (end_off - draw_chunk_addr)   gpu_DrawTimeFieldsAndDecimalCounter
+  4D0A8.c:651  (end_off - arg2)  -> (end_off - draw_chunk_addr)   gpu_DrawTwoDigitCounterWithOptionalSecondSide
+  4D0A8.c:809  (end_off - arg1)  -> (end_off - draw_chunk_addr)   gpu_DrawPackedComparisonRowsAndTotals
+  4D0A8.c:1097 (end_off - arg2)  -> (end_off - draw_chunk_addr)   gpu_DrawPairedMarkRowsAndTimeFields
+  4D0A8.c:1289 (end - arg1)      -> (end - draw_chunk_addr)       gpu_DrawSelectedStretchedSheetPair
+  4D0A8.c:1356 (end_off - arg0)  -> (end_off - draw_chunk_addr)   gpu_DrawImageAndAdvanceSplitWipe
+  4D0A8.c:1471 (end_off - arg1)  -> (end_off - draw_chunk_addr)   gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
+  4D0A8.c:1555 (end_off - arg1)  -> (end_off - draw_chunk_addr)   gpu_DrawSpriteAtPackedTablePosition
+  4D0A8.c:1597 (end_off - arg0)  -> (end_off - draw_chunk_addr)   gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
+  4D0A8.c:1685 (end_off - arg0)  -> (end_off - draw_chunk_addr)   gpu_DrawIndexedCellsDigitPairsAndGrowingBars
+  (10 lines; after audit-5 lands the nine end_off lines read end_addr, the 1289 line stays end. Found by a comment scan of each definition and the 15 lines above it for every old token: these ten are the only hits; the scan ran for all 22 pairs.)
+Comment lines that must NOT change: 4D0A8.c:54-57 (arg1 / var_4 FAKE of gpu_DrawModeSizedPanelWithSelectedCellOpaque: arg1 is not renamed), 59-63 (mode_off FAKE), 792-794 (var_1), 798-802 (digit pad FAKE: spells no `digit` token, the scan found none), 812-817 (i / j / k), 923-925, 1100-1103 (Q51); snd.c, 5ED34.c, 64FD8.c, 43500.c: no comment names an old token.
