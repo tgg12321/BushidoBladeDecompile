@@ -9,9 +9,8 @@ metadata:
 
 # The naming bar
 
-Applies to every name a naming wave lands or keeps: functions, globals, types, members,
-locals, parameters, file names. It never decides a function's completion state
-([[completion-bar]] does).
+Applies to every name a naming wave lands or keeps; it never decides a function's
+completion state ([[completion-bar]] does).
 
 ## N1 — the SOTN bar
 
@@ -30,7 +29,7 @@ One contradicting use fails the name.
 ## N2 — neutral beats a guess
 
 Lacking evidence, keep the neutral name (`func_8XXXXXXX`, `D_8XXXXXXX`, `Unk<addr>Rec`,
-`unk_XX`). A neutral name makes no claim; a false one misleads.
+`unk_XX`). A neutral name claims nothing; a false one misleads.
 
 ## N3 — evidence: conflict order, not a gate
 
@@ -92,7 +91,8 @@ Moves use `tools/move_tu.py`; the top comment keeps its boundary evidence.
    `.`/`->` accesses, via `tools/naming_member_apply.py <pairs.txt>`, which lists lines to
    hand-edit; `f:l=n`: one binding in the unique definition of `f`). Then the comment pass,
    `python3 tools/naming_keycheck.py --pairs <global pairs> --sub-comments`, and hand-edit,
-   in the wave, every comment still naming an old member or local.
+   in the wave, every comment still naming an old member or local. **Q133:** `/* FAKE */`
+   comments too, by the pair alone (R6 fails one whose reason or claim moved).
 5. **Gates:** `verify-oracle --rebuild` (SHA1 == oracle); `tus-check`;
    `tools/check_completion_integrity.py`; `engine test`; then stage the whole wave (`git add -A`)
    and run `python3 tools/naming_keycheck.py --from-manifests <naming_wave.json>,<data_wave.json>
@@ -100,14 +100,14 @@ Moves use `tools/move_tu.py`; the top comment keeps its boundary evidence.
    path fails), failing closed. Every changed, added, deleted or renamed path must be the base
    with the pairs substituted, using the wave tools' own substitutions:
    - C and header tokens, and each comment in its place, change only by the pairs, as is or as
-     `tools/format.py` lands them (a longer name can re-wrap or hoist a comment). Any other moved
+     `tools/format.py` lands them (a longer name may re-wrap a comment). Any other moved
      comment, or a `#define NAME(` spacing change, fails.
    - Each moved `layer2.jsonl` must equal naming_wave's retarget of the old record. Every other
-     moved ledger file is unchanged, and nothing else under `memory/` changes.
-   - The census CSV must equal a fresh `build_census.py` run (working tree only, after the
-     rebuild: it reads `build/bb2.map`). `docs/naming/phase3/**` is the
-     only free path. Registries change line by line, only into what naming_wave / data_wave
-     emit for that line. Other text files (gate lists, tools) change only by the pairs.
+     moved ledger file is unchanged; nothing else under `memory/` changes.
+   - The census CSV equals a fresh `build_census.py` run (after the rebuild: it reads
+     `build/bb2.map`). `docs/naming/phase3/**` is the only free path. Registries change line
+     by line, only into what naming_wave / data_wave emit for that line. Other text files
+     (gate lists, tools) change only by the pairs.
    - `.claude/**`, `movovl/**` (not oracle-covered) and the tool never change.
    - Global pairs: a new non-auto name must not already exist in a build or tool file; an auto
      name must carry the old name's address; old names may share a new name only when they name
