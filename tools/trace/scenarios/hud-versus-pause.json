@@ -1,0 +1,24 @@
+{
+  "description": "versus-cpu-first-fight's run cut at 9700, screenshots over the Vs. CPU Pause Menu (gpu_DrawModeSizedPanelWithSelectedCellOpaque); poked variants move one 0x8009B164..0x8009B20C sprite cell's y so the cell it places can be told apart",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/hud-versus-pause-1/baseline/spec.json",
+    "docs/naming/runtime/hud-versus-pause-1/B184-1-y/spec.json",
+    "docs/naming/runtime/hud-versus-pause-1/B194-1-y/spec.json",
+    "docs/naming/runtime/hud-versus-pause-1/B194-2-y/spec.json",
+    "docs/naming/runtime/hud-versus-pause-1/B1AC-1-y/spec.json",
+    "docs/naming/runtime/hud-versus-pause-1/B1CC-1-y/spec.json",
+    "docs/naming/runtime/hud-versus-pause-1/B1CC-3-y/spec.json",
+    "docs/naming/runtime/hud-versus-pause-1/B1EC-1-y/spec.json",
+    "docs/naming/runtime/hud-versus-pause-1/B1EC-2-y/spec.json",
+    "docs/naming/runtime/hud-versus-pause-1/B1EC-3-y/spec.json",
+    "docs/naming/runtime/hud-versus-pause-1/B164-0-1-y/spec.json",
+    "docs/naming/runtime/hud-versus-pause-1/B164-1-0-y/spec.json"
+  ],
+  "extends": "versus-cpu-first-fight",
+  "end_frame": 9700,
+  "shots": [
+    "9600:pause_menu.9600",
+    "9699:pause_menu.9699"
+  ]
+}
