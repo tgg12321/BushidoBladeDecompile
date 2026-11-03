@@ -1518,10 +1518,10 @@ s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
     return end_addr - draw_chunk_addr;
 }
 
-extern RECT D_800A3294;
-extern RECT D_800A329C;
-extern RECT D_800A32A4;
-extern RECT D_800A32AC;
+extern RECT g_gpu_stage_card_stage_strip_image_rect;
+extern RECT g_gpu_stage_card_stage_strip_clut_rect;
+extern RECT g_gpu_stage_card_stage_picture_image_rect;
+extern RECT g_gpu_stage_card_stage_picture_clut_rect;
 
 void gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions(
     s32 file_index_offset, s32 *file_buffer) {
@@ -1535,15 +1535,15 @@ void gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions(
     cdrom_GetFileSize(file_index);
     file_buffer[0] = file_buffer[0] + (s32)file_buffer;
     file_buffer[1] = file_buffer[1] + (s32)file_buffer;
-    r1 = D_800A3294;
-    r2 = D_800A329C;
+    r1 = g_gpu_stage_card_stage_strip_image_rect;
+    r2 = g_gpu_stage_card_stage_strip_clut_rect;
     p = (u8 *)file_buffer[0];
     LoadImage(&r1, (u32 *)(p + 0x40));
     DrawSync(0);
     LoadImage(&r2, (u32 *)(p + 0x14));
     DrawSync(0);
-    r3 = D_800A32A4;
-    r4 = D_800A32AC;
+    r3 = g_gpu_stage_card_stage_picture_image_rect;
+    r4 = g_gpu_stage_card_stage_picture_clut_rect;
     src_second_image = (u8 *)file_buffer[1];
     LoadImage(&r3, (u32 *)(src_second_image + 0x60));
     DrawSync(0);
@@ -2090,9 +2090,9 @@ s32 g_gpu_split_wipe_frame = 0;
 RECT D_800A327C = {0x380, 0, 0x40, 0x100};
 RECT D_800A3284 = {0x3E0, 0x1FF, 0x10, 1};
 Unk8009B400Record g_gpu_stage_card_map_marker_cell = {0, 0, 0, 0, 0x14, 0xE};
-RECT D_800A3294 = {0x3C0, 0x180, 0x40, 0x16};
-RECT D_800A329C = {0x3C0, 0x1FF, 0x10, 1};
-RECT D_800A32A4 = {0x380, 0x17F, 0x40, 0x7F};
-RECT D_800A32AC = {0x380, 0x1FF, 0x20, 1};
+RECT g_gpu_stage_card_stage_strip_image_rect = {0x3C0, 0x180, 0x40, 0x16};
+RECT g_gpu_stage_card_stage_strip_clut_rect = {0x3C0, 0x1FF, 0x10, 1};
+RECT g_gpu_stage_card_stage_picture_image_rect = {0x380, 0x17F, 0x40, 0x7F};
+RECT g_gpu_stage_card_stage_picture_clut_rect = {0x380, 0x1FF, 0x20, 1};
 u16 g_gpu_highlighted_row_bar_progress = 0;
 u16 g_gpu_fixed_bar_progress = 0;
