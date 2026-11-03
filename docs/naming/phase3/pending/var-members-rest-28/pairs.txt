@@ -1,0 +1,2 @@
+Unk8006EA28Rec.unk_5C=mirrored_and_tinted_layer_sheets
+Unk8006EA28Rec.unk_74=cursor_and_choice_cell_sheets

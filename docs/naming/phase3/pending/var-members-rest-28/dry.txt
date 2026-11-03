@@ -1,0 +1,49 @@
+PASS Unk8006EA28Rec.unk_5C=mirrored_and_tinted_layer_sheets, Unk8006EA28Rec.unk_74=cursor_and_choice_cell_sheets
+decl Unk8006EA28Rec.unk_5C -> mirrored_and_tinted_layer_sheets  include/game.h:343
+decl Unk8006EA28Rec.unk_74 -> cursor_and_choice_cell_sheets  include/game.h:349
+  round 0: 8 member error line(s)
+    src/main/5ED34.c:226 unk_5C x1
+    src/main/5ED34.c:237 unk_74 x1
+    src/main/5ED34.c:580 unk_5C x1
+    src/main/5ED34.c:941 unk_74 x1
+    src/main/5ED34.c:1279 unk_74 x1
+    src/main/5ED34.c:1451 unk_74 x1
+    src/main/5ED34.c:1781 unk_74 x1
+    src/main/5ED34.c:2249 unk_5C x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -343 +343 @@
+-    Unk8009B0E0Record **unk_5C;
++    Unk8009B0E0Record **mirrored_and_tinted_layer_sheets;
+@@ -349 +349 @@
+-    Unk8009B0E0Record **unk_74;
++    Unk8009B0E0Record **cursor_and_choice_cell_sheets;
+--- a/src/main/5ED34.c
++++ b/src/main/5ED34.c
+@@ -226 +226 @@
+-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_5C);
++    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->mirrored_and_tinted_layer_sheets);
+@@ -237 +237 @@
+-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_74);
++    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->cursor_and_choice_cell_sheets);
+@@ -580 +580 @@
+-    sheet_headers = g_entry_menu_resources->unk_5C;
++    sheet_headers = g_entry_menu_resources->mirrored_and_tinted_layer_sheets;
+@@ -941 +941 @@
+-    sheet_headers = g_entry_menu_resources->unk_74;
++    sheet_headers = g_entry_menu_resources->cursor_and_choice_cell_sheets;
+@@ -1279 +1279 @@
+-    var_0 = g_entry_menu_resources->unk_74;
++    var_0 = g_entry_menu_resources->cursor_and_choice_cell_sheets;
+@@ -1451 +1451 @@
+-                var_0 = g_entry_menu_resources->unk_74;
++                var_0 = g_entry_menu_resources->cursor_and_choice_cell_sheets;
+@@ -1781 +1781 @@
+-        var_4 = g_entry_menu_resources->unk_74;
++        var_4 = g_entry_menu_resources->cursor_and_choice_cell_sheets;
+@@ -2249 +2249 @@
+-    sheet_headers = g_entry_menu_resources->unk_5C;
++    sheet_headers = g_entry_menu_resources->mirrored_and_tinted_layer_sheets;
+DRY RUN: 2 file(s) would change; nothing written
+OK: every member access renamed

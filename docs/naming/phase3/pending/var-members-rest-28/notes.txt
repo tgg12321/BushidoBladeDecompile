@@ -1,0 +1,8 @@
+var-members-rest-28 -- draft notes (research: Opus, naming-c 2026-11-02, tmp/codex/var-members-rest-28-research.md; every use re-read on ea8e12bbb with git grep -w over src include; asm/funcs has no hit).
+
+BASIS: 2 RENAME rows on Unk8006EA28Rec (SEL.BIN resource root). unk_5C = mirrored_and_tinted_layer_sheets (the reviewer-suggested name from rest-27, whose shared_layer_sheets failed R4); unk_74 = cursor_and_choice_cell_sheets (suggested: pre-apply FAILED cursor_sheets, menu_UpdateChoiceGrid 5ED34.c:1796-1805 draws the non-cursor choice cells from [4]; R6 judges fresh).
+NO_NAME: Unk8006EA28Rec.unk_78 (decl only, never relocated, no C/asm read); Unk8006ECF4Rec.unk_08 (decl only; readers use slot_cell_tables and entry_headers); Unk8006EACCRec.unk_24 (written at 5ED34.c:278 and 64FD8.c:1372, no C read; asm bodies outside 5ED34 not checked).
+Comment pass (must follow the rename): include/game.h:327 'selected_entry_header_block..unk_74' and :331 'row_choice_sheets..unk_74' -> '..cursor_and_choice_cell_sheets'; src/main/5ED34.c:1262 'g_entry_menu_resources->unk_74' -> cursor_and_choice_cell_sheets; src/main/5ED34.c:1448 'the unk_74 table' -> 'the cursor_and_choice_cell_sheets table'.
+LAND claim list: topic:type:Unk8006EA28Rec; topic:tu:main/5ED34 (+ include/game.h).
+
+PRE-APPLY (naming-reviewer 2026-11-02): unk_5C PASS; unk_74 cursor_sheets FAIL (N1/R2, 5ED34.c:1796-1805), replaced by the reviewer's suggestion cursor_and_choice_cell_sheets, marked suggested. NO_NAME rows and comment-pass list judged sound/complete.
