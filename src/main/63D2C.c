@@ -304,7 +304,8 @@ void gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads(
     s.ot_idx = 0x1F;
     s.has_color = 0;
     s.semi = 0;
-    sheet_headers = draw_context->resource_root.v80076FF8->unk_38;
+    sheet_headers =
+        draw_context->resource_root.v80076FF8->sheets_over_flat_quads;
     s.x = 0;
     s.y = 0;
     for (sheet_index = 0; sheet_index < 3; sheet_index++) {

@@ -552,7 +552,7 @@ void gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(
     s.ot_idx = 0x12;
     s.has_color = 0;
     s.semi = 0;
-    sheet_headers = ((Unk8006919CRec *)draw_context[1])->unk_34;
+    sheet_headers = ((Unk8006919CRec *)draw_context[1])->sheets_over_flat_quads;
     s.x = 0;
     s.y = 0;
     sheet_header_cursor = sheet_headers;

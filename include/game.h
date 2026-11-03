@@ -371,7 +371,7 @@ typedef struct {
     Unk8009B0E0Record **opposed_choice_sheets;
     Unk8009B0E0Record **unk_30;
     Unk8009B0E0Record **sel_option_sheets;
-    Unk8009B0E0Record **unk_38;
+    Unk8009B0E0Record **sheets_over_flat_quads;
     Rec_8006C21C *row_tile_rects;
 } Unk80076FF8Rec;
 
@@ -2552,7 +2552,7 @@ typedef struct {
     Unk8009B0E0Record **option_menu_choice_sheets;
     Unk8009B0E0Record **memcard_choice_sheets;
     Unk8009B0E0Record **key_config_sheets;
-    Unk8009B0E0Record **unk_34;
+    Unk8009B0E0Record **sheets_over_flat_quads;
     Unk8009B0E0Record **stored_choice_sheets;
     Unk8006DD94List *confirm_list;
     Unk8009B0E0Record **cursor_row_sheets;
