@@ -407,6 +407,203 @@ class GateMirrorTest(unittest.TestCase):
         self.assertEqual(e.code, 4)
 
 
+class MirrorPostTest(unittest.TestCase):
+    """lanes-regen-mirror: regenerate and the input / tip checks run in the gate mirror; the
+    landing worktree only applies the regenerated files and must reach the mirror's trees."""
+    REGEN = "python -c \"open('census.csv','w',newline='').write(open('a.c').read()*2)\""
+
+    def repo(self, d):
+        r = Path(d) / "origin"
+        r.mkdir()
+        g = lambda *a, cwd=r: subprocess.run(["git", *a], cwd=cwd, check=True,
+                                             capture_output=True, text=True).stdout.strip()
+        g("init", "-q")
+        g("config", "core.autocrlf", "false")
+        g("config", "user.email", "t@t"); g("config", "user.name", "t")
+        (r / "a.c").write_text("1", encoding="utf-8")
+        (r / "census.csv").write_text("11", encoding="utf-8")
+        g("add", "-A"); g("commit", "-qm", "base")
+        base = g("rev-parse", "HEAD")
+        return r, g, base
+
+    def clone(self, d, r, g, name):
+        c = Path(d) / name
+        g("clone", "-q", str(r), str(c), cwd=Path(d))
+        g("config", "user.email", "t@t", cwd=c); g("config", "user.name", "t", cwd=c)
+        g("config", "core.autocrlf", "false", cwd=c)
+        return c
+
+    def mirror(self, m, plan, out):
+        old = os.getcwd()
+        os.chdir(m)
+        try:
+            with redirect_stdout(io.StringIO()):
+                rc = sys.modules["mirror_post"].main(["x", str(plan), str(out)])
+        finally:
+            os.chdir(old)
+        return rc, json.loads((out / "post.json").read_text(encoding="utf-8"))
+
+    def setUp(self):
+        import importlib
+        importlib.import_module("mirror_post")
+
+    def land(self, d, edit, checks=None, tip_checks=None):
+        """Lane commit `edit(repo)` on base, run mirror_post in a 'mirror' clone and
+        apply_mirror_post in an 'ld' clone; returns (rc, result, ld trees or Refuse, ...)."""
+        from types import SimpleNamespace
+        r, g, base = self.repo(d)
+        edit(r)
+        g("add", "-A"); g("commit", "-qm", "lane")
+        gated = g("rev-parse", "HEAD")
+        m, ld = self.clone(d, r, g, "mirror"), self.clone(d, r, g, "ld")
+        plan = Path(d) / "plan.json"
+        plan.write_text(json.dumps({
+            "base": base, "gated": gated, "cand_paths": ["a.c"],
+            "regenerate": [{"path": "census.csv", "cmd": self.REGEN}],
+            "input_checks": checks or [], "tip_checks": tip_checks or []}), encoding="utf-8")
+        out = Path(d) / "post"
+        rc, res = self.mirror(m, plan, out)
+        res["patch"] = (out / "regen.patch").read_bytes() if res.get("changed") else b""
+        ctx = SimpleNamespace(cfg={"regenerate": [{"path": "census.csv", "subject": "s"}]},
+                              state_dir=Path(d) / "state", mirror_post=res,
+                              replayed={"lanesha": gated})
+        try:
+            with redirect_stdout(io.StringIO()):
+                lanes.apply_mirror_post(ctx, "x", ld, base, io.StringIO())
+            got = g("rev-parse", "HEAD^{tree}", cwd=ld)
+        except lanes.Refuse as e:
+            got = e
+        return rc, res, got, g, m, ld, base
+
+    def test_amend_lands_the_mirror_tree(self):
+        with tempfile.TemporaryDirectory() as d:
+            rc, res, got, g, m, ld, base = self.land(
+                d, lambda r: (r / "a.c").write_text("2", encoding="utf-8"))
+            self.assertEqual((rc, res["how"], res["changed"]), (0, "amended", ["census.csv"]))
+            self.assertEqual(got, g("rev-parse", "HEAD^{tree}", cwd=m))
+            self.assertEqual(res["trees"], [got])
+            self.assertEqual((ld / "census.csv").read_text(encoding="utf-8"), "22")
+            self.assertEqual(g("status", "--porcelain", cwd=ld), "")
+            self.assertEqual(g("log", "-1", "--format=%s", cwd=ld), "lane")  # folded, not added
+
+    def test_drop_when_regeneration_undoes_the_only_change(self):
+        with tempfile.TemporaryDirectory() as d:
+            rc, res, got, g, m, ld, base = self.land(
+                d, lambda r: (r / "census.csv").write_text("stale", encoding="utf-8"))
+            self.assertEqual((rc, res["how"], res["trees"]), (0, "dropped", []))
+            self.assertEqual(g("rev-parse", "HEAD", cwd=ld), base)
+
+    def test_checks_run_on_the_folded_commits_and_failures_name_them(self):
+        ok = [{"cmd": "python -c \"import sys; sys.exit(0)\"", "inputs": ["census"]}]
+        bad = [{"cmd": "python -c \"import sys; sys.exit(3)\"", "inputs": ["CENSUS"]}]
+        edit = lambda r: (r / "a.c").write_text("2", encoding="utf-8")
+        with tempfile.TemporaryDirectory() as d:
+            rc, res, got, *_ = self.land(d, edit, checks=ok, tip_checks=ok)
+            self.assertEqual(rc, 0)
+        with tempfile.TemporaryDirectory() as d:  # census.csv only changed by the regenerate
+            rc, res, *_ = self.land(d, edit, checks=bad)
+            self.assertEqual((rc, res["failed"]["kind"]), (101, "input"))
+            self.assertIn("--rev ", res["failed"]["cmd"])
+            self.assertIn("input check failed",
+                          lanes.mirror_post_refusal(res["failed"], "l.log"))
+        with tempfile.TemporaryDirectory() as d:
+            rc, res, *_ = self.land(d, edit, tip_checks=bad)
+            self.assertEqual((rc, res["failed"]["kind"]), (101, "tip"))
+
+    def test_a_command_shared_by_two_outputs_runs_once(self):
+        with tempfile.TemporaryDirectory() as d:
+            r, g, base = self.repo(d)
+            cmd = "python -c \"open('runs.txt','a').write('x')\""
+            plan = Path(d) / "plan.json"
+            plan.write_text(json.dumps({"base": base, "gated": base, "regenerate": [
+                {"path": "a.c", "cmd": cmd}, {"path": "census.csv", "cmd": cmd}]}),
+                encoding="utf-8")
+            rc, res = self.mirror(r, plan, Path(d) / "post")
+            self.assertEqual((rc, (r / "runs.txt").read_text(encoding="utf-8")), (0, "x"))
+
+    def test_a_tree_the_mirror_did_not_reach_is_refused(self):
+        with tempfile.TemporaryDirectory() as d:
+            from types import SimpleNamespace
+            r, g, base = self.repo(d)
+            (r / "a.c").write_text("2", encoding="utf-8")
+            g("commit", "-qam", "lane")
+            ctx = SimpleNamespace(cfg={"regenerate": []}, state_dir=Path(d) / "s",
+                                  replayed={}, mirror_post={"changed": [], "trees": ["0" * 40]})
+            with self.assertRaisesRegex(lanes.Refuse, "differ from the mirror"):
+                lanes.apply_mirror_post(ctx, "x", r, base, io.StringIO())
+
+    def test_gate_script_runs_post_after_gates_and_stages_no_stale_build(self):
+        with tempfile.TemporaryDirectory() as d:
+            c = GateMirrorTest().ctx(d)
+            s = lanes.mirror_gate_script(c, c.cfg["gate_mirror"], "r", "a" * 40,
+                                         ["python3 -m engine.cli test"], "build/bb2.exe", "x",
+                                         post=("/p/post.py", "/p/plan.json"))
+            self.assertLess(s.index("( python3 -m engine.cli test )"), s.index("/p/post.py"))
+            self.assertIn('P="$M.post/x"', s)
+            self.assertIn("exit 101", s)
+            self.assertIn("BB2_CAPTURE_STORE=", s)
+            self.assertIn("cp build/bb2.map", s)
+            s = lanes.mirror_gate_script(c, c.cfg["gate_mirror"], "r", "a" * 40, [],
+                                         "build/bb2.exe", "x", post=("/p/post.py", "/p/plan"))
+            self.assertNotIn("cp build/", s)  # no gate ran: the mirror's build/ is stale
+
+    def test_run_gates_mirror_maps_a_post_refusal(self):
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as d:
+            c = GateMirrorTest().ctx(d)
+            pd = Path(d) / "post"
+            pd.mkdir()
+            (pd / "post.json").write_text(json.dumps(
+                {"changed": [], "trees": [], "failed": {"kind": "regenerate", "cmd": "ev"}}),
+                encoding="utf-8")
+            out = f"@@post regenerate 0 rc=1 secs=3\n@@post-out {pd}\n"
+            with patch.object(lanes, "git", lambda *a, cwd, check=True: "c" * 40), \
+                    patch.object(lanes, "run_wsl_script",
+                                 return_value=SimpleNamespace(returncode=101, stdout=out,
+                                                              stderr="")), \
+                    redirect_stdout(io.StringIO()):
+                with self.assertRaisesRegex(lanes.Refuse, "regenerate failed: ev"):
+                    lanes.run_gates_mirror(c, "x", Path(d), [], io.StringIO(),
+                                           post={"base": "b"})
+            plan = json.loads((c.state_dir / "gate-mirror" / "post-x.json").read_text("utf-8"))
+            self.assertEqual(plan["gated"], "c" * 40)
+            self.assertEqual((c.state_dir / "gate-mirror" / "post-x.py").read_bytes(),
+                             lanes.MIRROR_POST.read_bytes())
+
+    def test_docs_land_uses_the_mirror_only_with_post_work(self):
+        from types import SimpleNamespace
+        for regen, want in (([{"path": "ev.tsv", "cmd": "ev", "inputs": ["docs/rt/"]}], 1),
+                            ([], 0)):
+            with self.subTest(regen=bool(regen)):
+                ctx = SimpleNamespace(
+                    cfg=dict(CFG, runner="wsl", gate_mirror={"path": "bb2-gate"},
+                             regenerate=regen, input_checks=[], tip_checks=[]),
+                    load=lambda: {"lanes": {"a": {"kind": "foundation"}}})
+
+                def git(*args, **kwargs):
+                    return "docs/rt/cap.json" if args[0] == "diff" else ("" if args[0] in (
+                        "status", "rev-list") else "tip")
+
+                def gates_mirror(c, lane, ld, gates, log, post=None):
+                    self.assertEqual(gates, [])
+                    self.assertEqual([g["cmd"] for g in post["regenerate"]], ["ev"])
+                    c.mirror_gated = "tip"
+                with patch.object(lanes, "run"), patch.object(lanes, "git", side_effect=git), \
+                        patch.object(lanes, "replay_commit", return_value="picked"), \
+                        patch.object(lanes, "check_untracked"), \
+                        patch.object(lanes, "run_gates_mirror", side_effect=gates_mirror) as gm, \
+                        patch.object(lanes, "apply_mirror_post") as ap, \
+                        patch.object(lanes, "mirror_tip_extra", return_value=[]), \
+                        patch.object(lanes, "regenerate", return_value=[]) as rg, \
+                        patch.object(lanes, "input_checks") as ic, \
+                        patch.object(lanes, "tip_checks") as tc, \
+                        redirect_stdout(io.StringIO()):
+                    lanes.build_candidate(ctx, "a", Path("ld"), ["c1"], "base", io.StringIO())
+                self.assertEqual((gm.call_count, ap.call_count), (want, want))
+                self.assertEqual((rg.call_count, ic.call_count, tc.call_count),
+                                 (1 - want,) * 3)
+
+
 class InputCheckTest(unittest.TestCase):
     """Dispatch tests independent of shell transport and lane fixture setup."""
 

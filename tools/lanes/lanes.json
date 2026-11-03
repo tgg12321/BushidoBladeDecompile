@@ -9,7 +9,7 @@
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "oracle_exe": "build/bb2.exe",
   "runner": "wsl",
-  "_gate_mirror_doc": "Gates run in a throwaway clone at $HOME/<path> on the WSL ext4 disk, fetched read-only from main for the exact commit landed (lanes.py run_gates_mirror); copy = untracked toolchain copied from main when it is created. Rebuild: lanes.py gate-mirror --reset. BB2_LANES_NO_MIRROR=1 runs the gates in the landing worktree instead.",
+  "_gate_mirror_doc": "Gates run in a throwaway clone at $HOME/<path> on the WSL ext4 disk, fetched read-only from main for the exact commit landed (lanes.py run_gates_mirror); copy = untracked toolchain copied from main when it is created. Rebuild: lanes.py gate-mirror --reset. After the gates the mirror also runs regenerate, input_checks and tip_checks (tools/lanes/mirror_post.py); the landing worktree applies only the regenerated files and must reach the mirror's trees. BB2_LANES_NO_MIRROR=1 runs all of it in the landing worktree instead.",
   "gate_mirror": {"path": "bb2-gate", "copy": ["tools/gcc-2.7.2", "tools/decomp-permuter", "tools/cc1psx.exe", "disc"]},
   "bootstrap": ["pwsh", "-NoProfile", "-File", "tools/setup_worker_worktree.ps1"],
   "shared_paths": [

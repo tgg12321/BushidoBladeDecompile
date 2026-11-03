@@ -14,6 +14,9 @@ regenerate), never when build inputs changed on both sides.
 Full lands wait FIFO in tmp/lanes-state/registry.json's gate_queue before reading main.
 Docs-only lands (lanes.json docs_only_paths) bypass it; quick retries keep the existing ticket.
 Scoped tip_checks run once after regeneration and input_checks, including docs-only and quick lands.
+With the gate mirror, regenerate and both checks run there after the gates (tools/lanes/
+mirror_post.py), also for a docs-only land that has any of them; the landing worktree applies
+only the regenerated files and must reach the mirror's tree for every landed commit.
 Owners heartbeat while waiting and landing; waiters prune expired heartbeats across PID
 namespaces, as well as provably dead local PIDs.
 
@@ -753,6 +756,10 @@ MIRROR_TIMEOUT_SECS = 3 * 3600
 # Build outputs the landing worktree's regenerate / checks read (build_census.py: bb2.map),
 # copied back from the mirror after the gates.
 MIRROR_ARTIFACTS_DEFAULT = ["build/bb2.exe", "build/bb2.map", "build/bb2.elf"]
+# The post-gate steps (regenerate, input / tip checks) the mirror runs after the gates.
+MIRROR_POST = Path(__file__).with_name("mirror_post.py")
+POST_LINE = re.compile(r"^@@post (\w+) (\d+) rc=(\d+) secs=(\d+)$", re.M)
+POST_OUT_LINE = re.compile(r"^@@post-out (.+?)\s*$", re.M)
 
 
 def mirror_cfg(ctx: Ctx) -> dict | None:
@@ -809,13 +816,17 @@ def mirror_create_script(ctx: Ctx, m: dict, reset: bool) -> str:
 
 
 def mirror_gate_script(ctx: Ctx, m: dict, ref: str, sha: str, gates, oracle_exe: str,
-                       lane: str = "") -> str:
+                       lane: str = "", post: tuple[str, str] | None = None) -> str:
     """Bash: (re)create the clone if missing or incomplete, fetch `ref` from main, check out
     exactly `sha`, run every gate in order (stop at the first failure), print the built exe's
-    SHA1, and stage the build outputs for the landing worktree under $M.out/<lane>."""
+    SHA1, and stage the build outputs for the landing worktree under $M.out/<lane> (none when
+    no gate ran: the mirror's build/ is then an older land's). `post` = (WSL path of
+    mirror_post.py, of its plan): after the gates, regenerate and the input / tip checks run
+    there with their outputs under $M.post/<lane> (exit 101 when one refuses)."""
     if not re.fullmatch(r"[\w.-]*", lane):
         raise Refuse(f"lane name {lane!r} is not safe for the gate mirror")
-    arts = [a for a in m.get("artifacts", MIRROR_ARTIFACTS_DEFAULT) if _safe_rel(a)]
+    arts = [a for a in m.get("artifacts", MIRROR_ARTIFACTS_DEFAULT) if _safe_rel(a)] \
+        if gates else []
     s = mirror_create_script(ctx, m, reset=False)
     s += ('cd "$M" || exit 91\n'
           f'git -c safe.directory="*" fetch -q --no-tags "$SRC" "+{ref}:refs/gate/candidate" '
@@ -841,6 +852,16 @@ def mirror_gate_script(ctx: Ctx, m: dict, ref: str, sha: str, gates, oracle_exe:
           + "".join(f'if [ -f {shlex.quote(a)} ]; then mkdir -p "$O/$(dirname {shlex.quote(a)})" '
                     f'&& cp {shlex.quote(a)} "$O/{a}" || exit 95; fi\n' for a in arts) +
           'echo "@@out $(wslpath -w "$O")"\n')
+    if post:
+        # the capture store sits beside main (tools/trace/store.py store_root); read it there
+        store = wsl_path(ctx.main.parent / "bb2-captures")
+        s += (f'P="$M.post/{lane or "_"}"\n'
+              'rm -rf -- "$P" && mkdir -p "$P" || exit 95\n'
+              f'[ -n "${{BB2_CAPTURE_STORE:-}}" ] || export BB2_CAPTURE_STORE={shlex.quote(store)}\n'
+              f'python3 {shlex.quote(post[0])} {shlex.quote(post[1])} "$P"\n'
+              'RC=$?\n'
+              'echo "@@post-out $(wslpath -w "$P")"\n'
+              '[ "$RC" = 0 ] || exit 101\n')
     return s
 
 
@@ -868,18 +889,31 @@ def run_wsl_script(ctx: Ctx, name: str, text: str) -> subprocess.CompletedProces
                      f"killed (log in {d})", 4)
 
 
-def run_gates_mirror(ctx: Ctx, lane: str, ld: Path, gates, log) -> str | None:
+def run_gates_mirror(ctx: Ctx, lane: str, ld: Path, gates, log, post=None) -> str | None:
     """Run `gates` in the mirror on ld's HEAD; returns the built exe's SHA1 (None when no SHA1
-    line was printed). Raises Refuse(4) on a failed gate or a mirror error."""
+    line was printed). Raises Refuse(4) on a failed gate or a mirror error. `post`
+    (mirror_post_plan) also runs the post-gate steps there; their result lands in
+    ctx.mirror_post for apply_mirror_post."""
     m = mirror_cfg(ctx)
     sha = git("rev-parse", "HEAD", cwd=ld)
     ref = f"refs/lanes-gate/{lane}"
+    ctx.mirror_post = None
+    post_args = None
+    if post is not None:
+        d = ctx.state_dir / "gate-mirror"
+        d.mkdir(parents=True, exist_ok=True)
+        plan, prog = d / f"post-{lane}.json", d / f"post-{lane}.py"
+        plan.write_text(json.dumps(dict(post, gated=sha), indent=1) + "\n", encoding="utf-8",
+                        newline="\n")
+        prog.write_bytes(MIRROR_POST.read_bytes())  # this checkout's copy, not the candidate's
+        post_args = (wsl_path(prog), wsl_path(plan))
     git("update-ref", ref, sha, cwd=ctx.main)  # the Windows side's only write
-    print(f"lanes: gates in the WSL mirror ~/{m.get('path', 'bb2-gate')} at {sha[:9]}", flush=True)
+    print(f"lanes: gates in the WSL mirror ~/{m.get('path', 'bb2-gate')} at {sha[:9]}"
+          + (" (then regenerate and checks there)" if post is not None else ""), flush=True)
     try:
         r = run_wsl_script(ctx, f"gate-{lane}",
                            mirror_gate_script(ctx, m, ref, sha, gates, ctx.cfg["oracle_exe"],
-                                              lane))
+                                              lane, post=post_args))
     finally:
         git("update-ref", "-d", ref, cwd=ctx.main, check=False)
     logname = getattr(log, "name", "?")
@@ -889,7 +923,16 @@ def run_gates_mirror(ctx: Ctx, lane: str, ld: Path, gates, log) -> str | None:
     for g, rc, secs in ran:
         print(f"lanes:   $ {g}  ({secs}s{'' if rc == 0 else f', exit {rc}'})", flush=True)
         log.write(f"[gate {g}: {secs}s]\n")
+    for kind, i, rc, secs in POST_LINE.findall(out):
+        print(f"lanes:   mirror {kind} {i}: {secs}s{'' if rc == '0' else f', exit {rc}'}",
+              flush=True)
     log.flush()
+    if post is not None and r.returncode in (0, 101) and len(ran) == len(gates):
+        res = read_mirror_post(out)
+        if res.get("failed"):
+            raise Refuse(mirror_post_refusal(res["failed"], logname), 4)
+        if r.returncode == 0:
+            ctx.mirror_post = res
     if r.returncode != 0:
         tail = "\n".join("lanes:     " + t for t in out.strip().splitlines()[-8:])
         if tail:
@@ -920,6 +963,93 @@ def copy_mirror_artifacts(out: str, ld: Path):
             dst = ld / f.relative_to(src)
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(f, dst)
+
+
+def mirror_post_plan(ctx: Ctx, ld: Path, base: str, docs_only: bool) -> dict:
+    """What mirror_post.py runs after the gates: regenerate()'s entries for this candidate and
+    the input / tip checks (it scopes those itself, per commit, like input_checks/tip_checks)."""
+    return {"base": base,
+            "regenerate": [{"path": g["path"], "cmd": g["cmd"]}
+                           for g in regen_entries(ctx, docs_only)],
+            "input_checks": ctx.cfg.get("input_checks", []),
+            "tip_checks": ctx.cfg.get("tip_checks", []),
+            "cand_paths": sorted(ctx.cand_paths)}
+
+
+def mirror_post_needed(ctx: Ctx, ld: Path, post: dict) -> bool:
+    """Whether a gate-less (docs-only) land has post-gate work, so must go through the mirror:
+    a regenerate entry, or a check whose inputs a commit, the candidate or an output touches
+    (an upper bound of what mirror_post.py will run)."""
+    if post["regenerate"]:
+        return True  # so no output changes below: only the commits' and candidate's paths
+    if any(any(matches_input_prefix(p, c["inputs"]) for p in post["cand_paths"])
+           for c in post["tip_checks"]):
+        return True
+    if not post["input_checks"]:
+        return False
+    paths = set()
+    for c in git("rev-list", "--reverse", f"{post['base']}..HEAD", cwd=ld).split():
+        paths |= set(git("diff-tree", "--no-commit-id", "--name-only", "-z", "-r",
+                         "--no-renames", c, cwd=ld).split("\0")) - {""}
+    return any(any(matches_input_prefix(p, c["inputs"]) for p in paths)
+               for c in post["input_checks"])
+
+
+def read_mirror_post(out: str) -> dict:
+    """mirror_post.py's post.json and regen.patch (`@@post-out <\\wsl path>`)."""
+    m = POST_OUT_LINE.search(out)
+    if not m:
+        raise Refuse("the gate mirror ran no post-gate steps (no @@post-out line)", 4)
+    src = Path(m.group(1))
+    try:
+        res = json.loads((src / "post.json").read_text(encoding="utf-8"))
+        res["patch"] = (src / "regen.patch").read_bytes() if res.get("changed") else b""
+    except (OSError, ValueError) as e:
+        raise Refuse(f"the gate mirror's post-gate result is not readable at {src}: {e}", 4)
+    return res
+
+
+def mirror_post_refusal(failed: dict, logname: str) -> str:
+    """The refusal regenerate() / input_checks() / tip_checks() would have raised."""
+    kind, cmd = failed.get("kind"), failed.get("cmd", "")
+    return {"regenerate": f"regenerate failed: {cmd}  (log {logname})",
+            "input": f"input check failed: {cmd}  (log {logname})",
+            "tip": f"tip check failed: {cmd}  (log {logname})",
+            "dirty": f"the gates left tracked changes in the gate mirror: {cmd}"}.get(
+        kind, f"gate mirror post-gate error: {cmd}  (log {logname}); "
+              f"`lanes.py gate-mirror --reset` rebuilds it")
+
+
+def apply_mirror_post(ctx: Ctx, lane: str, ld: Path, base: str, log) -> list:
+    """Bring the mirror's regenerated outputs into the landing worktree: apply its patch on the
+    gated commit, fold it like regenerate() does, and require the mirror's tree for every
+    commit base..HEAD (so the checks it ran judged exactly what lands). Returns changed paths."""
+    res = ctx.mirror_post
+    if res is None:
+        raise Refuse("the gate mirror returned no post-gate result", 4)
+    changed = list(res.get("changed", []))
+    if changed:
+        pf = ctx.state_dir / "gate-mirror" / f"regen-{lane}.patch"
+        pf.parent.mkdir(parents=True, exist_ok=True)
+        pf.write_bytes(res["patch"])
+        r = run(["git", "apply", "--index", "--binary", "--whitespace=nowarn", str(pf)], cwd=ld,
+                check=False)
+        if r.returncode != 0:
+            raise Refuse(f"could not apply the mirror's regenerated files:\n"
+                         f"{(r.stderr or '')[-1500:]}", 4)
+        staged = set(git("diff", "--cached", "--name-only", "--no-renames", cwd=ld).split())
+        if staged != set(changed):
+            raise Refuse(f"the mirror's patch staged {sorted(staged)}, not {sorted(changed)}", 4)
+    entries = {g["path"]: g for g in ctx.cfg.get("regenerate", [])}
+    fold_regenerated(ctx, lane, ld, [entries.get(p, {"path": p, "subject": "docs: refresh"})
+                                     for p in changed])
+    trees = [git("rev-parse", c + "^{tree}", cwd=ld)
+             for c in git("rev-list", "--reverse", f"{base}..HEAD", cwd=ld).split()]
+    if trees != res.get("trees"):
+        raise Refuse(f"the landing worktree's trees after the regenerate fold ({len(trees)} "
+                     f"commit(s)) differ from the mirror's ({len(res.get('trees') or [])}); "
+                     f"main was not changed (log {getattr(log, 'name', '?')})", 4)
+    return changed
 
 
 def mirror_tip_extra(ctx: Ctx, gated: str, tip: str, cwd: Path) -> list[str]:
@@ -1744,11 +1874,14 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
         gates = scope_gates(ctx, ld, base, new_paths,
                             ctx.cfg["gates"].get(kind, ctx.cfg["gates"]["foundation"]))
     check_untracked(ld)
-    mirrored = bool(gates) and mirror_cfg(ctx) is not None
+    post = mirror_post_plan(ctx, ld, base, docs_only) if mirror_cfg(ctx) is not None else None
+    # the mirror runs the gates and the post-gate steps; a docs-only land with nothing to
+    # regenerate or check never waits on the mirror's lock
+    mirrored = post is not None and (bool(gates) or mirror_post_needed(ctx, ld, post))
     if mirrored and quick and not any("verify-oracle" in g for g in gates):
         gates = ["python3 -m engine.cli verify-oracle --rebuild"] + gates
     if mirrored:
-        mirror_sha1 = run_gates_mirror(ctx, lane, ld, gates, log)
+        mirror_sha1 = run_gates_mirror(ctx, lane, ld, gates, log, post=post)
     else:
         for g in gates:
             t0 = time.time()
@@ -1767,7 +1900,10 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
             raise Refuse(f"{exe} SHA1 {got} != oracle {ctx.cfg['oracle_sha1']}", 4)
         print(f"lanes: SHA1 == oracle ({got[:12]})")
     gated_sha = git("rev-parse", "HEAD", cwd=ld)
-    regenerated = regenerate(ctx, lane, ld, log, docs_only=docs_only)
+    if mirrored:  # regenerated and checked in the mirror: apply its outputs, same trees
+        apply_mirror_post(ctx, lane, ld, base, log)
+    else:
+        regenerated = regenerate(ctx, lane, ld, log, docs_only=docs_only)
     if mirrored:  # what lands is the gated commit plus only the regenerated files
         extra = mirror_tip_extra(ctx, gated_sha, "HEAD", ld)
         if ctx.mirror_gated != gated_sha or extra:
@@ -1775,8 +1911,9 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
                          f"{gated_sha[:9]}" + (f" (after it: {', '.join(extra[:5])})"
                                                if extra else ""), 4)
         ctx.mirror_tip = gated_sha  # cmd_land re-checks the tip it fast-forwards
-    input_checks(ctx, ld, base, log)
-    tip_checks(ctx, ld, log, regenerated)
+    else:
+        input_checks(ctx, ld, base, log)
+        tip_checks(ctx, ld, log, regenerated)
     if git("status", "--porcelain", "--untracked-files=no", cwd=ld):
         raise Refuse("the gates left tracked changes in the landing worktree: "
                      + git("status", "--porcelain", "--untracked-files=no", cwd=ld), 4)
@@ -1936,6 +2073,18 @@ def regenerate(ctx: Ctx, lane: str, ld: Path, log, docs_only=False):
     events build refuses only lands touching its capture inputs. Entries without inputs keep
     running on every non-docs land and never on docs-only lands. Returns changed output paths."""
     changed = []
+    for g in regen_entries(ctx, docs_only):
+        if run_shell(ctx, ld, g["cmd"], log) != 0:
+            raise Refuse(f"regenerate failed: {g['cmd']}  (log {log.name})", 4)
+        git("add", "--", g["path"], cwd=ld)
+        if not git_ok("diff", "--cached", "--quiet", "--", g["path"], cwd=ld):
+            changed.append(g)
+    return fold_regenerated(ctx, lane, ld, changed)
+
+
+def regen_entries(ctx: Ctx, docs_only=False) -> list:
+    """The lanes.json "regenerate" entries this candidate runs (regenerate()'s scoping)."""
+    out = []
     for g in ctx.cfg.get("regenerate", []):
         if "inputs" in g:
             # the output itself is excluded exactly (as before); only the input prefix test
@@ -1946,11 +2095,12 @@ def regenerate(ctx: Ctx, lane: str, ld: Path, log, docs_only=False):
                 continue
         elif docs_only:
             continue
-        if run_shell(ctx, ld, g["cmd"], log) != 0:
-            raise Refuse(f"regenerate failed: {g['cmd']}  (log {log.name})", 4)
-        git("add", "--", g["path"], cwd=ld)
-        if not git_ok("diff", "--cached", "--quiet", "--", g["path"], cwd=ld):
-            changed.append(g)
+        out.append(g)
+    return out
+
+
+def fold_regenerated(ctx: Ctx, lane: str, ld: Path, changed) -> list:
+    """Fold the staged, changed regenerate outputs (`changed`: entries) into the candidate."""
     if not changed:
         return []
     old = git("rev-parse", "HEAD", cwd=ld)
