@@ -611,12 +611,12 @@ extern TexRec D_8009B968[1];
 extern TexRec D_8009B970[1];
 extern TexRec g_eff_growing_quad_and_quad_pair_second_late_tex_rec[1];
 extern TexRec g_eff_growing_quad_and_quad_pair_second_early_tex_rec[1];
-extern TexRec D_8009B988[1];
+extern TexRec g_eff_quad_pair_first_early_strip_tex_rec[1];
 extern TexRec D_8009B990[1];
 extern TexRec D_8009B998[4];
 extern TexRec D_8009B9B8[4];
 extern TexRec D_8009B9D8[1];
-extern TexRec D_8009B9E0[1];
+extern TexRec g_eff_quad_pair_first_late_square_tex_rec[1];
 extern TexRec g_eff_two_animated_quads_early_tex_rec[1];
 extern TexRec g_eff_two_animated_quads_middle_tex_rec[2];
 /* one table of 12 records: [0..5] / [6..9] the two sprite sets, [10] / [11]

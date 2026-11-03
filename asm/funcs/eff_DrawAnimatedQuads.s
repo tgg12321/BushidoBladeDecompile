@@ -283,8 +283,8 @@ glabel eff_DrawAnimatedQuads
     /* 56420 80065C20 1F970108 */  j          .L80065C7C
     /* 56424 80065C24 00000000 */   nop
   .L80065C28:
-    /* 56428 80065C28 0A80023C */  lui        $v0, %hi(D_8009B988)
-    /* 5642C 80065C2C 88B94224 */  addiu      $v0, $v0, %lo(D_8009B988)
+    /* 56428 80065C28 0A80023C */  lui        $v0, %hi(g_eff_quad_pair_first_early_strip_tex_rec)
+    /* 5642C 80065C2C 88B94224 */  addiu      $v0, $v0, %lo(g_eff_quad_pair_first_early_strip_tex_rec)
     /* 56430 80065C30 1F970108 */  j          .L80065C7C
     /* 56434 80065C34 00000000 */   nop
   .L80065C38:
@@ -299,8 +299,8 @@ glabel eff_DrawAnimatedQuads
     /* 56458 80065C58 00000000 */  nop
     /* 5645C 80065C5C 05006210 */  beq        $v1, $v0, .L80065C74
     /* 56460 80065C60 00000000 */   nop
-    /* 56464 80065C64 0A80023C */  lui        $v0, %hi(D_8009B9E0)
-    /* 56468 80065C68 E0B94224 */  addiu      $v0, $v0, %lo(D_8009B9E0)
+    /* 56464 80065C64 0A80023C */  lui        $v0, %hi(g_eff_quad_pair_first_late_square_tex_rec)
+    /* 56468 80065C68 E0B94224 */  addiu      $v0, $v0, %lo(g_eff_quad_pair_first_late_square_tex_rec)
     /* 5646C 80065C6C 1F970108 */  j          .L80065C7C
     /* 56470 80065C70 00000000 */   nop
   .L80065C74:
