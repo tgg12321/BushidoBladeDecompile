@@ -325,12 +325,12 @@ typedef struct {
  * - row_choice_pixels: indexed by the row-choice value (rec.row_pick) that
  * menu_UpdateRowCursors stores, two pixel-run addresses (headerless, not TIM),
  * one per column, loaded with LoadImage.
- * - selected_entry_header_block..unk_74: the nine lists
+ * - selected_entry_header_block..cursor_and_choice_cell_sheets: the nine lists
  * resource_RelocateNineOffsetListsAndLoadVabPack relocates
  * (reloc_RelocateOffsetList): selected_entry_header_block, the header block
  * gpu_UploadAndDrawSelectedEntryQuads draws (Unk8006ECF4Rec);
- * row_choice_sheets..unk_74, sprite-sheet lists. unk_78 is a further offset no
- * code reads.
+ * row_choice_sheets..cursor_and_choice_cell_sheets, sprite-sheet lists. unk_78
+ * is a further offset no code reads.
  * - row_choice_upload_rects: per player a row of eight VRAM RECTs
  * menu_UpdateRowCursors hands LoadImage as the destination; choice_grid_codes:
  * the bytes menu_UpdateChoiceGrid reads.

@@ -1262,9 +1262,10 @@ void menu_UpdateRow(Unk8006EACCRec *draw_context) {
 
 void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
     /* several values of one kind, a sprite-sheet header table:
-     * g_entry_menu_resources->unk_74 (loaded at entry and again in the
-     * selected-slot arm) and g_entry_menu_resources->entry_grid_sheets (the
-     * table the last loop draws from) (Ruling 11, ordinary-c-judge-decidable).
+     * g_entry_menu_resources->cursor_and_choice_cell_sheets (loaded at entry
+     * and again in the selected-slot arm) and
+     * g_entry_menu_resources->entry_grid_sheets (the table the last loop draws
+     * from) (Ruling 11, ordinary-c-judge-decidable).
      */
     Unk8009B0E0Record **var_0;
     s32 flag;
@@ -1448,9 +1449,9 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                 if (g_entry_menu_work_block->row_countdowns[i] != 0) {
                     g_entry_menu_work_block->row_countdowns[i]--;
                 }
-                /* FAKE: reused: re-stores the unk_74 table var_0 already
-                 * holds; dropped: score 4; read in place, or a second local:
-                 * 2. */
+                /* FAKE: reused: re-stores the cursor_and_choice_cell_sheets
+                 * table var_0 already holds; dropped: score 4; read in place,
+                 * or a second local: 2. */
                 var_0 = g_entry_menu_resources->cursor_and_choice_cell_sheets;
                 s->header = var_0[3];
                 if (g_entry_menu_row_cursor_cell_counts[i] < 12) {
