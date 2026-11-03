@@ -3143,6 +3143,119 @@ def fixed_member_access(body, j, params):
             and not (body[j + 2:j + 3] and (body[j + 2] == "(" or IDENT.fullmatch(body[j + 2]))))
 
 
+# An identifier-free asm operand: numbers, character literals and C operators
+# only (no $, %, \, #, braces, ; or strings).
+ASM_OPERAND_TOKEN = re.compile(r"[0-9][0-9A-Za-z_.]*|'(?:[^'\\\n]|\\.)+'|[-+*/&|^~!<>=?,()\[\]]+")
+
+
+def asm_operand_statement(params, body, forms=()):
+    """True when a macro body is one GNU asm statement, or a { } block of
+    `;`-terminated ones (the PsyQ inline_c.h / inline_o.h GTE macros), whose every
+    parameter use is a whole asm operand expression `"constraint" ( p )`. Shape:
+    asm/__asm/__asm__, optional volatile/__volatile__, `(`, string literals, then up
+    to three `:` sections: two operand lists (`"c" ( e )`, comma-separated, e a lone
+    parameter or only numbers, character literals and operators) and a clobber list of strings,
+    then `)`. The asm keyword and qualifier may be no parameter and, given forms,
+    no macro name. Nothing else (no names, goto labels, [symbolic] operands, braces
+    inside) may appear, so an argument lands only inside an operand's parentheses:
+    an ordinary expression, never a member, tag, label or declarator."""
+    names = {q for q in params if IDENT.fullmatch(q)}
+    # The asm keyword and qualifier must be themselves: no parameter, no macro.
+    if any(q in names or q in forms for q in body
+           if q in ("asm", "__asm", "__asm__", "volatile", "__volatile__")):
+        return False
+    braced = bool(body) and body[0] == "{"
+    if braced and body[-1] != "}":
+        return False
+    i, stop = (1, len(body) - 1) if braced else (0, len(body))
+
+    def string(at):
+        return at < stop and body[at].startswith('"')
+    statements = 0
+    while i < stop:
+        if body[i] not in ("asm", "__asm", "__asm__"):
+            return False
+        i += 1
+        if i < stop and body[i] in ("volatile", "__volatile__"):
+            i += 1
+        if not (i < stop and body[i] == "(" and string(i + 1)):
+            return False
+        i += 1
+        while string(i):
+            i += 1
+        for section in range(3):
+            if not (i < stop and body[i] == ":"):
+                break
+            i += 1
+            if section == 2:
+                while string(i):
+                    i += 1
+                    if i < stop and body[i] == "," and string(i + 1):
+                        i += 1
+                break
+            while string(i) and i + 1 < stop and body[i + 1] == "(":
+                close = i + 1
+                depth = 0
+                while close < stop:
+                    depth += (body[close] == "(") - (body[close] == ")")
+                    if depth == 0:
+                        break
+                    close += 1
+                if close >= stop:
+                    return False
+                inner = body[i + 2:close]
+                if not (len(inner) == 1 and inner[0] in names
+                        or inner and all(ASM_OPERAND_TOKEN.fullmatch(q) for q in inner)):
+                    return False
+                i = close + 1
+                if i < stop and body[i] == "," and string(i + 1):
+                    i += 1
+        if not (i < stop and body[i] == ")"):
+            return False
+        i += 1
+        statements += 1
+        if braced:
+            if not (i < stop and body[i] == ";"):
+                return False
+            i += 1
+        elif i != stop:
+            return False
+    return statements > 0 and all(q in body for q in names)
+
+
+def asm_forwarding_statement(params, body, forms):
+    """True when a macro body is a { } block of `;`-terminated invocations of
+    asm-statement macros (asm_operand_statement, every definition; the callee no
+    parameter of this macro), each argument a lone parameter (the PsyQ gtemac.h composites: { gte_ldv0(r1); gte_rtv0();
+    gte_stlvnl(r2); }). A forwarded parameter then lands only in a whole asm operand."""
+    names = {q for q in params if IDENT.fullmatch(q)}
+    if not (len(body) > 2 and body[0] == "{" and body[-1] == "}"):
+        return False
+    i, stop = 1, len(body) - 1
+    while i < stop:
+        callee = body[i]
+        defs = forms.get(callee)
+        if callee in names or not defs or not all(ps is not None and "..." not in ps and "__VA_ARGS__" not in b
+                                                  and asm_operand_statement(ps, b, forms) for ps, b in defs):
+            return False
+        if not (i + 1 < stop and body[i + 1] == "("):
+            return False
+        i += 2
+        if i < stop and body[i] != ")":
+            while True:
+                if not (i < stop and body[i] in names):
+                    return False
+                i += 1
+                if i < stop and body[i] == ",":
+                    i += 1
+                    continue
+                break
+        if not (i + 1 < stop and body[i] == ")" and body[i + 1] == ";"):
+            return False
+        i += 2
+    return all(q in body for q in names)
+
+
 def reject_unexpanded_macro_arguments(text, old, records, path, indices=None, local=False):
     """Member pairs keep an unchanged macro argument naming m only when every
     definition of that macro expands all of its parameters plainly (each occurs in
@@ -3179,7 +3292,18 @@ def reject_unexpanded_macro_arguments(text, old, records, path, indices=None, lo
         defs = forms.get(ts[k], [])
         if not defs or any(params is None for params, _ in defs):
             raise ValueError(f"{path}: {old} is an argument of function-like macro alias {ts[k]}")
-        if local:
+        if local and all(asm_operand_statement(params, body, forms) or asm_forwarding_statement(params, body, forms)
+                         for params, body in defs):
+            # An asm-statement macro (GTE, or a gtemac.h block forwarding whole
+            # parameters to them): invoked as a whole statement, its
+            # arguments name no macro, and each parameter is a whole asm operand.
+            if (ts[k - 1:k] and ts[k - 1] not in (";", "{", "}")) or ts[end + 1:end + 2] != [";"]:
+                raise ValueError(f"{path}: {old} is an argument of asm statement macro {ts[k]}, "
+                                 "invoked outside a statement position")
+            if any(tok in forms or tok in functions for tok in ts[k + 2:end]):
+                raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, "
+                                 "beside a macro name in its arguments")
+        elif local:
             # Operand-only: the call sits between expression operators, its
             # arguments name no macro, and every definition is an expression whose
             # parameters sit only between operators/brackets (never next to a name,

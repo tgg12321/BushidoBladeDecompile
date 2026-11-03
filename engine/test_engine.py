@@ -8509,6 +8509,85 @@ def test_naming_keycheck_scoped_pairs() -> None:
             why = str(e)
         check(f"keycheck: local macro argument fixed member access {body} ({why})",
               why == "" if passes else "argument of function-like macro A4" in why)
+    # gte-macro-locals: an asm-statement macro (PsyQ GTE shape) whose parameters
+    # are whole asm operands takes a local at statement position; any other asm
+    # body shape or call position still refuses.
+    good_o = ('{ __asm__ volatile ("move $12,%0": :"r"(x):"$12","memory"); '
+              '__asm__ volatile ("mtc2 $12,$8": : :"$12","memory"); }')
+    good_c = '__asm__ volatile ("mtc2 %0, $8" : : "r"( x ))'
+    for body, use, passes in [
+            (good_o, "G(l);", True), (good_c, "G(l);", True), (good_c, "G(&l);", True),
+            ('__asm__ ("sw %1, 0(%0)" : : "r"(x), "r"(0) : "memory")', "G(l);", True),
+            ('__asm__ volatile ("" : "=r"(x))', "G(l);", True),
+            ('__asm__ volatile ("" : : "r"(x), "r"(r1))', "G(l);", False),
+            ('__asm__ volatile ("" : : "r"(x + 1))', "G(l);", False),
+            ('__asm__ volatile ("" : : "r"((x)))', "G(l);", False),
+            ('__asm__ volatile ("" : : [v] "r"(x))', "G(l);", False),
+            ('__asm__ goto ("" : : "r"(x) : : lab)', "G(l);", False),
+            ('{ __asm__ volatile ("" : : "r"(x)); int q; }', "G(l);", False),
+            ('{ __asm__ volatile ("" : : "r"(x)) }', "G(l);", False),
+            ('__asm__ volatile ("" : : "r"(x));', "G(l);", False),
+            ('__asm__ volatile (x)', "G(l);", False),
+            (good_c, "l = 0, G(l);", False), (good_c, "if (l) G(l);", False),
+            (good_c, "G(l), l++;", False)]:
+        text = "#define G(x) " + body + "\nint r1;\nint f(int l){" + use + " return l;}\n"
+        try:
+            nk.scoped_plan({"src/a.c": text}, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check(f"keycheck: local asm-statement macro argument {body} / {use} ({why})",
+              why == "" if passes else "macro G" in why)
+    # A gtemac.h-style block forwarding whole parameters to asm-statement macros.
+    asm = ('#define LD(x) __asm__ volatile ("mtc2 %0, $8" : : "r"( x ))\n'
+           '#define NOP() __asm__ volatile ("nop")\n'
+           '#define ST(x) __asm__ volatile ("swc2 $8, 0( %0 )" : : "r"( x ) : "memory")\n'
+           '#define EXPR(x) ((x) + 1)\n')
+    for body, passes in [("{ LD(a); NOP(); ST(b); }", True), ("{ LD(a); LD(b); }", True),
+                         ("{ LD(a); EXPR(b); }", False), ("{ LD(a + 1); ST(b); }", False),
+                         ("{ LD(a); ST(&b); }", False), ("{ LD(a) ST(b); }", False),
+                         ("{ LD(a); int q; ST(b); }", False), ("{ LD(a); }", False),
+                         ("{ G2(a, b); }", False), ("{ LD(a); ST(b); NOP(); LD(a); }", True)]:
+        text = (asm + "#define G2(a, b) { LD(a); ST(b); }\n#define G(a, b) " + body
+                + "\nint f(int l){int o; G(l, &o); return l + o;}\n")
+        try:
+            nk.scoped_plan({"src/a.c": text}, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check(f"keycheck: local asm-forwarding macro argument {body} ({why})",
+              why == "" if passes else "macro G" in why)
+    # Review: a forwarding body whose callee is one of its own parameters, and an
+    # identifier-free operand holding braces, refuse.
+    for text in [asm + "#define F(x) LD(x)\n#define G(F, x) { F(x); }\nint g(int);\n"
+                 "int f(int l){ G(g, l); return l; }\n",
+                 asm + "#define G(x) __asm__ (\"\" : : \"r\"(x), \"r\"(({ 1; })))\n"
+                 "int f(int l){ G(l); return l; }\n"]:
+        try:
+            nk.scoped_plan({"src/a.c": text}, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check(f"keycheck: local asm macro review probe refuses ({why})", "macro G" in why)
+    # Second review: the asm keyword / qualifier slot as a parameter or a macro,
+    # and # in an operand, refuse.
+    for text in ["int g(int);\n#define G(asm, x) asm (\"\" : : \"r\"(x))\nint f(int l){ G(g, l); return l; }\n",
+                 "#define G(volatile, x) __asm__ volatile (\"\" : : \"r\"(x))\nint f(int l){ G(l, 1); return l; }\n",
+                 "#define A(asm, x) asm (\"\" : : \"r\"(x))\n#define G(y) { A(y, y); }\nint f(int l){ G(l); return l; }\n",
+                 "#define __asm__(s) puts(#s)\n#define volatile\nint puts(const char *);\n"
+                 "#define G(x) __asm__ volatile (\"mtc2 %0, $8\" : : \"r\"( x ))\nint f(int l){ G(l); return l; }\n",
+                 "#define G(x) __asm__ (\"\" : : \"r\"(x), \"r\"(#))\nint f(int l){ G(l); return l; }\n",
+                 # Third review: %: and $ in an identifier-free operand; a variadic callee.
+                 "#define G(x) __asm__ (\"\" : : \"r\"(x), \"r\"(%:))\nint f(int l){ G(l); return l; }\n",
+                 "int l;\n#define $ l\n#define G(x) __asm__ (\"\" : : \"r\"(x), \"r\"($))\nint f(int l){ G(l); return l; }\n",
+                 "#define LD(a, ...) __asm__ (\"\" : : \"r\"(a))\n#define G(x, y) { LD(x, y); }\n"
+                 "int f(int l){ G(1, l); return l; }\n"]:
+        try:
+            nk.scoped_plan({"src/a.c": text}, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check(f"keycheck: local asm macro second review probe refuses ({why})", why != "")
     # Review probes: a parameter forwarded into another macro, or an identity
     # macro invoked where its expansion is a member, tag or label, fails; so does
     # a #define reached through a ../ or #import include.
