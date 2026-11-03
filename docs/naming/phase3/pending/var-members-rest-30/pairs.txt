@@ -1,0 +1,6 @@
+Work_80053E9C.unk60=walk_start_u
+Work_80053E9C.unk64=walk_v
+Work_80053E9C.unk68=walk_end_u
+Work_80053E9C.unk6C=walk_end_v
+Work_80053E9C.unk70=walk_delta_u
+Work_80053E9C.unk74=walk_delta_v

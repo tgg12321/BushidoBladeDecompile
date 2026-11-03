@@ -1,0 +1,194 @@
+PASS Work_80053E9C.unk60=walk_start_u, Work_80053E9C.unk64=walk_v, Work_80053E9C.unk68=walk_end_u, Work_80053E9C.unk6C=walk_end_v, Work_80053E9C.unk70=walk_delta_u, Work_80053E9C.unk74=walk_delta_v
+decl Work_80053E9C.unk60 -> walk_start_u  include/game.h:1279
+decl Work_80053E9C.unk64 -> walk_v  include/game.h:1280
+decl Work_80053E9C.unk68 -> walk_end_u  include/game.h:1281
+decl Work_80053E9C.unk6C -> walk_end_v  include/game.h:1282
+decl Work_80053E9C.unk70 -> walk_delta_u  include/game.h:1283
+decl Work_80053E9C.unk74 -> walk_delta_v  include/game.h:1284
+  round 0: 52 member error line(s)
+    src/main/43500.c:52 unk60 x1
+    src/main/43500.c:54 unk64 x1
+    src/main/43500.c:56 unk68 x1
+    src/main/43500.c:59 unk6C x1
+    src/main/43500.c:61 unk70 x1
+    src/main/43500.c:62 unk60 x1
+    src/main/43500.c:62 unk68 x1
+    src/main/43500.c:64 unk60 x1
+    src/main/43500.c:66 unk64 x1
+    src/main/43500.c:68 unk68 x1
+    src/main/43500.c:70 unk6C x1
+    src/main/43500.c:71 unk74 x1
+    src/main/43500.c:72 unk64 x1
+    src/main/43500.c:72 unk6C x1
+    src/main/43500.c:92 unk60 x1
+    src/main/43500.c:93 unk64 x1
+    src/main/43500.c:95 unk68 x1
+    src/main/43500.c:96 unk6C x1
+    src/main/43500.c:98 unk70 x1
+    src/main/43500.c:100 unk70 x2
+    src/main/43500.c:101 unk60 x2
+    src/main/43500.c:102 unk68 x2
+    src/main/43500.c:106 unk74 x1
+    src/main/43500.c:108 unk74 x2
+    src/main/43500.c:109 unk64 x2
+    src/main/43500.c:110 unk6C x2
+    src/main/43500.c:114 unk70 x1
+    src/main/43500.c:114 unk74 x1
+    src/main/43500.c:116 unk70 x1
+    src/main/43500.c:117 unk70 x1
+    src/main/43500.c:117 unk74 x1
+    src/main/43500.c:118 unk74 x1
+    src/main/43500.c:119 unk60 x1
+    src/main/43500.c:120 unk60 x1
+    src/main/43500.c:120 unk64 x1
+    src/main/43500.c:121 unk64 x1
+    src/main/43500.c:122 unk68 x1
+    src/main/43500.c:123 unk68 x1
+    src/main/43500.c:123 unk6C x1
+    src/main/43500.c:124 unk6C x1
+    src/main/43500.c:128 unk68 x1
+    src/main/43500.c:129 unk60 x1
+    src/main/43500.c:130 unk64 x1
+    src/main/43500.c:132 unk68 x1
+    src/main/43500.c:133 unk60 x1
+    src/main/43500.c:135 unk74 x1
+    src/main/43500.c:136 unk70 x1
+    src/main/43500.c:137 unk64 x1
+    src/main/43500.c:138 unk60 x1
+    src/main/43500.c:150 unk64 x1
+    src/main/43500.c:151 unk64 x1
+    src/main/43500.c:156 unk64 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1279,6 +1279,6 @@
+-    s32 unk60;
+-    s32 unk64;
+-    s32 unk68;
+-    s32 unk6C;
+-    s32 unk70;
+-    s32 unk74;
++    s32 walk_start_u;
++    s32 walk_v;
++    s32 walk_end_u;
++    s32 walk_end_v;
++    s32 walk_delta_u;
++    s32 walk_delta_v;
+--- a/src/main/43500.c
++++ b/src/main/43500.c
+@@ -52 +52 @@
+-    g_collision_segment_work->unk60 =
++    g_collision_segment_work->walk_start_u =
+@@ -54 +54 @@
+-    g_collision_segment_work->unk64 =
++    g_collision_segment_work->walk_v =
+@@ -56 +56 @@
+-    g_collision_segment_work->unk68 =
++    g_collision_segment_work->walk_end_u =
+@@ -59 +59 @@
+-    g_collision_segment_work->unk6C =
++    g_collision_segment_work->walk_end_v =
+@@ -61,2 +61,2 @@
+-    g_collision_segment_work->unk70 =
+-        g_collision_segment_work->unk68 - g_collision_segment_work->unk60;
++    g_collision_segment_work->walk_delta_u =
++        g_collision_segment_work->walk_end_u - g_collision_segment_work->walk_start_u;
+@@ -64 +64 @@
+-        g_collision_segment_work->unk60 / 2000;
++        g_collision_segment_work->walk_start_u / 2000;
+@@ -66 +66 @@
+-        g_collision_segment_work->unk64 / 2000;
++        g_collision_segment_work->walk_v / 2000;
+@@ -68 +68 @@
+-        g_collision_segment_work->unk68 / 2000;
++        g_collision_segment_work->walk_end_u / 2000;
+@@ -70,3 +70,3 @@
+-        g_collision_segment_work->unk6C / 2000;
+-    g_collision_segment_work->unk74 =
+-        g_collision_segment_work->unk6C - g_collision_segment_work->unk64;
++        g_collision_segment_work->walk_end_v / 2000;
++    g_collision_segment_work->walk_delta_v =
++        g_collision_segment_work->walk_end_v - g_collision_segment_work->walk_v;
+@@ -92,2 +92,2 @@
+-        g_collision_segment_work->unk60 -= g_collision_segment_work->unk80;
+-        g_collision_segment_work->unk64 -=
++        g_collision_segment_work->walk_start_u -= g_collision_segment_work->unk80;
++        g_collision_segment_work->walk_v -=
+@@ -95,2 +95,2 @@
+-        g_collision_segment_work->unk68 -= g_collision_segment_work->unk80;
+-        g_collision_segment_work->unk6C -=
++        g_collision_segment_work->walk_end_u -= g_collision_segment_work->unk80;
++        g_collision_segment_work->walk_end_v -=
+@@ -98 +98 @@
+-        if (g_collision_segment_work->unk70 < 0) {
++        if (g_collision_segment_work->walk_delta_u < 0) {
+@@ -100,3 +100,3 @@
+-            g_collision_segment_work->unk70 = -g_collision_segment_work->unk70;
+-            g_collision_segment_work->unk60 = -g_collision_segment_work->unk60;
+-            g_collision_segment_work->unk68 = -g_collision_segment_work->unk68;
++            g_collision_segment_work->walk_delta_u = -g_collision_segment_work->walk_delta_u;
++            g_collision_segment_work->walk_start_u = -g_collision_segment_work->walk_start_u;
++            g_collision_segment_work->walk_end_u = -g_collision_segment_work->walk_end_u;
+@@ -106 +106 @@
+-        if (g_collision_segment_work->unk74 < 0) {
++        if (g_collision_segment_work->walk_delta_v < 0) {
+@@ -108,3 +108,3 @@
+-            g_collision_segment_work->unk74 = -g_collision_segment_work->unk74;
+-            g_collision_segment_work->unk64 = -g_collision_segment_work->unk64;
+-            g_collision_segment_work->unk6C = -g_collision_segment_work->unk6C;
++            g_collision_segment_work->walk_delta_v = -g_collision_segment_work->walk_delta_v;
++            g_collision_segment_work->walk_v = -g_collision_segment_work->walk_v;
++            g_collision_segment_work->walk_end_v = -g_collision_segment_work->walk_end_v;
+@@ -114 +114 @@
+-        if (g_collision_segment_work->unk74 > g_collision_segment_work->unk70) {
++        if (g_collision_segment_work->walk_delta_v > g_collision_segment_work->walk_delta_u) {
+@@ -116,9 +116,9 @@
+-            g_collision_segment_work->unk80 = g_collision_segment_work->unk70;
+-            g_collision_segment_work->unk70 = g_collision_segment_work->unk74;
+-            g_collision_segment_work->unk74 = g_collision_segment_work->unk80;
+-            g_collision_segment_work->unk80 = g_collision_segment_work->unk60;
+-            g_collision_segment_work->unk60 = g_collision_segment_work->unk64;
+-            g_collision_segment_work->unk64 = g_collision_segment_work->unk80;
+-            g_collision_segment_work->unk80 = g_collision_segment_work->unk68;
+-            g_collision_segment_work->unk68 = g_collision_segment_work->unk6C;
+-            g_collision_segment_work->unk6C = g_collision_segment_work->unk80;
++            g_collision_segment_work->unk80 = g_collision_segment_work->walk_delta_u;
++            g_collision_segment_work->walk_delta_u = g_collision_segment_work->walk_delta_v;
++            g_collision_segment_work->walk_delta_v = g_collision_segment_work->unk80;
++            g_collision_segment_work->unk80 = g_collision_segment_work->walk_start_u;
++            g_collision_segment_work->walk_start_u = g_collision_segment_work->walk_v;
++            g_collision_segment_work->walk_v = g_collision_segment_work->unk80;
++            g_collision_segment_work->unk80 = g_collision_segment_work->walk_end_u;
++            g_collision_segment_work->walk_end_u = g_collision_segment_work->walk_end_v;
++            g_collision_segment_work->walk_end_v = g_collision_segment_work->unk80;
+@@ -128,3 +128,3 @@
+-        g_collision_segment_work->unk68 += 1000;
+-        g_collision_segment_work->unk60 += 1000;
+-        g_collision_segment_work->unk64 += 1000;
++        g_collision_segment_work->walk_end_u += 1000;
++        g_collision_segment_work->walk_start_u += 1000;
++        g_collision_segment_work->walk_v += 1000;
+@@ -132,2 +132,2 @@
+-            g_collision_segment_work->unk68 / 2000 -
+-            g_collision_segment_work->unk60 / 2000 + 1;
++            g_collision_segment_work->walk_end_u / 2000 -
++            g_collision_segment_work->walk_start_u / 2000 + 1;
+@@ -135,4 +135,4 @@
+-            (g_collision_segment_work->unk74 << 12) /
+-            g_collision_segment_work->unk70;
+-        g_collision_segment_work->unk64 -=
+-            (g_collision_segment_work->unk60 *
++            (g_collision_segment_work->walk_delta_v << 12) /
++            g_collision_segment_work->walk_delta_u;
++        g_collision_segment_work->walk_v -=
++            (g_collision_segment_work->walk_start_u *
+@@ -150,2 +150,2 @@
+-            g_collision_segment_work->unk64 %= 2000;
+-            g_collision_segment_work->unk64 +=
++            g_collision_segment_work->walk_v %= 2000;
++            g_collision_segment_work->walk_v +=
+@@ -156 +156 @@
+-            if (g_collision_segment_work->unk64 > 2000) {
++            if (g_collision_segment_work->walk_v > 2000) {
+DRY RUN: 2 file(s) would change; nothing written
+OK: every member access renamed

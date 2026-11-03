@@ -1,0 +1,32 @@
+var-members-rest-30 -- draft notes (research: tmp/codex/var-members-rest-30-research.md, hints only; re-derived at 47fb35c4d with git grep -nw over src include tools asm and a line-by-line read of 43500.c:47-200 and 17AFC.c:3990-4515).
+
+BASIS: 7 RENAME rows. Work_80053E9C (the stage-collision walk work area, 43500.c collision_WalkSegmentGrid): unk60/64/68/6C/70/74 -> walk_start_u / walk_v / walk_end_u / walk_end_v / walk_delta_u / walk_delta_v. Obj80106A78.unk_05 -> rest_phase. The walk function's locals were named in var-locals-35 (x_direction / z_direction / axes_swapped), which make the two-axis frame explicit.
+
+RE-DERIVATION:
+- u/v convention checked at EVERY access of all six walk members (the manifest lists each line R/W). Slots 0x60/0x68/0x70 always hold the first axis (u), 0x64/0x6C/0x74 the second (v). Before the axes_swapped exchange (:114-124) u=x, v=z: written from seg_*.vx / .vz (:52-71), centred on the start cell (:92-96), mirrored per original axis by x_direction (:100-102 touches 0x70/0x60/0x68) and z_direction (:108-110 touches 0x74/0x64/0x6C). The exchange (:116-124) swaps the extents (0x70<->0x74), the start/running slots (0x60<->0x64) and the ends (0x68<->0x6C) in lock-step through unk80, so after it u = the longer axis (z when axes_swapped, x otherwise), v = the other. After the exchange (:128-156) 0x70 is the slope denominator, 0x74 the numerator, 0x60/0x68 give the u cell count (:132-133), 0x64 is the v position (:137, :150-156). The cell stepping that follows uses axes_swapped to map u/v back to cell x/z (:158-186), consistent with u being z when swapped. No access reads a u slot as v or the reverse, so the convention holds and no row was dropped.
+- walk_v has no start/end qualifier: it is the start v until :137 and the running in-cell v afterwards (both are the walk's v coordinate). walk_end_v is dead after :124.
+- Only 43500.c names these members; the work area elsewhere is passed by address (17AFC.c:4411, :4788 cast_work; 9F9C.c segment_test_args), so no raw +0x60..+0x74 read exists. 137 live INCLUDE_ASM bodies were grepped by the research for g_collision_segment_work / g_collision_static_segment_work / 800A33F4 / g_collision_grid / collision_* / g_object_pool / 80106A78 / g_object_kind_params / 8008E194: no hit (hint, not re-run in full here; this draft re-grepped src for the member spellings only).
+- rest_phase: uses 17AFC.c:3995, 4130, 4360, 4465, 4471, 4480, 4481, 4493, 4503, 4509 (all re-read); the only other unk_05 in src is game.h:33 FileRecord (array, other type). Values 0 never rested / 1 resting / 2 relaunched (kind 0xE) / 3 landed after relaunch. Weakest row: rest-12 rejected hop_state for this member; the name answers that objection but there is no code evidence newer than rest-12. Fallback NO_NAME.
+
+COUNTER (walk): walk_start_major rejected (the slot is x before the exchange whether or not x is longer); u/v also in edge_from_u / proj_cross_u (43500.c:452-511, scalar cell test): the walk_ prefix separates them. If a reviewer rejects u/v, all six walk rows drop together (do not mix in major/minor); rest_phase is independent.
+
+NO_NAME rows (carried from the research, not drafted):
+- Work_80053E9C.unk80 (0x80): three roles in one function (start cell centre x :88/:92/:95, exchange temporary :116-124, cell-test hit result :144/:170/:191).
+- Work_80053E9C.unkE0 (0xE0): five roles (cell data offset, plane-distance denominator, face origin x, inside flag, squared distance) in the scalar and GTE cell tests (43500.c:334-729).
+- Work_80053E9C.unkE4 (0xE4): two roles (start plane distance; face origin y in the scalar test).
+- Work_80053E9C.unkE8 (0xE8): two roles (end plane distance; face origin z in the scalar test).
+- Work_80053E9C.unk5C (0x5C): tool-blocked, not role-blocked. cell_test_fn passed rest-14 pre-apply but tools/naming_keycheck.py member_declarators (:3045-3061) cannot certify the function-pointer declaration `s32 (*unk5C)(s32, s32)` (container_declarators :819-845 already accepts (*m)(...)). Tool fix first; the row then returns unchanged.
+- Work_80053E9C.unk6 / unk44 / unk52 / unk5A / unk92: declaration only (game.h:1257, 1267, 1273, 1277, 1292), 0 accesses; alignment/padding. Keep.
+- Tbl8008E194.unk0: a kind class selecting spin axis, landing pose and a hit rule (17AFC.c:4112-4120, :4519, :544); no name covers it without enumerating values.
+- Unk800A34FCRec.unk_10 / unk_12: write-only (596CC.c:146-147 address, :164-165 stored 0); no reader.
+- Func80017A44Record.field_18 / field_34: rest-17 pre-apply FAIL; no new evidence (field_18 sign-and-magnitude mode code 87A0.c:345-386; field_34 write-only clamped distance 6CF8.c:733).
+- Unk800A4750Rec.unk6: write-only in C (2B344.c:2048, 2153, 2217); role not shown.
+- Unk80017FA0Rec.unk3 / unk8: write-only in C (2B344.c:2751, :2748).
+
+DROPPED rows: none.
+
+COMMENT PASS: src/main/43500.c:38-46 (collision_WalkSegmentGrid header) cites the members by OFFSET only ('+0x70/+0x74 the major/minor extents (exchanged, with +0x60/+0x64 and +0x68/+0x6C, when +0x74 > +0x70)'): no old spelling (unk60..unk74), so no forced edit. Optional, if the lander wants the names visible: reword to 'walk_delta_u/walk_delta_v the u/v extents (u = x, v = z, exchanged with walk_start_u/walk_v and walk_end_u/walk_end_v when walk_delta_v > walk_delta_u, so u is then the major axis)'; reflow within 80 columns. include/game.h:1246-1253 type comment names none of the six, and no comment names Obj80106A78.unk_05. Other unk60/64/68/70/74 and unk_05 spellings in src (35000.c, 51268.c, game.h:33, 1108/1124/1148/2210/2219/2285, libsnd) belong to other types: leave. Code sites are renamed by the applier.
+
+LAND claim list: topic:type:Work_80053E9C; topic:type:Obj80106A78; topic:tu:main/43500; topic:tu:main/17AFC (+ include/game.h). The dry run touches include/game.h, src/main/17AFC.c, src/main/43500.c (3 files); run tools/format.py on 43500.c and 17AFC.c after applying (the longer names overflow 80 columns at 43500.c:62, 100-102, 108-110, 114, 116-124).
+
+PRE-APPLY (naming-reviewer 2026-11-03): 6 walk rows PASS; Obj80106A78.unk_05 -> rest_phase FAIL (R2/N1: 17AFC.c:4471 writes 2 and :4480-4481 overwrites it with 3 in the same cast-hit pass, before any landing; value 1 survives is_moving=1 at :4497; a four-value selector, not an ordered rest cycle). Dropped; unk_05 stays neutral (a later row needs a mechanical name that implies no rest cycle). pairs.txt and dry.txt re-made without it.
