@@ -332,7 +332,8 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
 
 /* 0x8009B2C8: two rows of five sprite-sheet headers
  * (gpu_DrawSheetPairSelectedByDrawMode draws headers 0 / 1 of
- * row sheet_row_index with the cells at D_8009B340 / D_8009B358;
+ * row sheet_row_index with the cells at g_gpu_draw_mode_sheet_pair_strip_cells
+ * / g_gpu_draw_mode_sheet_pair_grid_cells;
  * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle headers 2 and 3 / 4 with
  * g_gpu_jittered_quad_pair_cells's), then the cells: three under header 0
  * (count 3), six under header 1 (count 6). */
@@ -386,7 +387,8 @@ s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32 ft4_out_addr, s32 arg1) {
     s32 tmp2;
     s32 var_10; /* FAKE: constant 0x100 in a local; the literal: score 15 */
     s32 var_11; /* FAKE: constant 1 in a local; the literal: score 2 */
-    /* FAKE: pointer alias of D_8009B2C8[0][2]; direct use: score 41 */
+    /* FAKE: pointer alias of g_gpu_draw_mode_sheet_header_rows[0][2]; direct
+     * use: score 41 */
     Unk8009B0E0Record *var_12;
     /* Once-written named intermediate: row header 3, base for random
      * header 3/4 selection; inline at use: score 36. */
@@ -2018,8 +2020,10 @@ Unk8009B2BCRecord g_panel_frame_sizes[3] = {
 };
 
 /* gpu_DrawSheetPairSelectedByDrawMode /
- * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle's header rows D_8009B2C8 and
- * their cells D_8009B340 / D_8009B358 / g_gpu_jittered_quad_pair_cells; the
+ * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle's header rows
+ * g_gpu_draw_mode_sheet_header_rows and their cells
+ * g_gpu_draw_mode_sheet_pair_strip_cells /
+ * g_gpu_draw_mode_sheet_pair_grid_cells / g_gpu_jittered_quad_pair_cells; the
  * sheet headers g_gpu_digit_label_and_line_segment_sheet_headers that
  * gpu_DrawTimeFieldsAndDecimalCounter ..
  * gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells draw with, the cells

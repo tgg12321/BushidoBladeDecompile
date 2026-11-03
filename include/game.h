@@ -486,9 +486,10 @@ typedef struct {
 
 /* The draw chunk 4D0A8 gpu_DrawSpriteAtPackedTablePosition builds at the
  * address its caller passes: one SPRT at +0 (gpu_AddSpriteCells's cursor; each
- * of the three sheet headers it may pass, D_8009B7AC / D_8009B7B8 / D_8009B7C4,
- * has one cell: the count byte at +2 is 1), then the DR_MODE at +0x14. It
- * returns the chunk size, 0x2C; the last 0xC bytes are never written. */
+ * of the three sheet headers it may pass,
+ * g_gpu_stage_card_map_marker_sheet_headers / D_8009B7B8 / D_8009B7C4, has one
+ * cell: the count byte at +2 is 1), then the DR_MODE at +0x14. It returns the
+ * chunk size, 0x2C; the last 0xC bytes are never written. */
 typedef struct {
     SPRT chunk_sprite;
     DR_MODE chunk_draw_mode;
@@ -501,9 +502,11 @@ typedef struct {
  * gpu_AddScaledSpriteQuads's cursor), then the DR_MODE at +0x5DC. It returns
  * the chunk size, 0x5F4; the last 0xC bytes are never written. The walkers
  * write at most one primitive per cell of the sheet header they are given (cell
- * count: the byte at +2): at most 19 SPRTs (D_8009B770[0..2] hold 5 / 4 / 4
- * cells, D_8009B7A0 4, g_gpu_digit_label_and_line_segment_sheet_headers[2] /
- * [3] 1 each) and 1 POLY_FT4 (D_8009B770[3] holds 1). */
+ * count: the byte at +2): at most 19 SPRTs
+ * (g_gpu_stage_card_sheet_headers[0..2] hold 5 / 4 / 4 cells,
+ * g_gpu_stage_card_stage_strip_sheet_header 4,
+ * g_gpu_digit_label_and_line_segment_sheet_headers[2] / [3] 1 each) and 1
+ * POLY_FT4 (g_gpu_stage_card_sheet_headers[3] holds 1). */
 typedef struct {
     SPRT unk_00[63];
     POLY_FT4 chunk_textured_quads[6];
@@ -698,8 +701,8 @@ typedef struct {
 } Unk8007352CRec;
 
 /* 0x8009B2BC: three {w, h} menu-frame sizes, one per mode (0x8009B2BC..
- * 0x8009B2C7; D_8009B2C8 follows, different data), indexed by mode in
- * gpu_DrawModeSizedPanelWithSelectedCellOpaque. */
+ * 0x8009B2C7; g_gpu_draw_mode_sheet_header_rows follows, different data),
+ * indexed by mode in gpu_DrawModeSizedPanelWithSelectedCellOpaque. */
 typedef struct {
     s16 w;
     s16 h;
