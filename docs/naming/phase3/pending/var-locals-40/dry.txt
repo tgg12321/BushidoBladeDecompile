@@ -1,0 +1,28 @@
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (naming_member_apply.py handles T.m=n only; naming_wave.py is function-name only; same tool result as var-locals-39). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(base = naming_keycheck.read_working_tree() of the lane worktree ln-naming-a, HEAD ca9f125de = main at draft time, clean; tools/naming_keycheck.py at ca9f125de with 22e8fd596 and 30d258c92; NAMING_KEYCHECK_ROOT = the worktree; scratch driver in main tmp/naming-a-l40/dry.py)
+accepted all 19 pairs (140 token substitutions: 4510C.c 27, 51268.c 58, 4D0A8.c 16, 309CC.c 14, 2B344.c 13, 6CF8.c 6, 9F9C.c 6; no include/ file touched; every substitution required, no optional prototype edit reported; the plan's virtual include/.keycheck-cpp-defs.h entry carries 0 edits; comment edits needed, see notes.txt R6 WATCH). Each pair was also run alone: all 19 accepted, none rejected (alone-counts sum to 140, equal to the together total).
+The count of every pair equals an independent token scan of the binding in its definition (signature and body, comments and strings blanked, ./-> member tokens excluded; a separate regex tokenizer with brace matching, not the plan), pair by pair, line list and count: no mismatch (19/19 equal). The counts and line lists also equal the research file. Every definition was also read at ca9f125de for the role claim. The runs modified no file in the worktree (git status clean before and after).
+Per-pair substitutions (function:old=new count; plan lines at ca9f125de):
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_29=action_index 10 (1808,2371,2378,2380,2384,2386,2389,2395,2399,2400)
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_23=distance_error_streak 6 (1803,2527,2529,2529,2529,2531)
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_6=effective_cpu_level 4 (1749,2652,2654,2804)
+  fighter_BuildCpuOrbitRoute:x=probe_x 7 (1200,1221,1223,1226,1246,1248,1251)
+  eff_DrawAndAdvanceRotatedQuadClusters:prim=var_9 33 (951,967,969,970,971,972,973,974,975,976,1000,1005,1031,1032,1033,1034,1035,1036,1037,1038,1039,1052,1053,1054,1055,1057,1058,1067,1072,1073,1073,1073,1074)
+  eff_DrawYawedSlotQuads:prim=var_6 25 (1454,1468,1469,1470,1471,1472,1473,1482,1506,1507,1508,1509,1510,1511,1539,1540,1541,1542,1543,1544,1551,1552,1552,1552,1553)
+  gpu_SetDrawEnvBg:a1=bg_red 2 (106,111)
+  gpu_SetDrawEnvBg:a2=bg_green 2 (106,111)
+  gpu_SetDrawEnvBg:a3=bg_blue 2 (106,111)
+  fight_ResetFighter0ToStartPosition:local=other_position 6 (1281,1287,1308,1308,1308,1308)
+  gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions:r1=strip_image_rect 3 (1528,1538,1541)
+  gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions:r2=strip_clut_rect 3 (1528,1539,1543)
+  gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions:r3=picture_image_rect 3 (1528,1545,1548)
+  gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions:r4=picture_clut_rect 3 (1528,1546,1550)
+  gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions:p=src_first_image 4 (1530,1540,1541,1543)
+  bitstream_InitDeltaAccumulator:ptr=accumulator 10 (1358,1359,1360,1361,1362,1363,1364,1365,1366,1367)
+  gpu_ResetAndStampViewCenteredCellAttributes:ptr=attribute_cursor 3 (2341,2345,2347)
+  gpu_QueueSlotDrawMovesForSelectedSet:ptr=slot_object 4 (53,57,58,84)
+  slot_LoadObjectBuildNodesSoftbodyAndFogLevels:ptr=slot_object 10 (145,146,148,149,150,151,152,153,154,156)
+  (sum 140; per-file: 4510C.c 10+6+4+7 = 27, 51268.c 33+25 = 58, 6CF8.c 2+2+2 = 6, 9F9C.c 6, 4D0A8.c 3+3+3+3+4 = 16, 2B344.c 10+3 = 13, 309CC.c 4+10 = 14)
+Together run, per file: 4510C.c 27, 51268.c 58, 4D0A8.c 16, 309CC.c 14, 2B344.c 13, 6CF8.c 6, 9F9C.c 6 = 140.
+Destinations: all fresh by git grep -w over src include (comments blanked) in the function, at file scope, in enums and in macros: action_index, distance_error_streak, effective_cpu_level, probe_x, bg_red, bg_green, bg_blue, strip_image_rect, strip_clut_rect, picture_image_rect, picture_clut_rect, src_first_image, accumulator, attribute_cursor: 0 hits in src include. var_9: other tokens only in other functions of 51268.c (2892, 2915, 2945, 3103) and other files, none in include/. var_6: 51268.c 1131-1290 (eff_DrawAndAdvanceBillboardPairs), none in include/ nor in eff_DrawYawedSlotQuads. other_position: 9F9C.c parameter 3812 and local 3916 of other functions only. slot_object: 309CC.c parameters/locals of other functions only (114, 159, 302, 364, 397, 440); neither target function (52-94, 143-157) spells it. The two slot_object pairs sit in different functions and scoped_plan accepts them together.
+Line widths after substitution (over 80; python tools/format.py reflows them in the naming commit; token-preserving): 4510C.c 2529 (63->108), 2663 (74->88), 2804 (79->93); 51268.c 1068 (80->81), 1073 (78->81), 1461 (80->82); 9F9C.c 1308 (60->96); 4D0A8.c 1528 (24->82, all four rects); 2B344.c 1358 (77->85). 6CF8.c:106 stays within 80 (76).
