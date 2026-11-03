@@ -1,0 +1,19 @@
+{
+  "description": "training-ninja's run cut at 9400, screenshots over the Training Pause Menu (gpu_DrawModeSizedPanelWithSelectedCellOpaque); poked variants move one 0x8009B184..0x8009B2A4 sprite cell's y so the cell it places can be told apart",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/hud-training-pause-1/baseline/spec.json",
+    "docs/naming/runtime/hud-training-pause-1/B194-0-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-1/B1AC-0-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-1/B20C-0-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-1/B23C-0-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-1/B23C-8-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-1/B29C-0-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-1/B184-0-y/spec.json"
+  ],
+  "extends": "training-ninja",
+  "end_frame": 9400,
+  "shots": [
+    "9350:pause_menu.9350"
+  ]
+}
