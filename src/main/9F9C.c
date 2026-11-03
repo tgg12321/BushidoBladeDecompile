@@ -2710,10 +2710,10 @@ s32 fighter_CalcHorizontalSeparation(void) {
  * by the table at fighter_record+0x276 indexed by fighter_record+0x270 clamped
  * to 3.
  *
- * `short var_7` is a plain signed short local: GCC's lowering of it gives the
- * second `lhu`, the `sll 16 ; sra 15` and the 8-byte stack frame. `var_0`
- * / `kind = var_0 & 0xFFFFU` mirror the target's
- * `lhu $a1,0x6A ; andi $v1,$a1,0xFFFF`. */
+ * `short group_10_13_tally` is a plain signed short local: GCC's lowering of it
+ * gives the second `lhu`, the `sll 16 ; sra 15` and the 8-byte stack frame.
+ * `var_0` / `kind = var_0 & 0xFFFFU` mirror the target's `lhu $a1,0x6A ; andi
+ * $v1,$a1,0xFFFF`. */
 void motion_UpdateFrameStep(Unk80101EC8Record *fighter_record) {
     u32 var_0;
     u32 kind;

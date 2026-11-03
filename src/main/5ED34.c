@@ -730,9 +730,9 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
     Unk8009B0E0Record **sheet_headers;
     /* the sprite sheet's cell array (8-byte Unk8009B400Record cells), which
        starts just past the sheet's 12-byte Unk8009B0E0Record headers: three
-       on var_3[0] (normal, then one highlight per player, +0x24), one on every
-       other sheet (+0xC). FAKE: the holder between the header's cells and
-       s.table; stored directly: score 98. */
+       on sheet_headers[0] (normal, then one highlight per player, +0x24), one
+       on every other sheet (+0xC). FAKE: the holder between the header's cells
+       and s.table; stored directly: score 98. */
     Unk8009B400Record *var_4;
     s16 slot_index;
     s16 row;
