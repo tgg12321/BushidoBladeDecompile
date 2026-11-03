@@ -341,13 +341,13 @@ typedef struct {
     s32 row_choice_pixels[8][2];
     Unk8006ECF4Rec *selected_entry_header_block;
     Unk8009B0E0Record **row_choice_sheets;
-    Unk8009B0E0Record **unk_5C;
+    Unk8009B0E0Record **mirrored_and_tinted_layer_sheets;
     Unk8009B0E0Record **entry_grid_sheets;
     Unk8009B0E0Record **entry_row_sheets;
     Unk8009B0E0Record **choice_grid_page1_sheets;
     Unk8009B0E0Record **choice_grid_page2_sheets;
     Unk8009B0E0Record **choice_grid_page3_sheets;
-    Unk8009B0E0Record **unk_74;
+    Unk8009B0E0Record **cursor_and_choice_cell_sheets;
     s32 *unk_78;
     RECT *row_choice_upload_rects;
     u8 *choice_grid_codes;

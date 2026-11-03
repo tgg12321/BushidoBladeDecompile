@@ -223,7 +223,9 @@ s32 resource_RelocateNineOffsetListsAndLoadVabPack(
         (s32 *)resource_root, (s32)resource_root->selected_entry_header_block);
     reloc_RelocateOffsetList(
         (s32 *)resource_root, (s32)resource_root->row_choice_sheets);
-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_5C);
+    reloc_RelocateOffsetList(
+        (s32 *)resource_root,
+        (s32)resource_root->mirrored_and_tinted_layer_sheets);
     reloc_RelocateOffsetList(
         (s32 *)resource_root, (s32)resource_root->entry_grid_sheets);
     reloc_RelocateOffsetList(
@@ -234,7 +236,8 @@ s32 resource_RelocateNineOffsetListsAndLoadVabPack(
         (s32 *)resource_root, (s32)resource_root->choice_grid_page2_sheets);
     reloc_RelocateOffsetList(
         (s32 *)resource_root, (s32)resource_root->choice_grid_page3_sheets);
-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_74);
+    reloc_RelocateOffsetList((s32 *)resource_root,
+                             (s32)resource_root->cursor_and_choice_cell_sheets);
     snd_LoadVabPack(resource_root->resource_head.sound_pack, 1,
                     resource_root->resource_head.free_ram_start);
     return resource_root->resource_head.free_ram_start;
@@ -577,7 +580,7 @@ void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(
     s.scale_y = 0x100;
     s.has_color = 0;
 
-    sheet_headers = g_entry_menu_resources->unk_5C;
+    sheet_headers = g_entry_menu_resources->mirrored_and_tinted_layer_sheets;
     s.ot_idx = 0x10;
     state = g_entry_menu_slide_phase & 0xFF;
     s.header = sheet_headers[0];
@@ -938,7 +941,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
     s.semi = 0;
     s.scale_x = 0x100;
     s.scale_y = 0x100;
-    sheet_headers = g_entry_menu_resources->unk_74;
+    sheet_headers = g_entry_menu_resources->cursor_and_choice_cell_sheets;
     s.header = sheet_headers[0];
     SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                 gpu_GetSheetTPage(s.header, 0x60), 0);
@@ -1276,7 +1279,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
     s16 var_5;
 
     flag = 0;
-    var_0 = g_entry_menu_resources->unk_74;
+    var_0 = g_entry_menu_resources->cursor_and_choice_cell_sheets;
     s->header = var_0[0];
     SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                 gpu_GetSheetTPage(s->header, 0x60), 0);
@@ -1448,7 +1451,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                 /* FAKE: reused: re-stores the unk_74 table var_0 already
                  * holds; dropped: score 4; read in place, or a second local:
                  * 2. */
-                var_0 = g_entry_menu_resources->unk_74;
+                var_0 = g_entry_menu_resources->cursor_and_choice_cell_sheets;
                 s->header = var_0[3];
                 if (g_entry_menu_row_cursor_cell_counts[i] < 12) {
                     g_entry_menu_row_cursor_cell_counts[i]++;
@@ -1778,7 +1781,7 @@ void menu_UpdateChoiceGrid(
     if ((g_entry_menu_slide_phase & 0xFF) == 0) {
         s.x = -10;
         s.y = -5;
-        var_4 = g_entry_menu_resources->unk_74;
+        var_4 = g_entry_menu_resources->cursor_and_choice_cell_sheets;
         s.header = var_4[4];
         cells = s.header[1].cells;
         if (!(g_entry_menu_choice_grid_row * 2 +
@@ -2246,7 +2249,7 @@ void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
     s.y = 0;
     s.scale_x = 0x100;
     s.scale_y = 0x100;
-    sheet_headers = g_entry_menu_resources->unk_5C;
+    sheet_headers = g_entry_menu_resources->mirrored_and_tinted_layer_sheets;
     s.header = sheet_headers[3];
     SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
