@@ -2206,9 +2206,11 @@ again:
     case 10:
     case 11:
         if (g_working_record.view_setting && g_main_loop_handler_index != 5) {
-            g_eff_current_tex_rec = D_8009B9D8;
+            g_eff_current_tex_rec =
+                g_eff_quad_pair_first_early_and_pair_first_shaped_quad_square_tex_rec;
         } else {
-            g_eff_current_tex_rec = D_8009B990;
+            g_eff_current_tex_rec =
+                g_eff_quad_pair_first_late_and_pair_first_shaped_quad_strip_tex_rec;
         }
         var_18 = g_eff_animated_quad_counters;
         quad_counter = var_18 + mode_index;
@@ -2226,7 +2228,8 @@ again:
         if (g_eff_animated_quad_counters[mode_index] < 0x96) {
             if (g_working_record.view_setting &&
                 g_main_loop_handler_index != 5) {
-                g_eff_current_tex_rec = D_8009B9D8;
+                g_eff_current_tex_rec =
+                    g_eff_quad_pair_first_early_and_pair_first_shaped_quad_square_tex_rec;
             } else {
                 g_eff_current_tex_rec =
                     g_eff_quad_pair_first_early_strip_tex_rec;
@@ -2235,7 +2238,8 @@ again:
             g_working_record.view_setting && g_main_loop_handler_index != 5) {
             g_eff_current_tex_rec = g_eff_quad_pair_first_late_square_tex_rec;
         } else {
-            g_eff_current_tex_rec = D_8009B990;
+            g_eff_current_tex_rec =
+                g_eff_quad_pair_first_late_and_pair_first_shaped_quad_strip_tex_rec;
         }
         prim->r0 = 0x10;
         prim->g0 = ~g_eff_animated_quad_counters[mode_index];

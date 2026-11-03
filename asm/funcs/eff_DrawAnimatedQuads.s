@@ -209,13 +209,13 @@ glabel eff_DrawAnimatedQuads
     /* 5630C 80065B0C 00000000 */  nop
     /* 56310 80065B10 05006210 */  beq        $v1, $v0, .L80065B28
     /* 56314 80065B14 00000000 */   nop
-    /* 56318 80065B18 0A80023C */  lui        $v0, %hi(D_8009B9D8)
-    /* 5631C 80065B1C D8B94224 */  addiu      $v0, $v0, %lo(D_8009B9D8)
+    /* 56318 80065B18 0A80023C */  lui        $v0, %hi(g_eff_quad_pair_first_early_and_pair_first_shaped_quad_square_tex_rec)
+    /* 5631C 80065B1C D8B94224 */  addiu      $v0, $v0, %lo(g_eff_quad_pair_first_early_and_pair_first_shaped_quad_square_tex_rec)
     /* 56320 80065B20 CC960108 */  j          .L80065B30
     /* 56324 80065B24 00000000 */   nop
   .L80065B28:
-    /* 56328 80065B28 0A80023C */  lui        $v0, %hi(D_8009B990)
-    /* 5632C 80065B2C 90B94224 */  addiu      $v0, $v0, %lo(D_8009B990)
+    /* 56328 80065B28 0A80023C */  lui        $v0, %hi(g_eff_quad_pair_first_late_and_pair_first_shaped_quad_strip_tex_rec)
+    /* 5632C 80065B2C 90B94224 */  addiu      $v0, $v0, %lo(g_eff_quad_pair_first_late_and_pair_first_shaped_quad_strip_tex_rec)
   .L80065B30:
     /* 56330 80065B30 BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 56334 80065B34 0F80033C */  lui        $v1, %hi(g_eff_animated_quad_counters)
@@ -278,8 +278,8 @@ glabel eff_DrawAnimatedQuads
     /* 5640C 80065C0C 00000000 */  nop
     /* 56410 80065C10 05006210 */  beq        $v1, $v0, .L80065C28
     /* 56414 80065C14 00000000 */   nop
-    /* 56418 80065C18 0A80023C */  lui        $v0, %hi(D_8009B9D8)
-    /* 5641C 80065C1C D8B94224 */  addiu      $v0, $v0, %lo(D_8009B9D8)
+    /* 56418 80065C18 0A80023C */  lui        $v0, %hi(g_eff_quad_pair_first_early_and_pair_first_shaped_quad_square_tex_rec)
+    /* 5641C 80065C1C D8B94224 */  addiu      $v0, $v0, %lo(g_eff_quad_pair_first_early_and_pair_first_shaped_quad_square_tex_rec)
     /* 56420 80065C20 1F970108 */  j          .L80065C7C
     /* 56424 80065C24 00000000 */   nop
   .L80065C28:
@@ -304,8 +304,8 @@ glabel eff_DrawAnimatedQuads
     /* 5646C 80065C6C 1F970108 */  j          .L80065C7C
     /* 56470 80065C70 00000000 */   nop
   .L80065C74:
-    /* 56474 80065C74 0A80023C */  lui        $v0, %hi(D_8009B990)
-    /* 56478 80065C78 90B94224 */  addiu      $v0, $v0, %lo(D_8009B990)
+    /* 56474 80065C74 0A80023C */  lui        $v0, %hi(g_eff_quad_pair_first_late_and_pair_first_shaped_quad_strip_tex_rec)
+    /* 56478 80065C78 90B94224 */  addiu      $v0, $v0, %lo(g_eff_quad_pair_first_late_and_pair_first_shaped_quad_strip_tex_rec)
   .L80065C7C:
     /* 5647C 80065C7C BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 56480 80065C80 10000224 */  addiu      $v0, $zero, 0x10

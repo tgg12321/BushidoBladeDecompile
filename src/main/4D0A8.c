@@ -1320,8 +1320,8 @@ s32 gpu_DrawSelectedStretchedSheetPair(
     return end - draw_chunk_addr;
 }
 
-extern RECT D_800A327C;
-extern RECT D_800A3284;
+extern RECT g_gpu_split_wipe_image_rect;
+extern RECT g_gpu_split_wipe_image_clut_rect;
 extern s32 g_gpu_split_wipe_frame;
 
 void gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe(
@@ -1332,8 +1332,8 @@ void gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe(
     cdrom_StartRead(file_index, (s32)file_buffer);
     cdrom_WaitIdle();
     cdrom_GetFileSize(file_index);
-    r1 = D_800A327C;
-    r2 = D_800A3284;
+    r1 = g_gpu_split_wipe_image_rect;
+    r2 = g_gpu_split_wipe_image_clut_rect;
     LoadImage(&r1, (u32 *)(file_buffer + 0x40));
     DrawSync(0);
     LoadImage(&r2, (u32 *)(file_buffer + 0x14));
@@ -2088,8 +2088,8 @@ Unk8009B400Record D_800A3264 = {0xB3, 0x4E, 0x00, 0x00, 0x18, 0x0C};
 s32 g_gpu_jittered_quad_pair_cycle = 0;
 u8 g_gpu_comparison_unrecorded_match_cell_indices[8] = {0, 1, 2, 3, 4, 0, 0, 0};
 s32 g_gpu_split_wipe_frame = 0;
-RECT D_800A327C = {0x380, 0, 0x40, 0x100};
-RECT D_800A3284 = {0x3E0, 0x1FF, 0x10, 1};
+RECT g_gpu_split_wipe_image_rect = {0x380, 0, 0x40, 0x100};
+RECT g_gpu_split_wipe_image_clut_rect = {0x3E0, 0x1FF, 0x10, 1};
 Unk8009B400Record g_gpu_stage_card_map_marker_cell = {0, 0, 0, 0, 0x14, 0xE};
 RECT g_gpu_stage_card_stage_strip_image_rect = {0x3C0, 0x180, 0x40, 0x16};
 RECT g_gpu_stage_card_stage_strip_clut_rect = {0x3C0, 0x1FF, 0x10, 1};

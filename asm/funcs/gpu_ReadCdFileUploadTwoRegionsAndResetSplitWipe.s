@@ -15,8 +15,8 @@ glabel gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe
     /* 503FC 8005FBFC 00000000 */   nop
     /* 50400 8005FC00 CADB000C */  jal        cdrom_GetFileSize
     /* 50404 8005FC04 21200002 */   addu      $a0, $s0, $zero
-    /* 50408 8005FC08 0A80053C */  lui        $a1, %hi(D_800A327C)
-    /* 5040C 8005FC0C 7C32A524 */  addiu      $a1, $a1, %lo(D_800A327C)
+    /* 50408 8005FC08 0A80053C */  lui        $a1, %hi(g_gpu_split_wipe_image_rect)
+    /* 5040C 8005FC0C 7C32A524 */  addiu      $a1, $a1, %lo(g_gpu_split_wipe_image_rect)
     /* 50410 8005FC10 0300A288 */  lwl        $v0, 0x3($a1)
     /* 50414 8005FC14 0000A298 */  lwr        $v0, 0x0($a1)
     /* 50418 8005FC18 0700A388 */  lwl        $v1, 0x7($a1)
@@ -25,8 +25,8 @@ glabel gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe
     /* 50424 8005FC24 1000A2BB */  swr        $v0, 0x10($sp)
     /* 50428 8005FC28 1700A3AB */  swl        $v1, 0x17($sp)
     /* 5042C 8005FC2C 1400A3BB */  swr        $v1, 0x14($sp)
-    /* 50430 8005FC30 0A80053C */  lui        $a1, %hi(D_800A3284)
-    /* 50434 8005FC34 8432A524 */  addiu      $a1, $a1, %lo(D_800A3284)
+    /* 50430 8005FC30 0A80053C */  lui        $a1, %hi(g_gpu_split_wipe_image_clut_rect)
+    /* 50434 8005FC34 8432A524 */  addiu      $a1, $a1, %lo(g_gpu_split_wipe_image_clut_rect)
     /* 50438 8005FC38 0300A288 */  lwl        $v0, 0x3($a1)
     /* 5043C 8005FC3C 0000A298 */  lwr        $v0, 0x0($a1)
     /* 50440 8005FC40 0700A388 */  lwl        $v1, 0x7($a1)
