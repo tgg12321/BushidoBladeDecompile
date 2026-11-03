@@ -759,10 +759,13 @@ def _record_kept_orphan_candidates(
 # `volatile u32 pad; // !FAKE:` (src/st/sel/2C048.c:560) — declared first,
 # never written, never read, in fully matched PSX code. The 2026-07-01
 # carve-out mis-scoped itself against the very exemplar it cites.
-# Scope is EXACTLY these (function, name, count) triples; the declaration
+# Scope is EXACTLY these (function, name, count) rows (or the shape rows below); the declaration
 # must be volatile-qualified (oracle-verified byte-neutral 2026-08-17) and
 # FAKE-annotated in source. Any extension requires a fresh owner ruling.
-_SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
+# A row ("*", count, element_type) names no local: it admits the ONE volatile
+# unused array of that element type and count in the function (a second such
+# array admits neither), so a naming wave may rename the pad's local.
+_SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple]] = {
     "camera_ApplyFightView": frozenset({("pre_pad", 2)}),
     "camera_ApplyReplayView": frozenset({("pre_pad", 2)}),
     # 2026-08-18 owner ruling: fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams carries a SECOND, trailing
@@ -801,27 +804,61 @@ _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     # 8 untouched bytes at sp+0x58 = descriptor + 0x30, the s16[3] digit slot of
     # its COMPLETED siblings gpu_DrawTimeFieldsAndDecimalCounter / gpu_DrawPairedMarkRowsAndTimeFields
     # (pre-slim-2026-10-01:memory/grind/func_8005E54C/frame_census.txt, evidence.md [s4]/[s5]).
-    "gpu_DrawPackedComparisonRowsAndTotals": frozenset({("digit", 3)}),
+    # Keyed by shape, not by its local name (`digit`, 4D0A8.c), so renaming the
+    # local keeps the row (foundation row volatile-cheats-rekey).
+    "gpu_DrawPackedComparisonRowsAndTotals": frozenset({("*", 3, "s16")}),
 }
 
 
-def _is_sanctioned_pad(fname: str | None, text: str, s: int, e: int,
-                       name: str) -> bool:
-    """True iff the unused-local-array span [s, e) is one of the owner-
-    sanctioned unwritten leading pads: exact function, exact name, exact
-    element count, volatile-qualified. Everything else stays a cheat."""
-    if not fname or fname not in _SANCTIONED_UNWRITTEN_PADS:
-        return False
+def _pad_shape(text: str, s: int, e: int, name: str) -> tuple[int, str | None] | None:
+    """(element count, element type word) of a volatile unused-array span, or None."""
     # The detector's span starts at the TYPE token; the volatile qualifier
     # sits before it on the same line — check from the line start.
     line_start = text.rfind("\n", 0, s) + 1
     decl = text[line_start:e]
     if "volatile" not in decl:
-        return False
+        return None
     m = re.search(r"\[(\d+)\]", decl)
     if not m:
+        return None
+    elem = re.search(r"(\w+)\s+" + re.escape(name) + r"\s*\[", decl)
+    return int(m.group(1)), elem.group(1) if elem else None
+
+
+def _shape_pad_decl(text: str, s: int, e: int, name: str, count: int, elem: str) -> bool:
+    """The span is a line of its own declaring exactly `volatile <elem> <name>[<count>];`
+    (no other declaration or `volatile` earlier on the line)."""
+    line_start = text.rfind("\n", 0, s) + 1
+    return re.fullmatch(r"[ \t]*volatile[ \t]+" + re.escape(elem) + r"[ \t]+" + re.escape(name)
+                        + r"\s*\[" + str(count) + r"\]\s*;", text[line_start:e]) is not None
+
+
+def _is_sanctioned_pad(fname: str | None, text: str, s: int, e: int,
+                       name: str, siblings=None, body=None) -> bool:
+    """True iff the unused-local-array span [s, e) is one of the owner-
+    sanctioned unwritten leading pads: exact function, exact name (or a
+    ("*", count, type) row: exact element type on a line of its own
+    (`volatile <type> <name>[<count>];`), in fname's own definition body
+    `body` (never a Q126 inline helper judged with fname's rows), and the only
+    such pad among `siblings`, the body's unused-local-array spans), exact
+    element count, volatile-qualified. Everything else stays a cheat."""
+    if not fname or fname not in _SANCTIONED_UNWRITTEN_PADS:
         return False
-    return (name, int(m.group(1))) in _SANCTIONED_UNWRITTEN_PADS[fname]
+    shape = _pad_shape(text, s, e, name)
+    if shape is None:
+        return False
+    rows = _SANCTIONED_UNWRITTEN_PADS[fname]
+    if (name, shape[0]) in rows:
+        return True
+    if (shape[1] is None or ("*", shape[0], shape[1]) not in rows or siblings is None
+            or body is None or not _shape_pad_decl(text, s, e, name, *shape)):
+        return False
+    from . import inlineasm  # local: inlineasm imports us lazily
+    # fname's definition span runs from its head to the body's closing brace.
+    if not any(lo <= body[0] < hi and hi == body[1]
+               for lo, hi in inlineasm.func_definition_candidates(text, fname)):
+        return False
+    return sum(_pad_shape(text, a, b, n) == shape for a, b, n in siblings) == 1
 
 
 # Owner ruling 2026-08-21 (docs/grind/decisions.md, "OWNER RULING —
@@ -860,8 +897,9 @@ def _body_base_spans(text: str, body_lo: int, body_hi: int,
     that drift.
     """
     spans: list[tuple[int, int]] = []
-    for s, e, _n in find_unused_local_arrays(text, body_lo, body_hi):
-        if _is_sanctioned_pad(fname, text, s, e, _n):
+    unused_arrays = list(find_unused_local_arrays(text, body_lo, body_hi))
+    for s, e, _n in unused_arrays:
+        if _is_sanctioned_pad(fname, text, s, e, _n, unused_arrays, (body_lo, body_hi)):
             continue
         spans.append((s, e))
     for s, e, _n in find_addr_coerced_locals(text, body_lo, body_hi):

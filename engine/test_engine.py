@@ -12620,6 +12620,26 @@ def test_sanctioned_unwritten_pads() -> None:
     eq("pad-allowlist: wrong name still flagged",
        len(spans_for("camera_ApplyFightView",
                      "    volatile u32 spill[2];" + NL + "    other();" + NL)), 1)
+    # A ("*", count, type) row is keyed by shape: any local name, but exactly
+    # that element type and count, volatile, and the only such pad in the body.
+    shaped = "gpu_DrawPackedComparisonRowsAndTotals"
+    for label, body, want in [
+            ("original name", "    volatile s16 digit[3];", 0),
+            ("renamed local", "    volatile s16 frame_pad[3];", 0),
+            ("other element type", "    volatile u16 digit[3];", 1),
+            ("other count", "    volatile s16 digit[4];", 1),
+            ("non-volatile", "    s16 digit[3];", 1),
+            ("two such pads", "    volatile s16 digit[3];" + NL + "    volatile s16 more[3];", 2)]:
+        eq("pad-allowlist: shape-keyed row, " + label,
+           len(spans_for(shaped, body + NL + "    other();" + NL)), want)
+    eq("pad-allowlist: shape-keyed row, earlier volatile on the line",
+       len(spans_for(shaped, "    volatile s32 q; s16 pad[3];" + NL + "    other(q);" + NL)), 1)
+    helper = ("static inline void h(void) {" + NL + "    volatile s16 hp[3];" + NL + "    other();" + NL + "}" + NL
+              + "s32 " + shaped + "(void) {" + NL + "    volatile s16 digit[3];" + NL + "    h();" + NL + "}" + NL)
+    eq("pad-allowlist: shape-keyed row never admits a Q126 helper's pad",
+       volatile_cheats.func_volatile_cheat_count(helper, shaped), 1)
+    eq("pad-allowlist: shape-keyed row needs the body's siblings",
+       volatile_cheats._is_sanctioned_pad(shaped, "volatile s16 digit[3];", 9, 22, "digit"), False)
     text = "void camera_ApplyFightView(void) {" + NL + pad + "}" + NL
     eq("pad-allowlist: no-fname call (default) still flagged",
        len(volatile_cheats.body_cheat_spans(
