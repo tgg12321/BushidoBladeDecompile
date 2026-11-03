@@ -96,7 +96,7 @@ Cited by function name.
 
 ## The selection screen (src/main/5ED34.c)
 
-- `StepSlideBuildFrameRecordAndDispatchStateHandler(arg0, pad)` (src/main/5ED34.c:242) keeps the held word `arg0` in
+- `StepSlideBuildFrameRecordAndDispatchStateHandler(held_buttons, pad)` (src/main/5ED34.c:242) keeps the held word `held_buttons` in
   `g_entry_menu_held_buttons` (nothing reads it) and the pad word in `g_entry_menu_pressed_buttons`, runs `StepSlideProgressCommitPendingStateAndQueueSound`, calls `gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset`
   (src/main/5ED34.c:559) unless the screen mode
   `g_entry_menu_handler_index` is 2 or 3, and calls `g_entry_menu_handlers[g_entry_menu_handler_index]`; it returns
