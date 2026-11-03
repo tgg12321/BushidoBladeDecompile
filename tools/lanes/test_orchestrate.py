@@ -104,6 +104,16 @@ class Candidates(unittest.TestCase):
         self.assertEqual(o.candidates(bl(), reg(), st(), NOW, None),
                          ["naming-a", "pins", "naming-b", "data"])
 
+    def test_fewer_running_kind_goes_first(self):
+        # two naming sessions, one foundation: the freed slot goes to foundation first
+        running = st({"x": slot("naming-a"), "y": slot("naming-b", session="S2"),
+                      "z": slot("data", session="S3")})
+        b = bl(naming_stages=("reviewed", "idea", "idea", "idea"))
+        self.assertEqual(o.candidates(b, reg(), running, NOW, None)[:2], ["pins", "naming-c"])
+        # a codex slot does not count as foundation
+        codex = st({"x": slot("naming-a"), "c": slot("codex", session="S4", kind="codex")})
+        self.assertEqual(o.candidates(b, reg(), codex, NOW, None)[0], "pins")
+
     def test_naming_limited_by_workable_rows(self):
         b = bl(naming_stages=("reviewed", "landed", "researching"))
         self.assertEqual(o.candidates(b, reg(), st({"x": slot("naming-a")}), NOW, "naming"), [])

@@ -30,7 +30,7 @@ Picking work: naming lanes (naming-a, naming-b, ...) while docs/naming/phase3/ba
 workable rows (idea/researched/reviewed) than naming sessions; foundation lanes in
 docs/foundation/backlog.tsv order while a lane has rows not landed/dropped/blocked
 (blocked = waits on an owner ruling). Naming and foundation
-alternate. Lanes owned in the registry by any live session are skipped, and so are paused lanes
+alternate, the kind with fewer running sessions first. Lanes owned in the registry by any live session are skipped, and so are paused lanes
 (tmp/lanes-state/paused.json; `naming` pauses every naming lane; a `--when-away` lane starts only
 after 20 min without keyboard/mouse input). `researching` rows wait on a Codex job: they count as
 workable once their note cites a Codex bridge run id and every cited run has finished (any
@@ -701,9 +701,16 @@ def candidates(bl: dict, reg: dict, st: dict, now: float, only: str | None,
                     and lane not in busy and lane not in skip and not lane_owned(reg, lane, now)
                     and not pause_blocks(paused, lane, away)):
                 found.append(lane)
+    # The kind with fewer running sessions goes first, so a freed slot does not always go back
+    # to naming while foundation lanes wait (ties: naming first).
+    lanes_running = [s["lane"] for s in st["sessions"].values() if not is_codex(s)]
+    lanes_running += [l for l in live if l not in lanes_running and l != CODEX_LANE]
+    n_naming = sum(1 for l in lanes_running if l.startswith("naming"))
+    first, second = ((found, naming) if len(lanes_running) - n_naming < n_naming
+                     else (naming, found))
     out: list[str] = []
     for i in range(max(len(naming), len(found))):
-        out += naming[i:i + 1] + found[i:i + 1]
+        out += first[i:i + 1] + second[i:i + 1]
     return out
 
 
