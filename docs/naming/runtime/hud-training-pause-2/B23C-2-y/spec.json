@@ -1,0 +1,242 @@
+{
+  "max_events": 20000,
+  "duration_s": 3600,
+  "breakpoints": [
+    {
+      "at": "gpu_DrawModeSizedPanelWithSelectedCellOpaque",
+      "max_hits": 12
+    }
+  ],
+  "pokes": [
+    {
+      "at": "0x8009B24E",
+      "hex": "7c00",
+      "phase": "t_load"
+    }
+  ],
+  "script": {
+    "end_frame": 9400,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6200,
+        "name": "t_training"
+      },
+      {
+        "frame": 6300,
+        "name": "training_menu"
+      },
+      {
+        "frame": 7000,
+        "name": "t_char"
+      },
+      {
+        "frame": 7050,
+        "name": "char_select"
+      },
+      {
+        "frame": 7400,
+        "name": "t_weapon"
+      },
+      {
+        "frame": 7450,
+        "name": "weapon_select"
+      },
+      {
+        "frame": 8500,
+        "name": "t_load"
+      },
+      {
+        "frame": 9300,
+        "name": "pause_menu"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6080,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6140,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6500,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6800,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7100,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7400,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7700,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8000,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8300,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8800,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9100,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6199,
+        "name": "top_menu.last"
+      },
+      {
+        "frame": 6300,
+        "name": "training_menu.first"
+      },
+      {
+        "frame": 6999,
+        "name": "training_menu.last"
+      },
+      {
+        "frame": 7050,
+        "name": "char_select.first"
+      },
+      {
+        "frame": 7399,
+        "name": "char_select.last"
+      },
+      {
+        "frame": 7450,
+        "name": "weapon_select.first"
+      },
+      {
+        "frame": 7999,
+        "name": "weapon_select.mid"
+      },
+      {
+        "frame": 8350,
+        "name": "weapon_select.enemy"
+      },
+      {
+        "frame": 8499,
+        "name": "weapon_select.last"
+      },
+      {
+        "frame": 8650,
+        "name": "t_load.mid"
+      },
+      {
+        "frame": 9300,
+        "name": "pause_menu.first"
+      },
+      {
+        "frame": 9350,
+        "name": "pause_menu.9350"
+      },
+      {
+        "frame": 9399,
+        "name": "pause_menu.last"
+      }
+    ]
+  }
+}

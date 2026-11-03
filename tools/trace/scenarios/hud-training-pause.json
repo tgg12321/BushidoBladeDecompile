@@ -1,5 +1,5 @@
 {
-  "description": "training-ninja's run cut at 9400, screenshots over the Training Pause Menu (gpu_DrawModeSizedPanelWithSelectedCellOpaque); poked variants move one 0x8009B184..0x8009B2A4 sprite cell's y so the cell it places can be told apart",
+  "description": "training-ninja's run cut at 9400, screenshots over the Training Pause Menu (gpu_DrawModeSizedPanelWithSelectedCellOpaque); poked variants move one 0x8009B184..0x8009B2AB sprite cell's y so the cell it places can be told apart",
   "covers": [],
   "evidence": [
     "docs/naming/runtime/hud-training-pause-1/baseline/spec.json",
@@ -9,7 +9,24 @@
     "docs/naming/runtime/hud-training-pause-1/B23C-0-y/spec.json",
     "docs/naming/runtime/hud-training-pause-1/B23C-8-y/spec.json",
     "docs/naming/runtime/hud-training-pause-1/B29C-0-y/spec.json",
-    "docs/naming/runtime/hud-training-pause-1/B184-0-y/spec.json"
+    "docs/naming/runtime/hud-training-pause-1/B184-0-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/baseline/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B20C-1-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B20C-2-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B20C-3-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B20C-4-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B20C-5-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B23C-1-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B23C-2-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B23C-3-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B23C-4-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B23C-5-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B23C-6-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B23C-7-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B23C-9-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B23C-10-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B23C-11-y/spec.json",
+    "docs/naming/runtime/hud-training-pause-2/B29C-1-y/spec.json"
   ],
   "extends": "training-ninja",
   "end_frame": 9400,
