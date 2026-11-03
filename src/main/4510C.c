@@ -1748,9 +1748,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     s32 chosen_script_max_distance;
     s32 var_6;
     u8 *threat_response_script;
-    u8 *var_8;
+    u8 *route_script;
     u8 *action_script;
-    u8 *var_10;
+    u8 *stock_or_ballistic_script;
     u8 mode;
     /* work1 holds nine values in turn, each read before the next write: the
      * cpu_probes[5] == 0 flag of the state-0x15 script choice; the stage
@@ -1795,7 +1795,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     s32 work4;
     s32 pick_weight_index;
     s32 hi;
-    s16 var_18;
+    s16 script_entry_kind;
     s32 waypoint_radius;
     s32 base_pad_buttons;
     s32 parity_pad_buttons;
@@ -1808,7 +1808,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     s32 var_29;
     u16 *list;
     u8 *e;
-    u8 *var_32;
+    u8 *entry_cursor;
     /* FAKE: second handle to var_32's value, see `q = var_32;` (read through
      * var_32: score 58; e[4]/e[8..5]: 18, also with wrapper removed) */
     u8 *q;
@@ -1816,9 +1816,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     s16 best_script_score;
     u8 table_other_move_kind;
     s8 var_37;
-    s32 var_38;
+    s32 goal_kind;
     s32 cnt;
-    s32 var_40;
+    s32 use_stock;
     s32 var_41;
     s32 lim;
     s8 best_pick_weight_index;
@@ -2103,26 +2103,26 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
         if (p->cpu_orbit_route_active == 0) {
             tx = p->other->world_pos.x;
             tz = p->other->world_pos.z;
-            var_38 = 1;
+            goal_kind = 1;
         } else {
             tx = p->cpu_orbit_goal_x;
             tz = p->cpu_orbit_goal_z;
-            var_38 = p->cpu_orbit_goal_kind;
+            goal_kind = p->cpu_orbit_goal_kind;
         }
         /* FAKE: the trailing `&& var_38 == 1` repeats the first test
          * (redundant condition, no-new-park-categories entry 16; owner ruling
          * Q131). The target's $s2 re-test after the || chain is real (without
          * it the chain is two instructions shorter), but this C spelling is
          * our reconstruction */
-        if (!(var_38 == 1 &&
+        if (!(goal_kind == 1 &&
               (p->other->move_kind == 0xA || p->cpu_profile == 0xA ||
                (p->weapon_id >= 6 && p->weapon_ammo == 0)) &&
-              var_38 == 1)) {
+              goal_kind == 1)) {
             if (!(p->cpu_pad_build_count & 7)) {
                 p->nearest_nav_crossing_distance =
                     fighter_FindNearestNavCrossing(p, nav_set, tx, tz);
             }
-            if (var_38 == 1) {
+            if (goal_kind == 1) {
                 work1 = p->cpu_probes[6];
                 if (!(p->cpu_state_flags & 0x800) ||
                     g_fighter_horizontal_separation < 4000) {
@@ -2180,7 +2180,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
             } else {
                 lim = 2000;
             }
-            if (var_38 == 1) {
+            if (goal_kind == 1) {
                 if (p->cpu_route.count < 2 &&
                     (p->nearest_nav_crossing_distance != 100000 ||
                      g_fighter_horizontal_separation >= lim)) {
@@ -2193,7 +2193,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 record:
                     p->cpu_route.node[0].x = tx;
                     p->cpu_route.node[0].z = tz;
-                    p->cpu_route.node[0].kind = var_38;
+                    p->cpu_route.node[0].kind = goal_kind;
                     p->cpu_route.count = 1;
                     if (p->nearest_nav_crossing_distance != 100000 &&
                         !(p->cpu_pad_build_count & 7)) {
@@ -2220,7 +2220,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     wx = p->cpu_route.node[last_route_node_index].x;
                     wz = p->cpu_route.node[last_route_node_index].z;
                     if (!(work1 == 1 || work1 == 2)) {
-                        var_8 = 0;
+                        route_script = 0;
                         if (p->cpu_route.node[last_route_node_index].kind ==
                             1) {
                             if (work2 == 3 &&
@@ -2246,15 +2246,16 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                         [p->other->variant_index]) {
                                 pick2:
                                     if (p->move_kind == 0x13) {
-                                        var_8 = D_8009A8A4;
+                                        route_script = D_8009A8A4;
                                     } else if (
                                         p->latched_motion_metadata_nibble !=
                                         4) {
-                                        var_8 = D_8009A89C;
+                                        route_script = D_8009A89C;
                                     }
                                 }
-                                if (var_8 != 0) {
-                                    fighter_StartCpuPadScript(p, var_8, 4, 0);
+                                if (route_script != 0) {
+                                    fighter_StartCpuPadScript(
+                                        p, route_script, 4, 0);
                                 }
                             }
                         }
@@ -2670,9 +2671,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                          * 2's mask shifts. `1U << n`, a u32 mask local and a
                          * function-scope `var_59` all differ */
                         s32 var_59 = 1;
-                        var_32 = off + (u8 *)p->cpu_script_list;
-                        e = var_32;
-                        var_32 += 4;
+                        entry_cursor = off + (u8 *)p->cpu_script_list;
+                        e = entry_cursor;
+                        entry_cursor += 4;
                         /* FAKE: pass-through pointer alias
                          * (pointer-alias-fake-exception; SOTN precedent
                          * below): the target copies var_32's value into its
@@ -2686,7 +2687,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                          * local, wrapper also removed: 21 (e reads) / 61
                          * (var_32 reads) */
                         /* SOTN: src/st/no0/e_stone_rose.c:611 @aa53500 */
-                        q = var_32;
+                        q = entry_cursor;
                         if (g_cpu_profiles[p->cpu_profile].flags & 0xFF00) {
                             switch (g_fight_mode_selector) {
                             case 3:
@@ -2760,7 +2761,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                             if (!(work3 & (var_59 << p->cpu_profile))) {
                                 goto next;
                             }
-                            var_32 += 5;
+                            entry_cursor += 5;
                         }
                         if ((e[0] & 0x80) &&
                             p->hit_record_group_6_9_intact == 0) {
@@ -2777,10 +2778,10 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                          * e separately or together: 10; no-alias cluster
                          * through e / var_32: 18 / 58 */
                         do {
-                            var_18 = e[0] & 7;
+                            script_entry_kind = e[0] & 7;
                         } while (0);
                         work3 = 0;
-                        if (var_18 == 0) {
+                        if (script_entry_kind == 0) {
                             if (work1 < g_fighter_horizontal_separation &&
                                 g_fighter_horizontal_separation < hi) {
                                 if (p->other->move_kind == 0x15 ||
@@ -2794,14 +2795,14 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                             if ((g_cpu_profiles[p->cpu_profile].flags &
                                  0xFC00) ||
                                 p->weapon_id >= 6) {
-                                work1 = var_18 < 5 ? 100000 : 0;
+                                work1 = script_entry_kind < 5 ? 100000 : 0;
                                 hi = 100000;
                             } else {
                                 work5 = (((0x1000 - var_6) * 625) >> 10) - 400;
                                 work1 += work5 + p->scale_distance_offset;
                                 hi += work5 + p->scale_distance_offset;
                             }
-                            work5 = var_18;
+                            work5 = script_entry_kind;
                             if (work5 < 5) {
                                 if (g_fighter_horizontal_separation < work1 &&
                                     !(p->cpu_state_flags & 0x20000)) {
@@ -2844,15 +2845,16 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                             }
                         }
                         if (work3) {
-                            script_score = ((rand() & 0xFFF) *
-                                            g_cpu_profiles[p->cpu_profile]
-                                                .script_kind_weight[var_18]) >>
-                                           12;
+                            script_score =
+                                ((rand() & 0xFFF) *
+                                 g_cpu_profiles[p->cpu_profile]
+                                     .script_kind_weight[script_entry_kind]) >>
+                                12;
                             if (script_score != 0 &&
                                 best_script_score < script_score) {
                                 best_script_score = script_score;
                                 chosen_script_index = work4;
-                                chosen_script = var_32;
+                                chosen_script = entry_cursor;
                                 chosen_script_max_distance = hi;
                             }
                         }
@@ -2879,7 +2881,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 p->opponent_angle_from_orientation_abs <
                     0x200 - ((p->cpu_level * 0x100) >> 12) &&
                 !(g_fight_mode_selector == 2 || g_fight_mode_selector == 3)) {
-                var_10 = 0;
+                stock_or_ballistic_script = 0;
                 if ((rand() & 0xFF) <
                         (g_cpu_profiles[p->cpu_profile].script_kind_weight[5] >>
                          2) &&
@@ -2889,12 +2891,12 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                             [p->other->variant_index] <
                         g_fighter_horizontal_separation &&
                     g_fighter_horizontal_separation < 4500) {
-                    var_10 = g_cpu_ballistic_pad_script;
+                    stock_or_ballistic_script = g_cpu_ballistic_pad_script;
                 } else {
-                    s32 var_60;
+                    s32 stock_count;
 
                     if (p->cpu_profile == 0x15) {
-                        var_60 = p->throw_charges_left;
+                        stock_count = p->throw_charges_left;
                         work1 =
                             p->other
                                 ->script_min_distances[p->other->variant_index];
@@ -2903,39 +2905,42 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                     [p->other->variant_index] +
                                 300;
                         if (g_cpu_profiles[p->cpu_profile].flags & 0x300) {
-                            var_60 = 0;
+                            stock_count = 0;
                             if (g_fight_stage_command_count >= 6) {
-                                var_60 = p->weapon_ammo;
+                                stock_count = p->weapon_ammo;
                             }
                         } else {
-                            var_60 = p->carried_object_count;
+                            stock_count = p->carried_object_count;
                         }
                     }
-                    var_40 = 0;
+                    use_stock = 0;
                     if ((rand() & 0xFF) < (g_cpu_profiles[p->cpu_profile]
                                                .script_kind_weight[6] >>
                                            2) &&
-                        var_60 != 0 &&
+                        stock_count != 0 &&
                         work1 < g_fighter_horizontal_separation &&
                         p->nearest_nav_crossing_distance == 100000 &&
                         p->opponent_ground_y_band == 0 &&
                         (p->cpu_state_flags & 0xA002) &&
                         (p->cpu_profile != 0x15 ||
                          g_fighter_horizontal_separation < 3000) &&
-                        (p->object_variant_enabled == 0 || var_60 >= 2)) {
-                        var_40 = 1;
+                        (p->object_variant_enabled == 0 || stock_count >= 2)) {
+                        use_stock = 1;
                     }
-                    if (var_40) {
+                    if (use_stock) {
                         if ((g_cpu_profiles[p->cpu_profile].flags & 0x10) &&
-                            var_60 >= 2 && (rand() & 1)) {
-                            var_10 = g_cpu_double_stock_use_pad_script;
+                            stock_count >= 2 && (rand() & 1)) {
+                            stock_or_ballistic_script =
+                                g_cpu_double_stock_use_pad_script;
                         } else {
-                            var_10 = g_cpu_stock_use_pad_script;
+                            stock_or_ballistic_script =
+                                g_cpu_stock_use_pad_script;
                         }
                     }
                 }
-                if (var_10 != 0) {
-                    fighter_StartCpuPadScript(p, var_10, 2, 0);
+                if (stock_or_ballistic_script != 0) {
+                    fighter_StartCpuPadScript(
+                        p, stock_or_ballistic_script, 2, 0);
                 }
             }
         }

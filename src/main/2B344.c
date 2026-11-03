@@ -1063,7 +1063,7 @@ extern s32 g_fight_followup_playback_start_pair;
 
 void fight_InitNearestStartPairPlayback(void) {
     s32 playback_file_offset;
-    s8 var_1;
+    s8 followup_fighter_index;
 
     snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
     cdrom_PauseAndWait();
@@ -1073,16 +1073,16 @@ void fight_InitNearestStartPairPlayback(void) {
     gpu_RestoreObjectClutOffsets();
     gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear(0);
     SetGeomScreen(math_FovToScreenDist(0x2D));
-    var_1 = g_fight_followup_fighter_index;
+    followup_fighter_index = g_fight_followup_fighter_index;
     {
-        if ((u16)(D_80101EC8[var_1].weapon_id - 6) < 2) {
+        if ((u16)(D_80101EC8[followup_fighter_index].weapon_id - 6) < 2) {
             playback_file_offset = 8;
-            if (var_1 != 0) {
+            if (followup_fighter_index != 0) {
                 playback_file_offset = 9;
             }
         } else {
             playback_file_offset = 6;
-            if (var_1 != 0) {
+            if (followup_fighter_index != 0) {
                 playback_file_offset = 7;
             }
         }
@@ -2303,8 +2303,8 @@ s32 gpu_GetLastGridPassViewYaw(void) { return g_gpu_last_grid_pass_view_yaw; }
 
 void *gpu_GetGridNodeRecordTable(void) { return g_gpu_grid_node_records; }
 
-void gpu_SetFarViewGridFogControlAndCoordinateShift(s32 a0) {
-    if (a0) {
+void gpu_SetFarViewGridFogControlAndCoordinateShift(s32 is_far_view) {
+    if (is_far_view) {
         g_gpu_grid_and_fog_control = 3;
         g_gpu_view_coordinate_shift = 2;
     } else {
@@ -2314,15 +2314,15 @@ void gpu_SetFarViewGridFogControlAndCoordinateShift(s32 a0) {
 }
 
 void gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear(
-    s32 a0) {
-    if ((u32)a0 >= 2) {
+    s32 tracked_view_active) {
+    if ((u32)tracked_view_active >= 2) {
         return;
     }
-    if (a0 == g_gpu_tracked_fighter_view_active) {
+    if (tracked_view_active == g_gpu_tracked_fighter_view_active) {
         return;
     }
-    g_gpu_tracked_fighter_view_active = a0;
-    if (!a0) {
+    g_gpu_tracked_fighter_view_active = tracked_view_active;
+    if (!tracked_view_active) {
         gpu_SetFarViewGridFogControlAndCoordinateShift(0);
     }
     D_800F665C = (s16)g_gpu_tracked_fighter_view_active;
@@ -2520,7 +2520,7 @@ void softbody_FreeAllAndClearWriteOnlyWords(void) {
     D_800A3374 = 0;
 }
 
-extern u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur);
+extern u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *params, u8 *cur);
 void softbody_AddColliders(
     Unk80045878Obj *slot_object, Unk8003F824Rec *rec, s16 *param_cursor);
 

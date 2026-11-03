@@ -2578,7 +2578,7 @@ extern s32 math_TestSphereAgainstPreparedAxialVertexSpan(
     s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos, s32 threshold,
     s32 r_sq);
 extern s32 math_TestPreparedTriangleSphere(
-    s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq);
+    s32 arg0, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq);
 
 void fighter_TestTriangleBoneHits(
     Unk80101EC8Record *fighter_record, s32 a1, s32 test_inner_spheres) {

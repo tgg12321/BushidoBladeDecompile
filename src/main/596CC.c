@@ -317,10 +317,11 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
     switch (direction_events >> 16) {
     case 1:
         do {
-            s32 flags = g_menu_packed_cursors;
+            s32 packed_cursors = g_menu_packed_cursors;
             s32 index;
             g_menu_packed_cursors =
-                (flags & ~0xF) | (index = ((flags & 0xF) + 1) & 0xF);
+                (packed_cursors & ~0xF) |
+                (index = ((packed_cursors & 0xF) + 1) & 0xF);
             if (index >= 8) {
                 g_menu_packed_cursors &= ~0xF;
             }
@@ -332,12 +333,13 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
         break;
     case 2:
         do {
-            s32 flags = g_menu_packed_cursors;
-            s32 index = flags & 0xF;
+            s32 packed_cursors = g_menu_packed_cursors;
+            s32 index = packed_cursors & 0xF;
             if (index == 0) {
-                g_menu_packed_cursors = (flags & ~0xF) | 7;
+                g_menu_packed_cursors = (packed_cursors & ~0xF) | 7;
             } else {
-                g_menu_packed_cursors = (flags & ~0xF) | ((index - 1) & 0xF);
+                g_menu_packed_cursors =
+                    (packed_cursors & ~0xF) | ((index - 1) & 0xF);
             }
         } while (!(((u32)g_row_menu_row_state.rows_on >>
                     (g_menu_packed_cursors & 0xF)) &
