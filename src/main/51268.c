@@ -2278,9 +2278,9 @@ again:
             *g_eff_tpage_word = 0x2E;
         } else {
             if (g_eff_animated_quad_counters[mode_index] >= 5) {
-                g_eff_current_tex_rec = D_8009B9F0;
+                g_eff_current_tex_rec = g_eff_two_animated_quads_middle_tex_rec;
             } else {
-                g_eff_current_tex_rec = D_8009B9E8;
+                g_eff_current_tex_rec = g_eff_two_animated_quads_early_tex_rec;
             }
             *g_eff_tpage_word = 0x2F;
         }

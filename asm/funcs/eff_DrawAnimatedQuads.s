@@ -461,13 +461,13 @@ glabel eff_DrawAnimatedQuads
   .L80065EBC:
     /* 566BC 80065EBC 05004014 */  bnez       $v0, .L80065ED4
     /* 566C0 80065EC0 00000000 */   nop
-    /* 566C4 80065EC4 0A80023C */  lui        $v0, %hi(D_8009B9F0)
-    /* 566C8 80065EC8 F0B94224 */  addiu      $v0, $v0, %lo(D_8009B9F0)
+    /* 566C4 80065EC4 0A80023C */  lui        $v0, %hi(g_eff_two_animated_quads_middle_tex_rec)
+    /* 566C8 80065EC8 F0B94224 */  addiu      $v0, $v0, %lo(g_eff_two_animated_quads_middle_tex_rec)
     /* 566CC 80065ECC B7970108 */  j          .L80065EDC
     /* 566D0 80065ED0 00000000 */   nop
   .L80065ED4:
-    /* 566D4 80065ED4 0A80023C */  lui        $v0, %hi(D_8009B9E8)
-    /* 566D8 80065ED8 E8B94224 */  addiu      $v0, $v0, %lo(D_8009B9E8)
+    /* 566D4 80065ED4 0A80023C */  lui        $v0, %hi(g_eff_two_animated_quads_early_tex_rec)
+    /* 566D8 80065ED8 E8B94224 */  addiu      $v0, $v0, %lo(g_eff_two_animated_quads_early_tex_rec)
   .L80065EDC:
     /* 566DC 80065EDC BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
   .L80065EE0:

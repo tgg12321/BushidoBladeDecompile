@@ -617,8 +617,8 @@ extern TexRec D_8009B998[4];
 extern TexRec D_8009B9B8[4];
 extern TexRec D_8009B9D8[1];
 extern TexRec D_8009B9E0[1];
-extern TexRec D_8009B9E8[1];
-extern TexRec D_8009B9F0[2];
+extern TexRec g_eff_two_animated_quads_early_tex_rec[1];
+extern TexRec g_eff_two_animated_quads_middle_tex_rec[2];
 /* one table of 12 records: [0..5] / [6..9] the two sprite sets, [10] / [11]
  * their g_working_record.grayscale CLUT substitutes (eff_DrawBillboardList) */
 extern TexRec g_eff_billboard_tex_recs[12];
