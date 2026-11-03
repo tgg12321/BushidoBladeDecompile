@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-effects re-run unchanged with Unk80101EC8Record.unk_150 / unk_24C watches (write and read 0x80102018/2, 0x80102464/2 = D_80101EC8[0] / [1].unk_150; write and read 0x80102114/16, 0x80102560/16 = .unk_24C): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-Unk80101EC8Record-unk_150-versus-2p-effects-1/spec.json"
+  ],
+  "extends": "versus-2p-effects",
+  "refines": "versus-2p-effects"
+}
