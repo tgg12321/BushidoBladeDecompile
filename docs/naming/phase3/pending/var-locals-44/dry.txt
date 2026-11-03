@@ -1,0 +1,25 @@
+var-locals-44 (naming-a 2026-11-03): 14 local bindings in 8 files: m2c-placeholder and result-less names (temp / val / val1 / val2 / result / ret) whose role the code states, and the two RECT copies freed by var-globals-eff-texrec-4.
+Tree: ln-naming-a = lanes/naming-a = main 73c7de619 (clean). Research: tmp/codex/var-locals-44-research.md (15 rows; every definition re-read at 73c7de619 and no line moved).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (naming_member_apply.py handles T.m=n only; naming_wave.py is function-name only; same tool result as var-locals-43). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(base = naming_keycheck.read_working_tree() of the lane worktree ln-naming-a, HEAD 73c7de619; NAMING_KEYCHECK_ROOT = the worktree; run under WSL from a scratch driver, removed after the run)
+accepted all 14 pairs (58 token substitutions: 28708.c 9, cdrom_update.c 15, 368E4.c 11, 2B344.c 9, 4D0A8.c 6, 25C38.c 4, 31D3C.c 2, 35000.c 2; no include/ file touched; no comment edit needed, see notes.txt R6 WATCH). Each pair was also run alone: all 14 accepted, none rejected (alone-counts sum to 58, equal to the together total, and every pair's alone line list equals the drafter's independent token scan, 14/14). wave_Update:temp and node_OrientAndQueueViewOffsetNode:temp rename to the same new name draw_queue_slot in different functions of 368E4.c; scoped_plan accepts the set.
+Per-pair substitutions (function:old=new count (lines)):
+  gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe:r1=image_rect 3 (1329,1335,1337)
+  gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe:r2=clut_rect 3 (1329,1336,1339)
+  fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass:result=hit_tag 6 (1332,1351,1352,1353,1356,1359)
+  menu_InitSubflowForMode:temp=handshake_result 4 (97,142,143,153)
+  wave_Update:temp=draw_queue_slot 4 (931,953,954,955)
+  node_OrientAndQueueViewOffsetNode:temp=draw_queue_slot 3 (750,751,752)
+  fight_InitNearestStartPairPlayback:result=start_pair_index 4 (1092,1096,1097,1099)
+  bitstream_AccumulateDeltas:val=delta 5 (1378,1383,1384,1385,1387)
+  light_ApplyPointLightTargets:val=target_mask 2 (412,413)
+  ndata_GetArenaRoomAfter:val=length_bytes 2 (281,282)
+  replay_AdvanceFrame:val=write_frame 3 (1301,1302,1306)
+  wave_SampleRow8BaseCachingIndexAndRemainderParity:val1=weighted_column 2 (1035,1038)
+  wave_SampleRow8BaseCachingIndexAndRemainderParity:val2=weighted_next_column 2 (1036,1038)
+  cdrom_Update:ret=sync_status 15 (248,249,252,271,272,277,285,286,295,320,321,327,341,342,348)
+
+Line widths after substitution (over 80; python tools/format.py reflows them in the naming commit; token-preserving):
+  alone: 31D3C.c 412 (80->88); 368E4.c 1035 (74->85)
+  all 14 together: 31D3C.c 412 (80->88); 368E4.c 1035 (74->85); 368E4.c 1038 stays 73, 1036 stays 76
+None of these lines contains a function-like macro call (every identifier on both lines checked against the 366 `#define NAME(` names in src/ and include/); 412 is a declaration initialised from two array reads and 1035 an array product; neither continues a macro call. 0 rows flagged.Pre-apply review (naming-reviewer, 2026-11-03): memcard_PollFileCompletion:ret=sw_event FAILED (N2/R4) and is dropped; the other 14 pairs are independent of it, so their per-pair counts stand (14 pairs, 58 substitutions).
