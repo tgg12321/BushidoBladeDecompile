@@ -948,7 +948,7 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
     MATRIX *mats;
     MATRIX *slot_matrix;
     s32 *sxy;
-    POLY_FT4 *prim;
+    POLY_FT4 *var_9;
     s32 slot_index;
     s32 quad_index;
     s32 k;
@@ -964,16 +964,16 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
      * separate `u8 *`/`s32`/`POLY_FT4 *` base, declaration/scope/setup-order
      * variants, direct global, or local struct with sub-pointers: score 37;
      * advancing mats as a cursor: 90; direct struct member accesses: 149. */
-    prim = (POLY_FT4 *)g_eff_work_area;
+    var_9 = (POLY_FT4 *)g_eff_work_area;
     count = 0;
-    mats = (MATRIX *)((u8 *)prim + 0x78);
-    composite_matrix = (MATRIX *)((u8 *)prim + 0x138);
-    sxy = (s32 *)((u8 *)prim + 0x158);
-    depth_cue_out = (s32 *)((u8 *)prim + 0x168);
-    quad_ot_indices = (u16 *)((u8 *)prim + 0x16C);
-    scale = (s32 *)((u8 *)prim + 0x178);
-    var_5 = (s32 *)((u8 *)prim + 0x188);
-    prim = g_eff_quad_cursor;
+    mats = (MATRIX *)((u8 *)var_9 + 0x78);
+    composite_matrix = (MATRIX *)((u8 *)var_9 + 0x138);
+    sxy = (s32 *)((u8 *)var_9 + 0x158);
+    depth_cue_out = (s32 *)((u8 *)var_9 + 0x168);
+    quad_ot_indices = (u16 *)((u8 *)var_9 + 0x16C);
+    scale = (s32 *)((u8 *)var_9 + 0x178);
+    var_5 = (s32 *)((u8 *)var_9 + 0x188);
+    var_9 = g_eff_quad_cursor;
     for (slot_index = 0; slot_index < 6; slot_index++) {
         slot_bit = 1 << slot_index;
         if (!(g_eff_rotated_quad_cluster_slot_mask & slot_bit)) {
@@ -997,12 +997,12 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
         SetTransMatrix(composite_matrix);
         for (quad_index = 0; quad_index < 3; quad_index++) {
             if (g_eff_rotated_quad_cluster_ages[slot_index] < 3) {
-                *(s32 *)&prim->r0 = 0x808080;
+                *(s32 *)&var_9->r0 = 0x808080;
             } else {
                 c = ((6 - g_eff_rotated_quad_cluster_ages[slot_index]) << 7) /
                     3;
                 *var_5 = c;
-                *(s32 *)&prim->r0 = c + (c << 8) + (c << 16);
+                *(s32 *)&var_9->r0 = c + (c << 8) + (c << 16);
             }
             if (g_eff_rotated_quad_cluster_ages[slot_index] < 3) {
                 g_eff_current_tex_rec = quad_index ? D_8009B960 : D_8009B958;
@@ -1028,15 +1028,15 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
                 *g_eff_tex_left_u + (*g_eff_tex_bottom_v << 8);
             *g_eff_bottom_right_uv =
                 *g_eff_tex_right_u + (*g_eff_tex_bottom_v << 8);
-            setlen(prim, 9);
-            prim->code = 0x2E;
-            *(s32 *)&prim->u0 = *g_eff_top_left_uv + *g_eff_clut_word;
-            *(s32 *)&prim->u1 = *g_eff_top_right_uv + *g_eff_tpage_word;
-            *(u16 *)&prim->u2 = *g_eff_bottom_left_uv;
-            *(u16 *)&prim->u3 = *g_eff_bottom_right_uv;
-            SetPolyFT4(prim);
-            SetShadeTex(prim, 1);
-            SetSemiTrans(prim, 1);
+            setlen(var_9, 9);
+            var_9->code = 0x2E;
+            *(s32 *)&var_9->u0 = *g_eff_top_left_uv + *g_eff_clut_word;
+            *(s32 *)&var_9->u1 = *g_eff_top_right_uv + *g_eff_tpage_word;
+            *(u16 *)&var_9->u2 = *g_eff_bottom_left_uv;
+            *(u16 *)&var_9->u3 = *g_eff_bottom_right_uv;
+            SetPolyFT4(var_9);
+            SetShadeTex(var_9, 1);
+            SetSemiTrans(var_9, 1);
             quad_vertices =
                 &g_eff_rotated_quad_cluster_vertices[quad_index * 16];
             RotTransPers4(quad_vertices, quad_vertices + 4, quad_vertices + 8,
@@ -1049,13 +1049,13 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
             }
             if (*g_eff_depth_work < 0x1005) {
                 quad_ot_indices[count] = *g_eff_depth_work;
-                *(s32 *)&prim->x0 = sxy[0];
-                *(s32 *)&prim->x1 = sxy[1];
-                *(s32 *)&prim->x2 = sxy[2];
-                *(s32 *)&prim->x3 = sxy[3];
+                *(s32 *)&var_9->x0 = sxy[0];
+                *(s32 *)&var_9->x1 = sxy[1];
+                *(s32 *)&var_9->x2 = sxy[2];
+                *(s32 *)&var_9->x3 = sxy[3];
                 count++;
-                if (prim - g_eff_quad_buffer_base < 0x1C1) {
-                    prim++;
+                if (var_9 - g_eff_quad_buffer_base < 0x1C1) {
+                    var_9++;
                 }
             }
         }
@@ -1064,14 +1064,15 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
             g_eff_rotated_quad_cluster_slot_mask &= ~(1 << slot_index);
         }
     }
-    if (g_eff_quad_cursor != prim) {
+    if (g_eff_quad_cursor != var_9) {
         /* `quads_end` keeps the fill position; the quad cursor prim restarts at
          * g_eff_quad_cursor to link each quad, the way SOTN's menu code
          * restarts its fill cursor at the buffer to read it back (Q51) */
         /* SOTN: src/dra/menu.c:3352 @db41b28 */
-        quads_end = prim;
-        for (prim = g_eff_quad_cursor, k = 0; prim < quads_end; prim++, k++) {
-            AddPrim(g_gpu_ot_ptr + quad_ot_indices[k], prim);
+        quads_end = var_9;
+        for (var_9 = g_eff_quad_cursor, k = 0; var_9 < quads_end; var_9++,
+            k++) {
+            AddPrim(g_gpu_ot_ptr + quad_ot_indices[k], var_9);
         }
         g_eff_quad_cursor = quads_end;
         return 1;
@@ -1451,7 +1452,7 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
     s32 *sxy;
     u16 *quad_ot_indices;
     u16 *var_5;
-    POLY_FT4 *prim;
+    POLY_FT4 *var_6;
     POLY_FT4 *quads_end;
     s32 i;
     s32 k;
@@ -1465,12 +1466,12 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
      * direct var_2: 83; direct var_2 + sxy: 41; direct sxy with
      * s32 / void * / MATRIX *base: 17 each; direct sxy plus other pointers
      * after call: 50; direct sxy with load-then-clamp count: 47. */
-    prim = (POLY_FT4 *)g_eff_work_area;
-    mats = (MATRIX *)((u8 *)prim + 0x28);
-    var_2 = (MATRIX *)((u8 *)prim + 0x168);
-    sxy = (s32 *)((u8 *)prim + 0x188);
-    quad_ot_indices = (u16 *)((u8 *)prim + 0x19C);
-    var_5 = (u16 *)((u8 *)prim + 0x1B0);
+    var_6 = (POLY_FT4 *)g_eff_work_area;
+    mats = (MATRIX *)((u8 *)var_6 + 0x28);
+    var_2 = (MATRIX *)((u8 *)var_6 + 0x168);
+    sxy = (s32 *)((u8 *)var_6 + 0x188);
+    quad_ot_indices = (u16 *)((u8 *)var_6 + 0x19C);
+    var_5 = (u16 *)((u8 *)var_6 + 0x1B0);
     if (g_eff_yawed_quad_slot_counters[arg0] < 10) {
         count = g_eff_yawed_quad_slot_counters[arg0];
     } else {
@@ -1479,7 +1480,7 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
     eff_BuildUsedSlotRotMatrices(&count, mats, arg0);
     g_eff_current_tex_rec =
         &g_eff_yawed_slot_quad_tex_recs[*g_eff_yawed_quad_tex_index];
-    prim = g_eff_quad_cursor;
+    var_6 = g_eff_quad_cursor;
     *g_eff_tpage_word = 0xE;
     *g_eff_clut_word = (((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
                         (g_eff_current_tex_rec->clut_y << 6))
@@ -1503,12 +1504,12 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
         if (!(g_eff_yawed_quad_slot_masks[arg0] & (bit = 1 << i))) {
             continue;
         }
-        setlen(prim, 9);
-        prim->code = 0x2F;
-        *(s32 *)&prim->u0 = *g_eff_top_left_uv + *g_eff_clut_word;
-        *(s32 *)&prim->u1 = *g_eff_top_right_uv + *g_eff_tpage_word;
-        *(u16 *)&prim->u2 = *g_eff_bottom_left_uv;
-        *(u16 *)&prim->u3 = *g_eff_bottom_right_uv;
+        setlen(var_6, 9);
+        var_6->code = 0x2F;
+        *(s32 *)&var_6->u0 = *g_eff_top_left_uv + *g_eff_clut_word;
+        *(s32 *)&var_6->u1 = *g_eff_top_right_uv + *g_eff_tpage_word;
+        *(u16 *)&var_6->u2 = *g_eff_bottom_left_uv;
+        *(u16 *)&var_6->u3 = *g_eff_bottom_right_uv;
         mats[i].t[0] = g_eff_yawed_quad_slot_positions[arg0][i].slot_world_x -
                        g_eff_view_origin[0];
         mats[i].t[1] = g_eff_yawed_quad_slot_positions[arg0][i].slot_world_y -
@@ -1536,21 +1537,21 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
         gte_ldv0(&D_8009BBFC);
         gte_rtps();
         gte_stsxy(sxy + 3);
-        *(s32 *)&prim->x0 = sxy[0];
-        *(s32 *)&prim->x1 = sxy[1];
-        *(s32 *)&prim->x2 = sxy[2];
-        *(s32 *)&prim->x3 = sxy[3];
-        if (prim - g_eff_quad_buffer_base < 0x1C1) {
-            prim++;
+        *(s32 *)&var_6->x0 = sxy[0];
+        *(s32 *)&var_6->x1 = sxy[1];
+        *(s32 *)&var_6->x2 = sxy[2];
+        *(s32 *)&var_6->x3 = sxy[3];
+        if (var_6 - g_eff_quad_buffer_base < 0x1C1) {
+            var_6++;
         }
     }
     /* `quads_end` keeps the fill position; the quad cursor prim restarts at
      * g_eff_quad_cursor to link each quad, the way SOTN's menu code restarts
      * its fill cursor at the buffer to read it back (Q51) */
     /* SOTN: src/dra/menu.c:3352 @db41b28 */
-    quads_end = prim;
-    for (prim = g_eff_quad_cursor, k = 0; prim < quads_end; prim++, k++) {
-        g_eff_current_prim_tag = &prim->tag;
+    quads_end = var_6;
+    for (var_6 = g_eff_quad_cursor, k = 0; var_6 < quads_end; var_6++, k++) {
+        g_eff_current_prim_tag = &var_6->tag;
         g_eff_current_ot_entry = g_gpu_ot_ptr + quad_ot_indices[k];
         *g_eff_current_prim_tag = (*g_eff_current_prim_tag & 0xFF000000) |
                                   (*g_eff_current_ot_entry & 0xFFFFFF);

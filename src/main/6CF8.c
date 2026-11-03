@@ -103,12 +103,12 @@ s32 math_FovToScreenDist(s32 fov_degrees) {
     return (cos_val * 320) / sin_val;
 }
 
-void gpu_SetDrawEnvBg(s32 clear_bg, s32 a1, s32 a2, s32 a3) {
+void gpu_SetDrawEnvBg(s32 clear_bg, s32 bg_red, s32 bg_green, s32 bg_blue) {
     s32 i;
 
     for (i = 0; i < 2; i++) {
         g_gpu_db[i].draw.isbg = clear_bg;
-        setRGB0(&g_gpu_db[i].draw, a1, a2, a3);
+        setRGB0(&g_gpu_db[i].draw, bg_red, bg_green, bg_blue);
     }
 }
 

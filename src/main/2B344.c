@@ -1355,16 +1355,17 @@ void font_Printf(u8 *format_cursor, s32 first_arg, ...) {
 }
 
 void bitstream_InitDeltaAccumulator(s32 stream_address, s32 accumulator_index) {
-    Unk800A3D40Rec *ptr = &g_bitstream_delta_accumulators[accumulator_index];
-    ptr->bits.next = (u32 *)stream_address;
-    ptr->bits.word = 0;
-    ptr->bits.avail = 0;
-    ptr->accumulated_values[5] = 0;
-    ptr->accumulated_values[4] = 0;
-    ptr->accumulated_values[3] = 0;
-    ptr->accumulated_values[2] = 0;
-    ptr->accumulated_values[1] = 0;
-    ptr->accumulated_values[0] = 0;
+    Unk800A3D40Rec *accumulator =
+        &g_bitstream_delta_accumulators[accumulator_index];
+    accumulator->bits.next = (u32 *)stream_address;
+    accumulator->bits.word = 0;
+    accumulator->bits.avail = 0;
+    accumulator->accumulated_values[5] = 0;
+    accumulator->accumulated_values[4] = 0;
+    accumulator->accumulated_values[3] = 0;
+    accumulator->accumulated_values[2] = 0;
+    accumulator->accumulated_values[1] = 0;
+    accumulator->accumulated_values[0] = 0;
 }
 
 extern s32 bitstream_ReadBits(BitStream *, s32);
@@ -2338,13 +2339,13 @@ void gpu_ResetAndStampViewCenteredCellAttributes(void) {
     s32 data;
     s32 row_offset;
     s32 col_offset;
-    s32 *ptr = (s32 *)g_gpu_cell_draw_attributes;
+    s32 *attribute_cursor = (s32 *)g_gpu_cell_draw_attributes;
 
     i = 0xFF;
     do {
-        *ptr = 0;
+        *attribute_cursor = 0;
         i--;
-        ptr++;
+        attribute_cursor++;
     } while (i >= 0);
 
     gpu_GetTrackedFighterViewFlag();

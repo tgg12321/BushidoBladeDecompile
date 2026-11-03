@@ -7,7 +7,6 @@ eff_DrawYawedSlotQuads:prim=var_6
 gpu_SetDrawEnvBg:a1=bg_red
 gpu_SetDrawEnvBg:a2=bg_green
 gpu_SetDrawEnvBg:a3=bg_blue
-fight_ResetFighter0ToStartPosition:local=other_position
 gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions:r1=strip_image_rect
 gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions:r2=strip_clut_rect
 gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions:r3=picture_image_rect

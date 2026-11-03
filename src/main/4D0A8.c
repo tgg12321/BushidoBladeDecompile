@@ -1525,9 +1525,10 @@ extern RECT g_gpu_stage_card_stage_picture_clut_rect;
 
 void gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions(
     s32 file_index_offset, s32 *file_buffer) {
-    RECT r1, r2, r3, r4;
+    RECT strip_image_rect, strip_clut_rect, picture_image_rect,
+        picture_clut_rect;
     s32 file_index;
-    u8 *p;
+    u8 *src_first_image;
     u8 *src_second_image;
     file_index = cdrom_GetFileIndex(2, file_index_offset + 0x3D);
     cdrom_StartRead(file_index, (s32)file_buffer);
@@ -1535,19 +1536,19 @@ void gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions(
     cdrom_GetFileSize(file_index);
     file_buffer[0] = file_buffer[0] + (s32)file_buffer;
     file_buffer[1] = file_buffer[1] + (s32)file_buffer;
-    r1 = g_gpu_stage_card_stage_strip_image_rect;
-    r2 = g_gpu_stage_card_stage_strip_clut_rect;
-    p = (u8 *)file_buffer[0];
-    LoadImage(&r1, (u32 *)(p + 0x40));
+    strip_image_rect = g_gpu_stage_card_stage_strip_image_rect;
+    strip_clut_rect = g_gpu_stage_card_stage_strip_clut_rect;
+    src_first_image = (u8 *)file_buffer[0];
+    LoadImage(&strip_image_rect, (u32 *)(src_first_image + 0x40));
     DrawSync(0);
-    LoadImage(&r2, (u32 *)(p + 0x14));
+    LoadImage(&strip_clut_rect, (u32 *)(src_first_image + 0x14));
     DrawSync(0);
-    r3 = g_gpu_stage_card_stage_picture_image_rect;
-    r4 = g_gpu_stage_card_stage_picture_clut_rect;
+    picture_image_rect = g_gpu_stage_card_stage_picture_image_rect;
+    picture_clut_rect = g_gpu_stage_card_stage_picture_clut_rect;
     src_second_image = (u8 *)file_buffer[1];
-    LoadImage(&r3, (u32 *)(src_second_image + 0x60));
+    LoadImage(&picture_image_rect, (u32 *)(src_second_image + 0x60));
     DrawSync(0);
-    LoadImage(&r4, (u32 *)(src_second_image + 0x14));
+    LoadImage(&picture_clut_rect, (u32 *)(src_second_image + 0x14));
     DrawSync(0);
 }
 

@@ -50,12 +50,12 @@ void gpu_AddDrawMove(s32 slot_index, s32 move_index) {
 }
 
 void gpu_QueueSlotDrawMovesForSelectedSet(s32 slot_index, s32 draw_move_set) {
-    Unk80045878Obj *ptr;
+    Unk80045878Obj *slot_object;
     s32 mask;
     s32 i;
 
-    ptr = slot_GetObject(slot_index);
-    if (ptr != 0) {
+    slot_object = slot_GetObject(slot_index);
+    if (slot_object != 0) {
         switch (draw_move_set) {
         case 0:
             mask = 0x05;
@@ -81,7 +81,7 @@ void gpu_QueueSlotDrawMovesForSelectedSet(s32 slot_index, s32 draw_move_set) {
             mask = 0;
             break;
         }
-        mask = mask & g_gpu_asset_draw_move_masks[ptr->asset_index];
+        mask = mask & g_gpu_asset_draw_move_masks[slot_object->asset_index];
         i = 0;
         do {
             if (mask & 1) {
@@ -142,18 +142,18 @@ extern s32 snd_VabFakeOpen(s32, s32);
 
 Unk80045878Obj *slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
     s32 slot_index, s32 asset_id, s32 staging_addr) {
-    Unk80045878Obj *ptr;
-    ptr = slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock(
+    Unk80045878Obj *slot_object;
+    slot_object = slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock(
         slot_index, asset_id, staging_addr);
-    g_slot_objects[slot_index] = ptr;
-    slot_FinalizeObjectLoadSoundTexturesAndArena(ptr);
-    node_InitObjectHierarchyFromTemplates(ptr);
-    node_BuildIdToNodeMapWithDuplicates(ptr);
-    softbody_SetupObject(ptr, 1);
-    softbody_RequestRebuild(ptr);
-    node_BuildProjectedNodeList(ptr);
+    g_slot_objects[slot_index] = slot_object;
+    slot_FinalizeObjectLoadSoundTexturesAndArena(slot_object);
+    node_InitObjectHierarchyFromTemplates(slot_object);
+    node_BuildIdToNodeMapWithDuplicates(slot_object);
+    softbody_SetupObject(slot_object, 1);
+    softbody_RequestRebuild(slot_object);
+    node_BuildProjectedNodeList(slot_object);
     gpu_BuildFogBlockLevels();
-    return ptr;
+    return slot_object;
 }
 
 void slot_FinalizeObjectLoadSoundTexturesAndArena(Unk80045878Obj *slot_object) {

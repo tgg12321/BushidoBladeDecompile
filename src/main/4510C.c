@@ -1197,7 +1197,7 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *fighter_record) {
     Unk80101EC8Record *p;
     s32 probe_dx_scaled;
     s32 probe_dz_scaled;
-    s32 x;
+    s32 probe_x;
     s32 probe_z;
 
     temp = 0;
@@ -1218,12 +1218,12 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *fighter_record) {
             plus_side_active = 0;
             probe_dx_scaled = probe_radius * Judge[a & 0xFFF];
             probe_dz_scaled = probe_radius * Judge[(a + 0x400) & 0xFFF];
-            x = p->collision_pos.vx + (probe_dx_scaled >> 12);
+            probe_x = p->collision_pos.vx + (probe_dx_scaled >> 12);
             probe_z = p->collision_pos.vz + (probe_dz_scaled >> 12);
-            candidate_point.x = x;
+            candidate_point.x = probe_x;
             candidate_point.y = fighter_record->collision_pos.vy - 5;
             candidate_point.z = probe_z;
-            top.x = x;
+            top.x = probe_x;
             top.y = fighter_record->collision_pos.vy + 5;
             top.z = probe_z;
             if (collision_TestSegmentWithWork(
@@ -1243,12 +1243,12 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *fighter_record) {
             minus_side_active = 0;
             probe_dx_scaled = probe_radius * Judge[a & 0xFFF];
             probe_dz_scaled = probe_radius * Judge[(a + 0x400) & 0xFFF];
-            x = p->collision_pos.vx + (probe_dx_scaled >> 12);
+            probe_x = p->collision_pos.vx + (probe_dx_scaled >> 12);
             probe_z = p->collision_pos.vz + (probe_dz_scaled >> 12);
-            candidate_point.x = x;
+            candidate_point.x = probe_x;
             candidate_point.y = fighter_record->collision_pos.vy - 5;
             candidate_point.z = probe_z;
-            top.x = x;
+            top.x = probe_x;
             top.y = fighter_record->collision_pos.vy + 5;
             top.z = probe_z;
             if (collision_TestSegmentWithWork(
@@ -1746,7 +1746,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     s8 var_3;
     s16 chosen_script_index;
     s32 chosen_script_max_distance;
-    s32 var_6;
+    s32 effective_cpu_level;
     u8 *threat_response_script;
     u8 *route_script;
     u8 *action_script;
@@ -1800,12 +1800,12 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     s32 base_pad_buttons;
     s32 parity_pad_buttons;
     s32 var_22;
-    s32 var_23;
+    s32 distance_error_streak;
     s16 script_score;
     NavVertexChainSet *nav_set;
     s32 tx, tz;
     s32 r;
-    s32 var_29;
+    s32 action_index;
     u16 *list;
     u8 *e;
     u8 *entry_cursor;
@@ -2368,36 +2368,36 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 cnt = 0;
                 work3 = g_cpu_profiles[p->cpu_profile].pick_weight[4] <
                         (rand() & 0xFF);
-                var_29 = -1;
+                action_index = -1;
                 work1 = p->cpu_probes[1] == 0;
                 work2 = p->cpu_probes[5] == 0;
                 for (; cnt < 2; cnt++, work3++) {
                     if (work3 & 1) {
                         if (p->other->opponent_angle_from_orientation < 0) {
                             if (work1) {
-                                var_29 = 6;
+                                action_index = 6;
                             } else if (work2) {
-                                var_29 = 7;
+                                action_index = 7;
                             }
                         } else {
                             if (work2) {
-                                var_29 = 7;
+                                action_index = 7;
                             } else if (work1) {
-                                var_29 = 6;
+                                action_index = 6;
                             }
                         }
-                        if (var_29 != -1) {
+                        if (action_index != -1) {
                             break;
                         }
                     } else if (p->latched_motion_metadata_nibble != 4 &&
                                g_fighter_horizontal_separation > 3000 &&
                                g_fighter_horizontal_separation < 5000) {
-                        var_29 = 8;
+                        action_index = 8;
                         break;
                     }
                 }
-                if (var_29 != -1) {
-                    p->cpu_action_index = var_29;
+                if (action_index != -1) {
+                    p->cpu_action_index = action_index;
                     p->cpu_action_from_opponent = 0;
                     p->cpu_action_countdown = p->cpu_action_cooldown_frames;
                 }
@@ -2524,11 +2524,13 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         } else if (p->cpu_probes[3] != 0) {
                             goto pick_next;
                         }
-                        var_23 = p->cpu_distance_error_streak;
+                        distance_error_streak = p->cpu_distance_error_streak;
                         if (g_cpu_profiles[p->cpu_profile].unk7 <
-                            (var_23 >= 0 ? var_23 : -var_23)) {
+                            (distance_error_streak >= 0
+                                 ? distance_error_streak
+                                 : -distance_error_streak)) {
                             pick_score += 0x80;
-                            var_37 = var_23 > 0;
+                            var_37 = distance_error_streak > 0;
                         }
                         if (p->weapon_id >= 6 && p->weapon_ammo == 0 &&
                             pick_weight_index == 2) {
@@ -2649,9 +2651,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     if (p->cpu_script_rotation_counter %
                             ((p->cpu_level >> 8) + 2) ==
                         (p->cpu_level >> 8) + 1) {
-                        var_6 = p->cpu_level >> 1;
+                        effective_cpu_level = p->cpu_level >> 1;
                     } else {
-                        var_6 = p->cpu_level;
+                        effective_cpu_level = p->cpu_level;
                     }
                     list = p->cpu_script_rows[p->variant_index];
                     off = *list;
@@ -2801,7 +2803,10 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                 work1 = script_entry_kind < 5 ? 100000 : 0;
                                 hi = 100000;
                             } else {
-                                work5 = (((0x1000 - var_6) * 625) >> 10) - 400;
+                                work5 =
+                                    (((0x1000 - effective_cpu_level) * 625) >>
+                                     10) -
+                                    400;
                                 work1 += work5 + p->scale_distance_offset;
                                 hi += work5 + p->scale_distance_offset;
                             }
