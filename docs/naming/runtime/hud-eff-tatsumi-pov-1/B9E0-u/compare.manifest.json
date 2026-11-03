@@ -1,0 +1,20 @@
+{
+  "kind": "compare",
+  "version": 1,
+  "base": "../baseline/capture.jsonl",
+  "other": "capture.jsonl",
+  "outputs": [
+    {
+      "path": "compare.opp3.11363.diff.png",
+      "sha1": "d9f0fe9f8875c1430861ea56ba18b43b1dcaaf6c",
+      "size": 47986,
+      "stored": true
+    },
+    {
+      "path": "compare.opp3.11364.diff.png",
+      "sha1": "d9f0fe9f8875c1430861ea56ba18b43b1dcaaf6c",
+      "size": 47986,
+      "stored": true
+    }
+  ]
+}
