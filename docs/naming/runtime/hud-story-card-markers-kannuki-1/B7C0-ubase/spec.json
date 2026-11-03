@@ -1,0 +1,7519 @@
+{
+  "max_events": 20000,
+  "duration_s": 3600,
+  "breakpoints": [
+    {
+      "at": "gpu_DrawSpriteAtPackedTablePosition",
+      "max_hits": 6
+    }
+  ],
+  "watch": [
+    {
+      "at": "0x8009B7AC",
+      "len": 36,
+      "kind": "read",
+      "max_hits": 400
+    }
+  ],
+  "pokes": [
+    {
+      "at": "0x8009B7C0",
+      "hex": "b4",
+      "phase": "card2"
+    }
+  ],
+  "script": {
+    "end_frame": 26400,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 8900,
+        "name": "story"
+      },
+      {
+        "frame": 25900,
+        "name": "card2"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6100,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6400,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6700,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7000,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7300,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7600,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7900,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 8912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 8962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 9962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 10962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 11962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 12962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 13962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 14962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 15962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 15980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 16962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 16980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 17962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 17980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 18962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 18980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 19962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 19980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 20962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 20980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 21962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 21980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 22962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 22980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 23962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 23980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 24962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 24980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25412,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25430,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25450,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25462,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25480,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25512,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25550,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25562,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25580,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25612,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25650,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25662,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25712,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25730,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25750,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25762,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25780,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25812,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25830,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25850,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25862,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25912,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25930,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25950,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 25962,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 25980,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 26012,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26030,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26050,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 26062,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 26112,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26130,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26150,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 26162,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26180,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 26212,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26230,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26250,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 26262,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 26312,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26350,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 12
+      },
+      {
+        "frame": 26362,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 26380,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "s.5489"
+      },
+      {
+        "frame": 8899,
+        "name": "s.8899"
+      },
+      {
+        "frame": 25899,
+        "name": "card2.before"
+      },
+      {
+        "frame": 26000,
+        "name": "card2.26000"
+      },
+      {
+        "frame": 26100,
+        "name": "card2.26100"
+      },
+      {
+        "frame": 26200,
+        "name": "card2.26200"
+      },
+      {
+        "frame": 26320,
+        "name": "card2.26320"
+      },
+      {
+        "frame": 26399,
+        "name": "card2.last"
+      }
+    ]
+  }
+}

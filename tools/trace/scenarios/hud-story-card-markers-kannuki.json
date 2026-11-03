@@ -1,0 +1,22 @@
+{
+  "description": "story-final-fight-retail's run (Story Mode, KANNUKI, no pokes) cut at 26400, over the second stage card (Terraced Fields): gpu_DrawDisplayModeOnLocalOtAndSync draws the cleared first stage's map marker unflagged at 26039 (the read watch shows it reads g_gpu_stage_card_map_marker_sheet_headers[1]; round_grid_pick, which picks [1] / [2] at 4D0A8.c:1581, was not watched) and the next stage's flagged marker at 26255 (headers[0]); phase card2 from 25900; hud-story-card-markers-kannuki-1 breaks on gpu_DrawSpriteAtPackedTablePosition under a read watch on 0x8009B7AC..0x8009B7CF, and its poked variants move headers[1]'s ubase (0x8009B7C0) or CLUT x (0x8009B7BC) when card2 starts",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/hud-story-card-markers-kannuki-1/baseline/spec.json",
+    "docs/naming/runtime/hud-story-card-markers-kannuki-1/B7C0-ubase/spec.json",
+    "docs/naming/runtime/hud-story-card-markers-kannuki-1/B7BC-cx/spec.json"
+  ],
+  "extends": "story-final-fight-retail",
+  "end_frame": 26400,
+  "phases": [
+    "25900:card2"
+  ],
+  "shots": [
+    "25899:card2.before",
+    "26000:card2.26000",
+    "26100:card2.26100",
+    "26200:card2.26200",
+    "26320:card2.26320",
+    "26399:card2.last"
+  ]
+}

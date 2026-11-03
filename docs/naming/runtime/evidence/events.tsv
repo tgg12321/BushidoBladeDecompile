@@ -2634,6 +2634,52 @@ eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceRateSelectedCosineScaledQuad	opp3	0
 eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureFirstSlot	opp2	0x8006534C	report			11	[[1,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
 eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureFirstSlot	opp3	0x8006534C	report			11	[[1,2148121460,528482352,528482476],[1,2148121460,528482352,4278190080]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
 eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureSecondSlot	opp3	0x8006539C	report			11	[[2,2148121460,528482352,4278190080]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
+0x8009B7AC	read	gpu_AddSpriteCells	stage_02	0x80073564	report	4	2	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	stage_02	0x80073568	report	6	2	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	stage_02	0x80073578	report	2	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	stage_02	0x80073604	report	8	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	stage_02	0x80073618	report	10	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	stage_16	0x80073564	report	28	2	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	stage_16	0x80073564	report	4	2	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	stage_16	0x80073568	report	30	2	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	stage_16	0x80073568	report	6	2	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	stage_16	0x80073578	report	2	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	stage_16	0x80073578	report	26	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	stage_16	0x80073604	report	32	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	stage_16	0x80073604	report	8	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	stage_16	0x80073618	report	10	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	stage_16	0x80073618	report	34	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_GetSheetTPage	stage_02	0x8006E480	report	0	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_GetSheetTPage	stage_02	0x8006E484	report	1	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_GetSheetTPage	stage_16	0x8006E480	report	0	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_GetSheetTPage	stage_16	0x8006E480	report	24	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_GetSheetTPage	stage_16	0x8006E484	report	1	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+0x8009B7AC	read	gpu_GetSheetTPage	stage_16	0x8006E484	report	25	1	1	[null]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	1	missing_value;partial_read
+gpu_DrawSpriteAtPackedTablePosition	call	gpu_DrawDisplayModeOnLocalOtAndSync	stage_02	0x800176DC	report			1	[[32770,2148479960,0,2148122324]]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	0	
+gpu_DrawSpriteAtPackedTablePosition	call	gpu_DrawDisplayModeOnLocalOtAndSync	stage_16	0x800176DC	report			2	[[2,2148479960,0,2148122324],[32790,2148479960,0,2148122324]]	0	hud-story-card-markers-gengoro-1/baseline@541680924d87	0	
+0x8009B7AC	read	gpu_AddSpriteCells	boot_intro	0x80073564	report	4	2	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	boot_intro	0x80073568	report	6	2	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	boot_intro	0x80073578	report	2	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	boot_intro	0x80073604	report	8	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	boot_intro	0x80073618	report	10	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	card2	0x80073564	report	16	2	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	card2	0x80073564	report	4	2	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	card2	0x80073568	report	18	2	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	card2	0x80073568	report	6	2	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	card2	0x80073578	report	14	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	card2	0x80073578	report	2	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	card2	0x80073604	report	20	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	card2	0x80073604	report	8	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	card2	0x80073618	report	10	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_AddSpriteCells	card2	0x80073618	report	22	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_GetSheetTPage	boot_intro	0x8006E480	report	0	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_GetSheetTPage	boot_intro	0x8006E484	report	1	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_GetSheetTPage	card2	0x8006E480	report	0	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_GetSheetTPage	card2	0x8006E480	report	12	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_GetSheetTPage	card2	0x8006E484	report	1	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+0x8009B7AC	read	gpu_GetSheetTPage	card2	0x8006E484	report	13	1	1	[null]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	1	missing_value;partial_read
+gpu_DrawSpriteAtPackedTablePosition	call	gpu_DrawDisplayModeOnLocalOtAndSync	boot_intro	0x800176DC	report			1	[[32776,2148479960,0,2148122324]]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	0	
+gpu_DrawSpriteAtPackedTablePosition	call	gpu_DrawDisplayModeOnLocalOtAndSync	card2	0x800176DC	report			2	[[8,2148479960,0,2148122324],[32783,2148479960,0,2148122324]]	0	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	0	
 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells	call	fight_UpdateCommandStreamImageLoadAndResume	t_stage	0x8003B914	report			2	[[2149419008,1,24,1],[2149497856,1,24,1]]	0	hud-story-stage-card-1/baseline@f4ba42592c0e	0	
 gpu_DrawSpriteAtPackedTablePosition	call	gpu_DrawDisplayModeOnLocalOtAndSync	stage_card	0x800176DC	report			1	[[32776,2148479960,0,2148122324]]	0	hud-story-stage-card-1/baseline@f4ba42592c0e	0	
 0x8009B7A0	read	gpu_AddSpriteCells	t_stage	0x80073564	report	4	2	2	[null]	0	hud-story-stage-card-2/baseline@51313dfe6a2b	1	missing_value;partial_read

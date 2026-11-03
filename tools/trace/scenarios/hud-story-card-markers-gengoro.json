@@ -1,0 +1,19 @@
+{
+  "description": "story-gengoro-stage-0e's run (Story Mode, GENGORO, character id 15) cut at 26900, over the second stage card (Ferry Dock): gpu_DrawDisplayModeOnLocalOtAndSync draws the cleared first stage's map marker unflagged at 26547 (the read watch shows it reads g_gpu_stage_card_map_marker_sheet_headers[2]; round_grid_pick, which picks [1] / [2] at 4D0A8.c:1581, was not watched) and the next stage's flagged marker at 26771 (headers[0]); hud-story-card-markers-gengoro-1 breaks on gpu_DrawSpriteAtPackedTablePosition under a read watch on 0x8009B7AC..0x8009B7CF, and its poked variants move headers[2]'s ubase (0x8009B7CC) or CLUT x (0x8009B7C8) when stage_16 starts (26474)",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/hud-story-card-markers-gengoro-1/baseline/spec.json",
+    "docs/naming/runtime/hud-story-card-markers-gengoro-1/B7CC-ubase/spec.json",
+    "docs/naming/runtime/hud-story-card-markers-gengoro-1/B7C8-cx/spec.json"
+  ],
+  "extends": "story-gengoro-stage-0e",
+  "end_frame": 26900,
+  "shots": [
+    "26473:stage_02.last",
+    "26500:stage_16.26500",
+    "26600:stage_16.26600",
+    "26700:stage_16.26700",
+    "26820:stage_16.26820",
+    "26899:stage_16.last"
+  ]
+}

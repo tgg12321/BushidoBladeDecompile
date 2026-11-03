@@ -130230,6 +130230,10 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x800602AC	gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions	story-gengoro-stage-0e-1@1e4d10fc1ac3	t_stage	8215	8215	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x800602AC	gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions	story-pov-rematch-1@766b7b5b6104	t_stage	8215	8215	1	t_stage.last@8359#bdb8c6a866f4	hitmap:first 1 hits per phase only	0	
 0x800602AC	gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions	story-pov-sub-menu-1@5b40305ad49e	t_stage	8215	8215	1	t_stage.last@8359#bdb8c6a866f4	hitmap:first 1 hits per phase only	0	
+0x80060414	gpu_DrawSpriteAtPackedTablePosition	hud-story-card-markers-gengoro-1/baseline@541680924d87	stage_02	8379	8379	1	stage_02.10000@10000#48c3b16161da	recorded hits only; capture limits apply	0	
+0x80060414	gpu_DrawSpriteAtPackedTablePosition	hud-story-card-markers-gengoro-1/baseline@541680924d87	stage_16	26547	26771	2	stage_16.26600@26600#5e20af3568bc;stage_16.26820@26820#b18ee56f67d7	recorded hits only; capture limits apply	0	
+0x80060414	gpu_DrawSpriteAtPackedTablePosition	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	boot_intro	8381	8381	1	s.8899@8899#86d5daef52e3	recorded hits only; capture limits apply	0	
+0x80060414	gpu_DrawSpriteAtPackedTablePosition	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	card2	26039	26255	2	card2.26100@26100#ff6abd692f93;card2.26320@26320#7e0d16b56119	recorded hits only; capture limits apply	0	
 0x80060414	gpu_DrawSpriteAtPackedTablePosition	hud-story-stage-card-1/baseline@f4ba42592c0e	stage_card	8381	8381	1	stage_card.8450@8450#8c9ed88c64be	recorded hits only; capture limits apply	0	
 0x80060414	gpu_DrawSpriteAtPackedTablePosition	hud-story-stage-card-2/baseline@51313dfe6a2b	stage_card	8381	8381	1	stage_card.8450@8450#8c9ed88c64be	recorded hits only; capture limits apply	0	
 0x80060414	gpu_DrawSpriteAtPackedTablePosition	hud-story-stage-card-3/baseline@f613ac68c8b3	stage_card	8381	8381	1	stage_card.8450@8450#8c9ed88c64be	recorded hits only; capture limits apply	0	
@@ -141625,6 +141629,10 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8006E480	gpu_GetSheetTPage	group-battle-shainto-wins-1@27428197ed01	top_menu	6050	6050	1	top_menu.last@6300#8e6762850f6b	hitmap:first 1 hits per phase only	0	
 0x8006E480	gpu_GetSheetTPage	group-battle-shainto-wins-1@27428197ed01	victory	24731	24731	1	victory.24750@24750#d21541d4a9b9	hitmap:first 1 hits per phase only	0	
 0x8006E480	gpu_GetSheetTPage	group-battle-shainto-wins-1@27428197ed01	weapon_select	7700	7700	1	weapon_select.last@8500#2007ef734de5	hitmap:first 1 hits per phase only	0	
+0x8006E480	gpu_GetSheetTPage	hud-story-card-markers-gengoro-1/baseline@541680924d87	stage_02	8379	8379	2	stage_02.10000@10000#48c3b16161da	recorded hits only; capture limits apply	0	
+0x8006E480	gpu_GetSheetTPage	hud-story-card-markers-gengoro-1/baseline@541680924d87	stage_16	26547	26771	4	stage_16.26600@26600#5e20af3568bc;stage_16.26820@26820#b18ee56f67d7	recorded hits only; capture limits apply	0	
+0x8006E480	gpu_GetSheetTPage	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	boot_intro	8381	8381	2	s.8899@8899#86d5daef52e3	recorded hits only; capture limits apply	0	
+0x8006E480	gpu_GetSheetTPage	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	card2	26039	26255	4	card2.26100@26100#ff6abd692f93;card2.26320@26320#7e0d16b56119	recorded hits only; capture limits apply	0	
 0x8006E480	gpu_GetSheetTPage	hud-story-stage-card-3/baseline@f613ac68c8b3	t_menu	5968	6007	40	top_menu.first@6060#2607fc28352b	recorded hits only; capture limits apply	1	max_hits_reached:Z0:gpu_GetSheetTPage:40
 0x8006E480	gpu_GetSheetTPage	hud-story-stage-card-3/baseline@f613ac68c8b3	t_stage	8325	8327	4	stage_card.first@8360#bdb8c6a866f4	recorded hits only; capture limits apply	0	
 0x8006E480	gpu_GetSheetTPage	key-config-edit-1@d95ee22cdbd1	key_config	6640	6640	1	key_config.first@6699#3e1356771f4b	hitmap:first 1 hits per phase only	0	
@@ -152970,6 +152978,10 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8007352C	gpu_AddSpriteCells	group-battle-shainto-wins-1@27428197ed01	top_menu	6050	6050	1	top_menu.last@6300#8e6762850f6b	hitmap:first 1 hits per phase only	0	
 0x8007352C	gpu_AddSpriteCells	group-battle-shainto-wins-1@27428197ed01	victory	24731	24731	1	victory.24750@24750#d21541d4a9b9	hitmap:first 1 hits per phase only	0	
 0x8007352C	gpu_AddSpriteCells	group-battle-shainto-wins-1@27428197ed01	weapon_select	7700	7700	1	weapon_select.last@8500#2007ef734de5	hitmap:first 1 hits per phase only	0	
+0x8007352C	gpu_AddSpriteCells	hud-story-card-markers-gengoro-1/baseline@541680924d87	stage_02	8379	8379	5	stage_02.10000@10000#48c3b16161da	recorded hits only; capture limits apply	0	
+0x8007352C	gpu_AddSpriteCells	hud-story-card-markers-gengoro-1/baseline@541680924d87	stage_16	26547	26771	10	stage_16.26600@26600#5e20af3568bc;stage_16.26820@26820#b18ee56f67d7	recorded hits only; capture limits apply	0	
+0x8007352C	gpu_AddSpriteCells	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	boot_intro	8381	8381	5	s.8899@8899#86d5daef52e3	recorded hits only; capture limits apply	0	
+0x8007352C	gpu_AddSpriteCells	hud-story-card-markers-kannuki-1/baseline@46bbff3a9608	card2	26039	26255	10	card2.26100@26100#ff6abd692f93;card2.26320@26320#7e0d16b56119	recorded hits only; capture limits apply	0	
 0x8007352C	gpu_AddSpriteCells	hud-story-stage-card-2/baseline@51313dfe6a2b	t_stage	8325	8327	22	stage_card.first@8360#bdb8c6a866f4	recorded hits only; capture limits apply	0	
 0x8007352C	gpu_AddSpriteCells	hud-story-stage-card-3/baseline@f613ac68c8b3	t_stage	8325	8327	10	stage_card.first@8360#bdb8c6a866f4	recorded hits only; capture limits apply	0	
 0x8007352C	gpu_AddSpriteCells	key-config-edit-1@d95ee22cdbd1	key_config	6640	6640	1	key_config.first@6699#3e1356771f4b	hitmap:first 1 hits per phase only	0	
