@@ -94,7 +94,7 @@ void cdrom_EnableSerialMixAndStartRepeatingAudio(void) {
 #include "include_asm.h"
 
 void menu_InitSubflowForMode(s32 arg0) {
-    s32 temp;
+    s32 handshake_result;
 
     if ((u32)arg0 >= 8) {
         return;
@@ -139,8 +139,8 @@ void menu_InitSubflowForMode(s32 arg0) {
             return;
         }
 
-        temp = comb_Connect();
-        if (temp == 1) {
+        handshake_result = comb_Connect();
+        if (handshake_result == 1) {
             StoreCompactedBits((g_saved_record.unlock_mask |
                                 g_comb_received_unlock_mask_bits | 0x7007) &
                                0x003FF3FF);
@@ -150,7 +150,7 @@ void menu_InitSubflowForMode(s32 arg0) {
             return;
         }
 
-        if (temp == -1) {
+        if (handshake_result == -1) {
             snd_QueueSound(2, 0x7F, 0x7F);
             g_main_loop_handler_index = 9;
             g_handler_frame_counter = 0;

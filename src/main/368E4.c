@@ -747,9 +747,9 @@ void node_OrientAndQueueViewOffsetNode(void) {
     MulMatrix0(&buf2, &buf1, &base->xf.mat);
 
     {
-        void **temp = g_draw_queue_cursor;
-        g_draw_queue_cursor = temp + 1;
-        *temp = base;
+        void **draw_queue_slot = g_draw_queue_cursor;
+        g_draw_queue_cursor = draw_queue_slot + 1;
+        *draw_queue_slot = base;
     }
 }
 
@@ -928,7 +928,7 @@ void wave_Update(void) {
     s32 j;
     s32 spacing_error;
     s32 step;
-    void **temp;
+    void **draw_queue_slot;
 
     for (i = 0; i < 17; i++) {
         g_wave_vertex_grid[0][i] =
@@ -950,9 +950,9 @@ void wave_Update(void) {
             }
         }
     }
-    temp = g_draw_queue_cursor;
-    g_draw_queue_cursor = temp + 1;
-    *temp = &g_wave_draw_node;
+    draw_queue_slot = g_draw_queue_cursor;
+    g_draw_queue_cursor = draw_queue_slot + 1;
+    *draw_queue_slot = &g_wave_draw_node;
 }
 
 extern SVECTOR g_wave_even_row_vertices[17];
@@ -1032,10 +1032,11 @@ s32 wave_SampleRow8BaseCachingIndexAndRemainderParity(s32 a0) {
     {
         /* row 8 of the table; column_index + 1 == 17 / 18 reads on into
          * g_wave_last_row_steps, which follows the table */
-        s32 val1 = g_wave_vertex_grid[8][column_index] * remainder_parity;
-        s32 val2 = g_wave_vertex_grid[8][column_index + 1] *
-                   (0x1000 - remainder_parity);
-        return ((val1 + val2) >> 12) - 0x3F48;
+        s32 weighted_column =
+            g_wave_vertex_grid[8][column_index] * remainder_parity;
+        s32 weighted_next_column = g_wave_vertex_grid[8][column_index + 1] *
+                                   (0x1000 - remainder_parity);
+        return ((weighted_column + weighted_next_column) >> 12) - 0x3F48;
     }
 }
 

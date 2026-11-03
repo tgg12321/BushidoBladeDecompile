@@ -245,11 +245,11 @@ void cdrom_Update(void) {
         g_cdrom_state.rec.io_state = 3;
         break;
     case 3: {
-        s32 ret = CdSync(1, g_cd_result);
-        if (ret == 2) {
+        s32 sync_status = CdSync(1, g_cd_result);
+        if (sync_status == 2) {
             g_cdrom_state.rec.io_state = 4;
             g_cdrom_state.rec.command_delay_count = 0;
-        } else if (ret == 5) {
+        } else if (sync_status == 5) {
             g_cdrom_state.rec.io_state = 9;
         } else if (++g_cdrom_state.rec.read_timeout > 0x3C) {
             g_cdrom_state.rec.io_state = 0xA;
@@ -268,13 +268,13 @@ void cdrom_Update(void) {
         }
         break;
     case 5: {
-        s32 ret = CdSync(1, g_cd_result);
-        if (ret == 2) {
+        s32 sync_status = CdSync(1, g_cd_result);
+        if (sync_status == 2) {
             g_cdrom_state.rec.read_timeout = 0;
             CdReadyCallback(cdrom_ReadyCallback);
             CdControlF(6, (u8 *)&g_cdrom_state.rec.pair);
             g_cdrom_state.rec.io_state = 6;
-        } else if (ret == 5) {
+        } else if (sync_status == 5) {
             g_cdrom_state.rec.io_state = 9;
         } else if (++g_cdrom_state.rec.read_timeout > 0x3C) {
             g_cdrom_state.rec.io_state = 0xA;
@@ -282,8 +282,8 @@ void cdrom_Update(void) {
         break;
     }
     case 6: {
-        s32 ret = CdSync(1, g_cd_result);
-        if (ret == 2) {
+        s32 sync_status = CdSync(1, g_cd_result);
+        if (sync_status == 2) {
             if (g_cdrom_state.rec.cd20 == 0) {
                 g_cdrom_state.rec.io_state = 8;
             } else if (g_cdrom_state.rec.cd20 < 0) {
@@ -292,7 +292,7 @@ void cdrom_Update(void) {
                 CdReadyCallback(0);
                 g_cdrom_state.rec.io_state = 0xA;
             }
-        } else if (ret == 5) {
+        } else if (sync_status == 5) {
             CdReadyCallback(0);
             g_cdrom_state.rec.io_state = 9;
         } else if (++g_cdrom_state.rec.read_timeout > 0x3C) {
@@ -317,14 +317,14 @@ void cdrom_Update(void) {
         g_cdrom_state.sync_wait_count = 0;
         break;
     case 0xB: {
-        s32 ret = CdSync(1, g_cd_result);
-        if (ret == 2) {
+        s32 sync_status = CdSync(1, g_cd_result);
+        if (sync_status == 2) {
             if (g_cd_result[0] & 0x10) {
                 g_cdrom_state.rec.io_state = 0xA;
             } else {
                 g_cdrom_state.rec.io_state = 0xC;
             }
-        } else if (ret == 5) {
+        } else if (sync_status == 5) {
             g_cdrom_state.rec.io_state = 0xA;
         } else if (++g_cdrom_state.sync_wait_count > 0xA) {
             CdFlush();
@@ -338,14 +338,14 @@ void cdrom_Update(void) {
         g_cdrom_state.sync_wait_count = 0;
         break;
     case 0xD: {
-        s32 ret = CdSync(1, g_cd_result);
-        if (ret == 2) {
+        s32 sync_status = CdSync(1, g_cd_result);
+        if (sync_status == 2) {
             g_cdrom_state.rec.io_state = 2;
             VSync(4);
             VSync(4);
             VSync(4);
             VSync(4);
-        } else if (ret == 5) {
+        } else if (sync_status == 5) {
             g_cdrom_state.rec.io_state = 9;
         } else if (++g_cdrom_state.sync_wait_count > 0x1E) {
             CdFlush();

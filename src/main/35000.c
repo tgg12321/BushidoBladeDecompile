@@ -278,8 +278,8 @@ s32 ndata_ReadChecked(s32 ndata_index, s32 dest_addr) {
 extern s32 arena_GetFreeSize(void);
 
 s32 ndata_GetArenaRoomAfter(s32 ndata_index) {
-    s32 val = g_ndata_inf[ndata_index].length_sectors << 11;
-    return arena_GetFreeSize() - val;
+    s32 length_bytes = g_ndata_inf[ndata_index].length_sectors << 11;
+    return arena_GetFreeSize() - length_bytes;
 }
 
 /* Q65: this file's statics (.sbss), in address order. */

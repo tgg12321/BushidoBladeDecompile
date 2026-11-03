@@ -1326,17 +1326,17 @@ extern s32 g_gpu_split_wipe_frame;
 
 void gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe(
     s32 file_index_offset, u8 *file_buffer) {
-    RECT r1, r2;
+    RECT image_rect, clut_rect;
     s32 file_index;
     file_index = cdrom_GetFileIndex(2, file_index_offset + 0x33);
     cdrom_StartRead(file_index, (s32)file_buffer);
     cdrom_WaitIdle();
     cdrom_GetFileSize(file_index);
-    r1 = g_gpu_split_wipe_image_rect;
-    r2 = g_gpu_split_wipe_image_clut_rect;
-    LoadImage(&r1, (u32 *)(file_buffer + 0x40));
+    image_rect = g_gpu_split_wipe_image_rect;
+    clut_rect = g_gpu_split_wipe_image_clut_rect;
+    LoadImage(&image_rect, (u32 *)(file_buffer + 0x40));
     DrawSync(0);
-    LoadImage(&r2, (u32 *)(file_buffer + 0x14));
+    LoadImage(&clut_rect, (u32 *)(file_buffer + 0x14));
     DrawSync(0);
     g_gpu_split_wipe_frame = 0;
 }

@@ -1089,14 +1089,14 @@ void fight_InitNearestStartPairPlayback(void) {
     }
     {
         Vec3i32 *addr = &D_80101EC8[0].world_pos;
-        s32 result;
+        s32 start_pair_index;
         if (g_fight_followup_fighter_index == 0) {
             addr = &D_80101EC8[1].world_pos;
         }
-        result = fight_FindNearestStartPair(addr);
-        g_fight_followup_playback_start_pair = result;
+        start_pair_index = fight_FindNearestStartPair(addr);
+        g_fight_followup_playback_start_pair = start_pair_index;
         motion_StartPlaybackAtIndexedBasePlusOffset(
-            0x16, playback_file_offset, result,
+            0x16, playback_file_offset, start_pair_index,
             (s32)D_80101EC8[0].weapon_entry_id,
             (s32)D_80101EC8[1].weapon_entry_id, -1, -1, 0);
     }
@@ -1375,16 +1375,16 @@ s16 *bitstream_AccumulateDeltas(s32 accumulator_index) {
     Unk800A3D40Rec *base = &g_bitstream_delta_accumulators[accumulator_index];
     do {
         s32 nbits;
-        s16 val;
+        s16 delta;
         nbits = bitstream_ReadBits(&base->bits, 4);
         if (nbits == 0) {
             nbits = 16;
         }
-        val = (s16)bitstream_ReadBits(&base->bits, nbits);
-        if ((val >> (nbits - 1)) & 1) {
-            val |= 0xFFFF << (nbits - 1);
+        delta = (s16)bitstream_ReadBits(&base->bits, nbits);
+        if ((delta >> (nbits - 1)) & 1) {
+            delta |= 0xFFFF << (nbits - 1);
         }
-        base->accumulated_values[i] += val;
+        base->accumulated_values[i] += delta;
         i++;
     } while (i < 6);
     return base->accumulated_values;

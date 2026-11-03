@@ -409,8 +409,9 @@ void light_SetPointLightTarget(s32 slot_index, s32 target_addr) {
 }
 
 void light_ApplyPointLightTargets(void) {
-    s32 val = g_light_point_target_flags[0] * 2 + g_light_point_target_flags[1];
-    switch (val) {
+    s32 target_mask =
+        g_light_point_target_flags[0] * 2 + g_light_point_target_flags[1];
+    switch (target_mask) {
     case 1:
         light_ApplyPointLight(0, g_light_point_targets[1]);
         break;

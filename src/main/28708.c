@@ -1298,12 +1298,12 @@ void replay_RecordFighter(Unk80101EC8Record *fighter_record) {
 }
 
 void replay_AdvanceFrame(void) {
-    u8 val = g_replay_write_frame;
-    if (val == 0x77) {
+    u8 write_frame = g_replay_write_frame;
+    if (write_frame == 0x77) {
         g_replay_write_frame = 0;
         g_replay_ring_wrapped = 1;
     } else {
-        g_replay_write_frame = val + 1;
+        g_replay_write_frame = write_frame + 1;
     }
 }
 
@@ -1329,7 +1329,7 @@ void fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass(
     s32 hit_point[4];
     s16 hit_normal[4];
     s32 mid_x, mid_y, mid_z;
-    s32 result;
+    s32 hit_tag;
 
     mid_x = (s32)(fighter_record->ground_probe_points[0].x +
                   fighter_record->ground_probe_points[1].x) /
@@ -1348,15 +1348,15 @@ void fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass(
     segment_end[2] = mid_z;
     if (collision_TestSegment(
             segment_start, segment_end, hit_point, hit_normal) != 0) {
-        result = collision_GetHitTag();
-        *hit_tag_out = result;
-        if (result == 7) {
+        hit_tag = collision_GetHitTag();
+        *hit_tag_out = hit_tag;
+        if (hit_tag == 7) {
             goto neg;
         }
-        if (result == 0) {
+        if (hit_tag == 0) {
             goto neg;
         }
-        *hit_class_out = ((0x2A >> result) ^ 1) & 1;
+        *hit_class_out = ((0x2A >> hit_tag) ^ 1) & 1;
     } else {
         *hit_tag_out = -1;
     neg:
