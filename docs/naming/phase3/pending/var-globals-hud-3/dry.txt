@@ -1,0 +1,23 @@
+==============================================================================
+DATA WAVE — 4 addresses, 4 identifiers remapped
+  0x8009b388: D_8009B388 -> g_gpu_jittered_quad_pair_cells
+  0x8009b6f0: D_8009B6F0 -> g_gpu_digit_count_shifted_sprite_and_large_digit_sheet_headers
+  0x8009b20c: D_8009B20C -> g_gpu_mode_panel_footer_cells
+  0x8009b5e8: D_8009B5E8 -> g_gpu_seconds_hundredths_separator_cell
+
+-- file edits (8) --
+  asm/funcs/gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle.s  (2)
+  asm/funcs/gpu_DrawModeSizedPanelWithSelectedCellOpaque.s  (2)
+  asm/funcs/gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite.s  (4)
+  asm/funcs/gpu_DrawPairedMarkRowsAndTimeFields.s  (2)
+  include/bb2.h  (1)
+  src/main/4D0A8.c  (12)
+  src/main/d_8BC50.c  (2)
+  symbol_addrs.txt  (3)
+
+-- registry lines --
+  symbol_addrs.txt:612 D_8009B388 -> g_gpu_jittered_quad_pair_cells
+  symbol_addrs.txt:1065 D_8009B388 -> g_gpu_jittered_quad_pair_cells
+  symbol_addrs.txt:1080 D_8009B6F0 -> g_gpu_digit_count_shifted_sprite_and_large_digit_sheet_headers
+
+DRY RUN — nothing written. Re-run with --apply.

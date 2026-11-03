@@ -1,0 +1,4 @@
+D_8009B388=g_gpu_jittered_quad_pair_cells
+D_8009B6F0=g_gpu_digit_count_shifted_sprite_and_large_digit_sheet_headers
+D_8009B20C=g_gpu_mode_panel_footer_cells
+D_8009B5E8=g_gpu_seconds_hundredths_separator_cell
