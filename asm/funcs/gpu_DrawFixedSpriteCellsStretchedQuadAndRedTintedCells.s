@@ -29,8 +29,8 @@ glabel gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
     /* 50DB0 800605B0 3400A0AF */  sw         $zero, 0x34($sp)
     /* 50DB4 800605B4 3000A0AF */  sw         $zero, 0x30($sp)
   .L800605B8:
-    /* 50DB8 800605B8 0A80023C */  lui        $v0, %hi(D_8009B770)
-    /* 50DBC 800605BC 70B74224 */  addiu      $v0, $v0, %lo(D_8009B770)
+    /* 50DB8 800605B8 0A80023C */  lui        $v0, %hi(g_gpu_stage_card_sheet_headers)
+    /* 50DBC 800605BC 70B74224 */  addiu      $v0, $v0, %lo(g_gpu_stage_card_sheet_headers)
     /* 50DC0 800605C0 21102202 */  addu       $v0, $s1, $v0
     /* 50DC4 800605C4 1800A2AF */  sw         $v0, 0x18($sp)
     /* 50DC8 800605C8 0300022A */  slti       $v0, $s0, 0x3
@@ -48,19 +48,19 @@ glabel gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
     /* 50DF4 800605F4 8E810108 */  j          .L80060638
     /* 50DF8 800605F8 00000000 */   nop
   .L800605FC:
-    /* 50DFC 800605FC 0A80023C */  lui        $v0, %hi(D_8009B7D8)
-    /* 50E00 80060600 D8B74224 */  addiu      $v0, $v0, %lo(D_8009B7D8)
+    /* 50DFC 800605FC 0A80023C */  lui        $v0, %hi(g_gpu_stage_card_title_cells)
+    /* 50E00 80060600 D8B74224 */  addiu      $v0, $v0, %lo(g_gpu_stage_card_title_cells)
     /* 50E04 80060604 8E810108 */  j          .L80060638
     /* 50E08 80060608 1C00A2AF */   sw        $v0, 0x1C($sp)
   .L8006060C:
-    /* 50E0C 8006060C 0A80023C */  lui        $v0, %hi(D_8009B800)
-    /* 50E10 80060610 00B84224 */  addiu      $v0, $v0, %lo(D_8009B800)
+    /* 50E0C 8006060C 0A80023C */  lui        $v0, %hi(g_gpu_stage_card_stage_picture_cells)
+    /* 50E10 80060610 00B84224 */  addiu      $v0, $v0, %lo(g_gpu_stage_card_stage_picture_cells)
     /* 50E14 80060614 8E810108 */  j          .L80060638
     /* 50E18 80060618 1C00A2AF */   sw        $v0, 0x1C($sp)
   .L8006061C:
     /* 50E1C 8006061C 21280000 */  addu       $a1, $zero, $zero
-    /* 50E20 80060620 0A80023C */  lui        $v0, %hi(D_8009B7D0)
-    /* 50E24 80060624 D0B74224 */  addiu      $v0, $v0, %lo(D_8009B7D0)
+    /* 50E20 80060620 0A80023C */  lui        $v0, %hi(g_gpu_stage_card_map_cell)
+    /* 50E24 80060624 D0B74224 */  addiu      $v0, $v0, %lo(g_gpu_stage_card_map_cell)
     /* 50E28 80060628 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* 50E2C 8006062C CACD010C */  jal        gpu_AddScaledSpriteQuads
     /* 50E30 80060630 2400B2AF */   sw        $s2, 0x24($sp)
@@ -78,11 +78,11 @@ glabel gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
     /* 50E58 80060658 D7FF4014 */  bnez       $v0, .L800605B8
     /* 50E5C 8006065C 0C003126 */   addiu     $s1, $s1, 0xC
     /* 50E60 80060660 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 50E64 80060664 0A80023C */  lui        $v0, %hi(D_8009B7A0)
-    /* 50E68 80060668 A0B74224 */  addiu      $v0, $v0, %lo(D_8009B7A0)
+    /* 50E64 80060664 0A80023C */  lui        $v0, %hi(g_gpu_stage_card_stage_strip_sheet_header)
+    /* 50E68 80060668 A0B74224 */  addiu      $v0, $v0, %lo(g_gpu_stage_card_stage_strip_sheet_header)
     /* 50E6C 8006066C 1800A2AF */  sw         $v0, 0x18($sp)
-    /* 50E70 80060670 0A80023C */  lui        $v0, %hi(D_8009B820)
-    /* 50E74 80060674 20B84224 */  addiu      $v0, $v0, %lo(D_8009B820)
+    /* 50E70 80060670 0A80023C */  lui        $v0, %hi(g_gpu_stage_card_stage_strip_cells)
+    /* 50E74 80060674 20B84224 */  addiu      $v0, $v0, %lo(g_gpu_stage_card_stage_strip_cells)
     /* 50E78 80060678 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* 50E7C 8006067C 4BCD010C */  jal        gpu_AddSpriteCells
     /* 50E80 80060680 2000B3AF */   sw        $s3, 0x20($sp)

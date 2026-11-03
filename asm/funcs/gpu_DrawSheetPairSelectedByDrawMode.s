@@ -15,12 +15,12 @@ glabel gpu_DrawSheetPairSelectedByDrawMode
     /* 4DC9C 8005D49C 00810200 */  sll        $s0, $v0, 4
     /* 4DCA0 8005D4A0 23800202 */  subu       $s0, $s0, $v0
     /* 4DCA4 8005D4A4 80801000 */  sll        $s0, $s0, 2
-    /* 4DCA8 8005D4A8 0A80113C */  lui        $s1, %hi(D_8009B2C8)
-    /* 4DCAC 8005D4AC C8B23126 */  addiu      $s1, $s1, %lo(D_8009B2C8)
+    /* 4DCA8 8005D4A8 0A80113C */  lui        $s1, %hi(g_gpu_draw_mode_sheet_header_rows)
+    /* 4DCAC 8005D4AC C8B23126 */  addiu      $s1, $s1, %lo(g_gpu_draw_mode_sheet_header_rows)
     /* 4DCB0 8005D4B0 21101102 */  addu       $v0, $s0, $s1
     /* 4DCB4 8005D4B4 1000A2AF */  sw         $v0, 0x10($sp)
-    /* 4DCB8 8005D4B8 0A80023C */  lui        $v0, %hi(D_8009B340)
-    /* 4DCBC 8005D4BC 40B34224 */  addiu      $v0, $v0, %lo(D_8009B340)
+    /* 4DCB8 8005D4B8 0A80023C */  lui        $v0, %hi(g_gpu_draw_mode_sheet_pair_strip_cells)
+    /* 4DCBC 8005D4BC 40B34224 */  addiu      $v0, $v0, %lo(g_gpu_draw_mode_sheet_pair_strip_cells)
     /* 4DCC0 8005D4C0 00011224 */  addiu      $s2, $zero, 0x100
     /* 4DCC4 8005D4C4 01001324 */  addiu      $s3, $zero, 0x1
     /* 4DCC8 8005D4C8 3800A0A3 */  sb         $zero, 0x38($sp)
@@ -37,8 +37,8 @@ glabel gpu_DrawSheetPairSelectedByDrawMode
     /* 4DCF4 8005D4F4 21280000 */  addu       $a1, $zero, $zero
     /* 4DCF8 8005D4F8 0C003126 */  addiu      $s1, $s1, 0xC
     /* 4DCFC 8005D4FC 21801102 */  addu       $s0, $s0, $s1
-    /* 4DD00 8005D500 0A80033C */  lui        $v1, %hi(D_8009B358)
-    /* 4DD04 8005D504 58B36324 */  addiu      $v1, $v1, %lo(D_8009B358)
+    /* 4DD00 8005D500 0A80033C */  lui        $v1, %hi(g_gpu_draw_mode_sheet_pair_grid_cells)
+    /* 4DD04 8005D504 58B36324 */  addiu      $v1, $v1, %lo(g_gpu_draw_mode_sheet_pair_grid_cells)
     /* 4DD08 8005D508 3800A0A3 */  sb         $zero, 0x38($sp)
     /* 4DD0C 8005D50C 1000B0AF */  sw         $s0, 0x10($sp)
     /* 4DD10 8005D510 1400A3AF */  sw         $v1, 0x14($sp)

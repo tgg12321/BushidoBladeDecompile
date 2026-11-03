@@ -117,7 +117,7 @@ extern Unk8009B400Record g_gpu_mode_panel_divider_end_cells[2];
 /* One 8-byte sprite cell (x, y = 0, u, v = 0, w 0x14, h 0x0E), the cell
  * table gpu_DrawSpriteAtPackedTablePosition hands gpu_AddSpriteCells in its
  * descriptor. */
-extern Unk8009B400Record D_800A328C;
+extern Unk8009B400Record g_gpu_stage_card_map_marker_cell;
 
 extern Unk8009B2BCRecord g_panel_frame_sizes[3];
 extern Unk800EFAE8Rec g_motion_playback_record;

@@ -28,8 +28,8 @@ glabel gpu_DrawSpriteAtPackedTablePosition
     /* 50C7C 8006047C 2A004224 */  addiu      $v0, $v0, 0x2A
     /* 50C80 80060480 05008010 */  beqz       $a0, .L80060498
     /* 50C84 80060484 3400A2AF */   sw        $v0, 0x34($sp)
-    /* 50C88 80060488 0A80023C */  lui        $v0, %hi(D_8009B7AC)
-    /* 50C8C 8006048C ACB74224 */  addiu      $v0, $v0, %lo(D_8009B7AC)
+    /* 50C88 80060488 0A80023C */  lui        $v0, %hi(g_gpu_stage_card_map_marker_sheet_headers)
+    /* 50C8C 8006048C ACB74224 */  addiu      $v0, $v0, %lo(g_gpu_stage_card_map_marker_sheet_headers)
     /* 50C90 80060490 33810108 */  j          .L800604CC
     /* 50C94 80060494 1800A2AF */   sw        $v0, 0x18($sp)
   .L80060498:
@@ -49,8 +49,8 @@ glabel gpu_DrawSpriteAtPackedTablePosition
     /* 50CC8 800604C8 1800A2AF */  sw         $v0, 0x18($sp)
   .L800604CC:
     /* 50CCC 800604CC 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 50CD0 800604D0 0A80023C */  lui        $v0, %hi(D_800A328C)
-    /* 50CD4 800604D4 8C324224 */  addiu      $v0, $v0, %lo(D_800A328C)
+    /* 50CD0 800604D0 0A80023C */  lui        $v0, %hi(g_gpu_stage_card_map_marker_cell)
+    /* 50CD4 800604D4 8C324224 */  addiu      $v0, $v0, %lo(g_gpu_stage_card_map_marker_cell)
     /* 50CD8 800604D8 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* 50CDC 800604DC 4BCD010C */  jal        gpu_AddSpriteCells
     /* 50CE0 800604E0 2000A3AF */   sw        $v1, 0x20($sp)
