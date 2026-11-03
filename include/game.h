@@ -2544,7 +2544,7 @@ typedef struct {
  * it. */
 typedef struct {
     Unk8006E950Head resource_head;
-    Unk8009B0E0Record **unk_14;
+    Unk8009B0E0Record **sheets_over_white_tile;
     Unk8009B0E0Record **row_sheets;
     Unk8009B0E0Record **unk_1C;
     Unk8009B0E0Record **sheet_pairs;

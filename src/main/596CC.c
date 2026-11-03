@@ -191,7 +191,7 @@ Unk8006E49CRec *gpu_GetPrimBufferAndRefreshStrip(s32 buffer_index) {
 
 s32 reloc_RelocateTwelveListsAndLoadVabPack(Unk8006919CRec *resource_root) {
     s32 lists_relocated = 0;
-    Unk8009B0E0Record ***p = &resource_root->unk_14;
+    Unk8009B0E0Record ***p = &resource_root->sheets_over_white_tile;
     do {
         reloc_RelocateOffsetList((s32 *)resource_root, (s32)*p);
         p++;
@@ -641,7 +641,7 @@ void gpu_DrawWhiteTileAndSheets(s32 draw_context_addr) {
     AddPrim(g_gpu_ot_ptr + 0x14, tile);
     *(s32 *)(draw_context_addr + 0x18) = (s32)(tile + 1);
 
-    ptr = (*(Unk8006919CRec **)(draw_context_addr + 4))->unk_14;
+    ptr = (*(Unk8006919CRec **)(draw_context_addr + 4))->sheets_over_white_tile;
     s.ot_idx = 0x10;
     s.semi = 0;
     s.x = 0;
