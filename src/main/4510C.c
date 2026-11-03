@@ -2662,10 +2662,10 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         /* work5 holds three values in turn, each read before
                          * the next write: case 2's pattern-word top bits
                          * (work1 >> 27); the offset
-                         * ((0x1000 - var_6) * 625 >> 10) - 400; a copy of
-                         * script_entry_kind for the script_entry_kind < 5 and
-                         * script_entry_kind == 5 / 6 tests (Q34) (Ruling 11,
-                         * reused-local-necessity). */
+                         * ((0x1000 - effective_cpu_level) * 625 >> 10) - 400; a
+                         * copy of script_entry_kind for the script_entry_kind <
+                         * 5 and script_entry_kind == 5 / 6 tests (Q34) (Ruling
+                         * 11, reused-local-necessity). */
                         s32 work5;
                         /* FAKE: opaque 1 (no-new-park-categories entry 2,
                          * loop-rotation-two-shift): with a

@@ -958,8 +958,8 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
     s16 *quad_vertices;
     POLY_FT4 *quads_end;
 
-    /* FAKE: the work-area base (g_eff_work_area) is staged through `prim`
-     * before prim becomes the quad cursor; keeps `mats = base + 0x78` out of
+    /* FAKE: the work-area base (g_eff_work_area) is staged through `var_9`
+     * before var_9 becomes the quad cursor; keeps `mats = base + 0x78` out of
      * the loop's giv init (target keeps `move s4,v0`) and puts base in s1. A
      * separate `u8 *`/`s32`/`POLY_FT4 *` base, declaration/scope/setup-order
      * variants, direct global, or local struct with sub-pointers: score 37;
@@ -1065,8 +1065,8 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
         }
     }
     if (g_eff_quad_cursor != var_9) {
-        /* `quads_end` keeps the fill position; the quad cursor prim restarts at
-         * g_eff_quad_cursor to link each quad, the way SOTN's menu code
+        /* `quads_end` keeps the fill position; the quad cursor var_9 restarts
+         * at g_eff_quad_cursor to link each quad, the way SOTN's menu code
          * restarts its fill cursor at the buffer to read it back (Q51) */
         /* SOTN: src/dra/menu.c:3352 @db41b28 */
         quads_end = var_9;
@@ -1458,10 +1458,10 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
     s32 k;
     s32 bit;
 
-    /* FAKE: the work-area base (g_eff_work_area) is staged through `prim`
-     * before prim becomes the quad cursor: prim's pseudo lives across the calls
-     * and gets s2, where the target holds the base. Separate u8 *base: 12;
-     * inline mats argument: 9; all four other pointers after call in
+    /* FAKE: the work-area base (g_eff_work_area) is staged through `var_6`
+     * before var_6 becomes the quad cursor: var_6's pseudo lives across the
+     * calls and gets s2, where the target holds the base. Separate u8 *base:
+     * 12; inline mats argument: 9; all four other pointers after call in
      * declaration / var_5-first order: 56 / 88; direct sxy: 17;
      * direct var_2: 83; direct var_2 + sxy: 41; direct sxy with
      * s32 / void * / MATRIX *base: 17 each; direct sxy plus other pointers
@@ -1545,7 +1545,7 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
             var_6++;
         }
     }
-    /* `quads_end` keeps the fill position; the quad cursor prim restarts at
+    /* `quads_end` keeps the fill position; the quad cursor var_6 restarts at
      * g_eff_quad_cursor to link each quad, the way SOTN's menu code restarts
      * its fill cursor at the buffer to read it back (Q51) */
     /* SOTN: src/dra/menu.c:3352 @db41b28 */
