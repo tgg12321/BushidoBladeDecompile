@@ -385,7 +385,7 @@ def gate_pid_alive(pid):
 def is_docs_only(ctx, paths) -> bool:
     """Every path under lanes.json docs_only_paths: build_candidate runs no full gates."""
     prefixes = ctx.cfg.get("docs_only_paths", [])
-    return all(any(p.startswith(d) for d in prefixes) for p in paths)
+    return all(under_scope(p, prefixes) for p in paths)
 
 
 def queues_full_gates(ctx, paths):
@@ -1139,7 +1139,7 @@ def needs_full_gates(lane_paths, main_paths, inert=INERT_DEFAULT, docs_only=("do
         return {p.replace("\\", "/").lower() for p in ps}  # NTFS is case-insensitive
 
     def all_under(ps, prefixes):
-        return all(any(p.startswith(x.lower()) for x in prefixes) for p in ps)
+        return all(under_scope(p, prefixes) for p in ps)
 
     merge = low(mergeable)
     lane, moved = low(lane_paths) - merge, low(main_paths) - merge
@@ -1310,10 +1310,14 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
         print("lanes: main moved only in files disjoint from this lane (see needs_full_gates); "
               "quick re-check instead of the full gates", flush=True)
     else:
-        gates = ctx.cfg["gates"].get(kind, ctx.cfg["gates"]["foundation"])
+        gates = scope_gates(ctx, ld, base, new_paths,
+                            ctx.cfg["gates"].get(kind, ctx.cfg["gates"]["foundation"]))
     check_untracked(ld)
     for g in gates:
-        if run_shell(ctx, ld, g, log) != 0:
+        t0 = time.time()
+        rc = run_shell(ctx, ld, g, log)
+        log.write(f"[gate {g}: {time.time() - t0:.0f}s]\n")
+        if rc != 0:
             raise Refuse(f"gate failed: {g}  (log {log.name})", 4)
     if gates and not quick and ctx.cfg.get("oracle_sha1"):
         exe = ld / ctx.cfg["oracle_exe"]
@@ -1328,6 +1332,110 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
         raise Refuse("the gates left tracked changes in the landing worktree: "
                      + git("status", "--porcelain", "--untracked-files=no", cwd=ld), 4)
     return git("rev-parse", "HEAD", cwd=ld)
+
+
+def under_scope(path, entries):
+    """`entries` ending in "/" are prefixes, entries holding `*` are fnmatch globs (`*` spans
+    `/`), others name one file; case-insensitive (NTFS)."""
+    p = path.replace("\\", "/").casefold()
+    return any(p.startswith(e.casefold()) if e.endswith("/") else
+               fnmatch.fnmatchcase(p, e.casefold()) if "*" in e else p == e.casefold()
+               for e in entries)
+
+
+# What a token-level rename may never touch: C keywords (a swap is structure, not a name) and
+# MIPS register / directive words (asm/ operands are not symbols).
+_RENAME_FIXED = set("auto break case char const continue default do double else enum extern "
+                    "float for goto if int long register return short signed sizeof static "
+                    "struct switch typedef union unsigned void volatile while asm __asm__ "
+                    "inline __inline__ __attribute__ typeof __typeof__ define include ifdef "
+                    "ifndef endif undef elif pragma INCLUDE_ASM INCLUDE_RODATA glabel".split())
+_RENAME_REG = re.compile(r"(?:zero|at|v[01]|a[0-3]|t\d|s[0-8]|k[01]|gp|sp|fp|ra|f\d+|\d+)$")
+_RENAME_TOKEN = re.compile(r"[A-Za-z_]\w*|\d\w*|\S")
+
+
+def token_only_rename(ld: Path, base: str, paths, unread_by=()) -> tuple[bool, str]:
+    """Prove base..HEAD changed `paths` by a token-level identifier substitution only
+    (whitespace ignored, comments and strings included): equal token sequences except at
+    identifier positions, one old->new map over every path that merges no two names within
+    the changed files (no target is also an unchanged name there), no keyword or register in
+    it. An old name may survive elsewhere (a scoped local rename). It is the claim
+    tools/naming_keycheck.py proves from a wave's pairs, derived from the diff so the lander
+    needs no manifest; it does not prove semantic identity (a typedef or mnemonic swap passes),
+    which the always-run oracle rebuild covers. Fails closed on an added, deleted or unreadable
+    path and on any other token change; text is decoded with errors="replace", so a binary
+    or line-ending change is the oracle's to catch, not this check's.
+
+    `unread_by`: git pathspecs (engine/, tools/, minus scenario data) whose code and tests
+    may hard-code symbol names; an old name occurring there as a word in `base` is no proof (the skipped gate may
+    read it from the live tree)."""
+    fwd, back = {}, {}
+    for p in sorted(paths):
+        try:
+            old = git("show", f"{base}:{p}", cwd=ld)
+            new = git("show", f"HEAD:{p}", cwd=ld)
+        except Refuse:  # added, deleted or unreadable: not a rename
+            return False, f"{p}: added or deleted"
+        a, b = _RENAME_TOKEN.findall(old), _RENAME_TOKEN.findall(new)
+        if len(a) != len(b):
+            return False, f"{p}: token count changed ({len(a)} -> {len(b)})"
+        for x, y in zip(a, b):
+            if x == y:
+                # an unchanged name may not also be a rename target (two names merged into
+                # one); it may still be renamed elsewhere (a scoped/local rename)
+                if re.match(r"[A-Za-z_]", x) and back.setdefault(x, x) != x:
+                    return False, f"{p}: {back[x]!r} renamed onto the kept name {x!r}"
+                continue
+            if not (re.match(r"[A-Za-z_]", x) and re.match(r"[A-Za-z_]", y)) \
+                    or {x, y} & _RENAME_FIXED or _RENAME_REG.match(x) or _RENAME_REG.match(y):
+                return False, f"{p}: non-identifier change {x!r} -> {y!r}"
+            if fwd.setdefault(x, y) != y or back.setdefault(y, x) != x:
+                return False, f"{p}: inconsistent rename {x!r} -> {y!r}"
+    if fwd and unread_by:
+        # old and new names: a new name a reader already uses could shadow what it looks up
+        names = sorted(set(fwd) | set(fwd.values()))
+        hit = run(["git", "grep", "-l", "-w", "-F", "-f", "-", base, "--", *unread_by], cwd=ld,
+                  check=False, input_text="\n".join(names) + "\n")  # stdin: no argv limit
+        if hit.returncode not in (0, 1):
+            return False, "git grep failed: " + (hit.stderr or "").strip()[:200]
+        if hit.stdout.strip():
+            files = [ln.split(":", 1)[-1] for ln in hit.stdout.split()]
+            return False, "a renamed name occurs in " + ", ".join(files[:5])
+    return True, f"{len(fwd)} identifier(s) renamed, nothing else changed"
+
+
+def scope_gates(ctx: Ctx, ld: Path, base: str, paths, gates) -> list:
+    """Size the full gates to the candidate's diff (lanes.json gate_scope). A gate with a
+    scope rule is skipped when every changed path is under its `light` entries, or when the
+    rest are all under its `renames` entries and token_only_rename() (with the rule's
+    `unread_by` git pathspecs) proves them a token-level rename. Gates without a rule
+    (verify-oracle, tus-check, the label census) always run."""
+    scope = ctx.cfg.get("gate_scope", {})
+    proofs = {}
+    out = []
+    for g in gates:
+        rule = scope.get(g)
+        if not rule:
+            out.append(g)
+            continue
+        rest = [p for p in paths if not under_scope(p, rule.get("light", []))]
+        why = None
+        if not rest:
+            why = "every changed path is under " + ", ".join(rule.get("light", []))
+        elif rule.get("renames") and all(under_scope(p, rule["renames"]) for p in rest):
+            key = (tuple(sorted(rest)), tuple(rule.get("unread_by", [])))
+            if key not in proofs:
+                proofs[key] = token_only_rename(ld, base, rest, rule.get("unread_by", []))
+            proof = proofs[key]
+            if proof[0]:
+                why = "token-only rename: " + proof[1]
+            else:
+                print(f"lanes: not a token-only rename ({proof[1]})", flush=True)
+        if why:
+            print(f"lanes: gate skipped: {g}  ({why})", flush=True)
+            continue
+        out.append(g)
+    return out
 
 
 def matches_input_prefix(path, prefixes):

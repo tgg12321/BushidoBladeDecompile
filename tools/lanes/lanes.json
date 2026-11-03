@@ -107,7 +107,21 @@
     ],
     "docs": []
   },
-  "docs_only_paths": ["docs/", "memory/"],
+  "_gate_scope_doc": "Per-gate scope (lanes.py scope_gates): a gate is skipped when every changed path is under its light entries, or the rest are under its renames entries and token_only_rename() proves a token-level rename whose old names occur nowhere under unread_by (git pathspecs). Entries: 'dir/' prefix, glob with '*', else one file. Gates not listed always run.",
+  "gate_scope": {
+    "python3 -m engine.cli test": {
+      "light": ["docs/", "memory/", ".claude/", "tools/trace/scenarios/*.json"],
+      "renames": ["src/", "include/", "asm/", "symbol_addrs.txt", "named_syms.txt",
+                  "undefined_syms_auto.txt", "undefined_funcs_auto.txt"],
+      "unread_by": ["engine/", "tools/", ":(top,glob)*.txt", ":!tools/trace/scenarios/*.json",
+                    ":!symbol_addrs.txt", ":!named_syms.txt", ":!undefined_syms_auto.txt",
+                    ":!undefined_funcs_auto.txt"]
+    },
+    "python3 tools/check_completion_integrity.py": {
+      "light": [".claude/", "tools/trace/scenarios/*.json"]
+    }
+  },
+  "docs_only_paths": ["docs/", "memory/", "tools/trace/scenarios/*.json"],
   "inert_paths": ["docs/", "memory/", ".claude/", "tools/trace/", "tools/lanes/"],
   "quick_gates": ["python3 -m engine.cli tus-check",
                   "python3 tools/check_completion_integrity.py"]

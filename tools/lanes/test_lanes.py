@@ -1734,6 +1734,105 @@ class LaneTest(unittest.TestCase):
         self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
         self.assertIn("docs-only", self.last)
 
+    def _scoped_gate_cfg(self):
+        (self.main / "strict.py").write_text("import sys\nsys.exit(1)\n", newline="\n")
+        cfg = dict(CFG, gates={"naming": ["python gate.py", "python strict.py"],
+                               "foundation": ["python gate.py", "python strict.py"], "docs": []},
+                   gate_scope={"python strict.py": {"light": [".claude/"], "renames": ["src/"]}})
+        self._main_commit("tools/lanes/lanes.json", json.dumps(cfg))
+
+    def test_gate_scope_skips_light_and_token_only_renames(self):
+        self._scoped_gate_cfg()
+        self.L("s1", "open", "a")
+        self.commit("a", ".claude/rules/r.md", "r\n")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("gate skipped: python strict.py", self.last)
+        self.assertIn("$ python gate.py", self.last)  # unscoped gates always run
+        self.commit("a", "src/a.c", "int alpha;\n")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("token-only rename", self.last)
+
+    def test_gate_scope_runs_gate_on_real_changes(self):
+        self._scoped_gate_cfg()
+        self.L("s1", "open", "a")
+        for path, text in (("src/a.c", "long a;\n"),        # keyword swap: structure
+                           ("src/a.c", "int a; int b;\n"),  # token count
+                           ("src/new.c", "int n;\n"),       # added file
+                           ("tools/x.py", "x = 1\n")):      # outside light / renames
+            with self.subTest(path=path, text=text):
+                self.L("s1", "fresh", "a", "--discard")
+                self.commit("a", path, text)
+                self.assertEqual(self.L("s1", "land", "a"), 4, self.last)
+                self.assertIn("gate failed: python strict.py", self.last)
+
+    def test_token_only_rename_needs_a_bijection(self):
+        m = self.main
+        (m / "src" / "a.c").write_text("int a; int b;\n", newline="\n")
+        sh("commit", "-q", "-am", "two", cwd=m)
+        base = sh("rev-parse", "HEAD", cwd=m)
+        for text, ok in (("int x; int y;\n", True), ("int x; int x;\n", False),
+                         ("int a; int a;\n", False), ("int t0; int b;\n", False),
+                         ("int  a ;\n  int b;\n", True)):
+            with self.subTest(text=text):
+                (m / "src" / "a.c").write_text(text, newline="\n")
+                sh("commit", "-q", "-am", "edit", cwd=m)
+                self.assertEqual(lanes.token_only_rename(m, base, ["src/a.c"])[0], ok)
+                sh("reset", "-q", "--hard", base, cwd=m)
+
+    def test_trace_scenarios_are_docs_only(self):
+        cfg = json.loads((Path(__file__).parent / "lanes.json").read_text(encoding="utf-8"))
+        ctx = object.__new__(lanes.Ctx)
+        ctx.cfg = cfg
+        self.assertTrue(lanes.is_docs_only(ctx, ["tools/trace/scenarios/x-1.json",
+                                                 "docs/naming/runtime/e.tsv"]))
+        self.assertTrue(lanes.is_docs_only(ctx, ["tools/trace/scenarios/segments/s.json"]))
+        for code in ("tools/trace/scan/diff.py", "tools/trace/scenarios/scen.py",
+                     "tools/trace/scenarios/test_scen.py"):
+            self.assertFalse(lanes.is_docs_only(ctx, [code]), code)
+
+    def test_token_only_rename_refuses_names_tools_read(self):
+        m = self.main
+        (m / "tools").mkdir(exist_ok=True)
+        (m / "tools" / "t.py").write_text("NAMES = ['a']\n", newline="\n")
+        sh("add", "-A", cwd=m)
+        sh("commit", "-q", "-m", "tool", cwd=m)
+        base = sh("rev-parse", "HEAD", cwd=m)
+        (m / "src" / "a.c").write_text("int alpha;\n", newline="\n")
+        sh("commit", "-q", "-am", "rename", cwd=m)
+        self.assertTrue(lanes.token_only_rename(m, base, ["src/a.c"])[0])
+        ok, why = lanes.token_only_rename(m, base, ["src/a.c"], ["engine/", "tools/"])
+        self.assertFalse(ok)
+        self.assertIn("tools/t.py", why)
+        self.assertTrue(lanes.token_only_rename(m, base, ["src/a.c"], ["engine/"])[0])
+        self.assertTrue(lanes.token_only_rename(m, base, ["src/a.c"],
+                                                ["tools/", ":!tools/t.py"])[0])
+        # a new name a reader already uses is refused too
+        (m / "tools" / "t.py").write_text("NAMES = ['alpha']\n", newline="\n")
+        sh("commit", "-q", "-am", "tool2", cwd=m)
+        base2 = sh("rev-parse", "HEAD", cwd=m)
+        sh("checkout", "-q", base, "--", "src/a.c", cwd=m)
+        sh("commit", "-q", "-m", "back", cwd=m)
+        base3 = sh("rev-parse", "HEAD", cwd=m)
+        (m / "src" / "a.c").write_text("int alpha;\n", newline="\n")
+        sh("commit", "-q", "-am", "rename2", cwd=m)
+        self.assertNotEqual(base2, base3)
+        self.assertFalse(lanes.token_only_rename(m, base3, ["src/a.c"], ["tools/"])[0])
+        # root name lists are a reader: the real config's pathspec reaches them
+        (m / "tools" / "t.py").write_text("NAMES = []\n", newline="\n")
+        (m / "names.txt").write_text("a\n", newline="\n")
+        sh("add", "-A", cwd=m)
+        sh("commit", "-q", "-m", "list", cwd=m)
+        sh("checkout", "-q", base, "--", "src/a.c", cwd=m)
+        sh("commit", "-q", "-m", "back2", cwd=m)
+        base4 = sh("rev-parse", "HEAD", cwd=m)
+        (m / "src" / "a.c").write_text("int alpha;\n", newline="\n")
+        sh("commit", "-q", "-am", "rename3", cwd=m)
+        cfg = json.loads((Path(__file__).parent / "lanes.json").read_text(encoding="utf-8"))
+        spec = cfg["gate_scope"]["python3 -m engine.cli test"]["unread_by"]
+        ok, why = lanes.token_only_rename(m, base4, ["src/a.c"], spec)
+        self.assertFalse(ok)
+        self.assertIn("names.txt", why)
+
     def _capture_checks(self):
         source = Path(__file__).resolve().parents[1] / "trace/store.py"
         self._main_commit("tools/trace/store.py", source.read_text(encoding="utf-8"))
