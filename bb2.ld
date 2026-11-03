@@ -72,7 +72,7 @@ SECTIONS
         build/src/main/4510C.o(.rodata);
         build/src/main/snd.o(.rodata);
         build/src/main/4D0A8.o(.rodata);
-        build/src/main/51268.o(.rodata);
+        build/src/main/eff.o(.rodata);
         build/src/main/596CC.o(.rodata);
         build/src/main/5ED34.o(.rodata);
         build/src/main/63D2C.o(.rodata);
@@ -126,7 +126,7 @@ SECTIONS
         build/src/main/4510C.o(.text);
         build/src/main/snd.o(.text);
         build/src/main/4D0A8.o(.text);
-        build/src/main/51268.o(.text);
+        build/src/main/eff.o(.text);
         build/src/main/596CC.o(.text);
         build/src/main/5ED34.o(.text);
         build/src/main/63D2C.o(.text);
@@ -363,7 +363,7 @@ SECTIONS
         build/src/main/snd.o(.data);
         build/src/main/4D0A8.o(.data);
         build/src/main/d_8BC50.o(.data);
-        build/src/main/51268.o(.data);
+        build/src/main/eff.o(.data);
         build/src/main/596CC.o(.data);
         build/src/main/d_8C41C.o(.data);
         build/src/main/5ED34.o(.data);
@@ -602,7 +602,7 @@ SECTIONS
         build/src/main/4510C.o(.sdata);
         build/src/main/snd.o(.sdata);
         build/src/main/4D0A8.o(.sdata);
-        build/src/main/51268.o(.sdata);
+        build/src/main/eff.o(.sdata);
         build/src/main/596CC.o(.sdata);
         build/src/main/5ED34.o(.sdata);
         build/src/main/64FD8.o(.sdata);
@@ -624,7 +624,7 @@ SECTIONS
         build/src/main/snd.o(.sbss);
         build/src/main/4D0A8.o(.sbss);
         build/asm/data/93C1C.data.o(.data);
-        build/src/main/51268.o(.sbss);
+        build/src/main/eff.o(.sbss);
         build/src/main/596CC.o(.sbss);
         build/src/main/5ED34.o(.sbss);
         build/asm/data/93DCC.data.o(.data);
@@ -672,7 +672,7 @@ SECTIONS
         build/src/main/4510C.o(.bss);
         build/src/main/snd.o(.bss);
         build/src/main/4D0A8.o(.bss);
-        build/src/main/51268.o(.bss);
+        build/src/main/eff.o(.bss);
         build/src/main/596CC.o(.bss);
         build/src/main/5ED34.o(.bss);
         build/src/main/63D2C.o(.bss);
