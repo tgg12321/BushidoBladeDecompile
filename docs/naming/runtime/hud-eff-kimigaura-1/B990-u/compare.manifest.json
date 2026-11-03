@@ -1,0 +1,14 @@
+{
+  "kind": "compare",
+  "version": 1,
+  "base": "../baseline/capture.jsonl",
+  "other": "capture.jsonl",
+  "outputs": [
+    {
+      "path": "compare.fight.9230.diff.png",
+      "sha1": "fcb2aee97f53de0f8b6f8c92298d69d6dbea2473",
+      "size": 55692,
+      "stored": true
+    }
+  ]
+}

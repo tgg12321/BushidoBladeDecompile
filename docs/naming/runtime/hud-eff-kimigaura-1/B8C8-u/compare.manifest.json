@@ -1,0 +1,74 @@
+{
+  "kind": "compare",
+  "version": 1,
+  "base": "../baseline/capture.jsonl",
+  "other": "capture.jsonl",
+  "outputs": [
+    {
+      "path": "compare.fight.10041.diff.png",
+      "sha1": "9f644b5fb7a354ac392ac6c60a8a5d40fccbb01e",
+      "size": 50529,
+      "stored": true
+    },
+    {
+      "path": "compare.fight.10045.diff.png",
+      "sha1": "a1ba21f66c5979ffa6f4deb5868ae72aaf6f530f",
+      "size": 49990,
+      "stored": true
+    },
+    {
+      "path": "compare.fight.10049.diff.png",
+      "sha1": "45dbc010ab75cfb58b90e9b0f127998e869a84a1",
+      "size": 50770,
+      "stored": true
+    },
+    {
+      "path": "compare.fight.10053.diff.png",
+      "sha1": "c3772344ca7c3ec0ddd6dbdce5cce414fc12a3b0",
+      "size": 51399,
+      "stored": true
+    },
+    {
+      "path": "compare.fight.10057.diff.png",
+      "sha1": "9f7ca426f17db3fc7e904b39545e8f98aa3c60a7",
+      "size": 51434,
+      "stored": true
+    },
+    {
+      "path": "compare.fight.10110.diff.png",
+      "sha1": "f8702f6c1783e49de4701ab499a475f4b1dedc9b",
+      "size": 53486,
+      "stored": true
+    },
+    {
+      "path": "compare.fight.10150.diff.png",
+      "sha1": "23badcc5647845d962b6d4b231668064f71d7b78",
+      "size": 54190,
+      "stored": true
+    },
+    {
+      "path": "compare.fight.10230.diff.png",
+      "sha1": "f7597370e63afb441e28afe8a149a7be4ad1f8a0",
+      "size": 55187,
+      "stored": true
+    },
+    {
+      "path": "compare.fight.10330.diff.png",
+      "sha1": "3c9488625cf8fc5590745753c491a0f6e28893c7",
+      "size": 54316,
+      "stored": true
+    },
+    {
+      "path": "compare.fight.10430.diff.png",
+      "sha1": "3f177f46a7c996902d80e4911ebeae701c8b5630",
+      "size": 53930,
+      "stored": true
+    },
+    {
+      "path": "compare.fight.10930.diff.png",
+      "sha1": "0248ba6ba5baf57d7e6132cd6696808bcd36949f",
+      "size": 43281,
+      "stored": true
+    }
+  ]
+}
