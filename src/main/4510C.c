@@ -1459,7 +1459,7 @@ s32 fighter_FindNearestNavCrossing(
 }
 
 /* Per-vertex neighbour-angle midpoint: computes the bisector direction
- * at vertex vertex_index of chain nav_poly and writes the offset point into
+ * at vertex vertex_index of chain nav_chain and writes the offset point into
  * *corner_x_out / *corner_z_out (it treats the chain as a ring, wrapping
  * prev/next even for an open one). */
 void fighter_GetNavCornerPoint(NavVertexChain *nav_chain, s32 vertex_index,
