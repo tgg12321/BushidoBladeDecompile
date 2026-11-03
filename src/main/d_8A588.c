@@ -6,8 +6,9 @@
  * g_snd_stage_reverb_types starts at 0x8009AD1C. No uninitialized objects.
  * 2. Small objects in .data, each sized by its own reader or by the pointer
  *    that reaches it: D_8009A088 (u8[8]); the one-chain NavVertexChain arrays
- *    D_8009A384 / D_8009A3E0 / D_8009A3F4 / D_8009A598 (their
- * g_cpu_stage_nav_sets row's nchains); the distance byte tables D_8009A830
+ *    g_cpu_under_railway_nav_chains, g_cpu_lighthouse_nav_chains, D_8009A3F4
+ *    and g_cpu_building_rooftop_nav_chains (their g_cpu_stage_nav_sets row's
+ *    nchains); the distance byte tables D_8009A830
  * (fighter_CalcOpponentDistanceThresholdFromTables) and D_8009A838
  * (fighter_CalcOpponentDistanceThresholdFromTables,
  * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput); the pad scripts
