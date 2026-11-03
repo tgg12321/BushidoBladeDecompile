@@ -59,7 +59,7 @@ ctlbuf = 0x800F189C; // GPU color index table  // data-wave 2026-09-25: was g_gp
 // === libgte rsin_tbl folded bases (geo_00.c / geo_01.c) ===
 // data-wave 2026-09-07: g_sin_lut_q1 = 0x8009BF94 retired; rsin_tbl is now object-defined
 D_8009AF94 = 0x8009AF94; // rsin_tbl - 0x800 entries, sin_1's folded base; no table starts here (geo_00.c:18) //  // data-wave 2026-10-09: was g_sin_lut_q3
-D_8009B794 = 0x8009B794; // rsin_tbl - 0x400 entries (inside D_8009B770), rcos's folded base (geo_01.c:9, :21) //  // data-wave 2026-10-09: was g_cos_lut_q2
+D_8009B794 = 0x8009B794; // rsin_tbl - 0x400 entries (inside g_gpu_stage_card_sheet_headers), rcos's folded base (geo_01.c:9, :21) //  // data-wave 2026-10-09: was g_cos_lut_q2
 D_8009A794 = 0x8009A794; // rsin_tbl - 0xC00 entries, rcos's folded base; no table starts here (geo_01.c:10, :26) //  // data-wave 2026-10-09: was g_cos_lut_q4
 
 // === GTE Tables (display.c) ===
@@ -790,7 +790,7 @@ D_800A327C = 0x800A327C; /* RECT {0x380, 0, 0x40, 0x100}, LoadImage destination 
 g_pad_direction_positive_masks = 0x800A32C8; /* u32[2] bit masks {0x2000, 0x4000}, tested against *pad_buttons by pad_StepOffsetsGetDirectionEvents */  /* data-wave 2026-10-08: was g_text1b_state_record_table_8x4_a */
 g_entry_menu_vram_copy_source_rect = 0x800A32EC; /* RECT {0x90, 0x1FB, 0x30, 1}, MoveImage source in InitDisplayStateLoadPackAndSetEntryFlags */  /* data-wave 2026-10-08: was g_text1b_state_record_table_8x4_b */
 D_800A3638 = 0x800A3638; /* one word: _remove_ChgclrPAD's $ra save slot (libapi/chclrpad.c:7); 0x800A3648 / 0x800A3658 belong to other modules */  /* data-wave 2026-10-09: was g_text1b_misc_state_record_table_16x4 */
-g_gpu_stage_card_stage_strip_sheet_header = 0x8009B7A0; /* one 12-byte sprite-sheet header (Unk8009B0E0Record), cells D_8009B820, in gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells */  /* data-wave 2026-10-08: was g_text1b_state_record_table_12x5_a */
+g_gpu_stage_card_stage_strip_sheet_header = 0x8009B7A0; /* one 12-byte sprite-sheet header (Unk8009B0E0Record), cells g_gpu_stage_card_stage_strip_cells, in gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells */  /* data-wave 2026-10-08: was g_text1b_state_record_table_12x5_a */
 D_8009B8C8 = 0x8009B8C8; /* TexRec[1] selected for drawing (51268.c) */  /* data-wave 2026-10-08: was g_motion_ex_state_table_8x5 */
 D_8009B9D8 = 0x8009B9D8; /* TexRec[1], sibling of D_8009B8C8 */  /* data-wave 2026-10-08: was g_motion_ex_state_table_8x4 */
 D_8008EA00 = 0x8008EA00; /* 16-byte rows; snd_UpdateStageSounds passes row 5 or 6 to snd_QueuePositionalSound as a 3-D sound-source position */  /* data-wave 2026-10-08: was g_type_descriptor_table_8008EA00 */
@@ -932,7 +932,7 @@ g_sel_entry_availability_and_claims = 0x8009BCE4; /* 20 u8 entries indexed by en
 D_800A362C = 0x800A362C; /* cached fn ptr from BIOS call result + 0x7A0 (1952) offset; called via jalr */  /* data-wave 2026-10-09: was g_bios_callback_v0_1952 */
 D_800A3618 = 0x800A3618; /* _patch_pad's own $ra save slot (libapi/patch.c:14) */  /* data-wave 2026-10-09: was g_kernel_intr_ra_save_a */
 D_800A3628 = 0x800A3628; /* _send_pad's own $ra save slot (libapi/sendpad.c:10) */  /* data-wave 2026-10-09: was g_kernel_intr_ra_save_b */
-g_gpu_jittered_quad_pair_cycle = 0x800A326C; /* rising cyclic count: wrapped to 0..3 (% 4) on entry and incremented on exit; the call draws (it + 1) * 2 randomly placed sprite pairs (4D0A8.c:376-447) */  /* data-wave 2026-10-08: was g_eff_particle_remaining */
+g_gpu_jittered_quad_pair_cycle = 0x800A326C; /* rising cyclic count: wrapped to 0..3 (% 4) on entry and incremented on exit; the call draws (it + 1) * 2 randomly placed sprite pairs (4D0A8.c:375-469) */  /* data-wave 2026-10-08: was g_eff_particle_remaining */
 D_8009B2E0 = 0x8009B2E0; /* one 12-byte sprite-sheet header handed to the sprite drawer (0x3C is the containing array's row stride) */  /* data-wave 2026-10-08: was g_eff_particle_template_table */
 g_resource_default_pair_selections = 0x8008E5CC; /* u8[27][8]: [D_80101EC8[i].character_data_index][.weapon_id] goes to resource_SetPairSelectionSlotWithBoundChecks (9F9C.c:1925-1927, 2B344.c:190-191, :216) */  /* data-wave 2026-10-09: was g_char_lookup_table_b */
 g_resource_alternate_pair_selections = 0x8008E6A4; /* u8[27][6]: read instead of g_resource_default_pair_selections for some g_fight_mode_selector values (9F9C.c:1919-1923, 2B344.c:212-213) */  /* data-wave 2026-10-09: was g_char_lookup_table_c */
