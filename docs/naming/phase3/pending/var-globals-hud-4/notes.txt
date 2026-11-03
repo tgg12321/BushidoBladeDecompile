@@ -1,0 +1,30 @@
+# var-globals-hud-4 notes (cites at WT HEAD 17da63fd9, lane ln-naming-d; research tmp/codex/var-globals-hud-4-research.md (Opus, read-only, 17da63fd9); every access re-derived by the drafter by git grep -w over src, include, asm, bb2.ld, tools, engine, symbol_addrs.txt, named_syms.txt, docs/naming/function-names.csv; verdicts left empty for the reviewer)
+Result: 11 rows proposed (all research rows), 0 rows dropped, names changed from research: none. Access sets re-derived and equal to the research, no line number corrected (defs d_8BC50.c:121/126/127/131/132/138/143, 4D0A8.c:2021/2037/2042/2080; externs 4D0A8.c:339-341/1545/1584-1589, bb2.h:120; readers 4D0A8.c:351/362/411/412/352/363/1570/1572/1574/1576/1620/1623/1627/1630/1641/1642; asm listings and symbol_addrs.txt lines as in the CSV; none of the 11 in bb2.ld, tools, engine, named_syms.txt). All 11 proposed names have 0 hits in the whole worktree outside pending/. dry.txt: data_wave dry run rc=0, 11 addresses, no refusals; git status shows only the new pending dir.
+Evidence added over the research: none; CSV carried verbatim.
+
+NO_NAME / dropped: none this pass.
+
+Weakest rows for the reviewer
+1. 0x8009B820 / 0x8009B7A0 (stage_name): 'name' rests on one capture plus the per-stage strip shape (hud-2 'help' FAIL risk); the header drops with the cells. Fallback g_gpu_stage_card_stage_strip_cells / _sheet_header.
+2. 0x8009B2C8 (draw_mode_sheet_header_rows): Q132 argument (row = mode - 1 at every read); draw mode 2 row not captured. Fallback NO_NAME.
+3. 0x8009B770 (sheet_headers): mixes fixed and per-stage sheets; D_8009B794 interior-label hazard. Fallback NO_NAME.
+4. 0x8009B340 / B358 (strip / grid): shape-only words, draw mode 2 not captured.
+5. 0x8009B7D0 (map_cell) and 0x800A328C (map_marker_cell): one stage captured.
+
+Hazards: interior aliases stay own-address symbols (data_wave renames only own-address names): D_8009B2E0 (= D_8009B2C8[0][2], symbol_addrs.txt:936, asm gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle.s:60-61), D_8009B7B8 (= D_8009B7AC[1]) and D_8009B7C4 (= [2]) (symbol_addrs.txt:1086/:1087, asm gpu_DrawSpriteAtPackedTablePosition.s:42-43/:47-48), D_8009B794 (inside D_8009B770, rcos's folded base, symbol_addrs.txt:62/:1202, asm/funcs/rcos.s:21-23). The D_8009B7B8/B7C4 symbols remain referenced by include/game.h:489.
+
+Comment pass (data_wave rewrites code, asm operands and registry lines, not comments):
+- D_8009B2C8: src/main/4D0A8.c:389 (/* FAKE: pointer alias of D_8009B2C8[0][2]; ... */ Q133, rename the pair in the comment), :2014; include/game.h:701.
+- D_8009B340 / D_8009B358: src/main/4D0A8.c:335, :2015 (also lists D_8009B388, which var-globals-hud-3 renames).
+- D_8009B770: include/game.h:504, :506; symbol_addrs.txt:62 note '(inside D_8009B770)'.
+- D_8009B7A0: include/game.h:505; symbol_addrs.txt:793 note carries D_8009B7A0's own symbol (renamed) and 'cells D_8009B820' (note text, comment pass).
+- D_8009B7AC: include/game.h:489 (D_8009B7B8 / D_8009B7C4 stay); docs/engine/gpu_pipeline.md:158.
+- D_8009B7D0: src/main/d_8BC50.c:12 (list of single-cell .data objects).
+- D_8009B820: symbol_addrs.txt:793 (see above).
+- D_8009B7D8, D_8009B800, D_800A328C: no comment spelling in src or include.
+- History, leave: docs/naming/phase3/backlog.tsv, pending/var-globals-*/*, docs/naming/remaining_data_classification.json, docs/naming/runtime/** (evidence), tools/trace/scenarios/hud-*.json, docs/foundation/backlog.tsv, docs/grind/{borderline.md:311,314, decisions.md:1133, handoff-2026-09-30.md:63, owner-rulings-2026-09-26.md:875}, memory/grind/** (layer-2 retarget is naming_wave's job).
+- Formatting: longer names may re-wrap 4D0A8.c lines 339-341, 351-352, 362-363, 389, 411-412, 1545, 1570-1576, 1584-1589, 1620-1642; run tools/format.py on 4D0A8.c, d_8BC50.c.
+
+Successor lead: the four upload RECTs D_800A3294 / D_800A329C / D_800A32A4 / D_800A32AC (sole reader gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions, 4D0A8.c:1529-1537, RECTs :2081-2084): image / CLUT rects of the stage name strip (D_800A3294 texels at tpage 0x1F + vbase 0x80, D_800A329C its CLUT) and the stage picture (D_800A32A4 texels, D_800A32AC both 16-entry CLUTs), from the stage file cdrom_GetFileIndex(2, stage + 0x3D) (4D0A8.c:1523). Nameable from the same match once this wave lands.
+
+PRE-APPLY (naming-reviewer, 2026-11-03): 9 PASS, 2 FAIL. D_8009B820 g_gpu_stage_card_stage_name_cells and D_8009B7A0 g_gpu_stage_card_stage_name_sheet_header FAILed (N4: 'name' rests on the one stage-0x08 capture; code shows a per-stage 256x22 one-line strip). Replaced by the reviewer's SUGGESTED names g_gpu_stage_card_stage_strip_cells / g_gpu_stage_card_stage_strip_sheet_header (0 hits); R6 must judge them fresh at every use.

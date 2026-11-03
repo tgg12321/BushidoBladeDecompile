@@ -1,0 +1,41 @@
+==============================================================================
+DATA WAVE — 11 addresses, 11 identifiers remapped
+  0x800a328c: D_800A328C -> g_gpu_stage_card_map_marker_cell
+  0x8009b7ac: D_8009B7AC -> g_gpu_stage_card_map_marker_sheet_headers
+  0x8009b7d0: D_8009B7D0 -> g_gpu_stage_card_map_cell
+  0x8009b7d8: D_8009B7D8 -> g_gpu_stage_card_title_cells
+  0x8009b800: D_8009B800 -> g_gpu_stage_card_stage_picture_cells
+  0x8009b820: D_8009B820 -> g_gpu_stage_card_stage_strip_cells
+  0x8009b7a0: D_8009B7A0 -> g_gpu_stage_card_stage_strip_sheet_header
+  0x8009b770: D_8009B770 -> g_gpu_stage_card_sheet_headers
+  0x8009b340: D_8009B340 -> g_gpu_draw_mode_sheet_pair_strip_cells
+  0x8009b358: D_8009B358 -> g_gpu_draw_mode_sheet_pair_grid_cells
+  0x8009b2c8: D_8009B2C8 -> g_gpu_draw_mode_sheet_header_rows
+
+-- file edits (7) --
+  asm/funcs/gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells.s  (12)
+  asm/funcs/gpu_DrawSheetPairSelectedByDrawMode.s  (6)
+  asm/funcs/gpu_DrawSpriteAtPackedTablePosition.s  (4)
+  include/bb2.h  (1)
+  src/main/4D0A8.c  (30)
+  src/main/d_8BC50.c  (7)
+  symbol_addrs.txt  (15)
+
+-- registry lines --
+  symbol_addrs.txt:476 D_8009B2C8 -> g_gpu_draw_mode_sheet_header_rows
+  symbol_addrs.txt:477 D_8009B340 -> g_gpu_draw_mode_sheet_pair_strip_cells
+  symbol_addrs.txt:478 D_8009B358 -> g_gpu_draw_mode_sheet_pair_grid_cells
+  symbol_addrs.txt:481 D_8009B7AC -> g_gpu_stage_card_map_marker_sheet_headers
+  symbol_addrs.txt:793 D_8009B7A0 -> g_gpu_stage_card_stage_strip_sheet_header
+  symbol_addrs.txt:1062 D_8009B2C8 -> g_gpu_draw_mode_sheet_header_rows
+  symbol_addrs.txt:1063 D_8009B340 -> g_gpu_draw_mode_sheet_pair_strip_cells
+  symbol_addrs.txt:1064 D_8009B358 -> g_gpu_draw_mode_sheet_pair_grid_cells
+  symbol_addrs.txt:1084 D_8009B770 -> g_gpu_stage_card_sheet_headers
+  symbol_addrs.txt:1085 D_8009B7AC -> g_gpu_stage_card_map_marker_sheet_headers
+  symbol_addrs.txt:1088 D_8009B7D0 -> g_gpu_stage_card_map_cell
+  symbol_addrs.txt:1089 D_8009B7D8 -> g_gpu_stage_card_title_cells
+  symbol_addrs.txt:1090 D_8009B800 -> g_gpu_stage_card_stage_picture_cells
+  symbol_addrs.txt:1091 D_8009B820 -> g_gpu_stage_card_stage_strip_cells
+  symbol_addrs.txt:1107 D_800A328C -> g_gpu_stage_card_map_marker_cell
+
+DRY RUN — nothing written. Re-run with --apply.
