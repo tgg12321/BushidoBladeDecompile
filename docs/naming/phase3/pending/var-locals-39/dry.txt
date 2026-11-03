@@ -1,0 +1,40 @@
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (naming_member_apply.py handles T.m=n only; naming_wave.py is function-name only; same tool result as var-locals-38). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(base = every src/ and include/ .c/.h/.inc file plus Makefile read from the lane worktree ln-naming-b, HEAD 55767b8f2 = main at draft time, tools/naming_keycheck.py at 55767b8f2 with 226227361 and d92f8cce9; NAMING_KEYCHECK_ROOT = the worktree)
+accepted all 13 pairs (67 token substitutions: 4510C.c 46, 2B344.c 13, 596CC.c 7, 17AFC.c 1; no include/ file touched; every substitution required, no optional prototype edit reported; comment edits needed, see notes.txt R6 WATCH). Each pair was also run alone: all 13 accepted, none rejected (alone-counts sum to 67, equal to the together total).
+The count of every pair equals an independent token scan of the binding in its definition (signature and body, comments and strings blanked, ./-> member tokens excluded; a separate tokenizer, not the plan), pair by pair, line list and count: no mismatch (11/11 definition bindings equal; the two prototype-only pairs have 0 old-name tokens in their definitions and exactly one plan site each, the prototype line). The counts and line lists also equal the research file. The runs modified no file in the worktree.
+Per-pair substitutions (function:old=new count; plan lines at 55767b8f2):
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_38=goal_kind 8 (1819,2106,2110,2117,2120,2125,2183,2196)
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_8=route_script 6 (1751,2223,2249,2253,2256,2257)
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_10=stock_or_ballistic_script 7 (1753,2882,2892,2931,2933,2937,2938)
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_60=stock_count 8 (2894,2897,2906,2908,2911,2918,2925,2930)
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_40=use_stock 4 (1821,2914,2926,2928)
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_18=script_entry_kind 6 (1798,2780,2783,2797,2804,2849)
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_32=entry_cursor 7 (1811,2673,2674,2675,2689,2763,2855)
+  menu_UpdateRowMenu:flags=packed_cursors 7 (320,323,323,335,336,338,340; both same-named sibling block bindings, 226227361)
+  softbody_CreateForNode:cmds=params 1 (2B344.c:2523, the file-scope prototype only; d92f8cce9)
+  fight_InitNearestStartPairPlayback:var_1=followup_fighter_index 5 (1066,1076,1078,1080,1085)
+  gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear:a0=tracked_view_active 5 (2317,2318,2321,2324,2325)
+  gpu_SetFarViewGridFogControlAndCoordinateShift:a0=is_far_view 2 (2306,2307)
+  math_TestPreparedTriangleSphere:flag=arg0 1 (17AFC.c:2581, the file-scope prototype only; d92f8cce9; 2578 is another prototype's flag and is not in the plan)
+  (sum 67; per-file: 4510C.c 8+6+7+8+4+6+7 = 46, 2B344.c 1+5+5+2 = 13, 596CC.c 7, 17AFC.c 1)
+Prototype-only pairs verified: softbody_CreateForNode:cmds=params lands on 2B344.c:2523 'extern u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur);' and nothing in the definition (2619 already params; 2737 passes params); math_TestPreparedTriangleSphere:flag=arg0 lands on 17AFC.c:2581 (the definition 2986-2987 already spells arg0, 5 uses: 2987, 2988, 3028, 3030, 3031, all unchanged). menu_UpdateRowMenu:flags=packed_cursors is accepted with two declarations (320 case 1 block, 335 case 2 block) and shares one destination.
+Destinations: all 13 are distinct names, scoped (local) names. stock_or_ballistic_script, stock_count, use_stock, goal_kind, route_script, script_entry_kind, packed_cursors, followup_fighter_index, tracked_view_active: 0 git grep -w hits in src include. entry_cursor: occurs only as a parameter of node_BindFrameDataAndReserveEntryBuffer (32D04.c:1173-1193), another function. is_far_view: occurs only as the view-record member (include/game.h:1999, 9F9C.c:570-575), a member is another namespace and no token of the function. params (softbody_CreateForNode) is the definition's own parameter. arg0 (math_TestPreparedTriangleSphere) is the definition's own parameter.
+Comment lines that MUST change (Q133, pair word only; line numbers at 55767b8f2, 4510C.c; 16 lines, 22 token edits (the research said 17 lines: a miscount, 1+1+8+1+5 = 16); found by a comment scan of each renamed definition and the 15 lines above it for every old token, comment text only: these are the only hits; the scan ran for all 13 pairs):
+  4510C.c:1812 var_32 x2  (FAKE q alias)            `var_32's value, see q = var_32;`            -> entry_cursor's value ... q = entry_cursor;
+  4510C.c:1813 var_32 x1  (FAKE q alias)            `* var_32: score 58;`                         -> entry_cursor
+  4510C.c:2112 var_38 x1  (FAKE trailing test)      `&& var_38 == 1`                              -> `&& goal_kind == 1`
+  4510C.c:2237 var_8 x1   (FAKE contradictory test) `still reaches the var_8 call test`           -> route_script
+  4510C.c:2662 var_18 x3  (Ruling-11 work5 note, not FAKE) `a copy of var_18 for the var_18 < 5 and var_18 == 5 / 6 tests` (the word var_18 sits on this one line three times; 'copy of' is on 2661) -> script_entry_kind x3
+  4510C.c:2678 var_32 x1  (FAKE q alias)            `copies var_32's value`                       -> entry_cursor
+  4510C.c:2680 var_32 x1  (FAKE q alias)            `while var_32 stays in $s6`                   -> entry_cursor
+  4510C.c:2681 var_32 x1  (FAKE q alias)            `* var_32 the allocation order shifts`        -> entry_cursor
+  4510C.c:2684 var_32 x1  (FAKE q alias)            `(var_32 reads)`                              -> entry_cursor
+  4510C.c:2685 var_32 x1  (FAKE q alias)            `25 (var_32 reads)`                           -> entry_cursor
+  4510C.c:2687 var_32 x1  (FAKE q alias)            `(var_32 reads) */`                           -> entry_cursor
+  4510C.c:2771 var_18 x1  (FAKE do-while(0))        `weights var_18's`                            -> script_entry_kind
+  4510C.c:2772 var_18 x1 + var_32 x1 (FAKE do-while(0)) `references so var_18 is allocated ahead of var_32` -> script_entry_kind / entry_cursor
+  4510C.c:2773 var_18 x1 + var_32 x1 (FAKE do-while(0)) `(var_18 $s5, var_32 $s6, as in the target);` -> script_entry_kind / entry_cursor
+  4510C.c:2776 var_18 x1 + var_32 x1 (FAKE do-while(0)) `loop-scope var_18, var_32,`               -> script_entry_kind / entry_cursor
+  4510C.c:2778 var_32 x1  (FAKE do-while(0))        `through e / var_32: 18 / 58 */`              -> entry_cursor
+Comment lines that must NOT change: 4510C.c:428-432 (fighter_InitCpuControl's own var_18, another function), 4510C.c:2665-2671 (FAKE for var_59, spells no renamed token), 17AFC.c:2578 (math_TestSphereAgainstPreparedAxialVertexSpan's own flag), 17AFC.c:3026-3027 (the arg0 FAKE: arg0 stays arg0), 596CC.c:302-306 (var_0 / arg1 FAKE: no `flags` token), 2B344.c definitions of the other five functions: no comment names an old token.
+Line widths after substitution (python tools/format.py reflows them in the naming commit; token-preserving): over 80 columns at 4510C.c:1812 (77->89), 2237 (76->83), 2257 (78->85), 2662 (78->111), 2678 (76->82), 2680 (77->83), 2771 (77->88), 2772 (76->93), 2773 (70->87), 2776 (75->92), 2849 (79->90), 2931 (71->90), 2933 (64->83), 2938 (63->82). 2B344.c:2317 and 4510C.c:2892 stay within 80.
