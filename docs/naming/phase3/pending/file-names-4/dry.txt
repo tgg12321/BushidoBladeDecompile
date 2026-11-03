@@ -1,0 +1,97 @@
+# file-names-4 dry runs
+
+### main/51268 -> main/eff (the suggested name; `python tools/move_tu.py main/51268 main/eff`, cwd clean worktree at 7770a43ff)
+
+```
+move_tu: src/main/51268.c -> src/main/eff.c (dry run)
+  bb2.ld: 6 section line(s)
+  flag lists: none
+  canonical_asm_regions: 9 grant(s)
+  oracle/manifest.json: 1 key(s)
+  cc1_tu_expectation: 1 line(s)
+  queue.json: 0 item(s)
+  lanes.json regenerate: 0 path(s), 0 command(s), 0 subject(s), 0 input(s)
+  rule paths: 0 file(s)
+  files rewritten: bb2.ld, oracle/manifest.json, tools/canonical_asm_regions.json, tools/cc1_tu_expectation.txt, tools/tu_renames.tsv
+  other tracked references to the old id (review by hand; not rewritten):
+    .claude/skills/naming-session/SKILL.md:30:  wave edits, spelled as the TU id (`topic:tu:main/51268`: the path under `src/` without `.c`,
+    tools/grinder/scope_allow.txt:39:eff_StartRecycledCommandWithRoseLight src/main/51268.c src/main/64FD8.c undefined_syms_auto.txt
+    tools/grinder/tests/test_grindlib.py:409:        for path in ("src/main/51268.c", "src/main/psxsdk/libsnd/vs_vh.c",
+    tools/lanes/test_orchestrate.py:56:            (draft / "dry.txt").write_text("-- file edits (2) --\nsrc/main/51268.c\n"
+    tools/lanes/test_orchestrate.py:61:                             {"topic:tu:main/51268", "topic:tu:main/psxsdk/libgpu/sys"})
+    tools/lanes/test_orchestrate.py:62:            held = reg(**{"trace-x": self.live("topic:row:other", "topic:tu:main/51268")})
+    tools/repack_bnk.py:11:(src/main/51268.c) reads it and uploads it with two LoadImage calls:
+    tools/repack_stage.py:16:(src/main/51268.c): 12-byte entries (three s32), ending at the first entry
+    tools/trace/gdbtrace.py:54:    "hitmap": {"tus": ["main/51268"],     # per-mode hit map (needs a script):
+    tools/trace/gdbtrace.py:249:    matching one of hm["tus"] (fnmatch on the TU id, e.g. main/51268 or
+  (dry run: pass --apply to perform)
+```
+
+### (research, original name; FAILed pre-apply) main/51268 -> main/eff_command
+
+# (research tmp/codex/file-names-4-research.md, Opus, HEAD 7770a43ff)
+
+### main/51268 -> main/eff_command (`python tools/move_tu.py main/51268 main/eff_command`, cwd worktree, exit 0)
+
+```
+move_tu: src/main/51268.c -> src/main/eff_command.c (dry run)
+  bb2.ld: 6 section line(s)
+  flag lists: none
+  canonical_asm_regions: 9 grant(s)
+  oracle/manifest.json: 1 key(s)
+  cc1_tu_expectation: 1 line(s)
+  queue.json: 0 item(s)
+  lanes.json regenerate: 0 path(s), 0 command(s), 0 subject(s), 0 input(s)
+  rule paths: 0 file(s)
+  files rewritten: bb2.ld, oracle/manifest.json, tools/canonical_asm_regions.json, tools/cc1_tu_expectation.txt, tools/tu_renames.tsv
+  other tracked references to the old id (review by hand; not rewritten):
+    .claude/skills/naming-session/SKILL.md:30:  wave edits, spelled as the TU id (`topic:tu:main/51268`: the path under `src/` without `.c`,
+    tools/grinder/scope_allow.txt:39:eff_StartRecycledCommandWithRoseLight src/main/51268.c src/main/64FD8.c undefined_syms_auto.txt
+    tools/grinder/tests/test_grindlib.py:409:        for path in ("src/main/51268.c", "src/main/psxsdk/libsnd/vs_vh.c",
+    tools/lanes/test_orchestrate.py:56:            (draft / "dry.txt").write_text("-- file edits (2) --\nsrc/main/51268.c\n"
+    tools/lanes/test_orchestrate.py:61:                             {"topic:tu:main/51268", "topic:tu:main/psxsdk/libgpu/sys"})
+    tools/lanes/test_orchestrate.py:62:            held = reg(**{"trace-x": self.live("topic:row:other", "topic:tu:main/51268")})
+    tools/repack_bnk.py:11:(src/main/51268.c) reads it and uploads it with two LoadImage calls:
+    tools/repack_stage.py:16:(src/main/51268.c): 12-byte entries (three s32), ending at the first entry
+    tools/trace/gdbtrace.py:54:    "hitmap": {"tus": ["main/51268"],     # per-mode hit map (needs a script):
+    tools/trace/gdbtrace.py:249:    matching one of hm["tus"] (fnmatch on the TU id, e.g. main/51268 or
+  (dry run: pass --apply to perform)
+```
+
+git grep (`git -C "C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-b" grep -n -w -E "51268(\.c)?" -- src include symbol_addrs.txt named_syms.txt .claude/rules`):
+
+```
+.claude/rules/rodata-object-alignment.md:51:instead of condition 1: 51268 | 596CC at func_80068ECC; 3AB48 | 43500 | 4510C | snd | 4D0A8 at func_80052D00,
+include/bb2.h:595:/* 51268's sprite texture records (TexRec runs 0x8009B890..0x8009B9FF; sizes
+include/game.h:982: * ((x >> 4) & 0x3F)) and the texture u/v origin. 51268's g_eff_current_tex_rec
+include/game.h:992:/* The 0x2C-byte block g_eff_active_command_block points at (51268):
+include/game.h:1038:/* 20-byte record table at 0x800EFC78 (51268): 4 rows (particle_row_index)
+include/game.h:1054:/* eff_DrawBillboardList's layout of the 51268 work area
+include/game.h:1101:/* eff_DrawAnimatedQuads's layout of the 51268 work area
+include/game.h:1170:/* Unk1F800000Rec.effect_work_area, the 51268 work area g_eff_work_area points
+include/game.h:1187:/* 51268's view of the scratchpad from 0x1F800000 (SPAD51268).
+include/game.h:1189: * eff_BindScratchpad points 51268's D_800A34xx globals at these members; apart
+named_syms.txt:447:/* Init pattern (51268.c, eff_InitSpinningQuadWithDepthSelectedTextureFirstSlot..eff_InitRateSelectedCosineScaledQuad): 12-byte record + g_eff_command_phase slot set to 1 + 2-byte counter per id. */
+named_syms.txt:609:/* From 51268.c eff_StartRecycledCommandWithOrangeLight etc.  Complements the command block */
+named_syms.txt:942:/* From 51268.c eff_StartRecycledCommandWithRoseLight: same pattern as D_800F1160 / D_800F1164 */
+named_syms.txt:965:/* From 51268.c eff_ResetCommands (:145-163): clears 28 entries each */
+src/main/17AFC.c:28: * eff_StartRecycledYawedParticlesWithTextureSelection (51268.c: s32 *, s32,
+src/main/596CC.c:6: * crosses the cut; 51268.c's .sbss ends at D_800A34F4 and these functions own
+src/main/596CC.c:8: * (menu_HandleOptionMenuChoices's table, D_800159A0) follows 51268.o's. */
+src/main/596CC.c:2744:/* .data 0x8009BC04..0x8009BC1C, this file's whole .data (51268.c's
+src/main/d_8BC50.c:2: * sheets of 4D0A8.c's HUD and result screens, then 51268.c's effect texture
+src/main/d_8BC50.c:6: * 51268.o(.data) is empty, so 596CC.c's g_row_menu_row_state follows at
+src/main/d_8BC50.c:16: * .. D_8009BBFC (51268.c). Under -G8 the original compiler puts them in .sdata,
+src/main/d_8BC50.c:18: * 3. Neighbours in .data link order: 4D0A8.c and 51268.c, -G8 code modules
+src/main/d_8BC50.c:22: * (4D0A8.c), D_8009B890 .. D_8009BBFC (51268.c). */
+src/main/d_8BC50.c:160:/* 51268.c's: the effect texture records (TexRec runs),
+src/main/d_8C4E4.c:16: * (63D2C.c, 64FD8.c), g_working_record (4D0A8.c, 51268.c, 64FD8.c). */
+src/main/snd.c:14:/* Defined in 51268.c with an Unk800F1198Record *; the caller passes the
+symbol_addrs.txt:794:D_8009B8C8 = 0x8009B8C8; /* TexRec[1] selected for drawing (51268.c) */  /* data-wave 2026-10-08: was g_motion_ex_state_table_8x5 */
+symbol_addrs.txt:1249:g_eff_yawed_quad_tex_index = 0x800A3480; /* -> 0x1F8000A8, set by eff_BindScratchpad (51268.c:243) with g_eff_quad_rate_selector / g_eff_work_area */  // data-wave 2026-10-28: was g_scratchpad_ptr_a8
+symbol_addrs.txt:1442:g_eff_current_tex_rec = 0x800A3488; /* seeded with 0x1F800050 (eff_BindScratchpad); the 51268.c draw code points it at main-RAM TexRec tables */  /* data-wave 2026-10-08: was g_scratchpad_ptr_50 */
+symbol_addrs.txt:1447:g_eff_first_quad_buffer = 0x800A3420; /* POLY_FT4 buffer base A (eff_LoadImagesAndSetup's arg1); selected as the cursor at 0x800A37D4 when arg0 == 0 (51268.c:202-211) */  /* data-wave 2026-10-08: was g_gnd_fog_value_a */
+symbol_addrs.txt:2081:g_eff_billboards = 0x800F1198; /* list of 12-byte packed records (packed_x bit 0 = present, packed_x / 2 = x; packed_y & 7 = type, packed_y / 8 = y; z_coord = z) ended by one with packed_x bit 0 clear; each is drawn as one POLY_FT4 (51268.c:893-964) */  /* data-wave 2026-10-08: was g_eff_vertex_buffer */
+```
+
+TUs to claim at LAND: topic:tu:main/51268 (the row) and, from the hits, topic:tu:main/17AFC, topic:tu:main/596CC, topic:tu:main/d_8BC50, topic:tu:main/d_8C4E4, topic:tu:main/snd. .claude/rules/rodata-object-alignment.md:51 is a rule citation to rewrite too. move_tu's own leftover list (SKILL.md:30, scope_allow.txt:39, tests, repack_*.py, gdbtrace.py) is in the dry run above.
