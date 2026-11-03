@@ -7036,6 +7036,22 @@ def test_naming_keycheck_scoped_pairs() -> None:
     text = "int f(void) { int l; l = 1; return l; }"
     check("keycheck: simple outer local", proof("f:l=fresh", {"src/a.c": text},
           {"src/a.c": text.replace("l", "fresh")})[0])
+    # Same-named sibling block bindings take one destination together.
+    text = ("int f(int a) { switch (a) { case 1: do { int l = a; a = l + 1; } while (a < 3); break;"
+            " case 2: do { int l = a; a = l - 1; } while (a > 0); break; } return a; }")
+    ok, why = proof("f:l=fresh", {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "fresh", text)})
+    check("keycheck: sibling block bindings share the destination (" + why + ")", ok)
+    ok, why = proof("f:l=fresh", {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "fresh", text, count=2)})
+    check("keycheck: every sibling block binding must be renamed (" + why + ")", not ok)
+    for label, text, why_part in [
+            ("sibling plus function-level binding", "int f(void) { int l = 0; { int l = 1; g(l); } return l; }", "function-level binding"),
+            ("sibling plus parameter", "int f(int l) { { int l = 1; g(l); } { int l = 2; g(l); } return 0; }", "a parameter shadowed"),
+            ("nested same-named blocks", "int f(void) { { int l = 1; { int l = 2; g(l); } g(l); } return 0; }", "nested blocks"),
+            ("one block twice", "int f(void) { { int l = 1; g(l); int l = 2; g(l); } return 0; }", "one block"),
+            ("use between sibling blocks", "int f(void) { { int l = 1; g(l); } g(l); { int l = 2; g(l); } return 0; }", "outside every"),
+            ("use before the second binding", "int f(void) { { int l = 1; g(l); } { g(l); int l = 2; g(l); } return 0; }", "outside every")]:
+        ok, why = proof("f:l=fresh", {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "fresh", text)})
+        check("keycheck: sibling bindings reject " + label + " (" + why + ")", not ok and why_part in why)
     # Prototype scope: a renamed parameter's spelling in a file-scope prototype of f
     # may retain l or become the destination; a prototype-only pair (the definition
     # already names n) must rename every prototype spelling.
@@ -7270,7 +7286,6 @@ def test_naming_keycheck_scoped_pairs() -> None:
     for label, text, why_part in [
             ("use after nested block", "int l; int f(void) { { int l; l = 1; } return l; }", "after the nested"),
             ("use after inner of two blocks", "int l; int f(int x) { { { int l; l = x; } x = l; } return x; }", "after the nested"),
-            ("sibling block rebinding", "int f(void) { { int l; l = 1; } { int l; l = 2; } return 0; }", "found 2"),
             ("comma parenthesized declarator", "int f(void) { int a = 0, (l); l = a; return l; }", "comma declarator"),
             ("comma struct declarator", "struct S { int m; }; int f(void) { struct S a, l; l = a; return l.m; }", "comma declarator"),
             ("comma array-bound use", "int f(int l) { int a, b[l]; a = l; return a; }", "comma declarator"),

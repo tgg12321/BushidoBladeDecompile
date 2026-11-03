@@ -4103,13 +4103,51 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                     declarations.append(k)
                 elif ts[k - 1] in types or ts[k - 1] in ("__attribute", "__attribute__"):
                     raise ValueError(f"{spec}: cannot prove a simple local use/binding")
-            if len(declarations) != 1:
-                raise ValueError(f"{spec}: expected one simple binding, found {len(declarations)} (shadowing/unsupported declaration)")
+            if not declarations:
+                raise ValueError(f"{spec}: expected one simple binding, found 0 (shadowing/unsupported declaration)")
+            body = body_open
+            if len(declarations) > 1:
+                # Same-named sibling block bindings (`{ s32 l = ...; } ... { s32 l; }`)
+                # all take the one destination: each binding sits in its own nested
+                # block of the body, no block contains another, and every other
+                # spelling of old lies in one block after its binding. Then the
+                # function-wide substitution renames exactly those bindings' uses.
+                blocks = []
+                for binding in declarations:
+                    if binding < body:
+                        raise ValueError(f"{spec}: expected one simple binding, found {len(declarations)} (a parameter shadowed by a block binding)")
+                    depth = 0
+                    for k in range(body, binding):
+                        depth += (ts[k] == "{") - (ts[k] == "}")
+                    if depth <= 1:
+                        raise ValueError(f"{spec}: expected one simple binding, found {len(declarations)} (a function-level binding shadowed or repeated)")
+                    block, open_depth = binding - 1, 0
+                    while open_depth < 1:   # the innermost `{` still open at the binding
+                        open_depth += (ts[block] == "{") - (ts[block] == "}")
+                        block -= 1
+                    block += 1
+                    block_end = balanced(ts, block, "{", "}")
+                    declarator_end = binding + 1
+                    while declarator_end < len(ts) and ts[declarator_end] == "[":
+                        end = balanced(ts, declarator_end, "[", "]")
+                        if old in ts[declarator_end + 1:end]:
+                            raise ValueError(f"{spec}: outer-name reference in the binding's own declarator")
+                        declarator_end = end + 1
+                    blocks.append((binding, block, block_end))
+                for n, (_, a, b) in enumerate(blocks):
+                    if any(c <= b and a <= d for _, c, d in blocks[n + 1:]):
+                        raise ValueError(f"{spec}: expected one simple binding, found {len(declarations)} (same-named bindings in one block or nested blocks)")
+                for k in indices:
+                    if ts[k] != old or k in declarations or local_exception(ts, k):
+                        continue
+                    if not any(binding < k < block_end for binding, _, block_end in blocks):
+                        raise ValueError(f"{spec}: a use outside every same-named block binding's scope")
+                declarations = []   # proven: skip the single-binding checks below
             # A local declared in an inner block binds only to that block's end:
             # every use must lie inside it, so the function-wide substitution
             # renames exactly the uses of this one binding.
-            body = body_open
-            binding = declarations[0]
+            binding = declarations[0] if declarations else None
+        if not member and binding is not None:
             declarator_end = binding + 1
             while declarator_end < len(ts) and ts[declarator_end] == "[":
                 end = balanced(ts, declarator_end, "[", "]")
