@@ -357,8 +357,8 @@ typedef struct {
 /* D_SEL.BIN (resource file 6), the root 64FD8's menu_InitSelScreen loads at its
  * work area + 0x58 and keeps in SelWork.sel_resource_table (menu_StepSelScreen
  * hands it to the handlers as Unk8006EACCRec.resource_root). After the head:
- * unk_14..unk_38, the ten lists menu_RelocateSelLists relocates, each a list of
- * sprite sheets (pick_slot_sheets is indexed by
+ * unk_14..sheets_over_flat_quads, the ten lists menu_RelocateSelLists
+ * relocates, each a list of sprite sheets (pick_slot_sheets is indexed by
  * SelWork.selected_match_count_index); row_tile_rects, the rectangle rows
  * menu_DrawSelRowTiles draws.
  */
