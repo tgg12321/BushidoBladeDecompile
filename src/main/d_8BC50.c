@@ -9,9 +9,9 @@
  * g_gpu_time_and_counter_line_origins (two points,
  * gpu_DrawTimeFieldsAndDecimalCounter), the single cells
  * g_gpu_single_side_counter_label_cell, g_gpu_comparison_higher_score_cell
- * .. g_gpu_comparison_score_mark_cell, D_8009B5E8, D_8009B634, D_8009B7D0
- * (4D0A8.c), the one-record TexRec tables D_8009B8C8 .. D_8009B9E8 and the
- * SVECTORs D_8009BBE4
+ * .. g_gpu_comparison_score_mark_cell, g_gpu_seconds_hundredths_separator_cell,
+ * D_8009B634, D_8009B7D0 (4D0A8.c), the one-record TexRec tables D_8009B8C8 ..
+ * D_8009B9E8 and the SVECTORs D_8009BBE4
  * .. D_8009BBFC (51268.c). Under -G8 the original compiler puts them in .sdata,
  * so no -G8 file defined them.
  * 3. Neighbours in .data link order: 4D0A8.c and 51268.c, -G8 code modules

@@ -334,8 +334,8 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
  * (gpu_DrawSheetPairSelectedByDrawMode draws headers 0 / 1 of
  * row sheet_row_index with the cells at D_8009B340 / D_8009B358;
  * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle headers 2 and 3 / 4 with
- * D_8009B388's), then the cells: three under header 0 (count 3), six under
- * header 1 (count 6). */
+ * g_gpu_jittered_quad_pair_cells's), then the cells: three under header 0
+ * (count 3), six under header 1 (count 6). */
 extern Unk8009B0E0Record D_8009B2C8[2][5];
 extern Unk8009B400Record D_8009B340[3];
 extern Unk8009B400Record D_8009B358[6];
@@ -2019,8 +2019,8 @@ Unk8009B2BCRecord g_panel_frame_sizes[3] = {
 
 /* gpu_DrawSheetPairSelectedByDrawMode /
  * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle's header rows D_8009B2C8 and
- * their cells D_8009B340 / D_8009B358 / D_8009B388; the sheet headers
- * g_gpu_digit_label_and_line_segment_sheet_headers that
+ * their cells D_8009B340 / D_8009B358 / g_gpu_jittered_quad_pair_cells; the
+ * sheet headers g_gpu_digit_label_and_line_segment_sheet_headers that
  * gpu_DrawTimeFieldsAndDecimalCounter ..
  * gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells draw with, the cells
  * g_gpu_time_and_counter_cells, and the ten digit cells

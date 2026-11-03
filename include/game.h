@@ -477,8 +477,8 @@ typedef struct {
  * gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite returns the chunk size,
  * 0xC0. At most 5 SPRTs are written: gpu_AddSpriteCells writes at most one per
  * cell of the sheet header it is given (cell count: the byte at +2);
- * D_8009B6F0's header holds 3, and D_8009B6FC's holds 1, drawn once per digit
- * for up to two digits. */
+ * g_gpu_digit_count_shifted_sprite_and_large_digit_sheet_headers's header holds
+ * 3, and D_8009B6FC's holds 1, drawn once per digit for up to two digits. */
 typedef struct {
     SPRT unk_00[9];
     DR_MODE chunk_draw_mode;
