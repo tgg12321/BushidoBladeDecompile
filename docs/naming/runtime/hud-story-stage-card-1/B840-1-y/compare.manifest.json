@@ -1,0 +1,32 @@
+{
+  "kind": "compare",
+  "version": 1,
+  "base": "../baseline/capture.jsonl",
+  "other": "capture.jsonl",
+  "outputs": [
+    {
+      "path": "compare.stage_card.first.diff.png",
+      "sha1": "d99bd9d8bbcb58c2dfb334c4a50305284b35cc3a",
+      "size": 23870,
+      "stored": true
+    },
+    {
+      "path": "compare.stage_card.8450.diff.png",
+      "sha1": "08db46a799b6dd3bde61309e342e2156be37b1f7",
+      "size": 24032,
+      "stored": true
+    },
+    {
+      "path": "compare.stage_card.8600.diff.png",
+      "sha1": "08db46a799b6dd3bde61309e342e2156be37b1f7",
+      "size": 24032,
+      "stored": true
+    },
+    {
+      "path": "compare.stage_card.8750.diff.png",
+      "sha1": "08db46a799b6dd3bde61309e342e2156be37b1f7",
+      "size": 24032,
+      "stored": true
+    }
+  ]
+}

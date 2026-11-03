@@ -129946,6 +129946,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x800602AC	gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions	story-gengoro-stage-0e-1@1e4d10fc1ac3	t_stage	8215	8215	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x800602AC	gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions	story-pov-rematch-1@766b7b5b6104	t_stage	8215	8215	1	t_stage.last@8359#bdb8c6a866f4	hitmap:first 1 hits per phase only	0	
 0x800602AC	gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions	story-pov-sub-menu-1@5b40305ad49e	t_stage	8215	8215	1	t_stage.last@8359#bdb8c6a866f4	hitmap:first 1 hits per phase only	0	
+0x80060414	gpu_DrawSpriteAtPackedTablePosition	hud-story-stage-card-1/baseline@f4ba42592c0e	stage_card	8381	8381	1	stage_card.8450@8450#8c9ed88c64be	recorded hits only; capture limits apply	0	
 0x80060414	gpu_DrawSpriteAtPackedTablePosition	lib-story-final-fight-retail-1@2c1def7be909	after_katze	129352	129352	1	s.129600@129600#0c97f1fe9f95	hitmap:first 1 hits per phase only	0	
 0x80060414	gpu_DrawSpriteAtPackedTablePosition	lib-story-final-fight-retail-1@2c1def7be909	boot_intro	8381	8381	1	s.8899@8899#86d5daef52e3	hitmap:first 1 hits per phase only	0	
 0x80060414	gpu_DrawSpriteAtPackedTablePosition	lib-story-final-fight-retail-1@2c1def7be909	final_fight	153712	153712	1	s.153900@153900#729c7c873193	hitmap:first 1 hits per phase only	0	
@@ -129970,6 +129971,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80060414	gpu_DrawSpriteAtPackedTablePosition	story-gengoro-stage-0e-1@1e4d10fc1ac3	stage_16	26547	26547	1	stage_16.27500@27500#daf47b74fd5b	hitmap:first 1 hits per phase only	0	
 0x80060414	gpu_DrawSpriteAtPackedTablePosition	story-pov-rematch-1@766b7b5b6104	stage_card	8381	8381	1	stage_card.mid@8580#8c9ed88c64be	hitmap:first 1 hits per phase only	0	
 0x80060414	gpu_DrawSpriteAtPackedTablePosition	story-pov-sub-menu-1@5b40305ad49e	stage_card	8381	8381	1	stage_card.mid@8580#8c9ed88c64be	hitmap:first 1 hits per phase only	0	
+0x80060544	gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells	hud-story-stage-card-1/baseline@f4ba42592c0e	t_stage	8325	8327	2	stage_card.first@8360#bdb8c6a866f4	recorded hits only; capture limits apply	0	
 0x80060544	gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells	lib-story-final-fight-retail-1@2c1def7be909	after_katze	144280	144280	1	s.151400@151400#faf94ad1586e	hitmap:first 1 hits per phase only	0	
 0x80060544	gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells	lib-story-final-fight-retail-1@2c1def7be909	boot_intro	8325	8325	1	s.8899@8899#86d5daef52e3	hitmap:first 1 hits per phase only	0	
 0x80060544	gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells	lib-story-final-fight-retail-1@2c1def7be909	katze	127590	127590	1	s.127900@127900#f3de50fc58bd	hitmap:first 1 hits per phase only	0	

@@ -1,0 +1,31 @@
+{
+  "description": "story-concede's run cut at 8790, screenshots over the Story Mode stage card (gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells, gpu_DrawSpriteAtPackedTablePosition); poked variants move one 0x8009B7D0..0x8009B84F sprite cell's or 0x800A328C's y so the cell it places can be told apart",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/hud-story-stage-card-1/baseline/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/328C-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B7D0-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B7D8-0-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B7D8-1-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B7D8-2-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B7D8-3-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B7D8-4-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B800-0-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B800-1-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B800-2-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B800-3-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B820-0-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B820-1-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B820-2-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B820-3-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B840-0-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-1/B840-1-y/spec.json"
+  ],
+  "extends": "story-concede",
+  "end_frame": 8790,
+  "shots": [
+    "8450:stage_card.8450",
+    "8600:stage_card.8600",
+    "8750:stage_card.8750"
+  ]
+}
