@@ -12,9 +12,11 @@ description: >-
 # BB2 lanes: one orchestrator
 
 `tools/lanes/orchestrate.py` keeps N background Claude sessions running, one per lane. Each runs
-`/naming-session <lane>` or `/foundation-session <lane>` in its own worktree. When a session
-closes its lane, the orchestrator stops it and starts the next lane with work, until the backlogs
-run dry. This session only drives the orchestrator: it never opens a lane, edits files or lands
+`/naming-session <lane> --row <id>` or `/foundation-session <lane> --row <id>` in its own
+worktree: the orchestrator picks a row the session can start now (not claimed, its claims and
+dependencies free) and never gives one row twice, so it starts no session while every workable
+row's claims are held. When a session closes its lane, the orchestrator stops it and starts the
+next lane with work, until the backlogs run dry. This session only drives the orchestrator: it never opens a lane, edits files or lands
 anything itself.
 
 ## Arguments

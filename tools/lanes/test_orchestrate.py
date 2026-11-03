@@ -100,6 +100,117 @@ class Candidates(unittest.TestCase):
             self.assertEqual(o.draft_tu_claims({"draft": "-"}), set())
             self.assertEqual(o.draft_tu_claims({"draft": "missing/"}), set())
 
+    def test_locals_draft_claims_its_decl_tus(self):
+        # the 2026-11-03 case: a locals draft cites bare `4510C.c` names, no src/ path
+        import tempfile
+        with tempfile.TemporaryDirectory() as d, patch.object(o, "MAIN", Path(d)):
+            for tu in ("main/4510C", "main/51268", "main/31D3C"):
+                f = Path(d) / "src" / f"{tu}.c"
+                f.parent.mkdir(parents=True, exist_ok=True)
+                f.write_text("", encoding="utf-8")
+            draft = Path(d) / "w"
+            draft.mkdir()
+            (draft / "dry.txt").write_text("SKIPPED as a tree dry run\n", encoding="utf-8")
+            (draft / "local_manifest.csv").write_text(
+                "f,f:a,b,local,\"DECL 4510C.c:1808 (caller 31D3C.c:505)\"\n"
+                "g,g:a,b,local,\"DECL 51268.c:951\"\n", encoding="utf-8")
+            self.assertEqual(o.draft_tu_claims({"draft": "w"}),
+                             {"topic:tu:main/4510C", "topic:tu:main/51268"})
+            (draft / "local_manifest.csv").unlink()  # no DECL: every TU the draft names
+            (draft / "notes.txt").write_text("4510C.c 27, 51268.c 58; nope.c\n", encoding="utf-8")
+            self.assertEqual(o.draft_tu_claims({"draft": "w"}),
+                             {"topic:tu:main/4510C", "topic:tu:main/51268"})
+            b = bl(naming_stages=("reviewed",))
+            b["naming"][0]["draft"] = "w"
+            held = reg(**{"naming-x": self.live("topic:row:other", "topic:tu:main/4510C")})
+            self.assertEqual(o.plan_starts(b, held, st(), NOW, "naming"), [])
+
+    def test_naming_start_names_its_row_and_never_gives_it_twice(self):
+        b = bl(naming_stages=("idea", "reviewed", "researched"))
+        # LAND first, then PREPARE (researched), then idea
+        self.assertEqual(o.plan_starts(b, reg(), st(), NOW, "naming"),
+                         [("naming-a", "m1"), ("naming-b", "m2"), ("naming-c", "m0")])
+        # naming-a was given m1 and has not claimed it yet: m1 is not given again
+        s = st({"x": slot("naming-a", row="m1")})
+        self.assertEqual(o.plan_starts(b, reg(), s, NOW, "naming"),
+                         [("naming-b", "m2"), ("naming-c", "m0")])
+        # an adopted session without a row may take any one: one fewer start
+        s = st({"x": slot("naming-a")})
+        self.assertEqual(o.plan_starts(b, reg(), s, NOW, "naming"),
+                         [("naming-b", "m1"), ("naming-c", "m2")])
+
+    def test_foundation_start_names_a_startable_row(self):
+        b = bl(foundation=(("lanes", "idea"), ("lanes", "active"), ("data", "idea")))
+        b["foundation"][0]["claims"] = "path:tools/lanes/**"
+        b["foundation"][1]["claims"] = "path:tools/lanes/** path:bb2.ld!"
+        b["foundation"][2]["claims"] = "path:asm/data/**"
+        self.assertEqual(o.plan_starts(b, reg(), st(), NOW, "foundation"),
+                         [("lanes", "f1"), ("data", "f2")])  # active before idea
+        # a freeze on bb2.ld held elsewhere blocks f1; f0 is still startable
+        r = reg(**{"pins": self.live("path:bb2.ld!")})
+        self.assertEqual(o.plan_starts(b, r, st(), NOW, "foundation"),
+                         [("lanes", "f0"), ("data", "f2")])
+        # every open row's claims held: no launch for that lane
+        r = reg(**{"tooling": self.live("path:tools/**"), "x": self.live("path:asm/data/x.s")})
+        self.assertEqual(o.plan_starts(b, r, st(), NOW, "foundation"), [])
+        self.assertEqual(o.claim_blocked_foundation(b, r, NOW), ["lanes", "data"])
+        # a row someone else claimed by id is not startable
+        r = reg(**{"x": self.live("topic:row:f2")})
+        self.assertEqual(o.plan_starts(b, r, st(), NOW, "foundation"), [("lanes", "f1")])
+
+    def test_rows_given_or_planned_reserve_their_claims(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d, patch.object(o, "MAIN", Path(d)):
+            for tu in ("main/4D0A8", "main/17AFC", "main/2B344"):
+                f = Path(d) / "src" / f"{tu}.c"
+                f.parent.mkdir(parents=True, exist_ok=True)
+                f.write_text("", encoding="utf-8")
+            for i, decl in enumerate(("DECL 4D0A8.c:1", "DECL 4D0A8.c:2", "DECL 2B344.c:3")):
+                w = Path(d) / f"w{i}"
+                w.mkdir()
+                (w / "local_manifest.csv").write_text(f"f,f:a,b,local,\"{decl}\"\n",
+                                                      encoding="utf-8")
+            b = bl(naming_stages=("reviewed", "reviewed", "reviewed", "idea"))
+            for i in range(3):
+                b["naming"][i]["draft"] = f"w{i}"
+            # m0 and m1 both edit 4D0A8: only one of them starts in a pass
+            self.assertEqual(o.plan_starts(b, reg(), st(), NOW, "naming"),
+                             [("naming-a", "m0"), ("naming-b", "m2"), ("naming-c", "m3")])
+            # m0 given to a running session, not yet claimed: m1 still waits
+            s = st({"x": slot("naming-a", row="m0")})
+            self.assertEqual(o.plan_starts(b, reg(), s, NOW, "naming"),
+                             [("naming-b", "m2"), ("naming-c", "m3")])
+            # a prototype-only DECL and the skipped dry run's per-file counts both count
+            (Path(d) / "w2" / "local_manifest.csv").write_text(
+                "f,f:a,b,local,\"DECL (prototype) 17AFC.c:2580\"\n", encoding="utf-8")
+            (Path(d) / "w2" / "dry.txt").write_text("SKIPPED ... (2B344.c 13, 17AFC.c 1)\n",
+                                                    encoding="utf-8")
+            self.assertEqual(o.draft_tu_claims(b["naming"][2]),
+                             {"topic:tu:main/17AFC", "topic:tu:main/2B344"})
+        # foundation: two lanes whose rows claim one path never start in one pass
+        b = bl(foundation=(("tooling", "idea"), ("lanes", "idea")))
+        b["foundation"][0]["claims"] = "path:tools/naming_keycheck.py"
+        b["foundation"][1]["claims"] = "path:tools/**"
+        self.assertEqual(o.plan_starts(b, reg(), st(), NOW, "foundation"), [("tooling", "f0")])
+        s = st({"x": slot("tooling", row="f0")})
+        self.assertEqual(o.plan_starts(b, reg(), s, NOW, "foundation"), [])
+
+    def test_dependency_wait_is_not_a_claim_block(self):
+        b = bl(naming_stages=("idea", "blocked"))
+        b["naming"][0]["note"] = "lands after m1"
+        self.assertEqual(o.plan_starts(b, reg(), st(), NOW, "naming"), [])
+        self.assertEqual(o.claim_blocked_naming_ids(b, reg(), NOW), [])
+
+    def test_dependency_waits_for_the_named_row(self):
+        b = bl(naming_stages=("idea",), foundation=(("lanes", "idea"), ("lanes", "idea")))
+        b["foundation"][0]["note"] = "Order: after f1 (rows 3-6 first)."
+        b["foundation"][1]["note"] = "lands after m0; depends on the tests"
+        self.assertEqual(o.plan_starts(b, reg(), st(), NOW, "foundation"), [])
+        b["naming"][0]["stage"] = "landed"
+        self.assertEqual(o.plan_starts(b, reg(), st(), NOW, "foundation"), [("lanes", "f1")])
+        b["foundation"][1]["stage"] = "landed"
+        self.assertEqual(o.plan_starts(b, reg(), st(), NOW, "foundation"), [("lanes", "f0")])
+
     def test_alternates_and_skips_done_lanes(self):
         self.assertEqual(o.candidates(bl(), reg(), st(), NOW, None),
                          ["naming-a", "pins", "naming-b", "data"])
@@ -711,7 +822,7 @@ class Tick(unittest.TestCase):
                          "naming waits for the naming backlog to change")
         b["naming"][0]["note"] = "PROMPT READY"
         self.assertTrue(o.tick(self.args))
-        self.assertEqual(self.started, ["/naming-session naming-a"])
+        self.assertEqual(self.started, ["/naming-session naming-a --row m0"])
         self.assertNotIn("no_progress_naming", o.load_state())
         self.assertNotIn("waiting", o.load_state())
 
@@ -833,12 +944,12 @@ class Tick(unittest.TestCase):
         o.disk_free_gb = lambda path=None: 50.0
         with redirect_stdout(io.StringIO()):
             self.assertTrue(o.tick(self.args))  # space back: starts again
-        self.assertEqual(self.started, ["/foundation-session pins"])
+        self.assertEqual(self.started, ["/foundation-session pins --row f0"])
 
     def test_fills_then_replaces_finished(self):
         o.write_max(1)
         self.assertTrue(o.tick(self.args))
-        self.assertEqual(self.started, ["/foundation-session pins"])
+        self.assertEqual(self.started, ["/foundation-session pins --row f0"])
         sid = next(iter(o.load_state()["sessions"]))
         self.reg["lanes"]["pins"] = {"owner": "S" + sid, "heartbeat": time.time()}
         self.assertTrue(o.tick(self.args))  # open and working: nothing new
@@ -847,7 +958,7 @@ class Tick(unittest.TestCase):
         self.listing[sid]["state"] = "done"
         self.assertTrue(o.tick(self.args))
         self.assertEqual(self.stopped, [sid])
-        self.assertEqual(self.started[-1], "/foundation-session data")
+        self.assertEqual(self.started[-1], "/foundation-session data --row f1")
         self.assertIn("pins", o.load_state()["no_progress"])
 
     def test_failed_listing_keeps_slots(self):
@@ -925,7 +1036,7 @@ class Tick(unittest.TestCase):
             o.raise_attention = saved
         st = o.load_state()
         self.assertNotIn(sid, st["sessions"])            # the finished slot is gone for good
-        self.assertEqual(self.started[-1], "/foundation-session data")
+        self.assertEqual(self.started[-1], "/foundation-session data --row f1")
 
     def test_when_away_waits_plain_pause_exits(self):
         o.write_max(1)
@@ -936,7 +1047,7 @@ class Tick(unittest.TestCase):
         self.assertIn("pins", o.load_state()["waiting"])
         o.owner_away = lambda: True
         self.assertTrue(o.tick(self.args))
-        self.assertEqual(self.started, ["/foundation-session pins"])
+        self.assertEqual(self.started, ["/foundation-session pins --row f0"])
         o.owner_away = lambda: False
         o.main(["pause", "pins"])                        # now a plain pause, like data
         o.STATE.unlink()
@@ -957,6 +1068,24 @@ class Tick(unittest.TestCase):
         self.assertTrue(o.tick(self.args))
         self.assertEqual(self.started, [])
         self.assertIn("other lanes' claims", o.load_state()["waiting"])
+
+    def test_no_launch_when_every_workable_rows_claims_are_held(self):
+        # naming row m0 is claimed; foundation lane pins' only row needs a held path
+        b = bl(naming_stages=("idea",), foundation=(("pins", "idea"),))
+        b["foundation"][0]["claims"] = "path:named_syms.txt!"
+        o.backlogs = lambda: b
+        o.write_max(3)
+        self.reg = {"lanes": {"naming-z": {"owner": "X", "heartbeat": time.time(),
+                                           "claims": ["topic:row:m0", "path:named_syms.txt"]}}}
+        self.assertTrue(o.tick(self.args))
+        self.assertEqual(self.started, [])
+        self.assertIn("foundation lanes pins wait", o.load_state()["waiting"])
+        self.reg = {"lanes": {}}  # the holder lands and releases: both start, each with its row
+        self.assertTrue(o.tick(self.args))
+        self.assertEqual(sorted(self.started), ["/foundation-session pins --row f0",
+                                                "/naming-session naming-a --row m0"])
+        self.assertEqual(sorted(s["row"] for s in o.load_state()["sessions"].values()),
+                         ["f0", "m0"])
 
     def test_claim_blocked_rows_keep_polling_under_the_hold(self):
         o.backlogs = lambda: bl(naming_stages=("idea",), foundation=())
@@ -1013,7 +1142,7 @@ class Tick(unittest.TestCase):
             o.tick(self.args)
         finally:
             o.write_state = real
-        self.assertEqual(self.started, ["/foundation-session pins", "/foundation-session data"])
+        self.assertEqual(self.started, ["/foundation-session pins --row f0", "/foundation-session data --row f1"])
         self.assertEqual(o.load_state()["sessions"], {})
         o.tick(self.args)                 # both adopted from the listing, neither started again
         self.assertEqual(len(self.started), 2)
@@ -1026,8 +1155,8 @@ class Tick(unittest.TestCase):
         self.listing["dddddddd"] = {"name": "lane-pins", "state": "working", "pid": 9,
                                     "sessionId": "SD"}
         o.tick(self.args)
-        self.assertNotIn("/foundation-session pins", self.started)
-        self.assertEqual(self.started, ["/foundation-session data"])
+        self.assertNotIn("/foundation-session pins --row f0", self.started)
+        self.assertEqual(self.started, ["/foundation-session data --row f1"])
 
     def test_codex_start_failure_backs_off(self):
         o.main(["codex", "on"])
@@ -1046,7 +1175,7 @@ class Tick(unittest.TestCase):
         o.main(["pause", "pins"])
         o.write_max(1)
         o.tick(self.args)
-        self.assertEqual(self.started, ["/foundation-session data"])
+        self.assertEqual(self.started, ["/foundation-session data --row f1"])
         self.assertIn("pins", o.load_paused())
         o.main(["resume", "pins"])
         self.assertEqual(o.load_paused(), {})
@@ -1061,7 +1190,7 @@ class Tick(unittest.TestCase):
         o.main(["codex", "on"])
         o.write_max(1)
         o.tick(self.args)
-        self.assertEqual(self.started, ["/foundation-session pins", o.CODEX_PROMPT])
+        self.assertEqual(self.started, ["/foundation-session pins --row f0", o.CODEX_PROMPT])
         self._finish_codex()   # strike 1: restarted
         self._finish_codex()   # strike 2: not restarted
         st = o.load_state()
@@ -1118,7 +1247,7 @@ class Tick(unittest.TestCase):
         st = o.load_state()
         self.assertNotIn("41a20439", st["sessions"])
         self.assertNotIn("dddddddd", st["sessions"])
-        self.assertEqual(self.started, ["/foundation-session pins"])
+        self.assertEqual(self.started, ["/foundation-session pins --row f0"])
 
     def test_idle_session_owning_its_lane_is_adopted(self):
         self.listing["dddddddd"] = {"name": "lane-pins", "state": "done", "status": "idle",
@@ -1127,7 +1256,7 @@ class Tick(unittest.TestCase):
         o.write_max(1)
         o.tick(self.args)
         self.assertTrue(o.load_state()["sessions"]["dddddddd"]["adopted"])
-        self.assertNotIn("/foundation-session pins", self.started)
+        self.assertNotIn("/foundation-session pins --row f0", self.started)
 
     def test_codex_idle_without_opening_finishes_after_grace(self):
         o.main(["codex", "on"])

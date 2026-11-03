@@ -10,8 +10,12 @@ description: >-
 
 # BB2 foundation: one bounded lane session
 
-Invocation: `/foundation-session <lane>` (for example `/foundation-session pins`). The lane is a
-`lane` value in `docs/foundation/backlog.tsv`. With no argument, run
+Invocation: `/foundation-session <lane> [--row <id>]` (for example
+`/foundation-session pins --row pins-audit`). The lane is a `lane` value in
+`docs/foundation/backlog.tsv`. The orchestrator always passes `--row`: it has already checked that
+the row's stage, claims and dependencies let it start, so work **that row** and do not survey the
+backlog. If its claim is refused, or the row on main is no longer open, change nothing, close the
+lane and stop (report why). With no `--row`, take the row as in step 2. With no argument at all, run
 `python tools/lanes/lanes.py status`, pick the first lane whose rows are not all landed and that no
 live session owns, and say which one you took.
 
@@ -50,9 +54,10 @@ live session owns, and say which one you took.
    `python tools/lanes/lanes.py fresh <lane>` to start from current main (it refuses if unlanded
    commits exist: land those first).
 2. Read the lane's rows in `docs/foundation/backlog.tsv` (columns `id lane stage claims note`;
-   stages `idea` -> `active` -> `landed`, or `dropped` with the reason in `note`). Take the first
-   `active` row, else the first `idea` row.
-3. Do at most **3 units**. A unit is one row, or one TU / one range of a per-TU row such as
+   stages `idea` -> `active` -> `landed`, or `dropped` with the reason in `note`). Take the
+   `--row` row; without one, the first `active` row, else the first `idea` row.
+3. Do at most **3 units**. With `--row`, every unit is on that row (a per-TU row gives one unit
+   per TU or range); once the row is landed, stop. A unit is one row, or one TU / one range of a per-TU row such as
    `fake-reduce`, `hygiene-w` or `data-split`. Each unit:
    - `lanes.py claim <lane> <the row's claims> [topic:row:<id>]`.
    - Do the work in the worktree. Prove it: SHA1 == oracle via

@@ -26,10 +26,15 @@ waits until the naming backlog changes (a row's id, stage or note, or its workab
 For a no-progress, stalled or lost session the session's last message (usually its question) is
 saved under tmp/lanes-state/attention/ and listed by `status` until `ack`.
 
-Picking work: naming lanes (naming-a, naming-b, ...) while docs/naming/phase3/backlog.tsv has more
-workable rows (idea/researched/reviewed) than naming sessions; foundation lanes in
-docs/foundation/backlog.tsv order while a lane has rows not landed/dropped/blocked
-(blocked = waits on an owner ruling). Naming and foundation
+Picking work: every start names its row (`/naming-session <lane> --row <id>`), one the session
+can start now: no live lane holds `topic:row:<id>` or (foundation) overlaps the row's `claims`,
+(naming `reviewed`) no live lane holds a TU its draft edits, and every row its note says it
+`lands after` / `Order: after` / `depends on` is landed or dropped. No row is given to two
+sessions. Naming lanes (naming-a, naming-b, ...) start one per startable row of
+docs/naming/phase3/backlog.tsv (idea/researched/reviewed; reviewed first), less the naming
+sessions not yet on a row; foundation lanes in docs/foundation/backlog.tsv order, each with its
+first startable `active` row, else its first startable open row (not landed/dropped/blocked;
+blocked = waits on an owner ruling). Rows held only by claims keep it polling. Naming and foundation
 alternate, the kind with fewer running sessions first. Lanes owned in the registry by any live session are skipped, and so are paused lanes
 (tmp/lanes-state/paused.json; `naming` pauses every naming lane; a `--when-away` lane starts only
 after 20 min without keyboard/mouse input). `researching` rows wait on a Codex job: they count as
@@ -60,7 +65,8 @@ import tempfile
 import time
 from pathlib import Path
 
-from lanes import HEARTBEAT_STALE_SECS, gate_pid_alive, pid_namespace
+from lanes import (HEARTBEAT_STALE_SECS, Refuse, gate_pid_alive, globs_overlap, pid_namespace,
+                   split_token)
 
 # A gate ticket hides a session's stall only this long after it was enqueued: a hung land keeps
 # its heartbeat fresh forever, and the lanes queued behind it would never be reported.
@@ -604,15 +610,42 @@ def draft_tu_claims(r: dict) -> set[str]:
         m = None
     if m and DRAFT_TU.search(m.group(1).replace("\\", "/")):
         return {f"topic:tu:{t}" for t in DRAFT_TU.findall(m.group(1).replace("\\", "/"))}
-    out = set()  # no dry-run edit list (locals waves): every TU the draft names
-    for f in root.iterdir():
+    texts = []  # no dry-run edit list (locals waves): the TUs the draft cites
+    for f in sorted(root.iterdir()):
         if f.is_file() and f.suffix in (".txt", ".csv", ".tsv", ".py"):
             try:
-                text = f.read_text(encoding="utf-8", errors="replace").replace("\\", "/")
-                out.update(f"topic:tu:{m}" for m in DRAFT_TU.findall(text))
+                texts.append(f.read_text(encoding="utf-8", errors="replace").replace("\\", "/"))
             except OSError:
                 pass
+    text = "\n".join(texts)
+    bare = tu_basenames()
+    # A locals manifest cites each binding's definition as `DECL 4510C.c:1808`: the TU the pair
+    # edits. Without one, every TU the draft names (src/ paths and bare `4510C.c` file names).
+    decl = {bare[b] for b in DRAFT_DECL.findall(text) if b in bare}
+    try:  # a skipped locals dry run still lists its per-file counts: `4510C.c 46, 17AFC.c 1`
+        dry = (root / "dry.txt").read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        dry = ""
+    decl |= {bare[b] for b in DRY_COUNTS.findall(dry) if b in bare}
+    if decl:
+        return {f"topic:tu:{t}" for t in decl}
+    out = {f"topic:tu:{t}" for t in DRAFT_TU.findall(text)}
+    out.update(f"topic:tu:{bare[b]}" for b in DRAFT_BARE.findall(text) if b in bare)
     return out
+
+
+DRAFT_DECL = re.compile(r"\bDECL\s+(?:\([^)]*\)\s+)?(?:src/main/)?([0-9A-Za-z_]+)\.c:\d")
+DRY_COUNTS = re.compile(r"(?<![/\w])([0-9A-Za-z_]+)\.c \d+\b")
+DRAFT_BARE = re.compile(r"(?<![/\w])([0-9A-Za-z_]+)\.c\b")
+
+
+def tu_basenames() -> dict[str, str]:
+    """`4510C` -> `main/4510C` for every game/library TU whose file name is unique under src/."""
+    seen: dict[str, list[str]] = {}
+    for p in (MAIN / "src").rglob("*.c") if (MAIN / "src").is_dir() else ():
+        tu = p.relative_to(MAIN / "src").with_suffix("").as_posix()
+        seen.setdefault(p.stem, []).append(tu)
+    return {b: ts[0] for b, ts in seen.items() if len(ts) == 1}
 
 
 def held_claims(reg: dict, now: float) -> dict[str, str]:
@@ -632,20 +665,128 @@ def startable_naming_rows(bl: dict, reg: dict, now: float,
     these instead of every workable row stops sessions that start, find every row blocked by
     another lane's claims, and quit."""
     held = held_claims(reg, now) if held is None else held
+    idx = row_index(bl)
     out = []  # member waves' topic:type claims are not checked: one open row per track
     for r in bl["naming"]:
         if not naming_row_workable(r) or f"topic:row:{r.get('id')}" in held:
             continue
         if r.get("stage") == "reviewed" and draft_tu_claims(r) & held.keys():
             continue
+        if not deps_met(r, idx):
+            continue
         out.append(r)
+    # the skill's pick order: LAND (reviewed) first, then researched / researching, then idea
+    rank = {"reviewed": 0, "researched": 1, "researching": 1}
+    return sorted(out, key=lambda r: rank.get(r.get("stage"), 2))
+
+
+# `lands after X` / `Order: after X` / `depends on X` in a note: the row starts only once row X
+# (any backlog) is landed or dropped. A word that names no row is ignored.
+DEPENDS = re.compile(r"(?i)\b(?:lands after|order: after|depends on)\s+`?([a-z][\w.-]*[a-z0-9])")
+DEP_DONE = {"landed", "dropped"}
+
+
+def row_index(bl: dict) -> dict[str, dict]:
+    out: dict[str, dict] = {}
+    for kind in ("naming", "foundation"):
+        for r in bl.get(kind, []):
+            out.setdefault(str(r.get("id")), r)
+    return out
+
+
+def deps_met(r: dict, idx: dict[str, dict]) -> bool:
+    for dep in DEPENDS.findall(r.get("note") or ""):
+        d = idx.get(dep)
+        if d is not None and d is not r and d.get("stage") not in DEP_DONE:
+            return False
+    return True
+
+
+def _tokens(text: str) -> list[tuple[str, str]]:
+    out = []
+    for tok in (text or "").split():
+        try:
+            kind, val, _ = split_token(tok.strip("[]"))
+        except Refuse:
+            continue
+        out.append((kind, val.lower() if kind == "path" else val))
+    return out
+
+
+def claims_held(tokens: list[tuple[str, str]], held: dict[str, str]) -> str | None:
+    """The lane holding a claim that overlaps one of `tokens` (as `lanes.py claim` would refuse:
+    equal topics, overlapping path globs), else None."""
+    for htok, lane in held.items():
+        try:
+            hk, hv, _ = split_token(htok)
+        except Refuse:
+            continue
+        hv = hv.lower() if hk == "path" else hv
+        for k, v in tokens:
+            if k == hk and (v == hv if k == "topic" else globs_overlap(v, hv)):
+                return lane
+    return None
+
+
+def row_claims(r: dict) -> set[str]:
+    """The claim tokens a session working row `r` will take: its row, plus a foundation row's
+    `claims` column or a `reviewed` naming row's draft TUs (its LAND)."""
+    out = {f"topic:row:{r.get('id')}"}
+    if "lane" in r:
+        out.update(f"{k}:{v}" for k, v in _tokens(r.get("claims") or ""))
+    elif r.get("stage") == "reviewed":
+        out |= draft_tu_claims(r)
+    return out
+
+
+def reserve(held: dict[str, str], lane: str, r: dict):
+    """Count row `r`'s claims as held (by `lane`) while planning, before its session claims."""
+    for tok in row_claims(r):
+        held.setdefault(tok, lane)
+
+
+def foundation_row_startable(r: dict, held: dict[str, str], idx: dict[str, dict]) -> bool:
+    if r.get("stage") in FOUNDATION_DONE or not deps_met(r, idx):
+        return False
+    toks = _tokens(r.get("claims") or "") + [("topic", f"row:{r.get('id')}")]
+    return claims_held(toks, held) is None
+
+
+def foundation_lane_row(bl: dict, lane: str, held: dict[str, str],
+                        idx: dict[str, dict] | None = None) -> str | None:
+    """The row a new session on `lane` takes: its first startable `active` row, else its first
+    startable other open row (backlog order). None when every open row waits on a claim or a
+    dependency."""
+    idx = row_index(bl) if idx is None else idx
+    rows = [r for r in bl["foundation"] if r.get("lane") == lane]
+    for want_active in (True, False):
+        for r in rows:
+            if (r.get("stage") == "active") == want_active and foundation_row_startable(r, held,
+                                                                                     idx):
+                return str(r.get("id"))
+    return None
+
+
+def claim_blocked_foundation(bl: dict, reg: dict, now: float) -> list[str]:
+    """Foundation lanes with open rows none of which can start now because of live claims."""
+    held = held_claims(reg, now)
+    idx = row_index(bl)
+    out = []
+    for r in bl["foundation"]:
+        lane = r.get("lane", "")
+        if (lane and lane not in out and r.get("stage") not in FOUNDATION_DONE
+                and not lane_owned(reg, lane, now) and foundation_lane_row(bl, lane, held, idx) is None
+                and any(foundation_row_startable(x, {}, idx) for x in bl["foundation"]
+                        if x.get("lane") == lane)):
+            out.append(lane)
     return out
 
 
 def claim_blocked_naming_ids(bl: dict, reg: dict, now: float) -> list[str]:
     """Workable rows no new session can take because of live claims. They clear when the holder
     lands or its claims go stale (STALE_SECS), so the orchestrator keeps polling for them."""
-    return sorted(set(workable_naming_ids(bl))
+    idx = row_index(bl)  # a row waiting on a dependency is not claim-blocked
+    return sorted({i for i in workable_naming_ids(bl) if deps_met(idx[i], idx)}
                   - {r["id"] for r in startable_naming_rows(bl, reg, now)})
 
 
@@ -669,38 +810,68 @@ def naming_hold(bl: dict) -> dict:
 def candidates(bl: dict, reg: dict, st: dict, now: float, only: str | None,
                paused: dict | None = None, away: bool = False,
                live: set | frozenset = frozenset()) -> list[str]:
-    """Lanes to start next, best first (naming and foundation alternate). `live`: lanes with a
-    running `lane-<lane>` session, tracked or not, which count as busy."""
+    """Lanes to start next, best first (see plan_starts)."""
+    return [lane for lane, _ in plan_starts(bl, reg, st, now, only, paused, away, live)]
+
+
+def plan_starts(bl: dict, reg: dict, st: dict, now: float, only: str | None,
+                paused: dict | None = None, away: bool = False,
+                live: set | frozenset = frozenset()) -> list[tuple[str, str | None]]:
+    """(lane, row id) pairs to start next, best first (naming and foundation alternate). Every
+    start names the row the session works: a startable row (no live lane holds its row or the
+    claims its work needs, its dependencies landed) that no running session was given. `live`:
+    lanes with a running `lane-<lane>` session, tracked or not, which count as busy."""
     paused = paused or {}
     busy = {s["lane"] for s in st["sessions"].values()} | set(live)
+    given = {s["lane"]: s["row"] for s in st["sessions"].values() if s.get("row")}
     skip = set(st["no_progress"])
     hold = naming_hold(bl)
     workable_ids = hold["workable"]
     if ("no_progress_naming" in st
             and st["no_progress_naming"] != hold):
         del st["no_progress_naming"]
-    naming: list[str] = []
+    held = held_claims(reg, now)
+    idx = row_index(bl)
+    # Rows already given to a running session (not yet claimed) and rows planned in this pass
+    # reserve the claims their work will take, so two starts never head for one TU or path.
+    for lane, row in given.items():
+        if row in idx:
+            reserve(held, lane, idx[row])
+    naming: list[tuple[str, str | None]] = []
     if only in (None, "naming") and "no_progress_naming" not in st:
-        held = held_claims(reg, now)
-        workable = len(startable_naming_rows(bl, reg, now, held))
+        rows, taken = [], dict(held)
+        for r in startable_naming_rows(bl, reg, now, held):
+            if str(r.get("id")) in given.values() or row_claims(r) & taken.keys():
+                continue
+            rows.append(r)
+            reserve(taken, "", r)
         owned = {l for l in reg.get("lanes", {}) if lane_owned(reg, l, now)}
         on_row = {f"topic:row:{i}" for i in workable_ids}
         held_rows = {lane for tok, lane in held.items() if tok in on_row}
-        # naming lanes already on a row are excluded with that row; the rest may be picking one
+        # naming lanes on a row (claimed, or given at start) are excluded with that row; a lane
+        # with neither (an adopted pre-dispatch session, or one between rows) may pick any row
         active = sum(1 for lane in busy | owned
-                     if lane.startswith("naming") and lane not in held_rows)
+                     if lane.startswith("naming") and lane not in held_rows and lane not in given)
         free = [f"naming-{c}" for c in "abcdefghijklmnopqrstuvwxyz"
                 if f"naming-{c}" not in busy and not lane_owned(reg, f"naming-{c}", now)
                 and not pause_blocks(paused, f"naming-{c}", away)]
-        naming = free[:max(0, workable - active)]
-    found: list[str] = []
+        rows = rows[:max(0, len(rows) - active)]
+        naming = [(lane, str(r.get("id"))) for lane, r in zip(free, rows)]
+        for lane, r in zip(free, rows):
+            reserve(held, lane, r)
+    found: list[tuple[str, str | None]] = []
     if only in (None, "foundation"):
+        seen: set[str] = set()
         for r in bl["foundation"]:
             lane = r.get("lane", "")
-            if (lane and r.get("stage") not in FOUNDATION_DONE and lane not in found
+            if (lane and r.get("stage") not in FOUNDATION_DONE and lane not in seen
                     and lane not in busy and lane not in skip and not lane_owned(reg, lane, now)
                     and not pause_blocks(paused, lane, away)):
-                found.append(lane)
+                seen.add(lane)
+                row = foundation_lane_row(bl, lane, held, idx)
+                if row is not None:
+                    found.append((lane, row))
+                    reserve(held, lane, idx[row])
     # The kind with fewer running sessions goes first, so a freed slot does not always go back
     # to naming while foundation lanes wait (ties: naming first).
     lanes_running = [s["lane"] for s in st["sessions"].values() if not is_codex(s)]
@@ -708,7 +879,7 @@ def candidates(bl: dict, reg: dict, st: dict, now: float, only: str | None,
     n_naming = sum(1 for l in lanes_running if l.startswith("naming"))
     first, second = ((found, naming) if len(lanes_running) - n_naming < n_naming
                      else (naming, found))
-    out: list[str] = []
+    out: list[tuple[str, str | None]] = []
     for i in range(max(len(naming), len(found))):
         out += first[i:i + 1] + second[i:i + 1]
     return out
@@ -830,15 +1001,20 @@ def start_bg(name: str, prompt: str, args) -> str | None:
     return m.group(1)
 
 
-def start_session(lane: str, args) -> tuple[str, dict] | None:
+def session_prompt(lane: str, row: str | None) -> str:
     skill = "naming-session" if lane.startswith("naming") else "foundation-session"
+    return f"/{skill} {lane}" + (f" --row {row}" if row else "")
+
+
+def start_session(lane: str, args, row: str | None = None) -> tuple[str, dict] | None:
     started = time.time()
-    sid = start_bg(f"lane-{lane}", f"/{skill} {lane}", args)
+    prompt = session_prompt(lane, row)
+    sid = start_bg(f"lane-{lane}", prompt, args)
     if not sid:
         return None
-    log(f"started {lane} ({skill}) as {sid}; watch it: claude attach {sid}")
+    log(f"started {lane} ({prompt}) as {sid}; watch it: claude attach {sid}")
     # The full sessionId (the registry owner) is filled in from the next listing.
-    return sid, {"lane": lane, "session": "", "started": started}
+    return sid, {"lane": lane, "session": "", "started": started, "row": row}
 
 
 def stop_session(sid: str) -> bool:
@@ -1092,11 +1268,12 @@ def tick(args) -> bool:
     away = owner_away() if any(p.get("when_away") for p in paused.values()) else False
     lane_count = sum(1 for s in st["sessions"].values() if not is_codex(s))
     failed = 0
-    cands = candidates(bl, reg, st, now, args.only, paused, away, live)
-    for lane in cands:
+    starts = plan_starts(bl, reg, st, now, args.only, paused, away, live)
+    cands = [lane for lane, _ in starts]
+    for lane, row in starts:
         if lane_count >= limit or disk_low:  # low disk: start nothing, keep tracking/draining
             break
-        got = _guarded(f"starting {lane}", start_session, lane, args)
+        got = _guarded(f"starting {lane}", start_session, lane, args, row)
         if not got:
             failed += 1
             continue
@@ -1136,6 +1313,12 @@ def tick(args) -> bool:
         blocked = claim_blocked_naming_ids(bl, reg, now)
         if blocked and not candidates(bl, reg, st, now, args.only, paused, True, live):
             claim_wait = f"naming rows {', '.join(blocked)} wait on other lanes' claims"
+            wait = f"{wait}; {claim_wait}" if wait else claim_wait
+    if args.only in (None, "foundation"):
+        blocked_f = [l for l in claim_blocked_foundation(bl, reg, now)
+                     if l not in st["no_progress"] and not pause_blocks(paused, l, True)]
+        if blocked_f and not candidates(bl, reg, st, now, args.only, paused, True, live):
+            claim_wait = f"foundation lanes {', '.join(blocked_f)} wait on other lanes' claims"
             wait = f"{wait}; {claim_wait}" if wait else claim_wait
     if wait:
         if wait != st.get("waiting"):
@@ -1274,7 +1457,8 @@ def cmd_status(_args):
         if phase == "running" and position is not None:
             phase = f"queued to land (position {position})"
         print(f"  {slot['lane']:<14} {sid}  {phase:<8} "
-              f"{mins} min   claude attach {sid}")
+              f"{mins} min   claude attach {sid}"
+              + (f"   row {slot['row']}" if slot.get("row") else ""))
     if cx.get("enabled") and st.get("codex_blocked"):
         print(f"codex lane waiting: {st['codex_blocked']}")
     hist = st["codex_history"][-3:]
@@ -1304,9 +1488,10 @@ def cmd_plan(args):
     away = owner_away() if any(p.get("when_away") for p in paused.values()) else False
     ag = agents() or {}
     reg = read_json(REGISTRY, {"lanes": {}})
-    lanes = candidates(backlogs(), reg, st, time.time(), args.only,
-                       paused, away, set(live_lanes(ag, reg)))
-    print("next lanes, in order: " + (" ".join(lanes) or "(none: no work left)"))
+    starts = plan_starts(backlogs(), reg, st, time.time(), args.only,
+                         paused, away, set(live_lanes(ag, reg)))
+    print("next lanes, in order: " + (" ".join(f"{l} (row {r})" for l, r in starts)
+                                      or "(none: no startable row)"))
     if paused:
         print("paused: " + ", ".join(sorted(paused)))
 

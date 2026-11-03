@@ -12,8 +12,14 @@ description: >-
 
 The rules for names live in `.claude/rules/naming-bar.md`. This skill covers how a session is run.
 
-Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. The lane defaults to
-`naming-a`. If that lane is owned by another live session, take the next free `naming-<letter>`.
+Invocation: `/naming-session [lane] [--row <id>]`, for example
+`/naming-session naming-b --row var-locals-41`. The lane defaults to `naming-a`. If that lane is
+owned by another live session, take the next free `naming-<letter>`. The orchestrator always
+passes `--row`: it has already checked the row is workable, unclaimed and (for a `reviewed` row)
+that no live lane holds its draft's TUs, so work **that row** and skip the pick order below. Its
+units carry the row forward (PREPARE, then LAND once reviewed); stop when the row is landed or
+the next step waits on someone else. If its claim is refused, or the row on main is no longer
+workable, change nothing, close the lane and stop (report why).
 
 ## The lane model
 
@@ -25,7 +31,7 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   have it use absolute paths, `git -C "<wt>"`, `& tools/wteng.ps1 "<wt>" <cmd>`, and
   `cd "<wt>" && python …` for cwd-relative tools.
 - **Claims.** Before taking a backlog row, run `python tools/lanes/lanes.py claim <lane> topic:row:<id>`.
-  It refuses a row another live lane holds; take the next one. PREPARE claims only the row. At
+  It refuses a row another live lane holds; take the next one (with `--row`: close and stop, as above). PREPARE claims only the row. At
   LAND, before the applier starts, claim in one `lanes.py claim` call (it is atomic) every TU the
   wave edits, spelled as the TU id (`topic:tu:main/51268`: the path under `src/` without `.c`,
   taken from the `src/` paths in `dry.txt`'s edit list; for local pairs, the TU defining each
@@ -63,8 +69,8 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   `git -C "<wt>" commit -F "<main>\tmp\<msg>.txt"`. Under `-C`, a relative `tmp/...` resolves
   inside the worktree.
 - **Freezes.** A foundation lane can freeze a shared file (for example `named_syms.txt!` while pins
-  are removed). `land` then refuses until the freeze is released. Prepare the next wave meanwhile,
-  or stop.
+  are removed). `land` then refuses until the freeze is released. Prepare the next wave meanwhile
+  (not with `--row`), or stop.
 
 ## Shape of a session
 
@@ -93,7 +99,7 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   disjoint TUs (owner 2026-11-01); a session queueing a new function row checks that. Names can
   still meet across tracks (a local and a global in one TU), so two lanes never hold one
   `topic:tu` claim during a LAND (§Claims).
-- **Pick order:** LAND first (oldest `reviewed` row that no other lane claims and whose TUs no
+- **Pick order** (no `--row` only): LAND first (oldest `reviewed` row that no other lane claims and whose TUs no
   other lane claims), then PREPARE (first unclaimed `researched` row, or `researching` row whose
   cited Codex run has finished, then `idea` row).
 
