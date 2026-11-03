@@ -57,7 +57,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
     var_4 = *(s16 *)&arg1;
     dr_mode = &draw_chunk->chunk_draw_mode;
     /* FAKE: the record's 0x4F0 bytes (sizeof(Unk8005C8A8Rec)) spelled from
-     * mode_off as an int: combine folds it with no REG_EQUAL note, so size
+     * dr_mode as an int: combine folds it with no REG_EQUAL note, so size
      * keeps the target's sp+0x70 slot to the return and the deleted temp's
      * stale count takes the untouched sp+0x78; the literal or sizeof is
      * rematerialised at the return (frame 0x10 short). sizeof: score 33 */
@@ -482,7 +482,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
     s32 cur;
     DR_MODE *dr_mode;
     /* FAKE: the returned size is computed as the chunk end minus its start
-     * (end_off - arg2); returning sizeof(Unk8005D814Rec) directly:
+     * (end_addr - arg2); returning sizeof(Unk8005D814Rec) directly:
      * score 76 (Q129). */
     s32 end_addr;
     s16 i;
@@ -650,7 +650,7 @@ s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(
     s32 cur;
     DR_MODE *dr_mode;
     /* FAKE: the returned size is computed as the chunk end minus its start
-     * (end_off - arg2); returning sizeof(Unk8005D814Rec) directly:
+     * (end_addr - arg2); returning sizeof(Unk8005D814Rec) directly:
      * score 53 (Q129). */
     s32 end_addr;
     s16 i;
@@ -808,7 +808,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     s32 ft4_out_addr;
     DR_MODE *dr_mode;
     /* FAKE: the returned size is computed as the chunk end minus its start
-     * (end_off - arg1); returning sizeof(Unk8005E54CRec) directly:
+     * (end_addr - arg1); returning sizeof(Unk8005E54CRec) directly:
      * score 75 (Q129). */
     s32 end_addr;
     /* i counts the players (first loop) and then the rounds; j is the player
@@ -1096,7 +1096,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
     s32 cur;
     DR_MODE *dr_mode;
     /* FAKE: the returned size is computed as the chunk end minus its start
-     * (end_off - arg2); returning sizeof(Unk8005D814Rec) directly:
+     * (end_addr - arg2); returning sizeof(Unk8005D814Rec) directly:
      * score 97 (Q129). */
     s32 end_addr;
     /* mark_group_index/side_index count the first phase's two loops;
@@ -1355,7 +1355,7 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
     POLY_G4 *gradient_quad_cursor;
     DR_AREA *area;
     /* FAKE: the returned size is computed as the chunk end minus its start
-     * (end_off - arg0); returning sizeof(Unk8005FC9CRec) directly:
+     * (end_addr - arg0); returning sizeof(Unk8005FC9CRec) directly:
      * score 55 (Q129). */
     s32 end_addr;
     s16 side_index;
@@ -1471,7 +1471,7 @@ s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
     Unk800600C8Rec *draw_chunk = (Unk800600C8Rec *)arg1;
     DR_MODE *dr_mode = &draw_chunk->chunk_draw_mode;
     /* FAKE: the returned size is computed as the chunk end minus its start
-     * (end_off - arg1); returning sizeof(Unk800600C8Rec) directly:
+     * (end_addr - arg1); returning sizeof(Unk800600C8Rec) directly:
      * score 20 (Q129). */
     s32 end_addr = arg1 + sizeof(Unk800600C8Rec);
     s32 cur = arg1;
@@ -1561,7 +1561,7 @@ s32 gpu_DrawSpriteAtPackedTablePosition(
     Unk80060414Rec *sprite_chunk = (Unk80060414Rec *)arg1;
     DR_MODE *dr_mode;
     /* FAKE: the returned size is computed as the chunk end minus its start
-     * (end_off - arg1); returning sizeof(Unk80060414Rec) directly:
+     * (end_addr - arg1); returning sizeof(Unk80060414Rec) directly:
      * score 22 (Q129). */
     s32 end_addr;
     dr_mode = &sprite_chunk->chunk_draw_mode;
@@ -1603,7 +1603,7 @@ s32 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells(
     Unk80060544Rec *draw_chunk = (Unk80060544Rec *)arg0;
     Unk8007352CRec s;
     /* FAKE: the returned size is computed as the chunk end minus its start
-     * (end_off - arg0); returning sizeof(Unk80060544Rec) directly:
+     * (end_addr - arg0); returning sizeof(Unk80060544Rec) directly:
      * score 25 (Q129). */
     s32 end_addr;
     s32 ft4_out_addr;
@@ -1691,7 +1691,7 @@ s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
     u16 cur1;
     u16 cur2;
     /* FAKE: the returned size is computed as the chunk end minus its start
-     * (end_off - arg0); returning 0xAC8 directly:
+     * (end_addr - arg0); returning 0xAC8 directly:
      * score 26 (Q129). */
     s32 end_addr;
     s32 tile_out_addr;

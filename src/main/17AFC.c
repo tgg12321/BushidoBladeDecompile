@@ -3023,7 +3023,7 @@ s32 math_TestPreparedTriangleSphere(
                 s32 ax = cx - x0;
                 s32 dx;
                 /* FAKE: the third edge's z2 - z0 is staged through the finished
-                 * `flag` parameter (unread after the mode test); a block-local
+                 * `arg0` parameter (unread after the mode test); a block-local
                  * dz takes dx's $v1: score 9 */
                 arg0 = z2 - z0;
                 dx = x2 - x0;
@@ -3050,10 +3050,10 @@ s32 math_TestPreparedTriangleSphere(
             s32 m = circle_radius_sq;
             s32 lzcr = 0;
             if (circle_radius_sq >= 0) {
-                /* FAKE: same-value re-store of `m`: breaks the m == dist
-                 * equivalence across the skipped arm so the shift below reads
-                 * the $a0 copy, not dist ($s1), as in math_TestSegmentCircle2D;
-                 * without it: score 4 */
+                /* FAKE: same-value re-store of `m`: breaks the m ==
+                 * circle_radius_sq equivalence across the skipped arm so the
+                 * shift below reads the $a0 copy, not circle_radius_sq ($s1),
+                 * as in math_TestSegmentCircle2D; without it: score 4 */
                 m = circle_radius_sq;
                 gte_Lzc(m, &sp_var);
                 lzcr = sp_var;
@@ -3121,7 +3121,7 @@ s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj) {
     obj->unkF8.vy = 0x800 - ratan2(obj->unkC8.x, obj->unkC8.z);
     obj->unkC8.x = obj->unkC8.x >> 6;
     obj->unkC8.y = obj->unkC8.y >> 6;
-    /* FAKE: the scaled z delta is staged through `dist` (dead until the
+    /* FAKE: the scaled z delta is staged through `var_3` (dead until the
      * if/else below writes the xz length into it); a block-local z temp
      * moves dist_sq from the target's $a0 to $a1: score 6 (Q129) */
     /* SOTN: src/st/no1/unk_39184.c:420 @db41b28 */

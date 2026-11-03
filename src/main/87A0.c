@@ -200,7 +200,7 @@ void softbody_SolveSprings(Func80017A44Output *softbody) {
     data = softbody->edges;
     base = softbody->nodes;
     /* FAKE: the packed node-index word staged through the still-dead
-     * `thresh` so it shares thresh's register ($t1); its own local takes $a1:
+     * `var_4` so it shares var_4's register ($t1); its own local takes $a1:
      * score 5 (staged-value-reused-variable) */
     var_4 = data->ends.pair;
     var_5 = data->dist;

@@ -4424,7 +4424,7 @@ void fighter_UpdateInputSteeredForwardMotion(Unk80101EC8Record *arg0) {
                     [g_fighter_forward_move_rate_limit_indices
                          [arg0->character_data_index]];
                 /* FAKE: the second read of arg0->size_scale is staged through
-                 * the dead `sub_result`, as above; reading in place: score
+                 * the dead `var_5`, as above; reading in place: score
                  * 11. */
                 var_5 = arg0->size_scale;
                 mult_res = var_5 * tbl_val;

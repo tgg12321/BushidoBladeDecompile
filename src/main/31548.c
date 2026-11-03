@@ -210,7 +210,7 @@ void slot_BlendTwoPosesIntoNodeMatrices(
         buf.vz = -p[2];
         math_RotMatrixZYX(&buf, a4);
         tbl++;
-        /* FAKE: offset becomes the a2-side address (addu s0,s0,s2); a fresh sum
+        /* FAKE: var_6 becomes the a2-side address (addu s0,s0,s2); a fresh sum
          * loads through v1 (score 4) */
         var_6 = var_6 + (s32)a2;
         p = (u16 *)var_6;

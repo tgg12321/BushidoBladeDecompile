@@ -1596,7 +1596,7 @@ void gpu_SetLastDepthIndexOtEntryLinkToPacket(u32 packet_addr) {
  * below the previous one, wrapping to the next column at y 0x200.
  *
  * FAKE constructs (each labelled at its site): the far-colour buffer's frame
- * size, the r_src / g_src far-colour staging, and the two combine-foldable
+ * size, the red / green_work far-colour staging, and the two combine-foldable
  * chain-extender detours (zero emitted bytes; dead-store-fake-exception). */
 void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
     u16 src_buf[0x200];
@@ -1669,7 +1669,7 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
                              * place */
                             s32 blue;
                             src++;
-                            /* FAKE: r_src / g_src reused for the far-colour
+                            /* FAKE: red / green_work reused for the far-colour
                              * term (r * factor, g * factor) between the
                              * weighted source and the blend; fresh r_far /
                              * g_far locals: score 33 */

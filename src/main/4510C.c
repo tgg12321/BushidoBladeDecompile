@@ -426,7 +426,7 @@ void fighter_InitCpuControl(
                 hi1_val = 0x7530;
             } else {
                 /* FAKE: the shared base (rec's scale_distance_offset + 100) is
-                 * staged through hi2_val, completed below; a separate base
+                 * staged through var_18, completed below; a separate base
                  * local is tied to the lh result (target: lh v0; addiu
                  * v1,v0,100); a separate base local: score 6; the base inline
                  * in all three sums: 6-23 (Q129) */
