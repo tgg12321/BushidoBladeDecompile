@@ -4,7 +4,8 @@
     "mode:vs_cpu"
   ],
   "evidence": [
-    "docs/naming/runtime/cpunav-padscript-8ac-1/spec.json"
+    "docs/naming/runtime/cpunav-padscript-8ac-1/spec.json",
+    "docs/naming/runtime/cpunav-padscript-8ac-2/spec.json"
   ],
   "use": [
     "boot"
