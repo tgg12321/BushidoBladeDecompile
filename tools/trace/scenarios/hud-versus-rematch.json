@@ -1,0 +1,20 @@
+{
+  "description": "versus-2p-bamboo's run cut at 10700, screenshots over the first 250 frames of the post-KO Rematch menu (gpu_DrawModeSizedPanelWithSelectedCellOpaque); poked variants move one 0x8009B164..0x8009B1F4 sprite cell's y so the cell it places can be told apart",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/hud-versus-rematch-1/baseline/spec.json",
+    "docs/naming/runtime/hud-versus-rematch-1/B1BC-0-y/spec.json",
+    "docs/naming/runtime/hud-versus-rematch-1/B1BC-1-y/spec.json",
+    "docs/naming/runtime/hud-versus-rematch-1/B1CC-0-y/spec.json",
+    "docs/naming/runtime/hud-versus-rematch-1/B1CC-2-y/spec.json",
+    "docs/naming/runtime/hud-versus-rematch-1/B1EC-0-y/spec.json",
+    "docs/naming/runtime/hud-versus-rematch-1/B164-0-0-y/spec.json",
+    "docs/naming/runtime/hud-versus-rematch-1/B164-1-1-y/spec.json"
+  ],
+  "extends": "versus-2p-bamboo",
+  "end_frame": 10700,
+  "shots": [
+    "10550:rematch_menu.10550",
+    "10699:rematch_menu.10699"
+  ]
+}
