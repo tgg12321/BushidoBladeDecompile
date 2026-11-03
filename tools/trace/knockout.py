@@ -115,10 +115,17 @@ def capture_state(directory, func):
         reasons.append('stub never called')
     if leak:
         reasons.append('stub leak')
+    # A bounded knockout (gdbtrace stub until / calls) ends with the
+    # function's own code back in place instead of the stub.
+    restored = (stubs[0].get('restored') or {}) if len(stubs) == 1 else {}
     if len(stubs) != 1 or not (stubs[0].get('applied') or {}).get('ok') \
             or (stubs[0].get('applied') or {}).get('mid_stub') \
-            or stubs[0].get('at_end') != 'intact':
+            or stubs[0].get('at_end') != ('restored' if restored else 'intact'):
         reasons.append('stub not applied whole and intact')
+    if restored and (not restored.get('ok') or restored.get('mid_stub')):
+        reasons.append('stub not cleanly restored')
+    if len(stubs) == 1 and stubs[0].get('until') is not None and not restored:
+        reasons.append('stub never restored')
     return called, leak, reasons
 
 
@@ -287,6 +294,10 @@ def run_batch(args, passthrough):
         stub = dict(at=func, ret=returns[func])
         if args.phase:
             stub['phase'] = args.phase
+        if getattr(args, 'until', None):
+            stub['until'] = args.until
+        if getattr(args, 'calls', None) is not None:
+            stub['calls'] = args.calls
         return run_capture(out / func, dict(spec, stubs=[stub]), passthrough)
 
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
@@ -410,6 +421,10 @@ def main(argv=None):
     p.add_argument('--frames', required=True)
     p.add_argument('--out', required=True)
     p.add_argument('--phase')
+    # Bounded knockout: the function's own code goes back when this later
+    # phase starts / after this many stubbed calls (gdbtrace stub fields).
+    p.add_argument('--until')
+    p.add_argument('--calls', type=int)
     p.add_argument('--ret', default='auto')
     p.add_argument('--jobs', type=int, default=1)
     # Pass through launch inputs/settings; pool chooses port/profile per run.

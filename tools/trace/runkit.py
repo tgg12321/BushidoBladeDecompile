@@ -686,6 +686,24 @@ def elf_matches_exe(elf: str, exe: str) -> bool:
                for a, n, off in loaded)
 
 
+def stub_missing(st: dict) -> list[str]:
+    """What a stub's result record lacks for Q124: applied whole, and at the
+    end still the stub, or, for a bounded knockout (until / calls), the
+    function's own code put back whole (not on the stub's delay slot)."""
+    ap = st.get("applied") or {}
+    back = st.get("restored")
+    missing = []
+    if not ap.get("ok") or ap.get("mid_stub") \
+            or st.get("at_end") != ("restored" if back else "intact"):
+        missing.append(f"stub {st['at']} applied whole and still in place at "
+                       "the end" if not back else f"stub {st['at']} applied "
+                       "whole and its own code still in place at the end")
+    if back and (not back.get("ok") or back.get("mid_stub")):
+        missing.append(f"stub {st['at']} restored whole (not on its delay "
+                       "slot)")
+    return missing
+
+
 def finish_manifest(args, inputs: dict, emu_cmd, result: dict) -> str:
     """Write <out>.manifest.json: inputs (hashed before launch), the
     emulator command, the outcome, and the SHA1 of every output."""
@@ -713,11 +731,7 @@ def finish_manifest(args, inputs: dict, emu_cmd, result: dict) -> str:
         if not result.get("canary_hit"):
             missing.append("the canary breakpoint (EXE entry) fired")
         for st in result.get("stubs") or []:
-            ap = st.get("applied") or {}
-            if not ap.get("ok") or ap.get("mid_stub") \
-                    or st.get("at_end") != "intact":
-                missing.append(f"stub {st['at']} applied whole and still in "
-                               "place at the end")
+            missing += stub_missing(st)
         for pk in result.get("pokes") or []:
             if not (pk.get("applied") or {}).get("ok"):
                 missing.append(f"poke {pk['at']} written and read back")

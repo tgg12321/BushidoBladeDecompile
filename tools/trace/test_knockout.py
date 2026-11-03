@@ -63,6 +63,12 @@ class KnockoutTest(unittest.TestCase):
                 stubs = [dict(at=func, addr=0x80010000, ret=st['ret'],
                               when=st.get('phase', 'entry'), at_end='intact',
                               applied=dict(ok=True, frame=0))]
+                for key in ('until', 'calls'):
+                    if key in st:
+                        stubs[0][key] = st[key]
+                if mode == 'restored':
+                    stubs[0].update(at_end='restored', restored=dict(
+                        why='until', ok=True, mid_stub=False, frame=150))
                 if mode != 'uncalled':
                     events.append(dict(ev='hit', addr=0x80010000,
                                        phase='menu', stub_call=True))
@@ -138,6 +144,19 @@ class KnockoutTest(unittest.TestCase):
         self.assertEqual(rows[0]['called'], '0')
         self.assertEqual(rows[0]['status'], 'not_alive')
         self.assertIn('never called', rows[0]['reason'])
+
+    def test_bounded_knockout(self):
+        # --until / --calls reach the stub spec; a restored stub ends with
+        # its own code back (at_end restored), an unrestored until is no run.
+        self.behavior.update(back='restored', stuck='')
+        _, rows = self.batch(('back', 'stuck'),
+                             extra=('--until', 'menu', '--calls', '2'))
+        stub = [r[1]['stubs'][0] for r in self.runs if r[0] == 'back'][0]
+        self.assertEqual((stub['until'], stub['calls']), ('menu', 2))
+        by = {r['func']: r for r in rows}
+        self.assertEqual(by['back']['status'], 'ok', by['back']['reason'])
+        self.assertEqual(by['stuck']['status'], 'not_alive')
+        self.assertIn('stub never restored', by['stuck']['reason'])
 
     def test_leak(self):
         self.behavior['leak'] = 'leak'

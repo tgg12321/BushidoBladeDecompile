@@ -61,7 +61,13 @@ Spec (JSON):
     "stubs": [{"at": "func_80051234",  # stub-and-observe (needs a script):
                "phase": "fight",      # patched to `jr ra` when this phase
                "ret": 0}],            # starts (no phase: at the EXE entry);
-                                     # ret sets v0 (none: v0 unchanged)
+                                     # ret sets v0 (none: v0 unchanged).
+                                     # Bounded knockout, so the rest of the
+                                     # run is not a stubbed game: "until":
+                                     # "<later phase>" puts the function's
+                                     # own words back when it starts;
+                                     # "calls": N after the first N calls
+                                     # (every call then stops at the entry)
     "pokes": [{"at": "D_80101EC8+0xE",  # set-and-observe (needs a script):
                "hex": "0600",         # these bytes written once when the
                "phase": "fight"}],    # phase starts (after its value reads)
@@ -662,6 +668,12 @@ def apply_stubs(gdb: Gdb, stubs: list[dict], when: str, regs: list[int],
         if st["when"] != when or "applied" in st:
             continue
         a = st["addr"]
+        if st.get("calls") and ((0, a) in armed or (0, a) in suspended):
+            # Counting calls needs a stop on every one: an entry shared with
+            # a spec breakpoint or hit map stops only as often as that asks.
+            raise SystemExit(f"gdbtrace: stub {st['spec']['at']}: calls needs "
+                             "the stub's own entry breakpoint (drop the "
+                             "breakpoint or hit map on it)")
         st["orig"] = gdb.mem(a, 8).hex()
         ok = gdb.write(a, st["words"]) and gdb.mem(a, 8) == st["words"]
         st["applied"] = {"frame": frame, "pc": pc, "ok": ok,
@@ -677,9 +689,11 @@ def apply_stubs(gdb: Gdb, stubs: list[dict], when: str, regs: list[int],
         elif (0, a) in armed:
             armed[(0, a)]["stub_call"] = True  # credited as its own hit
         elif gdb.set_bp(0, a):
-            armed[(0, a)] = {"spec": {"at": name}, "hits": 0, "kind": 0,
-                             "addr": a, "len": 4, "per_phase": 1,
-                             "phase_hits": 0, "stub_call": True}
+            ent = {"spec": {"at": name}, "hits": 0, "kind": 0, "addr": a,
+                   "len": 4, "stub_call": True, "stub_own": True}
+            if not st.get("calls"):  # else every call stops (and counts)
+                ent.update(per_phase=1, phase_hits=0)
+            armed[(0, a)] = ent
         else:
             raise SystemExit(f"gdbtrace: stub refused Z0 at 0x{a:08X}")
         if (0, a + 8) in armed or (0, a + 8) in suspended \
@@ -689,6 +703,55 @@ def apply_stubs(gdb: Gdb, stubs: list[dict], when: str, regs: list[int],
                              "kind": 0, "addr": a + 8, "len": 4,
                              "per_phase": 1, "phase_hits": 0,
                              "stub_leak": True}
+        st["calls_seen"] = 0
+
+
+def restore_stub(gdb: Gdb, st: dict, why: str, regs: list[int], frame,
+                 phase, emit, armed: dict, suspended: dict, disarm) -> None:
+    """Put a stubbed function's own two words back (a bounded knockout:
+    from here the game runs its real code again) and take down the stub's
+    breakpoints: the leak one (real code passes it) and the entry one when
+    the stub set it (a spec breakpoint or hit map there stays, uncredited
+    as a stub call). A stop on the delay-slot word would resume into the
+    body with its first word skipped: flagged mid_stub."""
+    a = st["addr"]
+    pc = regs[37] if len(regs) > 37 else None
+    orig = bytes.fromhex(st["orig"])
+    ok = gdb.write(a, orig) and gdb.mem(a, 8) == orig
+    st["restored"] = {"why": why, "frame": frame, "phase": phase, "pc": pc,
+                      "ok": ok, "mid_stub": pc is not None and a < pc < a + 8,
+                      "calls": st.get("calls_seen", 0)}
+    emit(dict({"ev": "stub-restored", "at": st["spec"]["at"], "addr": a},
+              **st["restored"]))
+    if not ok:
+        raise SystemExit(f"gdbtrace: stub restore at 0x{a:08X} refused")
+    for key in ((0, a + 8), (0, a)):
+        ent = armed.get(key) or suspended.get(key)
+        if ent is None or (key[1] == a and not ent.get("stub_own")):
+            if ent is not None:
+                ent.pop("stub_call", None)
+            continue
+        if key in armed:
+            disarm(ent)
+        else:
+            del suspended[key]
+
+
+def restored_text(r: dict | None) -> str:
+    """A stub's restoration (stub-restored event or result record) as the
+    tail of a report / compare line; "" for a stub left in to the end."""
+    if not r:
+        return ""
+    return ("; own code put back " + (
+            f"at the call after {r.get('calls')} stubbed call(s) (frame "
+            f"{r.get('frame')}, phase {r.get('phase')})"
+            if r.get("why") == "calls" else
+            f"when phase {r.get('phase')} started (frame {r.get('frame')})")
+            + ("" if r.get("ok") else ", RESTORE FAILED")
+            + (", MID-STUB (the stop was on the delay slot)"
+               if r.get("mid_stub") else "")
+            + ": the game is still modified after it (state the stub "
+            "changed carries on)")
 
 
 def resolve_dump(syms: Symbols, regs: list[int], d: dict) -> int:
@@ -1056,11 +1119,26 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             raise SystemExit(f"gdbtrace: stub {st['at']}: {when!r} is the "
                              "first phase; omit phase to stub at the EXE "
                              "entry")
+        # A bounded knockout: the real code goes back when phase `until`
+        # starts, or at the call after the first `calls` stubbed ones.
+        # Phases start in frame order (the list need not be sorted); one at
+        # frame 0 never gets a start stop.
+        at = {ph["name"]: int(ph["frame"])
+              for ph in spec["script"].get("phases", [])}
+        until, ncalls = st.get("until"), st.get("calls")
+        if until is not None and (at.get(until, 0) <= 0 or (
+                when != "entry" and at[until] <= at[when])):
+            raise SystemExit(f"gdbtrace: stub {st['at']}: until must be a "
+                             f"script phase after {when!r}, not {until!r}")
+        if ncalls is not None and (type(ncalls) is not int or ncalls < 1):
+            raise SystemExit(f"gdbtrace: stub {st['at']}: calls must be an "
+                             "integer >= 1")
         addr = syms.addr(st["at"])
         if any(x["addr"] == addr for x in stubs):
             raise SystemExit(f"gdbtrace: {st['at']} is stubbed twice")
         stubs.append({"spec": st, "addr": addr, "when": when,
-                      "words": stub_words(st)})
+                      "words": stub_words(st), "until": until,
+                      "calls": ncalls})
     # Set-and-observe: write chosen bytes once when a phase starts.
     pokes = parse_pokes(spec, syms, phase_names,
                         runkit.first_phase(spec["script"])
@@ -1343,6 +1421,12 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 # phases already changed the game: the report says so).
                 read_values(new[1], phase, new[3], pause)
                 if not new[3]:
+                    for st in stubs:
+                        if (st["until"] == phase and "applied" in st
+                                and "restored" not in st):
+                            restore_stub(gdb, st, "until", regs, new[1],
+                                         phase, emit, armed, suspended,
+                                         disarm)
                     apply_stubs(gdb, stubs, phase, regs, new[1], emit,
                                 armed, suspended)
                     apply_pokes(gdb, pokes, phase, regs, new[1], emit)
@@ -1408,6 +1492,20 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                           "ra": regs[31], "stop": reply,
                           "access": list(acc) if acc else None})
                 continue
+            st = (next((s for s in stubs if s["addr"] == e["addr"]), None)
+                  if e.get("stub_call") else None)
+            if st is not None and st["calls"] \
+                    and st["calls_seen"] >= st["calls"]:
+                # The call after the last stubbed one: halted on the entry,
+                # so this call already runs the real code.
+                restore_stub(gdb, st, "calls", regs,
+                             (stamp["fields"] or {}).get("frame"), phase,
+                             emit, armed, suspended, disarm)
+                if script_stop and state[3]:
+                    break
+                continue
+            if st is not None:
+                st["calls_seen"] += 1
             e["hits"] += 1
             sp = e["spec"]
             totals[f"Z{e['kind']}:{sp['at']}"] = e["hits"]
@@ -1470,11 +1568,19 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                    "when": st["when"], "ret": st["spec"].get("ret"),
                    "words": st["words"].hex(), "orig": st.get("orig"),
                    "applied": st.get("applied")}
+            for k in ("until", "calls"):
+                if st[k] is not None:
+                    rec[k] = st[k]
+            if "restored" in st:
+                rec["restored"] = st["restored"]
             if "applied" in st:
-                # The game may rewrite its own code: still a stub at the end?
+                # The game may rewrite its own code: still a stub (or, once
+                # restored, its own code) at the end?
+                want, word = (("restored", bytes.fromhex(st["orig"]))
+                              if "restored" in st else ("intact", st["words"]))
                 try:
-                    rec["at_end"] = ("intact" if gdb.mem(st["addr"], 8)
-                                     == st["words"] else "overwritten")
+                    rec["at_end"] = (want if gdb.mem(st["addr"], 8) == word
+                                     else "overwritten")
                 except (GdbError, OSError) as ex:
                     rec["at_end"] = f"not read: {ex}"
             recs.append(rec)
@@ -1907,6 +2013,7 @@ def report(args) -> int:
     disarmed = {}
     start = end = canary = hitmap = None
     stubs = []
+    restored = {}  # stub addr -> its stub-restored event
     pokes = []
     stub_calls = collections.defaultdict(list)
     hm_hits = collections.defaultdict(collections.Counter)
@@ -1936,6 +2043,8 @@ def report(args) -> int:
                 canary = rec
             elif rec["ev"] == "stub":
                 stubs.append(rec)
+            elif rec["ev"] == "stub-restored":
+                restored[rec["addr"]] = rec
             elif rec["ev"] == "poke":
                 pokes.append(rec)
             elif rec["ev"] == "start":
@@ -1976,7 +2085,8 @@ def report(args) -> int:
                  "in phases: " + (", ".join(dict.fromkeys(
                      str(ph) for ph in calls)) or "none")
                  + "; " + (f"LEAKED past the stub in {len(leaks)} phase(s)"
-                           if leaks else "never ran past the stub"))
+                           if leaks else "never ran past the stub")
+                 + restored_text(restored.get(st["addr"])))
     for pk in pokes:
         w.append(f"- POKED: `{pk['at']}` (0x{pk['addr']:08X}) set to "
                  f"{pk['hex']} (was {pk['orig']}) when {pk['when']} started "
@@ -2295,6 +2405,12 @@ def compare(args) -> int:
         if not calls.get(st["addr"]):
             problems.append(f"stub {st['at']} was never called while "
                             "stubbed")
+        r = st.get("restored")
+        if r and (not r.get("ok") or r.get("mid_stub")):
+            problems.append(f"stub {st['at']} was not cleanly restored")
+        if st.get("until") is not None and not r:
+            problems.append(f"stub {st['at']} was never restored (phase "
+                            f"{st['until']} not reached)")
     for m, label in ((ma, "baseline"), (mb, other)):
         if not m.get("q124_complete"):
             problems.append(f"{label} is not q124_complete: "
@@ -2347,7 +2463,8 @@ def compare(args) -> int:
         + ("with v0 unchanged" if s.get("ret") is None else f"{s['ret']}")
         + f", {s.get('at_end')} at the end, called while stubbed in "
         + (", ".join(dict.fromkeys(str(x) for x in calls.get(s["addr"], [])))
-           or "no phase") for s in stubs) or "none"))
+           or "no phase") + restored_text(s.get("restored"))
+        for s in stubs) or "none"))
     pokes = mb.get("result", {}).get("pokes") or []
 
     def poke_text(p):
@@ -2416,7 +2533,10 @@ def compare(args) -> int:
               " Pixels that differ beyond the function's own drawing point at "
               "changed game state. A call already in progress when the stub "
               "went in finishes normally (a leak breakpoint catches only code "
-              "reaching the word after the stub)."]
+              "reaching the word after the stub). A stub with `until` or "
+              "`calls` is a bounded knockout: once its own code is back the "
+              "function runs again, so a difference that ends there is the "
+              "knockout's, one that lasts is changed game state."]
     if has_pokes:
         w += ["", "A poke counts only if the game kept running (both runs "
               "reached the script's end). Everything after it went in is a "

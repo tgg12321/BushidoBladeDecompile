@@ -217,6 +217,196 @@ class TraceLoopTest(unittest.TestCase):
         self.assertFalse(any(r["ev"] == "unmatched-stop" for r in records))
         self.assertEqual(gdb.set, [])  # the end clears both
 
+    STUB = 0x80050000  # a stubbed function's entry
+    BODY = bytes(range(0x10, 0x18))  # its own first two words
+
+    def run_stubbed(self, stub, stops, phases=("p", "q", "r"), extra=None,
+                    frames=None):
+        """A scripted run with one stub. stops: (phase, pc) per stop; a new
+        phase is a Lua pause at a phase start, the rest are Z0 stops."""
+        test, body, entry = self, self.BODY, 0x80020000
+
+        class FakeGdb:
+            features = {}
+
+            def __init__(self):
+                self.set = []
+                self.console = []
+                self.late_stops = []
+                self.ram = {}
+                self.pc = 0x80040000
+
+            def cmd(self, command):
+                return "S05"
+
+            def interrupt(self, *args):
+                return "S05"
+
+            def set_bp(self, kind, a, n=4):
+                self.set.append((kind, a, n))
+                return True
+
+            def clear_bp(self, kind, a, n=4):
+                self.set = [s for s in self.set
+                            if not (s[1] <= a < s[1] + s[2])]
+                return True
+
+            def regs(self):
+                return [0] * 37 + [self.pc]
+
+            def mem(self, a, n):
+                return bytes(self.ram.get(a + i, body[i] if 0 <= i < 8 and
+                                          a == test.STUB else 0)
+                             for i in range(n))
+
+            def write(self, a, data):
+                for i, b in enumerate(data):
+                    self.ram[a + i] = b
+                return True
+
+            def cont(self):
+                pass
+
+            def close(self):
+                pass
+
+        gdb = FakeGdb()
+        stop = [-1]
+        frames = frames or {name: 10 * i for i, name in enumerate(phases)}
+
+        def cur():
+            return stops[stop[0]] if 0 <= stop[0] < len(stops) else None
+
+        def read_state(out):
+            s = cur()
+            ph = s[0] if s else phases[0]
+            return (1 + phases.index(ph), frames[ph], ph, False)
+
+        def read_pause(out):
+            return (8 + stop[0], 100 + stop[0], None)
+
+        def wait_running(*args):
+            stop[0] += 1
+            if stop[0] >= len(stops):
+                return "W00"
+            gdb.pc = stops[stop[0]][1]
+            return "T05"
+
+        syms = argparse.Namespace(path="fake.map", addr=lambda at: int(at, 0))
+        spec = dict(script=dict(phases=[dict(frame=frames[n], name=n)
+                                        for n in phases]),
+                    stubs=[dict(dict(at=hex(self.STUB)), **stub)])
+        spec.update(extra or {})
+        scratch = Path(__file__).resolve().parents[2] / "tmp"
+        scratch.mkdir(exist_ok=True)
+        directory = scratch / ("frames-test-" + uuid.uuid4().hex)
+        directory.mkdir()
+        self.addCleanup(shutil.rmtree, directory)
+        out = directory / "capture.jsonl"
+        args = argparse.Namespace(out=str(out), map="fake.map", result={},
+                                  expect={}, duration=60, stall=1)
+        with patch.object(gdbtrace, "exe_entry", return_value=entry), \
+                patch.object(gdbtrace, "wait_running", side_effect=wait_running), \
+                patch.object(gdbtrace.runkit, "read_state", side_effect=read_state), \
+                patch.object(gdbtrace.runkit, "read_pause", side_effect=read_pause), \
+                patch.object(gdbtrace.runkit, "read_pause_frame", return_value=0):
+            gdbtrace.trace(gdb, syms, spec, args)
+        records = [json.loads(line) for line in out.read_text().splitlines()]
+        return gdb, records, args.result
+
+    def test_stub_calls_restores_after_n_calls(self):
+        f = self.STUB
+        gdb, records, result = self.run_stubbed(
+            dict(phase="q", calls=2),
+            [("q", 0x80040000), ("q", f), ("q", f), ("q", f), ("q", f)])
+        calls = [r for r in records if r["ev"] == "hit" and r.get("stub_call")]
+        self.assertEqual(len(calls), 2)  # every call stops, not one a phase
+        back = [r for r in records if r["ev"] == "stub-restored"]
+        self.assertEqual(len(back), 1)
+        self.assertEqual((back[0]["why"], back[0]["calls"], back[0]["ok"],
+                          back[0]["mid_stub"]), ("calls", 2, True, False))
+        self.assertEqual(gdb.mem(f, 8), self.BODY)
+        # The 4th stop is no hit: the stub's breakpoints were taken down
+        # (the fake still reports it; the trace finds no entry for it).
+        self.assertFalse(any(r["ev"] == "hit" and r["n"] > 2 for r in records))
+        st = result["stubs"][0]
+        self.assertEqual((st["calls"], st["at_end"]), (2, "restored"))
+        self.assertEqual(st["restored"]["why"], "calls")
+
+    def test_stub_until_restores_at_phase_start(self):
+        f = self.STUB
+        gdb, records, result = self.run_stubbed(
+            dict(phase="q", until="r"),
+            [("q", 0x80040000), ("q", f), ("q", f), ("r", 0x80040100)])
+        calls = [r for r in records if r["ev"] == "hit" and r.get("stub_call")]
+        self.assertEqual(len(calls), 1)  # per phase, as before
+        back = [r for r in records if r["ev"] == "stub-restored"][0]
+        self.assertEqual((back["why"], back["phase"], back["frame"]),
+                         ("until", "r", 20))
+        self.assertEqual(gdb.mem(f, 8), self.BODY)
+        self.assertFalse(any(s[1] in (f, f + 8) for s in gdb.set))
+        self.assertEqual(result["stubs"][0]["at_end"], "restored")
+
+    def test_stub_until_on_the_delay_slot_is_flagged(self):
+        _, records, result = self.run_stubbed(
+            dict(phase="q", until="r"),
+            [("q", 0x80040000), ("r", self.STUB + 4)])
+        self.assertTrue(result["stubs"][0]["restored"]["mid_stub"])
+
+    def test_restore_keeps_a_spec_breakpoint_on_the_entry(self):
+        f = self.STUB
+        gdb, records, _ = self.run_stubbed(
+            dict(phase="q", until="r"),
+            [("q", 0x80040000), ("q", f), ("r", 0x80040100), ("r", f)],
+            extra=dict(breakpoints=[dict(at=hex(f))]))
+        hits = [r for r in records if r["ev"] == "hit" and r["addr"] == f]
+        self.assertEqual([bool(r.get("stub_call")) for r in hits],
+                         [True, False])  # after the restore, a plain hit
+
+    def test_stub_bound_refusals(self):
+        cases = [(dict(phase="q", until="q"), "until must be"),
+                 (dict(phase="r", until="q"), "until must be"),
+                 (dict(until="p"), "until must be"),
+                 (dict(phase="q", until="z"), "until must be"),
+                 (dict(phase="q", calls=0), "calls must be"),
+                 (dict(phase="q", calls=True), "calls must be")]
+        for stub, msg in cases:
+            with self.subTest(stub=stub), \
+                    self.assertRaisesRegex(SystemExit, msg):
+                self.run_stubbed(stub, [])
+        with self.assertRaisesRegex(SystemExit, "own entry breakpoint"):
+            self.run_stubbed(dict(phase="q", calls=1), [("q", 0x80040000)],
+                             extra=dict(breakpoints=[dict(at=hex(self.STUB))]))
+
+    def test_stub_until_goes_by_frame_not_list_order(self):
+        # Unsorted phases, the frame-0 one not first: "a" (100) is after
+        # "boot", "b" (200) after "a"; frame 0 never gets a start stop.
+        frames = {"b": 200, "boot": 0, "a": 100}
+        names = ("b", "boot", "a")
+        for stub, msg in ((dict(phase="b", until="a"), "until must be"),
+                          (dict(until="boot"), "until must be")):
+            with self.subTest(stub=stub), \
+                    self.assertRaisesRegex(SystemExit, msg):
+                self.run_stubbed(stub, [], phases=names, frames=frames)
+        for stub in (dict(phase="a", until="b"), dict(until="a")):
+            with self.subTest(stub=stub):
+                self.run_stubbed(stub, [], phases=names, frames=frames)
+
+    def test_q124_accepts_a_cleanly_restored_stub(self):
+        ok = dict(at="f", applied=dict(ok=True, mid_stub=False))
+        self.assertEqual(gdbtrace.runkit.stub_missing(
+            dict(ok, at_end="intact")), [])
+        back = dict(ok, at_end="restored",
+                    restored=dict(ok=True, mid_stub=False))
+        self.assertEqual(gdbtrace.runkit.stub_missing(back), [])
+        for bad in (dict(back, at_end="intact"),
+                    dict(back, at_end="overwritten"),
+                    dict(back, restored=dict(ok=True, mid_stub=True)),
+                    dict(back, restored=dict(ok=False)),
+                    dict(ok, at_end="restored")):
+            with self.subTest(bad=bad):
+                self.assertTrue(gdbtrace.runkit.stub_missing(bad))
+
     KICK_PC = 0x8007CB3C  # after _otc's `sw v1, 0(v0)` to DMA6 CHCR
 
     def dma_gdb(self, chcr=0x11000002, chcr_addr=0x1F8010E8):
