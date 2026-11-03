@@ -2356,16 +2356,17 @@ void gpu_ResetAndStampViewCenteredCellAttributes(void) {
     for (i = 0; i < 16; i++) {
         row_offset = i - 8;
         {
-            u32 y = (u32)(view_cell_z + row_offset);
-            if (y < 0x20) {
+            u32 cell_z = (u32)(view_cell_z + row_offset);
+            if (cell_z < 0x20) {
                 data = g_gpu_view_centered_cell_attribute_pattern[i];
                 for (j = 0; j < 16; j++) {
                     col_offset = j - 8;
                     {
-                        u32 x = (u32)(view_cell_x + col_offset);
-                        if (x < 0x20) {
+                        u32 cell_x = (u32)(view_cell_x + col_offset);
+                        if (cell_x < 0x20) {
                             s32 bits = (data >> ((15 - j) * 2)) & 3;
-                            g_gpu_cell_draw_attributes[(y << 5) + x] |= bits;
+                            g_gpu_cell_draw_attributes[(cell_z << 5) +
+                                                       cell_x] |= bits;
                         }
                     }
                 }
@@ -2375,18 +2376,18 @@ void gpu_ResetAndStampViewCenteredCellAttributes(void) {
 }
 
 void gpu_SetCellGateBit(s16 *cell_pos) {
-    s32 x = cell_pos[0] + 0x10;
-    s32 y = cell_pos[2] + 0x10;
-    if ((u32)x < 0x20 && (u32)y < 0x20) {
-        g_gpu_cell_draw_attributes[y * 32 + x] |= 0x4;
+    s32 cell_x = cell_pos[0] + 0x10;
+    s32 cell_z = cell_pos[2] + 0x10;
+    if ((u32)cell_x < 0x20 && (u32)cell_z < 0x20) {
+        g_gpu_cell_draw_attributes[cell_z * 32 + cell_x] |= 0x4;
     }
 }
 
 void gpu_SetCellForceBit(s16 *cell_pos) {
-    s32 x = cell_pos[0] + 0x10;
-    s32 y = cell_pos[2] + 0x10;
-    if ((u32)x < 0x20 && (u32)y < 0x20) {
-        g_gpu_cell_draw_attributes[y * 32 + x] |= 0x8;
+    s32 cell_x = cell_pos[0] + 0x10;
+    s32 cell_z = cell_pos[2] + 0x10;
+    if ((u32)cell_x < 0x20 && (u32)cell_z < 0x20) {
+        g_gpu_cell_draw_attributes[cell_z * 32 + cell_x] |= 0x8;
     }
 }
 

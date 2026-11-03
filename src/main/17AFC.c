@@ -5832,10 +5832,10 @@ void fight_BuildOpponentOrder(void) {
         }
     }
     {
-        u8 lookup = g_fighter_group_flags
+        u8 group_flag = g_fighter_group_flags
             [g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]]];
         s32 val;
-        if (lookup != 0) {
+        if (group_flag != 0) {
             if (g_saved_record.unlock_mask & 0x04000000) {
                 val = 0x1A;
                 goto append_last;
@@ -5865,9 +5865,10 @@ void fight_AdvanceOpponentOrder(void) {
         g_local_ot_draw_mode = DISP_DISABLED;
         g_gpu_jitter_burst_enabled = 0;
         if (order_cursor == 0x14) {
-            u8 z = g_fighter_group_flags[D_80101EC8[0].character_data_index];
+            u8 group_flag =
+                g_fighter_group_flags[D_80101EC8[0].character_data_index];
             s32 val = 2;
-            if (z != 0)
+            if (group_flag != 0)
                 val = 3;
             g_fight_presentation_index = val;
             g_main_loop_handler_index = 0x12;

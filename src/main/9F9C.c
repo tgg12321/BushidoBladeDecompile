@@ -2682,20 +2682,20 @@ void fighter_SetTurnDelta(Unk80101EC8Record *fighter_record, s32 arg1) {
 
 s32 fighter_CalcHorizontalSeparation(void) {
     s32 dx = D_80101EC8[1].world_pos.x - D_80101EC8[0].world_pos.x;
-    s32 dy = D_80101EC8[1].world_pos.z - D_80101EC8[0].world_pos.z;
+    s32 dz = D_80101EC8[1].world_pos.z - D_80101EC8[0].world_pos.z;
     s32 halving_count = 0;
-    while ((u32)(dx + 0x4000) > 0x8000 || (u32)(dy + 0x4000) > 0x8000) {
+    while ((u32)(dx + 0x4000) > 0x8000 || (u32)(dz + 0x4000) > 0x8000) {
         s32 t;
         t = dx + ((u32)dx >> 31);
         dx = (s32)t >> 1;
-        t = dy + ((u32)dy >> 31);
-        dy = (s32)t >> 1;
+        t = dz + ((u32)dz >> 31);
+        dz = (s32)t >> 1;
         halving_count += 1;
     }
     {
         s32 dx_squared = dx * dx;
-        s32 dy_squared = dy * dy;
-        s32 r = SquareRoot0(dx_squared + dy_squared);
+        s32 dz_squared = dz * dz;
+        s32 r = SquareRoot0(dx_squared + dz_squared);
         return r << halving_count;
     }
 }
@@ -2847,7 +2847,7 @@ void fight_UpdatePairedMoves(void) {
     MoveScript *paired_script;
     s32 lo;
     s32 hi;
-    s32 dz;
+    s32 collision_dy;
     s32 i;
     u16 kind;
     s32 pos[3];
@@ -2913,7 +2913,7 @@ void fight_UpdatePairedMoves(void) {
         data = ent->b;
         lo = data[0] * 20;
         hi = data[1] * 20;
-        dz = rec->collision_pos.vy - rec->other->collision_pos.vy;
+        collision_dy = rec->collision_pos.vy - rec->other->collision_pos.vy;
         if (fighter_PassesPairedMoveEntryGates(rec, data[3] & 0x80) == 0) {
             continue;
         }
@@ -2923,7 +2923,7 @@ void fight_UpdatePairedMoves(void) {
         if (hi < g_fighter_horizontal_separation) {
             continue;
         }
-        if (dz <= -100 || dz >= 100) {
+        if (collision_dy <= -100 || collision_dy >= 100) {
             continue;
         }
         kind = rec->other->move_kind;

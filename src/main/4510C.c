@@ -1423,8 +1423,8 @@ s32 fighter_FindNearestNavCrossing(
     s16 n;
     NavVertexChain *nav_chain;
     s32 dx;
-    s32 dy;
-    s32 d;
+    s32 dz;
+    s32 crossing_distance;
 
     nearest_crossing_distance = 100000;
     for (chain_index = 0; chain_index < nav_set->nchains; chain_index++) {
@@ -1445,10 +1445,10 @@ s32 fighter_FindNearestNavCrossing(
                     nav_chain->vtx[edge_vertex_index][1], nav_chain->vtx[k][0],
                     nav_chain->vtx[k][1], &crossing_x, &crossing_z) != 0) {
                 dx = crossing_x - fighter_record->world_pos.x;
-                dy = crossing_z - fighter_record->world_pos.z;
-                d = SquareRoot0(dx * dx + dy * dy);
-                if (d < nearest_crossing_distance) {
-                    nearest_crossing_distance = d;
+                dz = crossing_z - fighter_record->world_pos.z;
+                crossing_distance = SquareRoot0(dx * dx + dz * dz);
+                if (crossing_distance < nearest_crossing_distance) {
+                    nearest_crossing_distance = crossing_distance;
                     fighter_record->cpu_route.poly = chain_index;
                     fighter_record->cpu_route.vtx = edge_vertex_index;
                 }
