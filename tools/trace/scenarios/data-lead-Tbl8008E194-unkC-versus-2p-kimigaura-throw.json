@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-kimigaura-throw re-run unchanged with g_object_kind_params (Tbl8008E194) unkC / unkD watches (read watch g_object_kind_params/420 = 30 records x 14; write watches 0x8010214E/2, 0x8010259A/2 = D_80101EC8[0] / [1].pending_move_event; breakpoints fighter_ResolveBoneHit with its stack args and the struck record's character_roster_index (+0xC) / power_scale_tally / pending_move_event, object_ResolveFighterHits+0x358 (its return value), fighter_AccumulateOrClearByBoneGroup, object_SpawnFromFighter): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-Tbl8008E194-unkC-versus-2p-kimigaura-throw-1/spec.json"
+  ],
+  "extends": "versus-2p-kimigaura-throw",
+  "refines": "versus-2p-kimigaura-throw"
+}

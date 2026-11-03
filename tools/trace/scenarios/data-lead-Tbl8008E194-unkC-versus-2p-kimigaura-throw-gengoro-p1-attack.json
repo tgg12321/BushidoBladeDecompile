@@ -1,0 +1,13 @@
+{
+  "description": "versus-2p-kimigaura-throw-gengoro (P2 GENGORO throws at P1 KANNUKI) with P1 CROSS (attack) 4 / 8 / 12 / 16 frames before the four impacts that run saw with P1 idle (8477, 8714, 8950, 9310), so the object can land while P1 is in an attack's early frames (fighter_ResolveBoneHit's move_kind 2 / 0x1B / 0x28 / 0x26 branch, the only path to the Tbl8008E194.unkC test, 17AFC.c:498-519); same instrument as the data-lead-Tbl8008E194-unkC-* refines runs: trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-Tbl8008E194-unkC-versus-2p-kimigaura-throw-gengoro-p1-attack-1/spec.json"
+  ],
+  "extends": "versus-2p-kimigaura-throw-gengoro",
+  "inputs": [
+    "8473:CROSS/4",
+    "8706:CROSS/4",
+    "8938:CROSS/4",
+    "9294:CROSS/4"
+  ]
+}
