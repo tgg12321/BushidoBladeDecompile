@@ -1,0 +1,2 @@
+D_8009B988=g_eff_quad_pair_first_early_strip_tex_rec
+D_8009B9E0=g_eff_quad_pair_first_late_square_tex_rec
