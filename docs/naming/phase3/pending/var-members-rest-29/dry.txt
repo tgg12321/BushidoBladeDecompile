@@ -1,0 +1,21 @@
+PASS Unk8006919CRec.unk_14=sheets_over_white_tile
+decl Unk8006919CRec.unk_14 -> sheets_over_white_tile  include/game.h:2547
+  round 0: 2 member error line(s)
+    src/main/596CC.c:194 unk_14 x1
+    src/main/596CC.c:644 unk_14 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -2547 +2547 @@
+-    Unk8009B0E0Record **unk_14;
++    Unk8009B0E0Record **sheets_over_white_tile;
+--- a/src/main/596CC.c
++++ b/src/main/596CC.c
+@@ -194 +194 @@
+-    Unk8009B0E0Record ***p = &resource_root->unk_14;
++    Unk8009B0E0Record ***p = &resource_root->sheets_over_white_tile;
+@@ -644 +644 @@
+-    ptr = (*(Unk8006919CRec **)(draw_context_addr + 4))->unk_14;
++    ptr = (*(Unk8006919CRec **)(draw_context_addr + 4))->sheets_over_white_tile;
+DRY RUN: 2 file(s) would change; nothing written
+OK: every member access renamed

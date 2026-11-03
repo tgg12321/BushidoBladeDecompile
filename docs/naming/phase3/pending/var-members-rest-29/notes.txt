@@ -1,0 +1,15 @@
+var-members-rest-29 -- draft notes (research: tmp/codex/var-members-rest-29-research.md, hints only; re-derived on 131cf8b67 with git grep -nw over src include tools asm).
+
+BASIS: 1 RENAME row, Unk8006919CRec.unk_14 = sheets_over_white_tile. The form was suggested by the naming-reviewer on var-members-rest-26 (which FAILed white_tile_sheets: 'white' belongs to the tile, not the sheets). This name makes 'white' qualify the tile.
+
+RE-DERIVATION:
+- unk_14 is the first of the twelve list slots (game.h:2547). Of the Unk8006919CRec uses in 596CC.c (+ decl game.h:2561, work-block field game.h:2625), only two touch unk_14: 596CC.c:194 (&resource_root->unk_14, address taken as start of the twelve-slot run in reloc_RelocateTwelveListsAndLoadVabPack, generic relocation) and 596CC.c:644 (sole reader). All other member uses are other members (unk_1C, unk_34, row_sheets, ...). The other unk_14 hits in src (5ED34.c, 63D2C.c, 64FD8.c, 596CC.c:2674/2705/2716) are other types.
+- Reader gpu_DrawWhiteTileAndSheets (596CC.c:623): white TILE (0xFF,0xFF,0xFF, 0x280x0xF0 at 0,0) at ot+0x14; DR_MODE with sheet tpage of entry [0] at ot+0x11; entries [0],[1],[2] as s.header -> gpu_AddSpriteCells at ot_idx 0x10.
+- Draw order: ClearOTagR(g_gpu_ot_ptr, 0x1008) (64FD8.c:1186,1772,1882; 5ED34.c:68), DrawOTag(&var_7->ot[0x1007]) (6CF8.c:371): the highest index is drawn first, so the tile (0x14) is drawn before the DR_MODE (0x11) and the sheets (0x10). Sheets over the white tile.
+- Dead caller: gpu_DrawWhiteTileAndSheets <- gpu_DrawWhiteTileAndSheetsTestPadMask (596CC.c:219-230) <- DrawWhiteTileAndSheetsAndResetFlowOnPadMatch (64FD8.c:1384). git grep over src include tools asm shows that last function only at its definition and its own asm listing; also recorded dead in func-audit-2/notes.txt:32 and func-second-pass-30/notes.txt:26. git grep cannot show absence of jal/address words in the binary; the research's raw scan (0 jal/j/address words in SLUS_006.63 and MOVOVL.EXE, 0/138 captures) is not re-run here.
+
+COUNTER: the name rests on a dead consumer; only entries [0]-[2] are read and the list length is not shown (name claims no count); the screen is unidentified. A reviewer wanting a list identity rather than a consumer-placement name should take NO_NAME.
+
+COMMENT PASS: include/game.h:2532 ' * - unk_14..cursor_row_sheets (+0x14..+0x40): the twelve lists' -> 'sheets_over_white_tile..cursor_row_sheets' (reflow). 596CC.c:194 and :644 are code sites (renamed by the applier); no 596CC.c comment cites unk_14. game.h:168/178/190/200/360/367 'unk_14' comments belong to other types: leave.
+
+LAND claim list: topic:type:Unk8006919CRec; topic:tu:main/596CC (+ include/game.h). Run tools/format.py on 596CC.c and game.h after applying.
