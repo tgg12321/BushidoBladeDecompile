@@ -2767,18 +2767,19 @@ multpath_start:
         frame_step = (frame_step * f) >> 12;
     }
     {
-        s16 var_7 = fighter_record->hit_record_group_10_13_hit_tally;
-        if (var_7 >= 4) {
-            var_7 = 3;
+        s16 group_10_13_tally =
+            fighter_record->hit_record_group_10_13_hit_tally;
+        if (group_10_13_tally >= 4) {
+            group_10_13_tally = 3;
         }
-        idx = var_7;
+        idx = group_10_13_tally;
     }
     factor = fighter_record->hit_record_group_10_13_step_scales[idx];
     frame_step = (frame_step * factor) >> 12;
 defaultpath: {
-    s32 var_8 = fighter_record->hit_record_group_14_21_hit_tally;
+    s32 group_14_21_tally = fighter_record->hit_record_group_14_21_hit_tally;
     s32 var_9 = fighter_record->power_scale_tally;
-    s32 sum = var_8 + var_9;
+    s32 sum = group_14_21_tally + var_9;
     s32 sum_or_3 = (sum < 4) ? sum : 3;
     idx = sum_or_3;
 }
@@ -3413,10 +3414,10 @@ void fighter_AssignMotionSlotAndScanDataIdNibbles(s32 fighter_index) {
     s32 i = 0;
     Unk80101EC8Record *rec = &D_80101EC8[fighter_index];
     s32 id = rec->motion_data_id;
-    u16 *p = g_motion_fighter_loaded_data_ids;
+    u16 *loaded_id_cursor = g_motion_fighter_loaded_data_ids;
 
-    for (; i < 2; i++, p++) {
-        if (id == *p) {
+    for (; i < 2; i++, loaded_id_cursor++) {
+        if (id == *loaded_id_cursor) {
             break;
         }
     }
@@ -3856,7 +3857,7 @@ void fight_PickRandomStartPositionExcludingNearestAndFarthest(
 }
 
 s32 fight_FindNearestStartPair(Vec3i32 *position) {
-    s16 *p;
+    s16 *pair_table;
     s32 i;
     s32 best_dist_sq;
     s32 best;
@@ -3866,14 +3867,14 @@ s32 fight_FindNearestStartPair(Vec3i32 *position) {
     s32 dz;
     s32 dist_sq;
 
-    p = fight_GetStartPositionPairTable();
+    pair_table = fight_GetStartPositionPairTable();
     best_dist_sq = 0x7FFFFFFF;
     x = position->x;
     z = position->z;
-    p += g_fight_stage_index * 24;
+    pair_table += g_fight_stage_index * 24;
     for (i = 0; i < 4; i++) {
-        dx = (p[i * 6 + 0] + p[i * 6 + 3]) / 2 - x;
-        dz = (p[i * 6 + 2] + p[i * 6 + 5]) / 2 - z;
+        dx = (pair_table[i * 6 + 0] + pair_table[i * 6 + 3]) / 2 - x;
+        dz = (pair_table[i * 6 + 2] + pair_table[i * 6 + 5]) / 2 - z;
         dist_sq = dx * dx + dz * dz;
         if (dist_sq < best_dist_sq) {
             best_dist_sq = dist_sq;
@@ -3885,17 +3886,18 @@ s32 fight_FindNearestStartPair(Vec3i32 *position) {
 
 s32 motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue(
     Unk80101EC8Record *fighter_record) {
-    u8 *p;
+    u8 *preferred_pair;
     s32 val;
     s32 i;
     s32 j;
 
-    p = g_motion_preferred_variant_nibble_pairs[g_fight_step_row_column];
+    preferred_pair =
+        g_motion_preferred_variant_nibble_pairs[g_fight_step_row_column];
     val = g_fighter_motion_data_ids[fighter_record->other->character_data_index]
                                    [fighter_record->other->weapon_id];
     for (j = 0; j < 2; j++) {
         for (i = 0; i < 3; i++) {
-            if (p[j] == ((val >> (i * 4)) & 0xF)) {
+            if (preferred_pair[j] == ((val >> (i * 4)) & 0xF)) {
                 return i;
             }
         }

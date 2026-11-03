@@ -191,10 +191,10 @@ Unk8006E49CRec *gpu_GetPrimBufferAndRefreshStrip(s32 buffer_index) {
 
 s32 reloc_RelocateTwelveListsAndLoadVabPack(Unk8006919CRec *resource_root) {
     s32 lists_relocated = 0;
-    Unk8009B0E0Record ***p = &resource_root->sheets_over_white_tile;
+    Unk8009B0E0Record ***list_slot = &resource_root->sheets_over_white_tile;
     do {
-        reloc_RelocateOffsetList((s32 *)resource_root, (s32)*p);
-        p++;
+        reloc_RelocateOffsetList((s32 *)resource_root, (s32)*list_slot);
+        list_slot++;
         lists_relocated++;
     } while (lists_relocated < 12);
     snd_LoadVabPack(resource_root->resource_head.sound_pack, 1,
@@ -203,14 +203,14 @@ s32 reloc_RelocateTwelveListsAndLoadVabPack(Unk8006919CRec *resource_root) {
 }
 
 void reloc_RelocateOffsetList(s32 *base_addr, s32 offset_list_addr) {
-    s32 *p = (s32 *)offset_list_addr;
-    if (!*p)
+    s32 *entry = (s32 *)offset_list_addr;
+    if (!*entry)
         return;
-    while (*p) {
-        if (*p != -1) {
-            *p = *p + (s32)base_addr;
+    while (*entry) {
+        if (*entry != -1) {
+            *entry = *entry + (s32)base_addr;
         }
-        p++;
+        entry++;
     }
 }
 
@@ -422,55 +422,55 @@ cancel:
 
 void gpu_AddThreeGreyTilesStackedUp(
     s32 *draw_context, u16 *tile_rect, s32 ot_index) {
-    TILE *p = (TILE *)draw_context[6];
+    TILE *tile = (TILE *)draw_context[6];
 
-    SetTile(p);
-    p->r0 = 0xFF;
-    p->g0 = 0xFF;
-    p->b0 = 0xFF;
-    p->r0 = 0x80;
-    p->g0 = 0x80;
-    p->b0 = 0x80;
-    p->x0 = tile_rect[0];
-    p->y0 = tile_rect[1];
-    p->w = tile_rect[2];
-    p->h = tile_rect[3];
-    SetSemiTrans(p, 0);
-    AddPrim(g_gpu_ot_ptr + ot_index, p);
-    p++;
+    SetTile(tile);
+    tile->r0 = 0xFF;
+    tile->g0 = 0xFF;
+    tile->b0 = 0xFF;
+    tile->r0 = 0x80;
+    tile->g0 = 0x80;
+    tile->b0 = 0x80;
+    tile->x0 = tile_rect[0];
+    tile->y0 = tile_rect[1];
+    tile->w = tile_rect[2];
+    tile->h = tile_rect[3];
+    SetSemiTrans(tile, 0);
+    AddPrim(g_gpu_ot_ptr + ot_index, tile);
+    tile++;
 
-    SetTile(p);
-    p->r0 = 0x80;
-    p->g0 = 0x80;
-    p->b0 = 0x80;
-    p->x0 = tile_rect[0];
-    p->y0 = tile_rect[1] - 1;
-    p->w = tile_rect[2];
-    p->h = tile_rect[3];
-    SetSemiTrans(p, 1);
-    AddPrim(g_gpu_ot_ptr + ot_index, p);
-    p++;
+    SetTile(tile);
+    tile->r0 = 0x80;
+    tile->g0 = 0x80;
+    tile->b0 = 0x80;
+    tile->x0 = tile_rect[0];
+    tile->y0 = tile_rect[1] - 1;
+    tile->w = tile_rect[2];
+    tile->h = tile_rect[3];
+    SetSemiTrans(tile, 1);
+    AddPrim(g_gpu_ot_ptr + ot_index, tile);
+    tile++;
 
-    SetTile(p);
-    p->r0 = 0x40;
-    p->g0 = 0x40;
-    p->b0 = 0x40;
-    p->x0 = tile_rect[0];
-    p->y0 = tile_rect[1] - 2;
-    p->w = tile_rect[2];
-    p->h = tile_rect[3];
-    SetSemiTrans(p, 1);
-    AddPrim(g_gpu_ot_ptr + ot_index, p);
-    p++;
+    SetTile(tile);
+    tile->r0 = 0x40;
+    tile->g0 = 0x40;
+    tile->b0 = 0x40;
+    tile->x0 = tile_rect[0];
+    tile->y0 = tile_rect[1] - 2;
+    tile->w = tile_rect[2];
+    tile->h = tile_rect[3];
+    SetSemiTrans(tile, 1);
+    AddPrim(g_gpu_ot_ptr + ot_index, tile);
+    tile++;
 
-    draw_context[6] = (s32)p;
+    draw_context[6] = (s32)tile;
 }
 
 void gpu_SetTileRgbFromBlockFlag(void *tile_prim) {
     TILE *a0 = tile_prim;
-    Unk8009BD24Block *p = GetWorkingRecord();
+    Unk8009BD24Block *working_record = GetWorkingRecord();
     s32 v0;
-    if (p->grayscale) {
+    if (working_record->grayscale) {
         v0 = 0x22;
         a0->r0 = v0;
         a0->g0 = v0;
@@ -485,9 +485,9 @@ void gpu_SetTileRgbFromBlockFlag(void *tile_prim) {
 
 void gpu_SetPolyF4RgbFromBlockFlag(void *flat_quad_prim) {
     POLY_F4 *a0 = flat_quad_prim;
-    Unk8009BD24Block *p = GetWorkingRecord();
+    Unk8009BD24Block *working_record = GetWorkingRecord();
     s32 v0;
-    if (p->grayscale) {
+    if (working_record->grayscale) {
         v0 = 8;
         a0->r0 = v0;
         a0->g0 = v0;
@@ -501,56 +501,56 @@ void gpu_SetPolyF4RgbFromBlockFlag(void *flat_quad_prim) {
 
 void gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(
     s32 *draw_context, s32 mode, GpuDb *arg2) {
-    TILE *p;
+    TILE *tile;
     POLY_F4 *poly;
     Unk8009B0E0Record **sheet_headers;
     Unk8009B0E0Record **sheet_header_cursor;
     s32 sheets_drawn;
     Unk8007352CRec s;
 
-    p = (TILE *)draw_context[6];
+    tile = (TILE *)draw_context[6];
 
     if (mode == 2) {
-        SetTile(p);
-        gpu_SetTileRgbFromBlockFlag(p);
-        p->x0 = 0x4E;
-        p->y0 = 0x30;
-        p->w = 0xCC;
-        p->h = 0xB0;
-        SetSemiTrans(p, 1);
-        AddPrim(g_gpu_ot_ptr + 0x11, p);
-        p++;
-        SetTile(p);
-        gpu_SetTileRgbFromBlockFlag(p);
-        p->x0 = 0x166;
-        p->y0 = 0x30;
-        p->w = 0xCC;
-        p->h = 0xB0;
-        SetSemiTrans(p, 1);
-        AddPrim(g_gpu_ot_ptr + 0x11, p);
-        p++;
+        SetTile(tile);
+        gpu_SetTileRgbFromBlockFlag(tile);
+        tile->x0 = 0x4E;
+        tile->y0 = 0x30;
+        tile->w = 0xCC;
+        tile->h = 0xB0;
+        SetSemiTrans(tile, 1);
+        AddPrim(g_gpu_ot_ptr + 0x11, tile);
+        tile++;
+        SetTile(tile);
+        gpu_SetTileRgbFromBlockFlag(tile);
+        tile->x0 = 0x166;
+        tile->y0 = 0x30;
+        tile->w = 0xCC;
+        tile->h = 0xB0;
+        SetSemiTrans(tile, 1);
+        AddPrim(g_gpu_ot_ptr + 0x11, tile);
+        tile++;
     } else if (mode == 1) {
-        SetTile(p);
-        gpu_SetTileRgbFromBlockFlag(p);
-        p->x0 = 0x3F;
-        p->y0 = 0x30;
-        p->w = 0x202;
-        p->h = 0xB0;
-        SetSemiTrans(p, 1);
-        AddPrim(g_gpu_ot_ptr + 0x11, p);
-        p++;
+        SetTile(tile);
+        gpu_SetTileRgbFromBlockFlag(tile);
+        tile->x0 = 0x3F;
+        tile->y0 = 0x30;
+        tile->w = 0x202;
+        tile->h = 0xB0;
+        SetSemiTrans(tile, 1);
+        AddPrim(g_gpu_ot_ptr + 0x11, tile);
+        tile++;
     } else {
-        SetTile(p);
-        gpu_SetTileRgbFromBlockFlag(p);
-        p->x0 = 0x130;
-        p->y0 = 0x3A;
-        p->w = 0x126;
-        p->h = 0xAB;
-        SetSemiTrans(p, 1);
-        AddPrim(g_gpu_ot_ptr + 0x11, p);
-        p++;
+        SetTile(tile);
+        gpu_SetTileRgbFromBlockFlag(tile);
+        tile->x0 = 0x130;
+        tile->y0 = 0x3A;
+        tile->w = 0x126;
+        tile->h = 0xAB;
+        SetSemiTrans(tile, 1);
+        AddPrim(g_gpu_ot_ptr + 0x11, tile);
+        tile++;
     }
-    draw_context[6] = (s32)p;
+    draw_context[6] = (s32)tile;
     s.ot_idx = 0x12;
     s.has_color = 0;
     s.semi = 0;
@@ -624,7 +624,7 @@ void gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(
 
 void gpu_DrawWhiteTileAndSheets(s32 draw_context_addr) {
     TILE *tile;
-    Unk8009B0E0Record **ptr;
+    Unk8009B0E0Record **sheet_headers;
     Unk8007352CRec s;
     /* FAKE: single-use holder of the cell table ahead of the descriptor's table
      * store; stored directly: score 8. */
@@ -643,14 +643,15 @@ void gpu_DrawWhiteTileAndSheets(s32 draw_context_addr) {
     AddPrim(g_gpu_ot_ptr + 0x14, tile);
     *(s32 *)(draw_context_addr + 0x18) = (s32)(tile + 1);
 
-    ptr = (*(Unk8006919CRec **)(draw_context_addr + 4))->sheets_over_white_tile;
+    sheet_headers =
+        (*(Unk8006919CRec **)(draw_context_addr + 4))->sheets_over_white_tile;
     s.ot_idx = 0x10;
     s.semi = 0;
     s.x = 0;
     s.y = 0;
     s.has_color = 0;
 
-    s.header = ptr[0];
+    s.header = sheet_headers[0];
     SetDrawMode((DR_MODE *)*(s32 *)(draw_context_addr + 0x1C), 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x11, (DR_MODE *)*(s32 *)(draw_context_addr + 0x1C));
@@ -662,13 +663,13 @@ void gpu_DrawWhiteTileAndSheets(s32 draw_context_addr) {
     s.sprt_out = *(s32 *)(draw_context_addr + 0x14);
     *(s32 *)(draw_context_addr + 0x14) = gpu_AddSpriteCells(&s);
 
-    s.header = ptr[1];
+    s.header = sheet_headers[1];
     p1 = s.header->cells;
     s.table = p1;
     s.sprt_out = *(s32 *)(draw_context_addr + 0x14);
     *(s32 *)(draw_context_addr + 0x14) = gpu_AddSpriteCells(&s);
 
-    s.header = ptr[2];
+    s.header = sheet_headers[2];
     p1 = s.header->cells;
     s.table = p1;
     s.sprt_out = *(s32 *)(draw_context_addr + 0x14);
@@ -691,7 +692,7 @@ void menu_DrawModeBit1Sheets(s32 *draw_context, s32 cursor_row_mode) {
      * descriptor alone gives 0x60; dead-vars-local-array OVERSIZED-LOCALS). The
      * plain descriptor: score 12. */
     Unk80069F80Rec s;
-    Unk8009B0E0Record **ptr;
+    Unk8009B0E0Record **sheet_headers;
     s32 x0;
     s32 c;
     /* FAKE: single-use holder of the cell table ahead of the descriptor's table
@@ -699,8 +700,8 @@ void menu_DrawModeBit1Sheets(s32 *draw_context, s32 cursor_row_mode) {
     Unk8009B400Record *var_4;
 
     if (cursor_row_mode & 2) {
-        ptr = ((Unk8006919CRec *)draw_context[1])->unk_1C;
-        s.fr00.header = ptr[0];
+        sheet_headers = ((Unk8006919CRec *)draw_context[1])->unk_1C;
+        s.fr00.header = sheet_headers[0];
         if (cursor_row_mode & 1) {
             s.fr00.x = 0x9C;
             s.fr00.has_color = 1;
@@ -739,7 +740,7 @@ void menu_DrawModeBit1Sheets(s32 *draw_context, s32 cursor_row_mode) {
         s.fr00.y = 0;
         s.fr00.x = x0;
         s.fr00.has_color = 0;
-        s.fr00.header = ptr[1];
+        s.fr00.header = sheet_headers[1];
         var_4 = s.fr00.header->cells;
         s.fr00.table = var_4;
         s.fr00.sprt_out = draw_context[5];
@@ -747,7 +748,7 @@ void menu_DrawModeBit1Sheets(s32 *draw_context, s32 cursor_row_mode) {
         if (cursor_row_mode & 1) {
             s.fr00.ot_idx = 2;
             s.fr00.semi = 0;
-            s.fr00.header = ptr[6];
+            s.fr00.header = sheet_headers[6];
             s.fr00.x = 0;
             s.fr00.y = 0;
             s.fr00.has_color = 1;
@@ -769,7 +770,7 @@ void menu_DrawModeBit0Sheets(s32 *draw_context, s32 cursor_row_mode) {
      * descriptor alone gives 0x60; dead-vars-local-array OVERSIZED-LOCALS). The
      * plain descriptor: score 14. */
     Unk80069F80Rec s;
-    Unk8009B0E0Record **ptr;
+    Unk8009B0E0Record **sheet_headers;
     s32 x0;
     s32 c;
     /* FAKE: single-use holder of the cell table ahead of the descriptor's table
@@ -777,8 +778,8 @@ void menu_DrawModeBit0Sheets(s32 *draw_context, s32 cursor_row_mode) {
     Unk8009B400Record *var_4;
 
     if (cursor_row_mode & 1) {
-        ptr = ((Unk8006919CRec *)draw_context[1])->unk_1C;
-        s.fr00.header = ptr[2];
+        sheet_headers = ((Unk8006919CRec *)draw_context[1])->unk_1C;
+        s.fr00.header = sheet_headers[2];
         if (cursor_row_mode & 2) {
             s.fr00.x = -1;
             s.fr00.has_color = 1;
@@ -818,7 +819,7 @@ void menu_DrawModeBit0Sheets(s32 *draw_context, s32 cursor_row_mode) {
         s.fr00.y = 0;
         s.fr00.x = x0;
         s.fr00.has_color = 0;
-        s.fr00.header = ptr[3];
+        s.fr00.header = sheet_headers[3];
         var_4 = s.fr00.header->cells;
         s.fr00.table = var_4;
         s.fr00.sprt_out = draw_context[5];
@@ -826,7 +827,7 @@ void menu_DrawModeBit0Sheets(s32 *draw_context, s32 cursor_row_mode) {
         if (cursor_row_mode & 2) {
             s.fr00.ot_idx = 2;
             s.fr00.semi = 0;
-            s.fr00.header = ptr[6];
+            s.fr00.header = sheet_headers[6];
             s.fr00.x = 0;
             s.fr00.y = 0;
             s.fr00.has_color = 1;
@@ -2680,12 +2681,12 @@ void gpu_AdvanceBufferCounterAndBuildDrawContext(
 }
 
 void reloc_RelocateSelfOffsets(s32 *offset_list) {
-    s32 *p = offset_list;
-    if (*p == -1)
+    s32 *entry = offset_list;
+    if (*entry == -1)
         return;
-    while (*p != -1) {
-        *p = *p + (s32)offset_list;
-        p++;
+    while (*entry != -1) {
+        *entry = *entry + (s32)offset_list;
+        entry++;
     }
 }
 

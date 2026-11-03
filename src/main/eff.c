@@ -147,12 +147,12 @@ extern u8 g_eff_command_status[0x1C];
 
 void eff_ResetCommands(void) {
     s32 command_index = 0;
-    s32 *p = g_eff_command_phase;
+    s32 *phase_cursor = g_eff_command_phase;
     do {
-        *p = 0;
+        *phase_cursor = 0;
         g_eff_command_status[command_index] = 0;
         command_index++;
-        p++;
+        phase_cursor++;
     } while (command_index < 0x1C);
     g_eff_yawed_quad_tex_selectors[1] = 0;
     g_eff_yawed_quad_tex_selectors[0] = 0;
@@ -304,7 +304,7 @@ extern Unk1F800000Unk00 g_eff_command_block;
 void eff_StartRotatedQuadClusterWithNearWhiteLight(
     s32 *src_position, s16 *src_command_vector) {
     s16 command_vector[3];
-    s32 *p;
+    s32 *src_position_cursor;
     s16 *src_command_vector_cursor = src_command_vector;
     command_vector[0] = *src_command_vector_cursor++;
     command_vector[1] = *src_command_vector_cursor++;
@@ -315,15 +315,15 @@ void eff_StartRotatedQuadClusterWithNearWhiteLight(
     g_eff_command_block.status_dest = &g_eff_command_status[26];
     g_eff_command_block.command_word.w = 0x21001A;
     eff_StartCommand();
-    p = src_position;
-    g_eff_point_light_position.vx = *p++;
-    g_eff_point_light_position.vy = *p++;
-    g_eff_point_light_position.vz = *p;
+    src_position_cursor = src_position;
+    g_eff_point_light_position.vx = *src_position_cursor++;
+    g_eff_point_light_position.vy = *src_position_cursor++;
+    g_eff_point_light_position.vz = *src_position_cursor;
     g_eff_point_light_color = 0xFFFFEF;
 }
 
 void eff_StartRecycledCommandWithRoseLight(s32 *src_position) {
-    s32 *p;
+    s32 *src_position_cursor;
     g_eff_active_command_block = &g_eff_command_block;
     g_eff_command_block.start_position_src = src_position;
     if (g_eff_command_status[9] != 0 && g_eff_command_status[10] != 0) {
@@ -338,23 +338,23 @@ void eff_StartRecycledCommandWithRoseLight(s32 *src_position) {
         g_eff_command_block.command_word.w = 0x21000A;
     }
     eff_StartCommand();
-    p = src_position;
-    g_eff_point_light_position.vx = *p++;
-    g_eff_point_light_position.vy = *p++;
-    g_eff_point_light_position.vz = *p;
+    src_position_cursor = src_position;
+    g_eff_point_light_position.vx = *src_position_cursor++;
+    g_eff_point_light_position.vy = *src_position_cursor++;
+    g_eff_point_light_position.vz = *src_position_cursor;
     g_eff_point_light_color = 0xFF0060;
 }
 
 s32 eff_StartCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
-    s32 *p = src_position;
+    s32 *src_position_cursor = src_position;
     g_eff_active_command_block = &g_eff_command_block;
     g_eff_command_block.start_position_src = src_position;
     g_eff_command_block.status_dest = &g_eff_command_status[4];
     g_eff_command_block.command_word.w = 0x210004;
     eff_StartCommand();
-    g_eff_point_light_position.vx = *p++;
-    g_eff_point_light_position.vy = *p++;
-    g_eff_point_light_position.vz = *p;
+    g_eff_point_light_position.vx = *src_position_cursor++;
+    g_eff_point_light_position.vy = *src_position_cursor++;
+    g_eff_point_light_position.vz = *src_position_cursor;
     g_eff_point_light_color = 0x8080FF;
     return 1;
 }
@@ -374,35 +374,35 @@ s32 eff_StartSlowRateCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
 }
 
 s32 eff_StartMediumRateCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
-    s32 *p = src_position;
+    s32 *src_position_cursor = src_position;
     g_eff_active_command_block = &g_eff_command_block;
     g_eff_command_block.start_position_src = src_position;
     g_eff_command_block.status_dest = &g_eff_command_status[11];
     g_eff_command_block.command_word.w = 0x29000B;
     eff_StartCommand();
-    g_eff_point_light_position.vx = *p++;
-    g_eff_point_light_position.vy = *p++;
-    g_eff_point_light_position.vz = *p;
+    g_eff_point_light_position.vx = *src_position_cursor++;
+    g_eff_point_light_position.vy = *src_position_cursor++;
+    g_eff_point_light_position.vz = *src_position_cursor;
     g_eff_point_light_color = 0x8080FF;
     return 8;
 }
 
 s32 eff_StartFastRateCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
-    s32 *p = src_position;
+    s32 *src_position_cursor = src_position;
     g_eff_active_command_block = &g_eff_command_block;
     g_eff_command_block.start_position_src = src_position;
     g_eff_command_block.status_dest = &g_eff_command_status[11];
     g_eff_command_block.command_word.w = 0x31000B;
     eff_StartCommand();
-    g_eff_point_light_position.vx = *p++;
-    g_eff_point_light_position.vy = *p++;
-    g_eff_point_light_position.vz = *p;
+    g_eff_point_light_position.vx = *src_position_cursor++;
+    g_eff_point_light_position.vy = *src_position_cursor++;
+    g_eff_point_light_position.vz = *src_position_cursor;
     g_eff_point_light_color = 0x8080FF;
     return 5;
 }
 
 void eff_StartRecycledCommandWithPaleRedLight(s32 *src_position) {
-    s32 *p;
+    s32 *src_position_cursor;
     g_eff_active_command_block = &g_eff_command_block;
     g_eff_command_block.start_position_src = src_position;
     if (g_eff_command_status[5] != 0 && g_eff_command_status[6] != 0) {
@@ -417,16 +417,16 @@ void eff_StartRecycledCommandWithPaleRedLight(s32 *src_position) {
         g_eff_command_block.command_word.w = 0x210006;
     }
     eff_StartCommand();
-    p = src_position;
-    g_eff_point_light_position.vx = *p++;
-    g_eff_point_light_position.vy = *p++;
-    g_eff_point_light_position.vz = *p;
+    src_position_cursor = src_position;
+    g_eff_point_light_position.vx = *src_position_cursor++;
+    g_eff_point_light_position.vy = *src_position_cursor++;
+    g_eff_point_light_position.vz = *src_position_cursor;
     g_eff_point_light_color = 0xFF8080;
 }
 
 void eff_StartArgSelectedCommandWithCyanLight(
     s32 *src_position, s32 command_variant) {
-    s32 *p;
+    s32 *src_position_cursor;
 
     g_eff_active_command_block = &g_eff_command_block;
     g_eff_command_block.start_position_src = src_position;
@@ -443,16 +443,16 @@ void eff_StartArgSelectedCommandWithCyanLight(
         break;
     }
     eff_StartCommand();
-    p = src_position;
-    g_eff_point_light_position.vx = *p++;
-    g_eff_point_light_position.vy = *p++;
-    g_eff_point_light_position.vz = *p;
+    src_position_cursor = src_position;
+    g_eff_point_light_position.vx = *src_position_cursor++;
+    g_eff_point_light_position.vy = *src_position_cursor++;
+    g_eff_point_light_position.vz = *src_position_cursor;
     g_eff_point_light_color = 0x10FFFF;
 }
 
 void eff_StartArgSelectedCommandWithGreenLight(
     s32 *src_position, s32 command_variant) {
-    s32 *p;
+    s32 *src_position_cursor;
 
     g_eff_active_command_block = &g_eff_command_block;
     g_eff_command_block.start_position_src = src_position;
@@ -469,15 +469,15 @@ void eff_StartArgSelectedCommandWithGreenLight(
         break;
     }
     eff_StartCommand();
-    p = src_position;
-    g_eff_point_light_position.vx = *p++;
-    g_eff_point_light_position.vy = *p++;
-    g_eff_point_light_position.vz = *p;
+    src_position_cursor = src_position;
+    g_eff_point_light_position.vx = *src_position_cursor++;
+    g_eff_point_light_position.vy = *src_position_cursor++;
+    g_eff_point_light_position.vz = *src_position_cursor;
     g_eff_point_light_color = 0x10FF10;
 }
 
 void eff_StartRecycledCommandWithOrangeLight(s32 *src_position) {
-    s32 *p;
+    s32 *src_position_cursor;
     g_eff_active_command_block = &g_eff_command_block;
     g_eff_command_block.start_position_src = src_position;
     if (g_eff_command_status[16] != 0 && g_eff_command_status[17] != 0) {
@@ -492,16 +492,16 @@ void eff_StartRecycledCommandWithOrangeLight(s32 *src_position) {
         g_eff_command_block.command_word.w = 0x210011;
     }
     eff_StartCommand();
-    p = src_position;
-    g_eff_point_light_position.vx = *p++;
-    g_eff_point_light_position.vy = *p++;
-    g_eff_point_light_position.vz = *p;
+    src_position_cursor = src_position;
+    g_eff_point_light_position.vx = *src_position_cursor++;
+    g_eff_point_light_position.vy = *src_position_cursor++;
+    g_eff_point_light_position.vz = *src_position_cursor;
     g_eff_point_light_color = 0xC06013;
 }
 
 void eff_StartRecycledVectorCommandWithRedLight(
     s32 *src_position, s16 *src_command_vector) {
-    s32 *p;
+    s32 *src_position_cursor;
     g_eff_active_command_block = &g_eff_command_block;
     g_eff_command_block.start_position_src = src_position;
     g_eff_command_block.start_vector_src = src_command_vector;
@@ -517,10 +517,10 @@ void eff_StartRecycledVectorCommandWithRedLight(
         g_eff_command_block.command_word.w = 0x210003;
     }
     eff_StartCommand();
-    p = src_position;
-    g_eff_point_light_position.vx = *p++;
-    g_eff_point_light_position.vy = *p++;
-    g_eff_point_light_position.vz = *p;
+    src_position_cursor = src_position;
+    g_eff_point_light_position.vx = *src_position_cursor++;
+    g_eff_point_light_position.vy = *src_position_cursor++;
+    g_eff_point_light_position.vz = *src_position_cursor;
     g_eff_point_light_color = 0xFF0000;
 }
 
@@ -562,7 +562,7 @@ void eff_StartYawedQuadSlotCommand(s32 *src_position, s16 command_vector_y,
 
 void eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight(
     s32 *src_position, s16 *src_command_vector) {
-    s32 *p;
+    s32 *src_position_cursor;
     g_eff_active_command_block = &g_eff_command_block;
     g_eff_command_block.start_position_src = src_position;
     g_eff_command_block.start_vector_src = src_command_vector;
@@ -584,10 +584,10 @@ void eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight(
         g_eff_active_command_block->command_word.w = 0x10007;
     }
     eff_StartCommand();
-    p = src_position;
-    g_eff_point_light_position.vx = *p++;
-    g_eff_point_light_position.vy = *p++;
-    g_eff_point_light_position.vz = *p;
+    src_position_cursor = src_position;
+    g_eff_point_light_position.vx = *src_position_cursor++;
+    g_eff_point_light_position.vy = *src_position_cursor++;
+    g_eff_point_light_position.vz = *src_position_cursor;
     g_eff_point_light_color = 0xFF8080;
 }
 
@@ -684,7 +684,7 @@ void eff_StartRecycledYawedParticles(s32 *src_position, s16 yaw_angle) {
 }
 
 void eff_StartRecycledCommandWithMagentaLight(s32 *src_position) {
-    s32 *p;
+    s32 *src_position_cursor;
     g_eff_active_command_block = &g_eff_command_block;
     g_eff_command_block.start_position_src = src_position;
     if (g_eff_command_status[18] != 0 && g_eff_command_status[19] != 0) {
@@ -699,10 +699,10 @@ void eff_StartRecycledCommandWithMagentaLight(s32 *src_position) {
         g_eff_command_block.command_word.w = 0x210013;
     }
     eff_StartCommand();
-    p = src_position;
-    g_eff_point_light_position.vx = *p++;
-    g_eff_point_light_position.vy = *p++;
-    g_eff_point_light_position.vz = *p;
+    src_position_cursor = src_position;
+    g_eff_point_light_position.vx = *src_position_cursor++;
+    g_eff_point_light_position.vy = *src_position_cursor++;
+    g_eff_point_light_position.vz = *src_position_cursor;
     g_eff_point_light_color = 0xFF00FF;
 }
 
@@ -1904,10 +1904,10 @@ u8 eff_DrawAnimatedQuads(s32);
 
 u8 eff_DrawAndAdvanceCosineScaledQuad(void) {
     u8 draw_result = eff_DrawAnimatedQuads(0);
-    s16 *p = &g_eff_animated_quad_counters[0];
-    s16 quad_counter = *p;
+    s16 *counter_slot = &g_eff_animated_quad_counters[0];
+    s16 quad_counter = *counter_slot;
     quad_counter += 0x1FF;
-    *p = quad_counter;
+    *counter_slot = quad_counter;
     if ((s16)quad_counter < 0x1001) {
         return draw_result;
     }
@@ -1916,10 +1916,10 @@ u8 eff_DrawAndAdvanceCosineScaledQuad(void) {
 
 u8 eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureFirstSlot(void) {
     u8 draw_result = eff_DrawAnimatedQuads(1);
-    s16 *p = &g_eff_animated_quad_counters[1];
-    u16 quad_counter = *p;
+    s16 *counter_slot = &g_eff_animated_quad_counters[1];
+    u16 quad_counter = *counter_slot;
     quad_counter += 0x1C6;
-    *p = quad_counter;
+    *counter_slot = quad_counter;
     if ((s16)quad_counter < 0x11C8) {
         return draw_result;
     }
@@ -1928,10 +1928,10 @@ u8 eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureFirstSlot(void) {
 
 u8 eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureSecondSlot(void) {
     u8 draw_result = eff_DrawAnimatedQuads(2);
-    s16 *p = &g_eff_animated_quad_counters[2];
-    s16 quad_counter = *p;
+    s16 *counter_slot = &g_eff_animated_quad_counters[2];
+    s16 quad_counter = *counter_slot;
     quad_counter += 0x1C6;
-    *p = quad_counter;
+    *counter_slot = quad_counter;
     if ((s16)quad_counter < 0x11C8) {
         return draw_result;
     }
@@ -1940,10 +1940,10 @@ u8 eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureSecondSlot(void) {
 
 u8 eff_DrawAndAdvancePreseededGrowingQuadFirstSlot(void) {
     u8 draw_result = eff_DrawAnimatedQuads(3);
-    s16 *p = &g_eff_animated_quad_counters[3];
-    s16 quad_counter = *p;
+    s16 *counter_slot = &g_eff_animated_quad_counters[3];
+    s16 quad_counter = *counter_slot;
     quad_counter += 0x19;
-    *p = quad_counter;
+    *counter_slot = quad_counter;
     if ((s16)quad_counter < 0xC9) {
         return draw_result;
     }
@@ -1952,10 +1952,10 @@ u8 eff_DrawAndAdvancePreseededGrowingQuadFirstSlot(void) {
 
 u8 eff_DrawAndAdvancePreseededGrowingQuadSecondSlot(void) {
     u8 draw_result = eff_DrawAnimatedQuads(4);
-    s16 *p = &g_eff_animated_quad_counters[4];
-    u16 quad_counter = *p;
+    s16 *counter_slot = &g_eff_animated_quad_counters[4];
+    u16 quad_counter = *counter_slot;
     quad_counter += 0x19;
-    *p = quad_counter;
+    *counter_slot = quad_counter;
     if ((s16)quad_counter < 0xC9) {
         return draw_result;
     }
@@ -1993,10 +1993,10 @@ u8 eff_DrawAndAdvanceRateSelectedCosineScaledQuad(void) {
 
 u8 eff_DrawAndAdvanceQuadPairWithFirstMirroredByViewSettingOutsideReplay(void) {
     u8 draw_result = eff_DrawAnimatedQuads(6);
-    s16 *p = &g_eff_animated_quad_counters[6];
-    u16 quad_counter = *p;
+    s16 *counter_slot = &g_eff_animated_quad_counters[6];
+    u16 quad_counter = *counter_slot;
     quad_counter += 0x32;
-    *p = quad_counter;
+    *counter_slot = quad_counter;
     if ((s16)quad_counter < 0x100) {
         return draw_result;
     }
@@ -2005,10 +2005,10 @@ u8 eff_DrawAndAdvanceQuadPairWithFirstMirroredByViewSettingOutsideReplay(void) {
 
 u8 eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting(void) {
     u8 draw_result = eff_DrawAnimatedQuads(7);
-    s16 *p = &g_eff_animated_quad_counters[7];
-    u16 quad_counter = *p;
+    s16 *counter_slot = &g_eff_animated_quad_counters[7];
+    u16 quad_counter = *counter_slot;
     quad_counter += 0x32;
-    *p = quad_counter;
+    *counter_slot = quad_counter;
     if ((s16)quad_counter < 0x100) {
         return draw_result;
     }
@@ -2017,10 +2017,10 @@ u8 eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting(void) {
 
 u8 eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay(void) {
     u8 draw_result = eff_DrawAnimatedQuads(0xA);
-    s16 *p = &g_eff_animated_quad_counters[10];
-    s16 quad_counter = *p;
+    s16 *counter_slot = &g_eff_animated_quad_counters[10];
+    s16 quad_counter = *counter_slot;
     quad_counter += 0x32;
-    *p = quad_counter;
+    *counter_slot = quad_counter;
     if ((s16)quad_counter < 0x100) {
         return draw_result;
     }
@@ -2029,10 +2029,10 @@ u8 eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay(void) {
 
 u8 eff_DrawAndAdvanceQuadNotMirroredByViewSetting(void) {
     u8 draw_result = eff_DrawAnimatedQuads(0xB);
-    s16 *p = &g_eff_animated_quad_counters[11];
-    s16 quad_counter = *p;
+    s16 *counter_slot = &g_eff_animated_quad_counters[11];
+    s16 quad_counter = *counter_slot;
     quad_counter += 0x32;
-    *p = quad_counter;
+    *counter_slot = quad_counter;
     if ((s16)quad_counter < 0x100) {
         return draw_result;
     }
@@ -2069,10 +2069,10 @@ s32 eff_DrawAndAdvanceTwoAnimatedQuadsUntilFirstCounterExpires(void) {
 
 u8 eff_DrawAndAdvanceSpinningQuadWithFixedTextureFirstSlot(void) {
     u8 draw_result = eff_DrawAnimatedQuads(0x10);
-    s16 *p = &g_eff_animated_quad_counters[16];
-    s16 quad_counter = *p;
+    s16 *counter_slot = &g_eff_animated_quad_counters[16];
+    s16 quad_counter = *counter_slot;
     quad_counter += 0x1C6;
-    *p = quad_counter;
+    *counter_slot = quad_counter;
     if (quad_counter < 0x11C8) {
         return draw_result;
     }
@@ -2081,10 +2081,10 @@ u8 eff_DrawAndAdvanceSpinningQuadWithFixedTextureFirstSlot(void) {
 
 u8 eff_DrawAndAdvanceSpinningQuadWithFixedTextureSecondSlot(void) {
     u8 draw_result = eff_DrawAnimatedQuads(0x11);
-    s16 *p = &g_eff_animated_quad_counters[17];
-    s16 quad_counter = *p;
+    s16 *counter_slot = &g_eff_animated_quad_counters[17];
+    s16 quad_counter = *counter_slot;
     quad_counter += 0x1C6;
-    *p = quad_counter;
+    *counter_slot = quad_counter;
     if ((s16)quad_counter < 0x11C8) {
         return draw_result;
     }

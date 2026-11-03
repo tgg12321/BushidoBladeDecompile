@@ -169,11 +169,11 @@ Unk8006E49CRec *gpu_GetIndexedPrimBufferRecord(s32 buffer_index) {
 }
 
 void gpu_LoadVramBottomStrip(Unk8006E950Head *resource_root) {
-    Unk8009BD24Block *p;
+    Unk8009BD24Block *working_record;
     s32 data;
     RECT rect;
-    p = GetWorkingRecord();
-    if (p->grayscale) {
+    working_record = GetWorkingRecord();
+    if (working_record->grayscale) {
         data = resource_root->grayscale_bottom_strip_pixels;
     } else {
         data = resource_root->bottom_strip_pixels;
@@ -727,7 +727,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
     Unk8007352CRec s;
     s16 shift[2];
     u16 tile_rect[4];
-    Unk8009B0E0Record **var_3;
+    Unk8009B0E0Record **sheet_headers;
     /* the sprite sheet's cell array (8-byte Unk8009B400Record cells), which
        starts just past the sheet's 12-byte Unk8009B0E0Record headers: three
        on var_3[0] (normal, then one highlight per player, +0x24), one on every
@@ -742,8 +742,8 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
     s.scale_y = 0x100;
     s.semi = 0;
     s.col_r = s.col_g = s.col_b = 0x70;
-    var_3 = g_entry_menu_resources->entry_grid_sheets;
-    s.header = var_3[0];
+    sheet_headers = g_entry_menu_resources->entry_grid_sheets;
+    s.header = sheet_headers[0];
     SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0xD, draw_context->primitive_cursors.unk_14);
@@ -752,7 +752,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
     s.ot_idx = 0xC;
     s.x = 0x82;
     s.y = 0x86;
-    s.header = var_3[0];
+    s.header = sheet_headers[0];
     var_4 = s.header[2].cells;
     s.has_color = 0;
     for (slot_index = 0;
@@ -791,7 +791,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
 
     s.x = 0x17E;
     s.y = 0x86;
-    s.header = var_3[0];
+    s.header = sheet_headers[0];
     s.has_color = 0;
     for (slot_index = 0;
          slot_index < 1 + g_entry_menu_init_extra_slot_count +
@@ -829,7 +829,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
 
     s.x = 0;
     s.y = 0;
-    s.header = var_3[1];
+    s.header = sheet_headers[1];
     SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                 gpu_GetSheetTPage(s.header, 0x60), 0);
     AddPrim(g_gpu_ot_ptr + 0xB, draw_context->primitive_cursors.unk_14);
@@ -875,7 +875,9 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
                         break;
                     }
                 }
-                s.header = var_3[g_entry_menu_grid_entries[col][row].value + 1];
+                s.header =
+                    sheet_headers[g_entry_menu_grid_entries[col][row].value +
+                                  1];
                 var_4 = s.header->cells;
                 s.table = var_4;
                 s.sprt_out = draw_context->primitive_cursors.sprite_prims;
@@ -886,7 +888,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
                 s.y = col << 4;
                 s.x = row * 116 + (row >> 1) * 20;
                 s.has_color = 0;
-                s.header = var_3[21];
+                s.header = sheet_headers[21];
                 var_4 = s.header->cells;
                 s.table = var_4;
                 s.sprt_out = draw_context->primitive_cursors.sprite_prims;
@@ -900,7 +902,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
     s.y = 0;
     s.x = 0;
     s.has_color = 0;
-    s.header = var_3[22];
+    s.header = sheet_headers[22];
     var_4 = s.header->cells;
     s.table = var_4;
     s.sprt_out = draw_context->primitive_cursors.sprite_prims;
@@ -2111,46 +2113,50 @@ POLY_G4 *gpu_AddPanelLowerQuad(s32 handler_index, POLY_G4 *gradient_quad) {
 }
 
 void gpu_AddGradientPanel(Unk8006EACCRec *draw_context) {
-    POLY_G4 *p;
+    POLY_G4 *gradient_quad;
     gpu_AddPanelGrid(draw_context);
-    p = draw_context->primitive_cursors.gradient_quad_prims;
-    p->x0 = 0x50;
-    p->y0 = 0x32;
-    p->x1 = 0x50;
-    p->y1 = 0x52;
-    p->x2 = 0x140;
-    p->y2 = 0x32;
-    p->x3 = 0x140;
-    p->y3 = 0x52;
-    p = gpu_AddPanelUpperQuad(g_entry_menu_handler_index, p);
-    p->x0 = 0x231;
-    p->y0 = 0x32;
-    p->x1 = 0x231;
-    p->y1 = 0x52;
-    p->x2 = 0x140;
-    p->y2 = 0x32;
-    p->x3 = 0x140;
-    p->y3 = 0x52;
-    p = gpu_AddPanelUpperQuad(g_entry_menu_handler_index, p);
-    p->x0 = 0x140;
-    p->y0 = 0x52;
-    p->x1 = 0x140;
-    p->y1 = 0x71;
-    p->x2 = 0x50;
-    p->y2 = 0x52;
-    p->x3 = 0x50;
-    p->y3 = 0x71;
-    p = gpu_AddPanelLowerQuad(g_entry_menu_handler_index, p);
-    p->x0 = 0x140;
-    p->y0 = 0x52;
-    p->x1 = 0x140;
-    p->y1 = 0x71;
-    p->x2 = 0x231;
-    p->y2 = 0x52;
-    p->x3 = 0x231;
-    p->y3 = 0x71;
-    p = gpu_AddPanelLowerQuad(g_entry_menu_handler_index, p);
-    draw_context->primitive_cursors.gradient_quad_prims = p;
+    gradient_quad = draw_context->primitive_cursors.gradient_quad_prims;
+    gradient_quad->x0 = 0x50;
+    gradient_quad->y0 = 0x32;
+    gradient_quad->x1 = 0x50;
+    gradient_quad->y1 = 0x52;
+    gradient_quad->x2 = 0x140;
+    gradient_quad->y2 = 0x32;
+    gradient_quad->x3 = 0x140;
+    gradient_quad->y3 = 0x52;
+    gradient_quad =
+        gpu_AddPanelUpperQuad(g_entry_menu_handler_index, gradient_quad);
+    gradient_quad->x0 = 0x231;
+    gradient_quad->y0 = 0x32;
+    gradient_quad->x1 = 0x231;
+    gradient_quad->y1 = 0x52;
+    gradient_quad->x2 = 0x140;
+    gradient_quad->y2 = 0x32;
+    gradient_quad->x3 = 0x140;
+    gradient_quad->y3 = 0x52;
+    gradient_quad =
+        gpu_AddPanelUpperQuad(g_entry_menu_handler_index, gradient_quad);
+    gradient_quad->x0 = 0x140;
+    gradient_quad->y0 = 0x52;
+    gradient_quad->x1 = 0x140;
+    gradient_quad->y1 = 0x71;
+    gradient_quad->x2 = 0x50;
+    gradient_quad->y2 = 0x52;
+    gradient_quad->x3 = 0x50;
+    gradient_quad->y3 = 0x71;
+    gradient_quad =
+        gpu_AddPanelLowerQuad(g_entry_menu_handler_index, gradient_quad);
+    gradient_quad->x0 = 0x140;
+    gradient_quad->y0 = 0x52;
+    gradient_quad->x1 = 0x140;
+    gradient_quad->y1 = 0x71;
+    gradient_quad->x2 = 0x231;
+    gradient_quad->y2 = 0x52;
+    gradient_quad->x3 = 0x231;
+    gradient_quad->y3 = 0x71;
+    gradient_quad =
+        gpu_AddPanelLowerQuad(g_entry_menu_handler_index, gradient_quad);
+    draw_context->primitive_cursors.gradient_quad_prims = gradient_quad;
 }
 
 TILE *gpu_AddPanelGridTile(s32 handler_index, TILE *tile) {
@@ -2188,46 +2194,48 @@ TILE *gpu_AddBrownOrBlackPanelGridTile(s32 arg0, TILE *tile) {
 }
 
 void gpu_AddPanelGrid(Unk8006EACCRec *draw_context) {
-    TILE *p;
+    TILE *tile;
     s32 i;
-    p = draw_context->primitive_cursors.tile_prims;
+    tile = draw_context->primitive_cursors.tile_prims;
     for (i = 0x6F; i < 0x210; i += 0x20) {
-        p->x0 = i;
-        p->y0 = 0x32;
-        p->w = 2;
-        p->h = 0x3F;
-        p = gpu_AddPanelGridTile(g_entry_menu_handler_index, p);
+        tile->x0 = i;
+        tile->y0 = 0x32;
+        tile->w = 2;
+        tile->h = 0x3F;
+        tile = gpu_AddPanelGridTile(g_entry_menu_handler_index, tile);
     }
-    p->x0 = 0x51;
-    p->y0 = 0x41;
-    p->w = 0x1E0;
-    p->h = 1;
-    p = gpu_AddPanelGridTile(g_entry_menu_handler_index, p);
-    p->x0 = 0x51;
-    p->y0 = 0x61;
-    p->w = 0x1E0;
-    p->h = 1;
-    p = gpu_AddPanelGridTile(g_entry_menu_handler_index, p);
-    p->x0 = 0x51;
-    p->y0 = 0x50;
-    p->w = 0x1E0;
-    p->h = 2;
-    p = gpu_AddPanelGridTile(g_entry_menu_handler_index, p);
+    tile->x0 = 0x51;
+    tile->y0 = 0x41;
+    tile->w = 0x1E0;
+    tile->h = 1;
+    tile = gpu_AddPanelGridTile(g_entry_menu_handler_index, tile);
+    tile->x0 = 0x51;
+    tile->y0 = 0x61;
+    tile->w = 0x1E0;
+    tile->h = 1;
+    tile = gpu_AddPanelGridTile(g_entry_menu_handler_index, tile);
+    tile->x0 = 0x51;
+    tile->y0 = 0x50;
+    tile->w = 0x1E0;
+    tile->h = 2;
+    tile = gpu_AddPanelGridTile(g_entry_menu_handler_index, tile);
     for (i = 0; i < 5; i++) {
-        p->x0 = 0x6A + i * 0x21;
-        p->y0 = 0x32;
-        p->w = 5 - i;
-        p->h = 0x3F;
-        p = gpu_AddBrownOrBlackPanelGridTile(g_entry_menu_handler_index, p);
+        tile->x0 = 0x6A + i * 0x21;
+        tile->y0 = 0x32;
+        tile->w = 5 - i;
+        tile->h = 0x3F;
+        tile =
+            gpu_AddBrownOrBlackPanelGridTile(g_entry_menu_handler_index, tile);
     }
     for (i = 0; i < 5; i++) {
-        p->x0 = 0x211 - i * 0x20;
-        p->y0 = 0x32;
-        p->w = 5 - i;
-        p->h = 0x3F;
-        p = gpu_AddBrownOrBlackPanelGridTile(g_entry_menu_handler_index, p);
+        tile->x0 = 0x211 - i * 0x20;
+        tile->y0 = 0x32;
+        tile->w = 5 - i;
+        tile->h = 0x3F;
+        tile =
+            gpu_AddBrownOrBlackPanelGridTile(g_entry_menu_handler_index, tile);
     }
-    draw_context->primitive_cursors.tile_prims = p;
+    draw_context->primitive_cursors.tile_prims = tile;
 }
 
 /* gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer - draws three

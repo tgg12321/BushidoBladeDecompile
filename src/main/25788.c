@@ -12,16 +12,16 @@
  * p->cd_audio_suppressed, then the three bytes at p->button_mappings are copied
  * to g_saved_record.frec20. */
 void CopyWorkingFlagsAndButtonMappingsToSavedRecord(void) {
-    Unk8009BD24Block *p;
+    Unk8009BD24Block *working_record;
     s32 i;
 
-    p = GetWorkingRecord();
+    working_record = GetWorkingRecord();
     g_saved_record.flags &= ~7;
-    g_saved_record.flags |= p->grayscale ? 1 : 0;
-    g_saved_record.flags |= p->unk20_1 ? 2 : 0;
-    g_saved_record.flags |= p->cd_audio_suppressed ? 4 : 0;
+    g_saved_record.flags |= working_record->grayscale ? 1 : 0;
+    g_saved_record.flags |= working_record->unk20_1 ? 2 : 0;
+    g_saved_record.flags |= working_record->cd_audio_suppressed ? 4 : 0;
     for (i = 0; i < 3; i++) {
-        g_saved_record.frec20[i] = p->button_mappings[i];
+        g_saved_record.frec20[i] = working_record->button_mappings[i];
     }
 }
 
@@ -111,21 +111,21 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
 }
 
 void CopySavedFlagsButtonMappingsAndTimesToWorkingRecord(void) {
-    Unk8009BD24Block *p;
+    Unk8009BD24Block *working_record;
     u8 *src;
     /* the three 8-byte clock records */
     TimeRec *times;
     s32 i;
 
-    p = GetWorkingRecord();
+    working_record = GetWorkingRecord();
     i = 0;
-    p->grayscale = g_saved_record.flags & 1;
-    p->unk20_1 = (g_saved_record.flags >> 1) & 1;
-    p->cd_audio_suppressed = (g_saved_record.flags >> 2) & 1;
+    working_record->grayscale = g_saved_record.flags & 1;
+    working_record->unk20_1 = (g_saved_record.flags >> 1) & 1;
+    working_record->cd_audio_suppressed = (g_saved_record.flags >> 2) & 1;
     src = g_saved_record.frec20;
     for (; i < 3; i++) {
-        p->button_mappings[i] = *src;
-        p->committed_button_mappings[i] = *src;
+        working_record->button_mappings[i] = *src;
+        working_record->committed_button_mappings[i] = *src;
         src++;
     }
     times = g_saved_record.times;
@@ -142,13 +142,13 @@ void CopySavedFlagsButtonMappingsAndTimesToWorkingRecord(void) {
         s32 t;
 
         var_4 = times[i].time_frames / 1800;
-        p->time_records[i].minutes = var_4;
+        working_record->time_records[i].minutes = var_4;
         var_5 = (times[i].time_frames / 30) % 60;
-        p->time_records[i].seconds = var_5;
+        working_record->time_records[i].seconds = var_5;
         var_6 = (times[i].time_frames % 30) * 100 / 30;
-        p->time_records[i].hundredths = var_6;
+        working_record->time_records[i].hundredths = var_6;
         t = times[i].holder_character_index;
-        p->time_records[i].character_index = t;
+        working_record->time_records[i].character_index = t;
     }
 }
 

@@ -1094,7 +1094,7 @@ void menu_UpdateSelListPicks(
  * SELWORK->sel_result_record. Draws the full-screen TILE with
  * selection_fade_shade as its colour. */
 s32 menu_FadeOutSelAndWriteResult(Unk8006EACCRec *draw_context) {
-    TILE *p;
+    TILE *tile;
     Unk8009BD24Block *working_record;
     u16 *cnt;
     s16 v;
@@ -1133,19 +1133,19 @@ s32 menu_FadeOutSelAndWriteResult(Unk8006EACCRec *draw_context) {
             }
         }
     }
-    p = draw_context->primitive_cursors.tile_prims;
-    SetTile(p);
-    p->r0 = *cnt;
-    p->g0 = *cnt;
-    p->b0 = *cnt;
-    p->x0 = 0;
-    p->y0 = 0;
-    p->w = 0x280;
-    p->h = 0xF0;
-    SetSemiTrans(p, 1);
-    AddPrim(g_gpu_ot_ptr, p);
-    p++;
-    draw_context->primitive_cursors.tile_prims = p;
+    tile = draw_context->primitive_cursors.tile_prims;
+    SetTile(tile);
+    tile->r0 = *cnt;
+    tile->g0 = *cnt;
+    tile->b0 = *cnt;
+    tile->x0 = 0;
+    tile->y0 = 0;
+    tile->w = 0x280;
+    tile->h = 0xF0;
+    SetSemiTrans(tile, 1);
+    AddPrim(g_gpu_ot_ptr, tile);
+    tile++;
+    draw_context->primitive_cursors.tile_prims = tile;
     SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0, 0x40, 0);
     AddPrim(g_gpu_ot_ptr, draw_context->primitive_cursors.unk_14);
     draw_context->primitive_cursors.unk_14++;

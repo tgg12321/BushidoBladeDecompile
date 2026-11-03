@@ -55,7 +55,7 @@ s32 gpu_AddSpriteCells(Unk8007352CRec *draw_desc) {
 s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *draw_desc, s32 mode) {
     Unk8009B400Record *e = draw_desc->table;
     Unk8009B0E0Record *sheet_header = draw_desc->header;
-    POLY_FT4 *p;
+    POLY_FT4 *quad;
     s16 i;
     u32 tpage;
     u32 clut;
@@ -90,7 +90,7 @@ s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *draw_desc, s32 mode) {
         du0 = 0;
         dv0 = 0;
     }
-    p = (POLY_FT4 *)draw_desc->ft4_out;
+    quad = (POLY_FT4 *)draw_desc->ft4_out;
     for (i = 0; i < sheet_header->count; i++) {
         if (mode == 1) {
             du0 = e->w - 1;
@@ -108,51 +108,51 @@ s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *draw_desc, s32 mode) {
                 dv1 = 0;
             }
         }
-        SetPolyFT4(p);
-        p->tpage = tpage;
-        p->clut = clut;
+        SetPolyFT4(quad);
+        quad->tpage = tpage;
+        quad->clut = clut;
         sx = draw_desc->scale_x;
         sy = draw_desc->scale_y;
-        p->x0 = ox + draw_desc->x + (((e->x - ox) * sx) >> 8);
-        p->y0 = oy + draw_desc->y + (((e->y - oy) * sy) >> 8);
-        p->x1 =
+        quad->x0 = ox + draw_desc->x + (((e->x - ox) * sx) >> 8);
+        quad->y0 = oy + draw_desc->y + (((e->y - oy) * sy) >> 8);
+        quad->x1 =
             ox + draw_desc->x + (((e->x - ox) * sx) >> 8) + ((e->w * sx) >> 8);
-        p->y1 = oy + draw_desc->y + (((e->y - oy) * sy) >> 8);
-        p->x2 = ox + draw_desc->x + (((e->x - ox) * sx) >> 8);
-        p->y2 =
+        quad->y1 = oy + draw_desc->y + (((e->y - oy) * sy) >> 8);
+        quad->x2 = ox + draw_desc->x + (((e->x - ox) * sx) >> 8);
+        quad->y2 =
             oy + draw_desc->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
-        p->x3 =
+        quad->x3 =
             ox + draw_desc->x + (((e->x - ox) * sx) >> 8) + ((e->w * sx) >> 8);
-        p->y3 =
+        quad->y3 =
             oy + draw_desc->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
         u = u_base + e->u;
         v = v_base + e->v;
-        p->u0 = u + du0;
-        p->v0 = v + dv0;
-        p->u1 = u + du1;
-        p->v1 = v + dv0;
-        p->u2 = u + du0;
-        p->v2 = v + dv1;
-        p->u3 = u + du1;
-        p->v3 = v + dv1;
+        quad->u0 = u + du0;
+        quad->v0 = v + dv0;
+        quad->u1 = u + du1;
+        quad->v1 = v + dv0;
+        quad->u2 = u + du0;
+        quad->v2 = v + dv1;
+        quad->u3 = u + du1;
+        quad->v3 = v + dv1;
         if (draw_desc->has_color) {
-            SetShadeTex(p, 0);
-            p->r0 = draw_desc->col_r;
-            p->g0 = draw_desc->col_g;
-            p->b0 = draw_desc->col_b;
+            SetShadeTex(quad, 0);
+            quad->r0 = draw_desc->col_r;
+            quad->g0 = draw_desc->col_g;
+            quad->b0 = draw_desc->col_b;
         } else {
-            SetShadeTex(p, 1);
+            SetShadeTex(quad, 1);
         }
-        SetSemiTrans(p, draw_desc->semi);
+        SetSemiTrans(quad, draw_desc->semi);
         if (draw_desc->ot_idx >= 0x1006) {
             draw_desc->ot_idx = 1;
         }
-        AddPrim(g_gpu_ot_ptr + draw_desc->ot_idx, p);
-        p++;
+        AddPrim(g_gpu_ot_ptr + draw_desc->ot_idx, quad);
+        quad++;
         e++;
     }
-    draw_desc->ft4_out = (s32)p;
-    return (s32)p;
+    draw_desc->ft4_out = (s32)quad;
+    return (s32)quad;
 }
 
 extern VECTOR g_gpu_rotated_sprite_quad_scale;
