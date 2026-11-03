@@ -1,0 +1,49 @@
+==============================================================================
+DATA WAVE — 21 addresses, 21 identifiers remapped
+  0x8009b458: D_8009B458 -> g_gpu_two_digit_counter_cells
+  0x8009b488: D_8009B488 -> g_gpu_single_side_counter_label_cell
+  0x8009b4fc: D_8009B4FC -> g_gpu_comparison_higher_score_cell
+  0x8009b504: D_8009B504 -> g_gpu_comparison_lower_score_cell
+  0x8009b50c: D_8009B50C -> g_gpu_comparison_equal_score_cell
+  0x8009b51c: D_8009B51C -> g_gpu_comparison_score_mark_cell
+  0x8009b4bc: D_8009B4BC -> g_gpu_comparison_unrecorded_match_cells
+  0x8009b514: D_8009B514 -> g_gpu_comparison_center_cell
+  0x8009b490: D_8009B490 -> g_gpu_comparison_line_segment_cells
+  0x8009b5b8: D_8009B5B8 -> g_gpu_paired_mark_cells
+  0x8009b5a0: D_8009B5A0 -> g_gpu_paired_mark_sheet_headers
+  0x8009b5d8: D_8009B5D8 -> g_gpu_paired_mark_label_cells
+  0x8009b5f0: D_8009B5F0 -> g_gpu_paired_mark_line_segment_cells
+  0x8009b698: D_8009B698 -> g_gpu_split_wipe_image_sheet_headers
+  0x8009b6b0: D_8009B6B0 -> g_gpu_split_wipe_image_cells
+  0x8009b708: D_8009B708 -> g_gpu_large_decimal_digit_cells
+  0x8009b758: D_8009B758 -> g_gpu_digit_count_shifted_sprite_cells
+  0x8009b850: D_8009B850 -> g_gpu_packed_sprite_positions
+  0x8009b8d0: D_8009B8D0 -> g_eff_spinning_quad_far_tex_rec
+  0x8009b8d8: D_8009B8D8 -> g_eff_spinning_quad_near_tex_rec
+  0x8009b398: D_8009B398 -> g_gpu_digit_label_and_line_segment_sheet_headers
+
+-- file edits (13) --
+  asm/funcs/eff_DrawAnimatedQuads.s  (4)
+  asm/funcs/gpu_DrawImageAndAdvanceSplitWipe.s  (6)
+  asm/funcs/gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite.s  (4)
+  asm/funcs/gpu_DrawPackedComparisonRowsAndTotals.s  (20)
+  asm/funcs/gpu_DrawPairedMarkRowsAndTimeFields.s  (12)
+  asm/funcs/gpu_DrawSpriteAtPackedTablePosition.s  (2)
+  asm/funcs/gpu_DrawTimeFieldsAndDecimalCounter.s  (8)
+  asm/funcs/gpu_DrawTwoDigitCounterWithOptionalSecondSide.s  (6)
+  include/bb2.h  (6)
+  src/main/4D0A8.c  (63)
+  src/main/51268.c  (2)
+  src/main/d_8BC50.c  (20)
+  symbol_addrs.txt  (7)
+
+-- registry lines --
+  symbol_addrs.txt:482 D_8009B850 -> g_gpu_packed_sprite_positions
+  symbol_addrs.txt:1069 D_8009B488 -> g_gpu_single_side_counter_label_cell
+  symbol_addrs.txt:1078 D_8009B698 -> g_gpu_split_wipe_image_sheet_headers
+  symbol_addrs.txt:1079 D_8009B6B0 -> g_gpu_split_wipe_image_cells
+  symbol_addrs.txt:1082 D_8009B708 -> g_gpu_large_decimal_digit_cells
+  symbol_addrs.txt:1083 D_8009B758 -> g_gpu_digit_count_shifted_sprite_cells
+  symbol_addrs.txt:1093 D_8009B850 -> g_gpu_packed_sprite_positions
+
+DRY RUN — nothing written. Re-run with --apply.
