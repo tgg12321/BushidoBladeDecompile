@@ -1468,6 +1468,125 @@ class LaneTest(unittest.TestCase):
         self.assertIn("shared path", self.last)
         self.assertEqual(self.L("s2", "claim", "b", "path:shared.txt!"), 0, self.last)
 
+    def test_topic_overlap_rules(self):
+        ov = lanes.topics_overlap
+        self.assertTrue(ov("row:r1", "row:r1"))
+        self.assertFalse(ov("tuedit:main/4D0A8", "tuedit:main/4D0A8"))  # shared
+        self.assertTrue(ov("tuedit:main/4D0A8", "tu:main/4D0A8"))
+        self.assertTrue(ov("tu:main/4D0A8", "tuedit:main/4D0A8"))
+        self.assertFalse(ov("tuedit:main/4D0A8", "tu:main/9F9C"))
+        self.assertTrue(ov("sym:f:x", "sym:f"))      # renaming f vs a local of f
+        self.assertTrue(ov("sym:T", "sym:T.u.m"))    # renaming T vs its member
+        self.assertFalse(ov("sym:f:x", "sym:f:y"))   # two locals of one function
+        self.assertFalse(ov("sym:f:x", "sym:g:x"))
+        self.assertFalse(ov("sym:tu:main/a", "tu:main/a"))
+        self.assertEqual(lanes.wave_sym_claims("# c\nD_1=g_a, f:var_2=count\nT.u.unk_4=size\n"),
+                         {"topic:sym:D_1", "topic:sym:g_a", "topic:sym:f:var_2",
+                          "topic:sym:f:count", "topic:sym:T.u.unk_4", "topic:sym:T.u.size"})
+        with self.assertRaises(lanes.Refuse):
+            lanes.wave_sym_claims("D_1 g_a\n")
+
+    def test_wave_claims(self):
+        m = self.main
+        for d, pairs, dry in (("w1", "D_1=g_one\nf:var_2=count\n", "-- file edits (1) --\nsrc/a.c\n"),
+                              ("w2", "D_3=g_three\n", "-- file edits (1) --\nsrc/a.c\n"),
+                              ("w3", "D_1=g_uno\n", "-- file edits (1) --\nsrc/a.c\n"),
+                              ("w4", "f=renamed_f\n", "-- file edits (1) --\nsrc/a.c\n")):
+            (m / "pending" / d).mkdir(parents=True)
+            (m / "pending" / d / "pairs.txt").write_text(pairs, newline="\n")
+            (m / "pending" / d / "dry.txt").write_text(dry.replace("src/a.c", "src/main/a.c"),
+                                                       newline="\n")
+        (m / "pending" / "mv").mkdir()
+        (m / "pending" / "mv" / "dry.txt").write_text("-- file edits (1) --\nsrc/main/a.c\n",
+                                                     newline="\n")
+        self.assertEqual(lanes.wave_claims(m, "pending/w2"),
+                         {"topic:sym:D_3", "topic:sym:g_three", "topic:tuedit:main/a"})
+        self.assertEqual(lanes.wave_claims(m, "pending/mv"), {"topic:tu:main/a"})
+        for s, lane in (("s1", "a"), ("s2", "b"), ("s3", "c")):
+            self.assertEqual(self.L(s, "open", lane), 0, self.last)
+        self.assertEqual(self.L("s1", "claim", "a", "topic:row:w1", "--wave", "pending/w1"), 0,
+                         self.last)
+        # another wave in the same TU on other symbols: allowed (tuedit is shared)
+        self.assertEqual(self.L("s2", "claim", "b", "--wave", "pending/w2"), 0, self.last)
+        before = lanes.Ctx(m, "s3").load()["lanes"]["c"]["claims"]
+        # the same old symbol, a rename of the scope of a's local, a whole-TU (move) claim
+        for wave in ("pending/w3", "pending/w4", "pending/mv"):
+            self.assertEqual(self.L("s3", "claim", "c", "topic:row:x", "--wave", wave), 1, wave)
+            self.assertIn("overlaps lane", self.last)
+        # all or nothing: the refused calls added no claim (topic:row:x included)
+        self.assertEqual(lanes.Ctx(m, "s3").load()["lanes"]["c"]["claims"], before)
+        self.assertEqual(self.L("s3", "claim", "c", "--wave", "pending/missing"), 1)
+        self.assertEqual(self.L("s3", "claim", "c"), 1)
+
+    def _wave_commit(self, lane, wave, path, text):
+        d = self.wt(lane)
+        (d / "docs/naming/phase3/pending" / wave).mkdir(parents=True, exist_ok=True)
+        (d / "docs/naming/phase3/pending" / wave / "pairs.txt").write_text(f"old_{wave}=new_{wave}\n",
+                                                                           newline="\n")
+        self.commit(lane, path, text, f"naming: {wave} -- one rename")
+
+    def test_replayed_wave_is_keychecked(self):
+        from unittest.mock import patch
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        self._wave_commit("a", "wa", "shared.txt",
+                          "".join(f"line{i}{'A' if i == 2 else ''}\n" for i in range(20)))
+        self._wave_commit("b", "wb", "shared.txt",
+                          "".join(f"line{i}{'B' if i == 15 else ''}\n" for i in range(20)))
+        calls = []
+
+        def kc(ctx, ld, rev, pairs, log):
+            calls.append((sh("log", "-1", "--format=%s", rev, cwd=ld), pairs.strip()))
+            return "ok"
+        with patch.object(lanes, "_keycheck", side_effect=kc):
+            self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+            self.assertEqual(calls, [])  # nothing moved under it: its own keycheck holds
+            self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        self.assertEqual(calls, [("naming: wb -- one rename", "old_wb=new_wb")])
+        self.assertIn("line2A\n", self.main_file("shared.txt"))  # both waves, one file
+        self.assertIn("line15B\n", self.main_file("shared.txt"))
+
+    def test_replayed_wave_failing_keycheck_bounces(self):
+        from unittest.mock import patch
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        self._wave_commit("a", "wa", "src/a.c", "int a;\nint x;\n")
+        self._wave_commit("b", "wb", "shared.txt", "changed\n")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        b_sha = sh("rev-parse", "lanes/b", cwd=self.main)
+        tip = sh("rev-parse", "main", cwd=self.main)
+        # a FAIL verdict on the replayed commit -> bounce, main untouched
+        with patch.object(lanes, "_keycheck", return_value="fail"):
+            self.assertEqual(self.L("s2", "land", "b"), 3, self.last)
+        self.assertIn("no longer explained by its pairs", self.last)
+        self.assertIn(f"drop b {b_sha[:9]}", self.last)
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main), tip)
+        # no verdict (crash, missing toolchain) is never read as a pass -> gate failure
+        with patch.object(lanes, "_keycheck", return_value="error"):
+            self.assertEqual(self.L("s2", "land", "b"), 4, self.last)
+        self.assertIn("gave no verdict", self.last)
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main), tip)
+        with patch.object(lanes, "_keycheck", return_value="ok"):
+            self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        self.assertEqual(self.main_file("shared.txt"), "changed\n")
+
+    def test_keycheck_verdict_parsing(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        ctx = SimpleNamespace(cfg={"runner": "local"})
+        ld = self.tmp / "ld"
+        (ld / "tmp" / "lanes").mkdir(parents=True)
+        for rc, out, want in ((0, "OK: every change is explained by the pairs\n", "ok"),
+                              (1, "FAIL x\nFAIL: 2 change(s) the pairs do not explain\n", "fail"),
+                              (1, "FAIL scoped dependency census toolchain missing\n", "error"),
+                              (1, "FAIL scoped dependency census toolchain missing\n"
+                                  "FAIL: 1 change(s) the pairs do not explain\n", "error"),
+                              (0, "", "error"), (2, "bad pair\n", "error")):
+            def fake(c, wt, cmd, log, rc=rc, out=out):
+                (wt / "tmp" / "lanes" / "keycheck-abc.out").write_text(out, newline="\n")
+                return rc
+            with patch.object(lanes, "run_shell", side_effect=fake):
+                self.assertEqual(lanes._keycheck(ctx, ld, "abc", "a=b\n", io.StringIO()), want)
+        self.assertEqual(list((ld / "tmp" / "lanes").iterdir()), [])
+
     def test_land_simple_and_push(self):
         self.L("s1", "open", "a")
         self.commit("a", "src/b.c", "int b;\n", "add b")

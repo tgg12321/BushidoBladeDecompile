@@ -15,7 +15,8 @@ same substitutions the wave tools apply (tools/naming_wave.py, tools/data_wave.p
   other files in a moved ledger directory          byte-identical (a pure move).
   docs/naming/function-names.csv  must equal a fresh build_census.py run (working-tree mode;
                               it reads build/bb2.map, so run after verify-oracle --rebuild).
-                              In --new mode a changed census FAILS (re-derive it in the tree).
+                              In --new mode a changed census FAILS (re-derive it in the tree),
+                              unless --census-regenerated (lanes.py land rebuilds it).
   docs/naming/phase3/**       wave metadata: allowed, listed.
   .claude/**, movovl/**, this tool   any change FAILS (movovl/ is a separate binary the main
                               oracle does not cover).
@@ -5030,6 +5031,9 @@ def main() -> int:
                          "are their ops' old names -> new name (the rule's source of the pairs)")
     ap.add_argument("--base", default="HEAD")
     ap.add_argument("--new", default=None, help="revision to check (default: working tree)")
+    ap.add_argument("--census-regenerated", action="store_true",
+                    help="--new mode for a lander that rebuilds the census itself (lanes.py "
+                         "land): a changed docs/naming/function-names.csv is listed, not failed")
     ap.add_argument("--sub-comments", action="store_true",
                     help="the wave's comment pass: substitute the pairs in the comments of every "
                          "src/ and include/ C file in the working tree, then exit")
@@ -5236,7 +5240,9 @@ def main() -> int:
             moved_stems.add(Path(new_path).stem)
 
     if census_changed:
-        if a.new is not None:
+        if a.new is not None and a.census_regenerated:
+            notes.append(f"{METADATA[0]}: changed; not checked (the lander regenerates it)")
+        elif a.new is not None:
             fails.append(f"{METADATA[0]}: changed; --new mode cannot re-derive it (check in the tree)")
         else:
             with tempfile.TemporaryDirectory() as td:

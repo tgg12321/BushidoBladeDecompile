@@ -28,7 +28,15 @@ Conflicts are handled without hand merges where the file allows it:
 
 Claims keep lanes off each other's work: `path:<glob>` (edit and land exclusivity; a shared path
 can only be claimed with a trailing `!`, which freezes it for every other lane until released)
-and `topic:<text>` (work selection, e.g. `topic:row:m09`, `topic:tu:51268`). The registry lives
+and `topic:<text>` (work selection, e.g. `topic:row:m09`, `topic:tu:main/51268`). Topics are
+exclusive except: `topic:tuedit:<tu>` (a naming wave that renames symbols inside a TU) is shared
+with other `tuedit` claims and excludes only `topic:tu:<tu>` (a wave that moves or wholly owns
+it); `topic:sym:<key>` (a symbol a wave renames, or a name it introduces, keyed as in its
+pairs.txt: `name`, `func:local`, `Type.member`) also excludes the claim on its scope (`func`,
+`Type`). `claim --wave <draft dir>` derives a wave's claims (topics_overlap, wave_claims). Two
+waves editing one TU then land in sequence through the replay; `land` re-runs
+tools/naming_keycheck.py on each naming wave replayed onto a moved main (replay_keychecks) and
+bounces the later one if it no longer explains its own diff. The registry lives
 in main's `tmp/lanes-state/registry.json` (untracked, so it can never conflict).
 tools/hooks/lane_guard.py enforces ownership and claims on Edit/Write/Bash/PowerShell.
 
@@ -38,6 +46,7 @@ Usage (Windows Python, from any cwd):
   python tools/lanes/lanes.py fresh <lane> [--discard]     # --discard backs the tip up first
   python tools/lanes/lanes.py drop  <lane> <sha>            # remove one unlanded commit (a bounce)
   python tools/lanes/lanes.py claim <lane> <token>...       # path:src/main/9F9C.c  topic:row:m09
+  python tools/lanes/lanes.py claim <lane> --wave <draft>   # + a naming draft's sym/tu claims
   python tools/lanes/lanes.py unclaim <lane> [<token>...]   # no tokens = all
   python tools/lanes/lanes.py land  <lane> [--no-push] [--no-wait]
   python tools/lanes/lanes.py close <lane> [--remove]
@@ -438,6 +447,126 @@ def globs_overlap(a: str, b: str) -> bool:
     if wb:
         return pa.startswith(pb) and fnmatch.fnmatchcase(a, b)
     return False
+
+
+def sym_scope(key: str):
+    """The scope a scoped pairs.txt key renames inside (`f:l` -> `f`, `T.u.m` -> `T`), else None."""
+    for sep in (":", "."):
+        if sep in key:
+            return key.split(sep, 1)[0]
+    return None
+
+
+def topics_overlap(a: str, b: str) -> bool:
+    """Whether two topic claims (values after `topic:`) exclude each other. Equal topics do,
+    except `tuedit:<tu>` (shared by waves editing one TU); `tuedit:X` excludes `tu:X`; a scoped
+    `sym:f:l` / `sym:T.m` also excludes `sym:f` / `sym:T` (renaming the scope itself)."""
+    ka, _, va = a.partition(":")
+    kb, _, vb = b.partition(":")
+    if {ka, kb} == {"tu", "tuedit"}:
+        return va == vb
+    if a == b:
+        return ka != "tuedit"
+    if ka == kb == "sym":
+        return sym_scope(va) == vb or sym_scope(vb) == va
+    return False
+
+
+def claims_overlap(kind: str, a: str, b: str) -> bool:
+    return topics_overlap(a, b) if kind == "topic" else globs_overlap(a, b)
+
+
+PAIRS_FILE = "pairs.txt"
+_IDENT = r"[A-Za-z_]\w*"
+SYM_KEY = re.compile(rf"{_IDENT}(?:[.:]{_IDENT})*")
+
+
+def wave_sym_claims(pairs_text: str) -> set[str]:
+    """`topic:sym:` claims for a wave's pairs.txt (`old=new` per line or comma, `#` comments,
+    as naming_keycheck.parse_pairs reads it): each old key, and each new name in the old key's
+    scope (two waves may not introduce one name there)."""
+    out = set()
+    for item in re.split(r"[,\n]", pairs_text):
+        item = item.strip()
+        if not item or item.startswith("#"):
+            continue
+        old, sep, new = (x.strip() for x in item.partition("="))
+        if not (sep and SYM_KEY.fullmatch(old) and re.fullmatch(_IDENT, new)):
+            raise Refuse(f"pairs.txt: bad pair {item!r} (want old=new)")
+        scope = old[:max(old.rfind(":"), old.rfind(".")) + 1]  # `f:`, `T.u.`, or empty
+        out.update((f"topic:sym:{old}", f"topic:sym:{scope}{new}"))
+    return out
+
+
+# A naming draft's TUs (the orchestrator's dispatch check and `claim --wave`).
+DRAFT_TU = re.compile(r"\bsrc/(main/[0-9A-Za-z_/]+)\.c\b")  # TU id = path under src/ w/o .c
+DRY_EDITS = re.compile(r"^-- file edits \(\d+\) --$(.*?)(?=^--|\Z)", re.M | re.S)
+DRAFT_DECL = re.compile(r"\bDECL\s+(?:\([^)]*\)\s+)?(?:src/main/)?([0-9A-Za-z_]+)\.c:\d")
+DRY_COUNTS = re.compile(r"(?<![/\w])([0-9A-Za-z_]+)\.c \d+\b")
+DRAFT_BARE = re.compile(r"(?<![/\w])([0-9A-Za-z_]+)\.c\b")
+
+
+def tu_basenames(main: Path) -> dict[str, str]:
+    """`4510C` -> `main/4510C` for every game/library TU whose file name is unique under src/."""
+    seen: dict[str, list[str]] = {}
+    for p in (main / "src").rglob("*.c") if (main / "src").is_dir() else ():
+        tu = p.relative_to(main / "src").with_suffix("").as_posix()
+        seen.setdefault(p.stem, []).append(tu)
+    return {b: ts[0] for b, ts in seen.items() if len(ts) == 1}
+
+
+def draft_tus(main: Path, draft: str) -> set[str]:
+    """The game TUs a naming draft dir (relative to `main`) edits: dry.txt's edit list, else a
+    locals manifest's DECL sites or the dry run's per-file counts, else every TU the draft
+    names. Empty when there is no draft."""
+    d = (draft or "").strip()
+    if not d or d == "-":
+        return set()
+    root = main / d
+    if not root.is_dir():
+        return set()
+    try:  # the dry run's edit list is exact; prose elsewhere cites TUs the wave never edits
+        m = DRY_EDITS.search((root / "dry.txt").read_text(encoding="utf-8", errors="replace"))
+    except OSError:
+        m = None
+    if m and DRAFT_TU.search(m.group(1).replace("\\", "/")):
+        return set(DRAFT_TU.findall(m.group(1).replace("\\", "/")))
+    texts = []  # no dry-run edit list (locals waves): the TUs the draft cites
+    for f in sorted(root.iterdir()):
+        if f.is_file() and f.suffix in (".txt", ".csv", ".tsv", ".py"):
+            try:
+                texts.append(f.read_text(encoding="utf-8", errors="replace").replace("\\", "/"))
+            except OSError:
+                pass
+    text = "\n".join(texts)
+    bare = tu_basenames(main)
+    # A locals manifest cites each binding's definition as `DECL 4510C.c:1808`: the TU the pair
+    # edits. Without one, every TU the draft names (src/ paths and bare `4510C.c` file names).
+    decl = {bare[b] for b in DRAFT_DECL.findall(text) if b in bare}
+    try:  # a skipped locals dry run still lists its per-file counts: `4510C.c 46, 17AFC.c 1`
+        dry = (root / "dry.txt").read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        dry = ""
+    decl |= {bare[b] for b in DRY_COUNTS.findall(dry) if b in bare}
+    if decl:
+        return decl
+    out = set(DRAFT_TU.findall(text))
+    out.update(bare[b] for b in DRAFT_BARE.findall(text) if b in bare)
+    return out
+
+
+def wave_claims(main: Path, draft: str) -> set[str]:
+    """The claims a naming draft's LAND takes. With a pairs.txt (locals, globals, members):
+    its `topic:sym:` claims plus a shared `topic:tuedit:` per TU it edits. Without one
+    (file moves, function waves): an exclusive `topic:tu:` per TU, as before."""
+    d = (draft or "").strip()
+    tus = draft_tus(main, d)
+    if d not in ("", "-") and (main / d / PAIRS_FILE).is_file():
+        syms = wave_sym_claims((main / d / PAIRS_FILE).read_text(encoding="utf-8",
+                                                                 errors="replace"))
+        if syms:
+            return syms | {f"topic:tuedit:{t}" for t in tus}
+    return {f"topic:tu:{t}" for t in tus}
 
 
 def path_claims(entry: dict):
@@ -1102,7 +1231,8 @@ def cmd_drop(ctx: Ctx, a):
 def cmd_claim(ctx: Ctx, a):
     def do(reg):
         e = require_owner(ctx, reg, a.lane)
-        for tok in a.tokens:
+        new = []
+        for tok in tokens:
             kind, val, freeze = split_token(tok)
             if kind == "path" and is_shared(ctx, val) and not freeze:
                 raise Refuse(f"{val} is a shared path; claim it only as a freeze "
@@ -1114,13 +1244,22 @@ def cmd_claim(ctx: Ctx, a):
                     ok_, oval, _ = split_token(otok)
                     if ok_ != kind:
                         continue
-                    if (kind == "topic" and oval == val) or (kind == "path" and globs_overlap(oval, val)):
+                    if claims_overlap(kind, oval, val):
                         raise Refuse(f"'{tok}' overlaps lane '{other}' claim '{otok}'")
             canon = f"{kind}:{val}{'!' if freeze else ''}"
-            if canon not in e["claims"]:
-                e["claims"].append(canon)
+            if canon not in e["claims"] and canon not in new:
+                new.append(canon)
+        e["claims"].extend(new)
         return list(e["claims"])
 
+    tokens = list(a.tokens)
+    for d in getattr(a, "wave", None) or []:
+        got = wave_claims(ctx.main, d)
+        if not got:
+            raise Refuse(f"--wave {d}: no draft there, or it names no TU")
+        tokens += sorted(got)
+    if not tokens:
+        raise Refuse("claim: give tokens or --wave <draft dir>")
     claims = ctx.update(do)
     print(f"lanes: {a.lane} claims: {' '.join(claims)}")
     return 0
@@ -1472,6 +1611,79 @@ def mergeable_paths(ctx: Ctx) -> set:
     return {g["path"] for g in ctx.cfg.get("regenerate", [])} | set(ctx.cfg.get("rowmerge", []))
 
 
+WAVE_SUBJECT = re.compile(r"^naming: ([\w.+-]+) -- ")
+WAVE_PENDING = "docs/naming/phase3/pending/{}/" + PAIRS_FILE
+
+
+def wave_pairs(ld: Path, rev: str) -> str | None:
+    """The pairs a naming wave commit applies (subject `naming: <id>[+<id>...] -- ...`, each
+    id's pairs.txt in that commit's tree), or None if it is not such a commit."""
+    m = WAVE_SUBJECT.match(git("log", "-1", "--format=%s", rev, cwd=ld))
+    if not m:
+        return None
+    texts = []
+    for rid in m.group(1).split("+"):
+        r = run(["git", "show", f"{rev}:{WAVE_PENDING.format(rid)}"], cwd=ld, check=False)
+        if r.returncode != 0:
+            return None  # a file move or function wave: no pairs to check against
+        texts.append(r.stdout)
+    return "\n".join(texts)
+
+
+KEYCHECK_OK = re.compile(r"^OK: every change is explained by the pairs\s*$", re.M)
+KEYCHECK_FAIL = re.compile(r"^FAIL: \d+ change\(s\) the pairs do not explain\s*$", re.M)
+
+
+def _keycheck(ctx: Ctx, ld: Path, rev: str, pairs: str, log) -> str:
+    """'ok' | 'fail' (naming_keycheck's own verdict) | 'error' (no verdict: a crash, a missing
+    toolchain, a git failure; never read as either)."""
+    d = ld / "tmp" / "lanes"
+    d.mkdir(parents=True, exist_ok=True)
+    pf, of = d / f"keycheck-{rev[:12]}.txt", d / f"keycheck-{rev[:12]}.out"
+    pf.write_text(pairs, encoding="utf-8", newline="\n")
+    of.unlink(missing_ok=True)
+    try:
+        rc = run_shell(ctx, ld, "rc=0; python3 tools/naming_keycheck.py --pairs-file "
+                       f"tmp/lanes/{pf.name} --base {rev}^ --new {rev} --census-regenerated "
+                       f"> tmp/lanes/{of.name} 2>&1 || rc=$?; cat tmp/lanes/{of.name}; exit $rc",
+                       log)
+        out = of.read_text(encoding="utf-8", errors="replace") if of.is_file() else ""
+    finally:
+        pf.unlink(missing_ok=True)
+        of.unlink(missing_ok=True)
+    if rc == 0 and KEYCHECK_OK.search(out):
+        return "ok"
+    if rc == 1 and KEYCHECK_FAIL.search(out) and "toolchain missing" not in out:
+        return "fail"
+    return "error"
+
+
+def replay_keychecks(ctx: Ctx, lane: str, ld: Path, log):
+    """Re-prove every naming wave the replay moved onto a different parent: its replayed diff
+    must still be explained by its own pairs (tools/naming_keycheck.py --new), now that waves
+    claim symbols rather than whole TUs and another wave may have landed in the same TU.
+    Its FAIL verdict bounces the commit (exit 3); no verdict at all fails the gate (exit 4)."""
+    for sha, new in ctx.replayed.items():
+        if ctx.replay_how.get(sha) == "empty":
+            continue  # already in main: nothing of it lands
+        if new == sha or git("rev-parse", f"{new}^", cwd=ld) == git("rev-parse", f"{sha}^", cwd=ld):
+            continue  # not moved: the pre-land keycheck still holds
+        pairs = wave_pairs(ld, new)
+        if pairs is None:
+            continue
+        print(f"lanes: keycheck on replayed naming wave {sha[:9]} -> {new[:9]}", flush=True)
+        verdict = _keycheck(ctx, ld, new, pairs, log)
+        if verdict == "ok":
+            continue
+        if verdict == "error":
+            raise Refuse(f"naming_keycheck gave no verdict on replayed wave {sha[:9]} (a crash "
+                         f"or a broken toolchain; log {log.name}); main was not changed", 4)
+        raise Refuse(f"naming wave {sha[:9]} is no longer explained by its pairs after the "
+                     f"replay onto main (naming_keycheck; log {log.name}): another wave changed "
+                     f"the same code\n  Drop just this commit (later commits are kept) and redo "
+                     f"it on the new main: python tools/lanes/lanes.py drop {lane} {sha[:9]}", 3)
+
+
 def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
                     quick_paths=None) -> str:
     """Replay the lane's commits onto `base`, gate, regenerate, then check the final tip once.
@@ -1487,6 +1699,7 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
     git("checkout", "-q", "--detach", "-f", base, cwd=ld)
     git("reset", "-q", "--hard", base, cwd=ld)
     ctx.replayed = {}  # lane sha -> the candidate commit holding it (base's tip if it was empty)
+    ctx.replay_how = {}  # lane sha -> replay_commit's result
     ctx.gated, ctx.cand_paths = "full", set()
     ctx.mirror_gated = ctx.mirror_tip = None
     hows = []
@@ -1500,7 +1713,9 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
             raise
         hows.append(how)
         ctx.replayed[sha] = git("rev-parse", "HEAD", cwd=ld)
+        ctx.replay_how[sha] = how
         print(f"lanes:   {sha[:9]} {how}", flush=True)
+    replay_keychecks(ctx, lane, ld, log)
     new_paths = set(git("diff", "--name-only", "--no-renames", f"{base}..HEAD", cwd=ld).split())
     ctx.cand_paths = new_paths
     if not new_paths:
@@ -2049,7 +2264,9 @@ def main(argv=None) -> int:
     s.add_argument("--steal", action="store_true"); s.add_argument("--allow-multi", action="store_true")
     s = sub.add_parser("fresh"); s.add_argument("lane"); s.add_argument("--discard", action="store_true")
     s = sub.add_parser("drop"); s.add_argument("lane"); s.add_argument("sha")
-    s = sub.add_parser("claim"); s.add_argument("lane"); s.add_argument("tokens", nargs="+")
+    s = sub.add_parser("claim"); s.add_argument("lane"); s.add_argument("tokens", nargs="*")
+    s.add_argument("--wave", action="append", metavar="DRAFT",
+                   help="also claim a naming draft's symbols/TUs (wave_claims); repeatable")
     s = sub.add_parser("unclaim"); s.add_argument("lane"); s.add_argument("tokens", nargs="*")
     s = sub.add_parser("land"); s.add_argument("lane"); s.add_argument("--no-push", action="store_true")
     s.add_argument("--no-wait", action="store_true", help="refuse with exit 6 if the full-gate queue is busy")

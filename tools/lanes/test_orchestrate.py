@@ -195,6 +195,36 @@ class Candidates(unittest.TestCase):
         s = st({"x": slot("tooling", row="f0")})
         self.assertEqual(o.plan_starts(b, reg(), s, NOW, "foundation"), [])
 
+    def test_pairs_drafts_claim_symbols_not_tus(self):
+        # the 2026-11-03 4D0A8.c queue: waves on one TU but disjoint symbols start together
+        import tempfile
+        with tempfile.TemporaryDirectory() as d, patch.object(o, "MAIN", Path(d)):
+            f = Path(d) / "src" / "main" / "4D0A8.c"
+            f.parent.mkdir(parents=True)
+            f.write_text("", encoding="utf-8")
+            for i, pairs in enumerate(("f:var_1=count\n", "D_2=g_two\n", "D_2=g_deux\n", None)):
+                w = Path(d) / f"w{i}"
+                w.mkdir()
+                (w / "local_manifest.csv").write_text("f,f:a,b,local,\"DECL 4D0A8.c:1\"\n",
+                                                      encoding="utf-8")
+                if pairs:
+                    (w / "pairs.txt").write_text(pairs, encoding="utf-8")
+            self.assertEqual(o.draft_claims({"draft": "w0"}),
+                             {"topic:sym:f:var_1", "topic:sym:f:count",
+                              "topic:tuedit:main/4D0A8"})
+            self.assertEqual(o.draft_claims({"draft": "w3"}), {"topic:tu:main/4D0A8"})
+            b = bl(naming_stages=("reviewed", "reviewed", "reviewed", "reviewed"))
+            for i in range(4):
+                b["naming"][i]["draft"] = f"w{i}"
+            # m0, m1 share only the TU; m2 renames m1's symbol; m3 (no pairs) wants the whole TU
+            self.assertEqual(o.plan_starts(b, reg(), st(), NOW, "naming"),
+                             [("naming-a", "m0"), ("naming-b", "m1")])
+            held = reg(**{"naming-x": self.live("topic:row:other", "topic:tu:main/4D0A8")})
+            self.assertEqual(o.plan_starts(b, held, st(), NOW, "naming"), [])
+            held = reg(**{"naming-x": self.live("topic:row:m1", "topic:sym:D_2",
+                                                "topic:tuedit:main/4D0A8")})
+            self.assertEqual(o.plan_starts(b, held, st(), NOW, "naming"), [("naming-a", "m0")])
+
     def test_dependency_wait_is_not_a_claim_block(self):
         b = bl(naming_stages=("idea", "blocked"))
         b["naming"][0]["note"] = "lands after m1"

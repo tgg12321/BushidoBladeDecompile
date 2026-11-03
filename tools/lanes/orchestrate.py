@@ -65,7 +65,8 @@ import tempfile
 import time
 from pathlib import Path
 
-from lanes import (HEARTBEAT_STALE_SECS, Refuse, gate_pid_alive, globs_overlap, pid_namespace,
+import lanes as lanes_mod
+from lanes import (HEARTBEAT_STALE_SECS, Refuse, claims_overlap, gate_pid_alive, pid_namespace,
                    split_token)
 
 # A gate ticket hides a session's stall only this long after it was enqueued: a hung land keeps
@@ -591,61 +592,25 @@ def naming_row_workable(r: dict) -> bool:
     return found
 
 
-DRAFT_TU = re.compile(r"\bsrc/(main/[0-9A-Za-z_/]+)\.c\b")  # TU id = path under src/ w/o .c
-DRY_EDITS = re.compile(r"^-- file edits \(\d+\) --$(.*?)(?=^--|\Z)", re.M | re.S)
-
-
 def draft_tu_claims(r: dict) -> set[str]:
-    """The `topic:tu:` tokens a row's LAND will claim: every game TU named in its tracked draft
-    dir (dry.txt's edit list, manifests, pairs). Empty when the row has no draft yet."""
-    d = (r.get("draft") or "").strip()
-    if not d or d == "-":
-        return set()
-    root = MAIN / d
-    if not root.is_dir():
-        return set()
-    try:  # the dry run's edit list is exact; prose elsewhere cites TUs the wave never edits
-        m = DRY_EDITS.search((root / "dry.txt").read_text(encoding="utf-8", errors="replace"))
-    except OSError:
-        m = None
-    if m and DRAFT_TU.search(m.group(1).replace("\\", "/")):
-        return {f"topic:tu:{t}" for t in DRAFT_TU.findall(m.group(1).replace("\\", "/"))}
-    texts = []  # no dry-run edit list (locals waves): the TUs the draft cites
-    for f in sorted(root.iterdir()):
-        if f.is_file() and f.suffix in (".txt", ".csv", ".tsv", ".py"):
-            try:
-                texts.append(f.read_text(encoding="utf-8", errors="replace").replace("\\", "/"))
-            except OSError:
-                pass
-    text = "\n".join(texts)
-    bare = tu_basenames()
-    # A locals manifest cites each binding's definition as `DECL 4510C.c:1808`: the TU the pair
-    # edits. Without one, every TU the draft names (src/ paths and bare `4510C.c` file names).
-    decl = {bare[b] for b in DRAFT_DECL.findall(text) if b in bare}
-    try:  # a skipped locals dry run still lists its per-file counts: `4510C.c 46, 17AFC.c 1`
-        dry = (root / "dry.txt").read_text(encoding="utf-8", errors="replace")
-    except OSError:
-        dry = ""
-    decl |= {bare[b] for b in DRY_COUNTS.findall(dry) if b in bare}
-    if decl:
-        return {f"topic:tu:{t}" for t in decl}
-    out = {f"topic:tu:{t}" for t in DRAFT_TU.findall(text)}
-    out.update(f"topic:tu:{bare[b]}" for b in DRAFT_BARE.findall(text) if b in bare)
-    return out
+    """`topic:tu:` tokens for every game TU a row's tracked draft dir edits (lanes.draft_tus:
+    dry.txt's edit list, else DECL sites / per-file counts, else every TU it names). Empty when
+    the row has no draft yet."""
+    return {f"topic:tu:{t}" for t in lanes_mod.draft_tus(MAIN, r.get("draft") or "")}
 
 
-DRAFT_DECL = re.compile(r"\bDECL\s+(?:\([^)]*\)\s+)?(?:src/main/)?([0-9A-Za-z_]+)\.c:\d")
-DRY_COUNTS = re.compile(r"(?<![/\w])([0-9A-Za-z_]+)\.c \d+\b")
-DRAFT_BARE = re.compile(r"(?<![/\w])([0-9A-Za-z_]+)\.c\b")
+def draft_claims(r: dict) -> set[str]:
+    """The claims a row's LAND takes (`lanes.py claim --wave <draft>`): a pairs.txt draft's
+    `topic:sym:` claims plus shared `topic:tuedit:` TUs, else exclusive `topic:tu:` TUs."""
+    try:
+        return lanes_mod.wave_claims(MAIN, r.get("draft") or "")
+    except Refuse:  # a malformed pairs.txt: fall back to whole-TU claims (its LAND will refuse)
+        return draft_tu_claims(r)
 
 
 def tu_basenames() -> dict[str, str]:
     """`4510C` -> `main/4510C` for every game/library TU whose file name is unique under src/."""
-    seen: dict[str, list[str]] = {}
-    for p in (MAIN / "src").rglob("*.c") if (MAIN / "src").is_dir() else ():
-        tu = p.relative_to(MAIN / "src").with_suffix("").as_posix()
-        seen.setdefault(p.stem, []).append(tu)
-    return {b: ts[0] for b, ts in seen.items() if len(ts) == 1}
+    return lanes_mod.tu_basenames(MAIN)
 
 
 def held_claims(reg: dict, now: float) -> dict[str, str]:
@@ -661,16 +626,18 @@ def held_claims(reg: dict, now: float) -> dict[str, str]:
 def startable_naming_rows(bl: dict, reg: dict, now: float,
                           held: dict[str, str] | None = None) -> list[dict]:
     """Workable naming rows a NEW session could take now: no live lane claims the row, and a
-    `reviewed` row's draft TUs are not held by another lane (its LAND would be refused). Counting
+    `reviewed` row's draft claims (symbols, TUs) are not held by another lane (its LAND would be
+    refused). Counting
     these instead of every workable row stops sessions that start, find every row blocked by
     another lane's claims, and quit."""
     held = held_claims(reg, now) if held is None else held
     idx = row_index(bl)
-    out = []  # member waves' topic:type claims are not checked: one open row per track
+    out = []  # member pairs (`Type.member`) claim topic:sym like any pairs.txt draft
     for r in bl["naming"]:
         if not naming_row_workable(r) or f"topic:row:{r.get('id')}" in held:
             continue
-        if r.get("stage") == "reviewed" and draft_tu_claims(r) & held.keys():
+        if r.get("stage") == "reviewed" and claims_held(_tokens(" ".join(draft_claims(r))),
+                                                        held) is not None:
             continue
         if not deps_met(r, idx):
             continue
@@ -715,7 +682,7 @@ def _tokens(text: str) -> list[tuple[str, str]]:
 
 def claims_held(tokens: list[tuple[str, str]], held: dict[str, str]) -> str | None:
     """The lane holding a claim that overlaps one of `tokens` (as `lanes.py claim` would refuse:
-    equal topics, overlapping path globs), else None."""
+    overlapping topics (lanes.topics_overlap) or path globs), else None."""
     for htok, lane in held.items():
         try:
             hk, hv, _ = split_token(htok)
@@ -723,19 +690,19 @@ def claims_held(tokens: list[tuple[str, str]], held: dict[str, str]) -> str | No
             continue
         hv = hv.lower() if hk == "path" else hv
         for k, v in tokens:
-            if k == hk and (v == hv if k == "topic" else globs_overlap(v, hv)):
+            if k == hk and claims_overlap(k, v, hv):
                 return lane
     return None
 
 
 def row_claims(r: dict) -> set[str]:
     """The claim tokens a session working row `r` will take: its row, plus a foundation row's
-    `claims` column or a `reviewed` naming row's draft TUs (its LAND)."""
+    `claims` column or a `reviewed` naming row's draft claims (its LAND)."""
     out = {f"topic:row:{r.get('id')}"}
     if "lane" in r:
         out.update(f"{k}:{v}" for k, v in _tokens(r.get("claims") or ""))
     elif r.get("stage") == "reviewed":
-        out |= draft_tu_claims(r)
+        out |= draft_claims(r)
     return out
 
 
@@ -841,7 +808,8 @@ def plan_starts(bl: dict, reg: dict, st: dict, now: float, only: str | None,
     if only in (None, "naming") and "no_progress_naming" not in st:
         rows, taken = [], dict(held)
         for r in startable_naming_rows(bl, reg, now, held):
-            if str(r.get("id")) in given.values() or row_claims(r) & taken.keys():
+            if (str(r.get("id")) in given.values()
+                    or claims_held(_tokens(" ".join(row_claims(r))), taken) is not None):
                 continue
             rows.append(r)
             reserve(taken, "", r)

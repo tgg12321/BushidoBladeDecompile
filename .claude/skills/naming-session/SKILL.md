@@ -16,7 +16,7 @@ Invocation: `/naming-session [lane] [--row <id>]`, for example
 `/naming-session naming-b --row var-locals-41`. The lane defaults to `naming-a`. If that lane is
 owned by another live session, take the next free `naming-<letter>`. The orchestrator always
 passes `--row`: it has already checked the row is workable, unclaimed and (for a `reviewed` row)
-that no live lane holds its draft's TUs, so work **that row** and skip the pick order below. Its
+that no live lane holds its draft's claims (§Claims), so work **that row** and skip the pick order below. Its
 units carry the row forward (PREPARE, then LAND once reviewed); stop when the row is landed or
 the next step waits on someone else. If its claim is refused, or the row on main is no longer
 workable, change nothing, close the lane and stop (report why).
@@ -32,10 +32,15 @@ workable, change nothing, close the lane and stop (report why).
   `cd "<wt>" && python …` for cwd-relative tools.
 - **Claims.** Before taking a backlog row, run `python tools/lanes/lanes.py claim <lane> topic:row:<id>`.
   It refuses a row another live lane holds; take the next one (with `--row`: close and stop, as above). PREPARE claims only the row. At
-  LAND, before the applier starts, claim in one `lanes.py claim` call (it is atomic) every TU the
-  wave edits, spelled as the TU id (`topic:tu:main/51268`: the path under `src/` without `.c`,
-  taken from the `src/` paths in `dry.txt`'s edit list; for local pairs, the TU defining each
-  function), plus `topic:type:<Type>` for member waves; then `lanes.py fresh <lane>`, so the
+  LAND, before the applier starts, claim the wave's work in one call (it is atomic):
+  `lanes.py claim <lane> --wave <draft dir>` (the row's `draft` column, e.g.
+  `docs/naming/phase3/pending/var-locals-41/`). A draft with a `pairs.txt` (locals, globals,
+  members) claims its **symbols**: `topic:sym:<old key>` and the new name in the same scope
+  (`D_8009B980`, `func:var_29`, `Type.unk_1A`, as written in pairs.txt; a scoped key also
+  excludes a rename of its scope), plus a shared `topic:tuedit:<tu>` per TU it edits, so two
+  waves on one TU run at once and only the same symbol (or a name both would introduce)
+  collides. A draft without one (file moves, function waves) claims an exclusive
+  `topic:tu:<tu>` per TU, which also excludes every `tuedit` on it. Then `lanes.py fresh <lane>`, so the
   apply and keycheck see every name another lane landed. `fresh` refuses while an earlier
   unit's commits are unlanded (its `land` still running): finish that land first; never
   `fresh --discard` here. If any claim is refused, unclaim what you took and do another unit or
@@ -57,8 +62,13 @@ workable, change nothing, close the lane and stop (report why).
   `lanes.py recover <lane>` (the next `land` also does it). Exit 4 means a gate failed; exit 5
   means main moved but the push failed: retry with `python tools/lanes/lanes.py push`, and tell
   the user if that fails too.
+- **Waves sharing a TU.** When another wave landed in the same TU first, `land` replays yours on
+  top (git merges disjoint hunks) and re-runs `naming_keycheck --new` on the replayed wave
+  commit (subject `naming: <id>[+<id>...] -- ...`, pairs from each id's `pending/<id>/pairs.txt`);
+  if its own pairs no longer explain it, the land bounces like a conflict.
 - **Bounces.** If `land` bounces (exit 3: a real conflict, for example the same line of
-  `named_syms.txt` renamed by two lanes), run `lanes.py drop <lane> <sha>` for the commit it names
+  `named_syms.txt` or one source line renamed by two lanes, or a replayed wave failing its
+  keycheck), run `lanes.py drop <lane> <sha>` for the commit it names
   (later commits, such as the next unit, are kept) and redo that apply on the new main. The wave
   tools are deterministic, so this takes minutes. `fresh --discard` throws away every unlanded
   commit (the tip is saved under `refs/lanes-backup/`); use it only when that is the intent.
@@ -98,10 +108,16 @@ workable, change nothing, close the lane and stop (report why).
   open row (`idea` .. `reviewed`) at a time, and parallel lanes take different rows. The function
   track may hold up to **3** open rows at once when their target functions are defined in
   disjoint TUs (owner 2026-11-01); a session queueing a new function row checks that. Names can
-  still meet across tracks (a local and a global in one TU), so two lanes never hold one
-  `topic:tu` claim during a LAND (§Claims).
-- **Pick order** (no `--row` only): LAND first (oldest `reviewed` row that no other lane claims and whose TUs no
-  other lane claims), then PREPARE (first unclaimed `researched` row, or `researching` row whose
+  still meet across tracks (a local and a global in one TU); the symbol claims (§Claims) and
+  the replay keycheck keep them apart.
+- **Coalescing.** If other `reviewed` rows that no lane claims would collide with yours at
+  LAND (the same symbol, or a whole-TU claim on a hot TU), the session may apply them with its
+  `--row` row as **one wave**: claim every row and every draft in one call (`topic:row:<a>
+  topic:row:<b> --wave <draft a> --wave <draft b>`), apply the union of their pairs once (up
+  to the 80-row wave size), commit it as `naming: <a>+<b> -- ...`, run R6 over every row's
+  pairs, and move each row to `landed` in the same backlog commit.
+- **Pick order** (no `--row` only): LAND first (oldest `reviewed` row that no other lane claims and whose draft claims overlap no
+  other lane's claims), then PREPARE (first unclaimed `researched` row, or `researching` row whose
   cited Codex run has finished, then `idea` row).
 
 ## Agents are bounded
