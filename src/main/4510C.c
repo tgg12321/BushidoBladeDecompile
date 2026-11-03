@@ -1417,39 +1417,39 @@ s32 fighter_FindNearestNavCrossing(
     s32 crossing_x;
     s32 crossing_z;
     s32 nearest_crossing_distance;
-    s16 polygon_index;
+    s16 chain_index;
     s16 edge_vertex_index;
     s16 k;
     s16 n;
-    NavVertexChain *nav_poly;
+    NavVertexChain *nav_chain;
     s32 dx;
     s32 dy;
     s32 d;
 
     nearest_crossing_distance = 100000;
-    for (polygon_index = 0; polygon_index < nav_set->nchains; polygon_index++) {
-        nav_poly = &nav_set->chains[polygon_index];
-        n = nav_poly->nvtx;
-        if (nav_poly->flags & 0x80) {
-            n = nav_poly->nvtx - 1;
+    for (chain_index = 0; chain_index < nav_set->nchains; chain_index++) {
+        nav_chain = &nav_set->chains[chain_index];
+        n = nav_chain->nvtx;
+        if (nav_chain->flags & 0x80) {
+            n = nav_chain->nvtx - 1;
         }
         for (edge_vertex_index = 0; edge_vertex_index < n;
              edge_vertex_index++) {
             k = edge_vertex_index + 1;
-            if (!(k < nav_poly->nvtx)) {
+            if (!(k < nav_chain->nvtx)) {
                 k = 0;
             }
             if (math_IntersectSegments(
                     fighter_record->world_pos.x, fighter_record->world_pos.z,
-                    target_x, target_z, nav_poly->vtx[edge_vertex_index][0],
-                    nav_poly->vtx[edge_vertex_index][1], nav_poly->vtx[k][0],
-                    nav_poly->vtx[k][1], &crossing_x, &crossing_z) != 0) {
+                    target_x, target_z, nav_chain->vtx[edge_vertex_index][0],
+                    nav_chain->vtx[edge_vertex_index][1], nav_chain->vtx[k][0],
+                    nav_chain->vtx[k][1], &crossing_x, &crossing_z) != 0) {
                 dx = crossing_x - fighter_record->world_pos.x;
                 dy = crossing_z - fighter_record->world_pos.z;
                 d = SquareRoot0(dx * dx + dy * dy);
                 if (d < nearest_crossing_distance) {
                     nearest_crossing_distance = d;
-                    fighter_record->cpu_route.poly = polygon_index;
+                    fighter_record->cpu_route.poly = chain_index;
                     fighter_record->cpu_route.vtx = edge_vertex_index;
                 }
             }
@@ -1462,7 +1462,7 @@ s32 fighter_FindNearestNavCrossing(
  * at vertex vertex_index of chain nav_poly and writes the offset point into
  * *corner_x_out / *corner_z_out (it treats the chain as a ring, wrapping
  * prev/next even for an open one). */
-void fighter_GetNavCornerPoint(NavVertexChain *nav_poly, s32 vertex_index,
+void fighter_GetNavCornerPoint(NavVertexChain *nav_chain, s32 vertex_index,
                                s16 *corner_x_out, s16 *corner_z_out) {
     s16 prev;
     s16 next;
@@ -1471,20 +1471,20 @@ void fighter_GetNavCornerPoint(NavVertexChain *nav_poly, s32 vertex_index,
     s16 ang_mid;
 
     prev = vertex_index - 1;
-    vertex_x = nav_poly->vtx[vertex_index][0];
-    vertex_z = nav_poly->vtx[vertex_index][1];
+    vertex_x = nav_chain->vtx[vertex_index][0];
+    vertex_z = nav_chain->vtx[vertex_index][1];
     if (prev < 0) {
-        prev = nav_poly->nvtx - 1;
+        prev = nav_chain->nvtx - 1;
     }
     next = vertex_index + 1;
-    if (next >= nav_poly->nvtx) {
+    if (next >= nav_chain->nvtx) {
         next = 0;
     }
-    ang_prev = ratan2(nav_poly->vtx[prev][0] - vertex_x,
-                      nav_poly->vtx[prev][1] - vertex_z) &
+    ang_prev = ratan2(nav_chain->vtx[prev][0] - vertex_x,
+                      nav_chain->vtx[prev][1] - vertex_z) &
                0xFFF;
-    ang_next = ratan2(nav_poly->vtx[next][0] - vertex_x,
-                      nav_poly->vtx[next][1] - vertex_z) &
+    ang_next = ratan2(nav_chain->vtx[next][0] - vertex_x,
+                      nav_chain->vtx[next][1] - vertex_z) &
                0xFFF;
     if (ang_next < ang_prev) {
         s32 antipode = ang_prev + 0x800;
@@ -1492,7 +1492,7 @@ void fighter_GetNavCornerPoint(NavVertexChain *nav_poly, s32 vertex_index,
     } else {
         ang_mid = (ang_next - ang_prev) / 2 + ang_prev;
     }
-    scale = nav_poly->margin * 40;
+    scale = nav_chain->margin * 40;
     *corner_x_out = vertex_x + ((scale * Judge[ang_mid & 0xFFF]) >> 12);
     *corner_z_out =
         vertex_z + ((scale * Judge[(ang_mid + 0x400) & 0xFFF]) >> 12);
@@ -1525,7 +1525,7 @@ void fighter_AppendNavDetour(
     s8 backward_vertex_index;
     s8 forward_vertex_index;
     s16 iter;
-    s16 polygon_edge_count;
+    s16 chain_edge_count;
     s32 var_16;
     s32 var_17;
     u8 forward_active;
@@ -1540,7 +1540,7 @@ void fighter_AppendNavDetour(
     s16 az;
     s16 bx;
     s16 bz;
-    NavVertexChain *poly;
+    NavVertexChain *nav_chain;
     /* route holds three values: &detour_routes[0] in the first corner block,
      * &detour_routes[1] in the second corner block, and the cheaper of the two
      * for the copy loop (Ruling 11, reused-local-necessity). */
@@ -1548,7 +1548,7 @@ void fighter_AppendNavDetour(
 
     backward_active = 1;
     forward_active = 1;
-    poly = &nav_set->chains[fighter_record->cpu_route.poly];
+    nav_chain = &nav_set->chains[fighter_record->cpu_route.poly];
     backward_point_x = forward_point_x = fighter_record->world_pos.x;
     backward_point_z = forward_point_z = fighter_record->world_pos.z;
     detour_routes[1].count = 0;
@@ -1557,18 +1557,18 @@ void fighter_AppendNavDetour(
     var_16 = 0;
     backward_vertex_index = fighter_record->cpu_route.vtx;
     forward_vertex_index = backward_vertex_index + 1;
-    if (!(forward_vertex_index < poly->nvtx)) {
-        if (poly->flags & 0x80) {
+    if (!(forward_vertex_index < nav_chain->nvtx)) {
+        if (nav_chain->flags & 0x80) {
             forward_active = 0;
         } else {
             forward_vertex_index = 0;
         }
     }
-    polygon_edge_count = poly->nvtx;
-    if (poly->flags & 0x80) {
-        polygon_edge_count--;
+    chain_edge_count = nav_chain->nvtx;
+    if (nav_chain->flags & 0x80) {
+        chain_edge_count--;
     }
-    for (iter = 0; iter < polygon_edge_count; iter++) {
+    for (iter = 0; iter < chain_edge_count; iter++) {
         /* var_29 holds four values, each the address of an x/z pair: the
          * edge's start (i) and end (next) in the edge scan, then the corners
          * at backward_vertex_index and forward_vertex_index (Ruling 11,
@@ -1582,20 +1582,21 @@ void fighter_AppendNavDetour(
 
         forward_crosses_edge = 0;
         backward_crosses_edge = 0;
-        for (i = 0; i < polygon_edge_count; i++) {
+        for (i = 0; i < chain_edge_count; i++) {
             next = i + 1;
-            if (!(next < poly->nvtx)) {
+            if (!(next < nav_chain->nvtx)) {
                 next = 0;
             }
-            var_29 = poly->vtx[i];
+            var_29 = nav_chain->vtx[i];
             ax = var_29[0];
             az = var_29[1];
             fighter_GetNavCornerPoint(
-                poly, i, &start_corner_x, &start_corner_z);
-            var_29 = poly->vtx[next];
+                nav_chain, i, &start_corner_x, &start_corner_z);
+            var_29 = nav_chain->vtx[next];
             bx = var_29[0];
             bz = var_29[1];
-            fighter_GetNavCornerPoint(poly, next, &end_corner_x, &end_corner_z);
+            fighter_GetNavCornerPoint(
+                nav_chain, next, &end_corner_x, &end_corner_z);
             if (backward_active && !backward_crosses_edge) {
                 if ((backward_point_x != start_corner_x ||
                      backward_point_z != start_corner_z) &&
@@ -1628,12 +1629,12 @@ void fighter_AppendNavDetour(
             if (backward_crosses_edge) {
                 s32 c;
 
-                var_29 = poly->vtx[backward_vertex_index];
+                var_29 = nav_chain->vtx[backward_vertex_index];
                 var_16 += SquareRoot0((var_29[0] - backward_point_x) *
                                           (var_29[0] - backward_point_x) +
                                       (var_29[1] - backward_point_z) *
                                           (var_29[1] - backward_point_z));
-                fighter_GetNavCornerPoint(poly, backward_vertex_index,
+                fighter_GetNavCornerPoint(nav_chain, backward_vertex_index,
                                           &backward_point_x, &backward_point_z);
                 route = &detour_routes[0];
                 c = route->count;
@@ -1644,13 +1645,13 @@ void fighter_AppendNavDetour(
                 node = &route->node[c];
                 node->x = backward_point_x;
                 node->z = backward_point_z;
-                node->kind = poly->kind;
+                node->kind = nav_chain->kind;
                 if (--backward_vertex_index < 0) {
-                    if (poly->flags & 0x80) {
+                    if (nav_chain->flags & 0x80) {
                         backward_active = 0;
                         var_16 = 100000;
                     } else {
-                        backward_vertex_index = poly->nvtx - 1;
+                        backward_vertex_index = nav_chain->nvtx - 1;
                     }
                 }
             } else {
@@ -1665,12 +1666,12 @@ void fighter_AppendNavDetour(
             if (forward_crosses_edge) {
                 s32 c;
 
-                var_29 = poly->vtx[forward_vertex_index];
+                var_29 = nav_chain->vtx[forward_vertex_index];
                 var_17 += SquareRoot0((var_29[0] - forward_point_x) *
                                           (var_29[0] - forward_point_x) +
                                       (var_29[1] - forward_point_z) *
                                           (var_29[1] - forward_point_z));
-                fighter_GetNavCornerPoint(poly, forward_vertex_index,
+                fighter_GetNavCornerPoint(nav_chain, forward_vertex_index,
                                           &forward_point_x, &forward_point_z);
                 route = &detour_routes[1];
                 c = route->count;
@@ -1681,9 +1682,9 @@ void fighter_AppendNavDetour(
                 node = &route->node[c];
                 node->x = forward_point_x;
                 node->z = forward_point_z;
-                node->kind = poly->kind;
-                if (!(++forward_vertex_index < poly->nvtx)) {
-                    if (poly->flags & 0x80) {
+                node->kind = nav_chain->kind;
+                if (!(++forward_vertex_index < nav_chain->nvtx)) {
+                    if (nav_chain->flags & 0x80) {
                         forward_active = 0;
                         var_17 = 100000;
                     } else {
