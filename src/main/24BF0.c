@@ -16,7 +16,7 @@ void ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests(void) {
     s8 val_85 = (s8)g_fight_config.pending_mode_selector;
     s8 val_86 = (s8)g_fight_config.pending_view_setting;
     s8 val_84 = (s8)g_fight_config.pending_stage_index;
-    s32 val_87 = (s8)g_fight_config.unk_F;
+    s32 val_87 = (s8)g_fight_config.pending_force_weapon_inner_bone_hits;
 
     g_fight_tracked_fighter_index = 0;
     g_fight_mode_selector = val_85;

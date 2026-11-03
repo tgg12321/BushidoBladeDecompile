@@ -2405,7 +2405,7 @@ typedef struct {
     u8 pending_stage_index;
     u8 pending_mode_selector;
     u8 pending_view_setting;
-    u8 unk_F;
+    u8 pending_force_weapon_inner_bone_hits;
 } Unk80102778Rec;
 
 typedef struct {

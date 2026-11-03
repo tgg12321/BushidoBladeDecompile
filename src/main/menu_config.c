@@ -82,7 +82,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
     font_Printf((u8 *)g_config_menu_force_weapon_inner_bone_hits_fmt,
                 (s32)(g_config_menu_cursors[0] == 7 ? selected_prefix
                                                     : unselected_prefix),
-                (s8)g_fight_config.unk_F);
+                (s8)g_fight_config.pending_force_weapon_inner_bone_hits);
     font_Printf((u8 *)g_config_menu_saved_grayscale_fmt,
                 (s32)(g_config_menu_cursors[0] == 8 ? selected_prefix
                                                     : unselected_prefix),
@@ -140,7 +140,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 g_fight_config.pending_view_setting--;
                 break;
             case 7:
-                g_fight_config.unk_F--;
+                g_fight_config.pending_force_weapon_inner_bone_hits--;
                 break;
             case 8:
                 g_saved_record.flags ^= 1;
@@ -180,7 +180,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 g_fight_config.pending_view_setting++;
                 break;
             case 7:
-                g_fight_config.unk_F++;
+                g_fight_config.pending_force_weapon_inner_bone_hits++;
                 break;
             case 8:
                 g_saved_record.flags ^= 1;
@@ -205,7 +205,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
     g_fight_config.pending_mode_selector =
         ((s8)g_fight_config.pending_mode_selector + 7) % 7;
     g_fight_config.pending_view_setting &= 1;
-    g_fight_config.unk_F &= 1;
+    g_fight_config.pending_force_weapon_inner_bone_hits &= 1;
     D_800A36F9 = (D_800A36F9 + 4) % 4;
     g_fight_view_option &= 1;
     if (g_pad_state.pressed & 0x08000800) {

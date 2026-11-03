@@ -1233,7 +1233,7 @@ void fight_InitSettings(void) {
     g_fight_config.unk_4[4] = 0;
     g_fight_config.pending_mode_selector = 4;
     g_fight_config.pending_view_setting = 0;
-    g_fight_config.unk_F = 0;
+    g_fight_config.pending_force_weapon_inner_bone_hits = 0;
 }
 
 void fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11(void) {
