@@ -40,7 +40,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
     s32 cur;
     s16 var_4;
     u16 y_base;
-    DR_MODE *mode_off;
+    DR_MODE *dr_mode;
     s32 size;
     s16 top;
     s16 i;
@@ -55,13 +55,13 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
        memory for the in-loop `lw 0xBC($sp)` too; (s16)arg1 does not. `var_4 =
        arg1`: score 58. */
     var_4 = *(s16 *)&arg1;
-    mode_off = &draw_chunk->chunk_draw_mode;
+    dr_mode = &draw_chunk->chunk_draw_mode;
     /* FAKE: the record's 0x4F0 bytes (sizeof(Unk8005C8A8Rec)) spelled from
      * mode_off as an int: combine folds it with no REG_EQUAL note, so size
      * keeps the target's sp+0x70 slot to the return and the deleted temp's
      * stale count takes the untouched sp+0x78; the literal or sizeof is
      * rematerialised at the return (frame 0x10 short). sizeof: score 33 */
-    size = (s32)mode_off + 0x18 - arg2;
+    size = (s32)dr_mode + 0x18 - arg2;
     top = (0xF0 - g_panel_frame_sizes[mode].h) / 2;
     s.col_b = 0x40;
     s.col_g = 0x40;
@@ -324,9 +324,9 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
     tile->h = g_panel_frame_sizes[mode].h;
     SetSemiTrans(tile, 1);
     AddPrim(g_gpu_ot_ptr + ot_index, tile);
-    SetDrawMode(mode_off, 1, 0,
+    SetDrawMode(dr_mode, 1, 0,
                 gpu_GetSheetTPage(&g_gpu_mode_panel_sheet_headers[0], 0), 0);
-    AddPrim(g_gpu_ot_ptr + ot_index, mode_off);
+    AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     return size;
 }
 
@@ -484,7 +484,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg2); returning sizeof(Unk8005D814Rec) directly:
      * score 76 (Q129). */
-    s32 end_off;
+    s32 end_addr;
     s16 i;
     s16 j;
     s16 digits_started;
@@ -499,7 +499,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
     s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[0];
     cur = arg2 + sizeof(draw_chunk->chunk_tiles);
     dr_mode = &draw_chunk->chunk_draw_mode;
-    end_off = arg2 + sizeof(Unk8005D814Rec);
+    end_addr = arg2 + sizeof(Unk8005D814Rec);
     for (i = 0; i < 3; i++) {
         s.table = &g_gpu_time_and_counter_cells[i];
         s.sprt_out = cur;
@@ -636,7 +636,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
                     &g_gpu_digit_label_and_line_segment_sheet_headers[0], 0),
                 0);
     AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
-    return end_off - arg2;
+    return end_addr - arg2;
 }
 
 extern Unk8009B400Record g_gpu_single_side_counter_label_cell;
@@ -652,7 +652,7 @@ s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg2); returning sizeof(Unk8005D814Rec) directly:
      * score 53 (Q129). */
-    s32 end_off;
+    s32 end_addr;
     s16 i;
     s16 j;
 
@@ -664,7 +664,7 @@ s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(
     s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[1];
     cur = arg2 + sizeof(draw_chunk->chunk_tiles);
     dr_mode = &draw_chunk->chunk_draw_mode;
-    end_off = arg2 + sizeof(Unk8005D814Rec);
+    end_addr = arg2 + sizeof(Unk8005D814Rec);
     s.ot_idx = ot_index;
     for (i = 0; i < 2; i++) {
         if (arg0 < 0) {
@@ -757,7 +757,7 @@ s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(
                     &g_gpu_digit_label_and_line_segment_sheet_headers[0], 0),
                 0);
     AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
-    return end_off - arg2;
+    return end_addr - arg2;
 }
 
 s32 gpu_DrawDecrementedSingleSideCounter(
@@ -810,7 +810,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg1); returning sizeof(Unk8005E54CRec) directly:
      * score 75 (Q129). */
-    s32 end_off;
+    s32 end_addr;
     /* i counts the players (first loop) and then the rounds; j is the player
        and k the mark; each phase restarts them loop to loop as plain indices,
        the way SOTN's DebugCaptureScreen reuses its i for its file-search loop
@@ -831,7 +831,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     cur = arg1 + sizeof(draw_chunk->chunk_tiles);
     ft4_out_addr = (s32)draw_chunk->chunk_textured_quads;
     dr_mode = &draw_chunk->chunk_draw_mode;
-    end_off = arg1 + sizeof(Unk8005E54CRec);
+    end_addr = arg1 + sizeof(Unk8005E54CRec);
     s.ot_idx = ot_index;
     for (i = 0; i < 2; i++) {
         if (!(g_working_record.unk14_15 >> i & 1)) {
@@ -1078,7 +1078,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     AddPrim(g_gpu_ot_ptr + ot_index, tile);
     SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(&D_8009ADB4, 0), 0);
     AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
-    return end_off - arg1;
+    return end_addr - arg1;
 }
 
 extern Unk8009B0E0Record g_gpu_paired_mark_sheet_headers[2];
@@ -1098,7 +1098,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg2); returning sizeof(Unk8005D814Rec) directly:
      * score 97 (Q129). */
-    s32 end_off;
+    s32 end_addr;
     /* mark_group_index/side_index count the first phase's two loops;
      * k and j are reused loop to loop as plain indices by the later phases
      * (tile strip k/j, timer j/k), the way SOTN's DebugCaptureScreen reuses
@@ -1118,7 +1118,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
     tile = draw_chunk->chunk_tiles;
     cur = arg2 + sizeof(draw_chunk->chunk_tiles);
     dr_mode = &draw_chunk->chunk_draw_mode;
-    end_off = arg2 + sizeof(Unk8005D814Rec);
+    end_addr = arg2 + sizeof(Unk8005D814Rec);
     s.ot_idx = ot_index;
     for (mark_group_index = 0; mark_group_index < 2; mark_group_index++) {
         s.header = &g_gpu_paired_mark_sheet_headers[mark_group_index];
@@ -1270,7 +1270,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
                     &g_gpu_digit_label_and_line_segment_sheet_headers[1], 0),
                 0);
     AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
-    return end_off - arg2;
+    return end_addr - arg2;
 }
 
 /* gpu_DrawSelectedStretchedSheetPair's sheets: three headers at 0x8009B610
@@ -1357,7 +1357,7 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg0); returning sizeof(Unk8005FC9CRec) directly:
      * score 55 (Q129). */
-    s32 end_off;
+    s32 end_addr;
     s16 side_index;
     s16 sheet_index;
     s16 off;
@@ -1368,7 +1368,7 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
     dr_mode = &draw_chunk->chunk_draw_mode;
     gradient_quad_cursor = draw_chunk->chunk_gradient_quads;
     area = draw_chunk->chunk_draw_areas;
-    end_off = arg0 + sizeof(Unk8005FC9CRec);
+    end_addr = arg0 + sizeof(Unk8005FC9CRec);
     side_index = 0;
     gpu_db = &g_gpu_db[g_gpu_presented_frame_count & 1];
     r.x = gpu_db->draw.clip.x;
@@ -1453,7 +1453,7 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
     if (off <= 0x140) {
         g_gpu_split_wipe_frame++;
     }
-    return end_off - arg0;
+    return end_addr - arg0;
 }
 
 /* gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite's sheets: the frame
@@ -1473,7 +1473,7 @@ s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg1); returning sizeof(Unk800600C8Rec) directly:
      * score 20 (Q129). */
-    s32 end_off = arg1 + sizeof(Unk800600C8Rec);
+    s32 end_addr = arg1 + sizeof(Unk800600C8Rec);
     s32 cur = arg1;
     s32 digit_index;
 
@@ -1515,7 +1515,7 @@ s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
             g_gpu_digit_count_shifted_sprite_and_large_digit_sheet_headers, 0),
         0);
     AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
-    return end_off - arg1;
+    return end_addr - arg1;
 }
 
 extern RECT D_800A3294;
@@ -1563,9 +1563,9 @@ s32 gpu_DrawSpriteAtPackedTablePosition(
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg1); returning sizeof(Unk80060414Rec) directly:
      * score 22 (Q129). */
-    s32 end_off;
+    s32 end_addr;
     dr_mode = &sprite_chunk->chunk_draw_mode;
-    end_off = arg1 + sizeof(Unk80060414Rec);
+    end_addr = arg1 + sizeof(Unk80060414Rec);
     s.has_color = 0;
     s.semi = 0;
     s.ot_idx = ot_index;
@@ -1587,7 +1587,7 @@ s32 gpu_DrawSpriteAtPackedTablePosition(
     gpu_AddSpriteCells(&s);
     SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
-    return end_off - arg1;
+    return end_addr - arg1;
 }
 
 extern Unk8009B0E0Record g_gpu_stage_card_sheet_headers[4];
@@ -1605,7 +1605,7 @@ s32 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells(
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg0); returning sizeof(Unk80060544Rec) directly:
      * score 25 (Q129). */
-    s32 end_off;
+    s32 end_addr;
     s32 ft4_out_addr;
     s32 sheet_index;
     s32 tinted_draw_count;
@@ -1619,7 +1619,7 @@ s32 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells(
     s.semi = 0;
     s.ot_idx = ot_index;
     dr_mode = &draw_chunk->chunk_draw_mode;
-    end_off = arg0 + sizeof(Unk80060544Rec);
+    end_addr = arg0 + sizeof(Unk80060544Rec);
     s.scale_x = 0x200;
     s.scale_y = 0x100;
     s.y = 0;
@@ -1669,7 +1669,7 @@ s32 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells(
     } while (tinted_draw_count < 2);
     SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
-    return end_off - arg0;
+    return end_addr - arg0;
 }
 
 extern u16 g_gpu_fixed_bar_progress;
@@ -1693,11 +1693,11 @@ s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg0); returning 0xAC8 directly:
      * score 26 (Q129). */
-    s32 end_off;
+    s32 end_addr;
     s32 tile_out_addr;
 
     tile_out_addr = arg0 + 0x7D0;
-    end_off = arg0 + 0xAC8;
+    end_addr = arg0 + 0xAC8;
     sprt_out_addr = arg0;
     dr_mode_out_addr = arg0 + 0x870;
     gpu_DrawIndexedCellsAndDecimalDigitPairs(
@@ -1775,7 +1775,7 @@ s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
     SetDrawMode((void *)dr_mode_out_addr, 1, 0, 0, 0);
     AddPrim(g_gpu_ot_ptr + ot_index, (void *)dr_mode_out_addr);
     dr_mode_out_addr += 0xC;
-    return end_off - arg0;
+    return end_addr - arg0;
 }
 
 /* .data 0x8009ADB4..0x8009B450, this file's .data (d_8A588.c's g_vab_id_list

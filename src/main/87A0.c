@@ -182,7 +182,7 @@ void softbody_SolveSprings(Func80017A44Output *softbody) {
     Func80017848Edge *data;
     Func80017A44Record *base;
     s32 count;
-    s32 thresh;
+    s32 var_4;
     s32 var_5;
     s32 nthresh;
     Func80017A44Record *p1, *p2;
@@ -202,18 +202,18 @@ void softbody_SolveSprings(Func80017A44Output *softbody) {
     /* FAKE: the packed node-index word staged through the still-dead
      * `thresh` so it shares thresh's register ($t1); its own local takes $a1:
      * score 5 (staged-value-reused-variable) */
-    thresh = data->ends.pair;
+    var_4 = data->ends.pair;
     var_5 = data->dist;
-    p1 = &base[thresh >> 16];
-    p2 = &base[thresh & 0xFFFF];
-    thresh = var_5 * 3;
-    nthresh = -thresh;
+    p1 = &base[var_4 >> 16];
+    p2 = &base[var_4 & 0xFFFF];
+    var_4 = var_5 * 3;
+    nthresh = -var_4;
     dx = p2->pos[0] - p1->pos[0];
     dy = p2->pos[1] - p1->pos[1];
     dz = p2->pos[2] - p1->pos[2];
     while (count > 0) {
-        while (dx < nthresh || thresh < dx || dy < nthresh || thresh < dy ||
-               dz < nthresh || thresh < dz) {
+        while (dx < nthresh || var_4 < dx || dy < nthresh || var_4 < dy ||
+               dz < nthresh || var_4 < dz) {
             dx = (p2->pos[0] + p1->pos[0]) / 2;
             dy = (p2->pos[1] + p1->pos[1]) / 2;
             dz = (p2->pos[2] + p1->pos[2]) / 2;
@@ -243,20 +243,20 @@ void softbody_SolveSprings(Func80017A44Output *softbody) {
         gte_sqr0();
         data++;
         count--;
-        thresh = data->ends.pair;
+        var_4 = data->ends.pair;
         gte_stlvnl(SCR->d1);
         sum = SCR->d1[0] + SCR->d1[1] + SCR->d1[2];
         if (sum < 0x400) {
             len = g_sqrt_table_u8[sum];
-            p1 = &base[thresh >> 16];
-            p2 = &base[thresh & 0xFFFF];
+            p1 = &base[var_4 >> 16];
+            p2 = &base[var_4 & 0xFFFF];
         } else {
             u32 shift, byte;
 
             gte_ldlzc(sum);
             /* the next link's node pointers fill the LZC result delay */
-            p1 = &base[thresh >> 16];
-            p2 = &base[thresh & 0xFFFF];
+            p1 = &base[var_4 >> 16];
+            p2 = &base[var_4 & 0xFFFF];
             gte_stlzc(lz);
             /* FAKE: the leading-zero count staged through len (the root's
              * local); a fresh count local: score 22 */
@@ -268,8 +268,8 @@ void softbody_SolveSprings(Func80017A44Output *softbody) {
         gte_ldlvl(SCR->d0);
         f = (s32)((len - var_5) << 14) / (s32)len;
         var_5 = data->dist;
-        thresh = var_5 * 3;
-        nthresh = -thresh;
+        var_4 = var_5 * 3;
+        nthresh = -var_4;
         gte_lddp(f);
         gte_gpf12();
         dx = p2->pos[0] - p1->pos[0];

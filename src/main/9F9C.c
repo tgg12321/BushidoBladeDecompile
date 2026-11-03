@@ -4405,19 +4405,19 @@ void fighter_UpdateInputSteeredForwardMotion(Unk80101EC8Record *arg0) {
             }
 
             {
-                s32 sub_result = (u16)arg0->forward_move_rate - a2;
+                s32 var_5 = (u16)arg0->forward_move_rate - a2;
                 s32 div16 = arg0->size_scale;
                 s16 new_14e;
                 s32 tbl_val;
                 s32 mult_res;
                 s32 limit;
 
-                arg0->forward_move_rate = sub_result;
+                arg0->forward_move_rate = var_5;
                 if (div16 < 0) {
                     div16 += 15;
                 }
                 div16 >>= 4;
-                new_14e = sub_result + div16;
+                new_14e = var_5 + div16;
                 arg0->forward_move_rate = new_14e;
 
                 tbl_val = g_fighter_forward_move_rate_limits
@@ -4426,8 +4426,8 @@ void fighter_UpdateInputSteeredForwardMotion(Unk80101EC8Record *arg0) {
                 /* FAKE: the second read of arg0->size_scale is staged through
                  * the dead `sub_result`, as above; reading in place: score
                  * 11. */
-                sub_result = arg0->size_scale;
-                mult_res = sub_result * tbl_val;
+                var_5 = arg0->size_scale;
+                mult_res = var_5 * tbl_val;
                 limit = (mult_res << 4) >> 12;
 
                 if (limit < (s16)new_14e) {

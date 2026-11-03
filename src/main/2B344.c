@@ -1659,8 +1659,8 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
                             goto loop_check;
                         }
                         {
-                            s32 r_src = (pixel & 0x1F) << 3;
-                            s32 g_src = ((u32)px >> 2) & 0xF8;
+                            s32 red = (pixel & 0x1F) << 3;
+                            s32 green_work = ((u32)px >> 2) & 0xF8;
                             s32 sum;
                             s32 var_22;
                             s32 var_23;
@@ -1673,21 +1673,21 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
                              * term (r * factor, g * factor) between the
                              * weighted source and the blend; fresh r_far /
                              * g_far locals: score 33 */
-                            var_22 = r_src * (0x1000 - factor);
-                            r_src = r * factor;
-                            sum = var_22 + r_src;
-                            r_src = sum >> 15;
-                            r_src = r_src & 0x1F;
-                            var_23 = g_src * (0x1000 - factor);
-                            g_src = g * factor;
-                            sum = var_23 + g_src;
-                            g_src = sum >> 10;
+                            var_22 = red * (0x1000 - factor);
+                            red = r * factor;
+                            sum = var_22 + red;
+                            red = sum >> 15;
+                            red = red & 0x1F;
+                            var_23 = green_work * (0x1000 - factor);
+                            green_work = g * factor;
+                            sum = var_23 + green_work;
+                            green_work = sum >> 10;
                             blue = ((u32)px >> 7) & 0xF8;
                             blue = blue * (0x1000 - factor);
                             sum = blue + b * factor;
                             blue = sum >> 5;
-                            green = g_src & 0x3E0;
-                            *dst = (pixel & 0x8000) | r_src | green |
+                            green = green_work & 0x3E0;
+                            *dst = (pixel & 0x8000) | red | green |
                                    (blue & 0x7C00);
                         }
                     }

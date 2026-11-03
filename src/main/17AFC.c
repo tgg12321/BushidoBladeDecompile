@@ -2984,8 +2984,8 @@ dist_calc: {
 }
 
 s32 math_TestPreparedTriangleSphere(
-    s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq) {
-    if (flag == 0) {
+    s32 arg0, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq) {
+    if (arg0 == 0) {
         obj->unkF8.vx = pos[0] - obj->shape_points[0]->x;
         obj->unkF8.vy = pos[1] - obj->shape_points[0]->y;
         obj->unkF8.vz = pos[2] - obj->shape_points[0]->z;
@@ -3025,10 +3025,10 @@ s32 math_TestPreparedTriangleSphere(
                 /* FAKE: the third edge's z2 - z0 is staged through the finished
                  * `flag` parameter (unread after the mode test); a block-local
                  * dz takes dx's $v1: score 9 */
-                flag = z2 - z0;
+                arg0 = z2 - z0;
                 dx = x2 - x0;
-                var_9 = (flag * ax) - (dx * (cz - z0));
-                var_10 = (flag * (px - x0)) - (dx * (pz - z0));
+                var_9 = (arg0 * ax) - (dx * (cz - z0));
+                var_10 = (arg0 * (px - x0)) - (dx * (pz - z0));
                 if ((var_9 ^ var_10) >= 0)
                     return 1;
             }
@@ -3038,23 +3038,23 @@ s32 math_TestPreparedTriangleSphere(
     {
         s32 y = obj->unk100[0].z;
         s32 sp_var;
-        s32 dist = r_sq - y * y;
+        s32 circle_radius_sq = r_sq - y * y;
         s32 sqrt_val;
         Vec3i32 *p118;
         Vec3i32 *p124;
         Vec3i32 *p10C;
 
-        if ((u32)dist < 0x400) {
-            sqrt_val = (u32)g_sqrt_table_u8[dist] >> 3;
+        if ((u32)circle_radius_sq < 0x400) {
+            sqrt_val = (u32)g_sqrt_table_u8[circle_radius_sq] >> 3;
         } else {
-            s32 m = dist;
+            s32 m = circle_radius_sq;
             s32 lzcr = 0;
-            if (dist >= 0) {
+            if (circle_radius_sq >= 0) {
                 /* FAKE: same-value re-store of `m`: breaks the m == dist
                  * equivalence across the skipped arm so the shift below reads
                  * the $a0 copy, not dist ($s1), as in math_TestSegmentCircle2D;
                  * without it: score 4 */
-                m = dist;
+                m = circle_radius_sq;
                 gte_Lzc(m, &sp_var);
                 lzcr = sp_var;
             }
@@ -3072,18 +3072,18 @@ s32 math_TestPreparedTriangleSphere(
         p124->x = obj->unkB8.x - obj->unk100[0].x;
         p124->y = obj->unkB8.y - obj->unk100[0].y;
         if (math_TestSegmentCircle2D(
-                sqrt_val, dist, (s32 *)p118, (s32 *)p124) != 0)
+                sqrt_val, circle_radius_sq, (s32 *)p118, (s32 *)p124) != 0)
             return 1;
 
         p10C = &obj->unk100[1];
         p10C->x = -obj->unk100[0].x;
         p10C->y = -obj->unk100[0].y;
         if (math_TestSegmentCircle2D(
-                sqrt_val, dist, (s32 *)p10C, (s32 *)p118) != 0)
+                sqrt_val, circle_radius_sq, (s32 *)p10C, (s32 *)p118) != 0)
             return 1;
 
         if (math_TestSegmentCircle2D(
-                sqrt_val, dist, (s32 *)p10C, (s32 *)p124) != 0)
+                sqrt_val, circle_radius_sq, (s32 *)p10C, (s32 *)p124) != 0)
             return 1;
         return 0;
     }
@@ -3100,7 +3100,7 @@ s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj) {
     MATRIX *mat;
     s32 sp_tmp;
     s32 dist_sq;
-    s32 dist;
+    s32 var_3;
 
     obj->unkA8.x = obj->shape_points[1]->x - obj->shape_points[0]->x;
     obj->unkA8.y = obj->shape_points[1]->y - obj->shape_points[0]->y;
@@ -3125,13 +3125,13 @@ s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj) {
      * if/else below writes the xz length into it); a block-local z temp
      * moves dist_sq from the target's $a0 to $a1: score 6 (Q129) */
     /* SOTN: src/st/no1/unk_39184.c:420 @db41b28 */
-    dist = obj->unkC8.z;
-    dist >>= 6;
-    dist_sq = obj->unkC8.x * obj->unkC8.x + dist * dist;
-    obj->unkC8.z = dist;
+    var_3 = obj->unkC8.z;
+    var_3 >>= 6;
+    dist_sq = obj->unkC8.x * obj->unkC8.x + var_3 * var_3;
+    obj->unkC8.z = var_3;
 
     if ((u32)dist_sq < 0x400) {
-        dist = (u32)g_sqrt_table_u8[dist_sq] >> 3;
+        var_3 = (u32)g_sqrt_table_u8[dist_sq] >> 3;
     } else {
         s32 lzcr = 0;
         if (dist_sq >= 0) {
@@ -3140,12 +3140,12 @@ s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj) {
         }
         {
             s32 shift = 0x16 - (lzcr & ~1);
-            dist = (u32)(g_sqrt_table_u8[(u32)dist_sq >> shift] << 16) >>
-                   (0x13 - ((u32)shift >> 1));
+            var_3 = (u32)(g_sqrt_table_u8[(u32)dist_sq >> shift] << 16) >>
+                    (0x13 - ((u32)shift >> 1));
         }
     }
 
-    obj->unkF8.vx = 0x800 - ratan2(obj->unkC8.y, dist);
+    obj->unkF8.vx = 0x800 - ratan2(obj->unkC8.y, var_3);
     mat = &obj->rot_matrix;
 
     /* identity 3x3 rotation matrix obj->rot_matrix */

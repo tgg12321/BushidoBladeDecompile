@@ -287,7 +287,7 @@ void fighter_InitCpuControl(
      * stat bytes e[1] and e[2] (Ruling 11, ordinary-c-judge-decidable). */
     s32 temp;
     u32 var_15;
-    s32 lo_val, hi1_val, hi2_val;
+    s32 lo_val, hi1_val, var_18;
     Unk80101EC8Record *other_record;
 
     p->cpu_profile = p->character_data_index;
@@ -422,7 +422,7 @@ void fighter_InitCpuControl(
             }
             if (rec->weapon_id >= 6) {
                 lo_val = 0;
-                hi2_val = 0x7530;
+                var_18 = 0x7530;
                 hi1_val = 0x7530;
             } else {
                 /* FAKE: the shared base (rec's scale_distance_offset + 100) is
@@ -430,15 +430,15 @@ void fighter_InitCpuControl(
                  * local is tied to the lh result (target: lh v0; addiu
                  * v1,v0,100); a separate base local: score 6; the base inline
                  * in all three sums: 6-23 (Q129) */
-                hi2_val = rec->scale_distance_offset + 100;
-                lo_val = hi2_val + lo * 40;
-                hi1_val = hi2_val + hi1 * 40;
-                hi2_val += hi2 * 40;
+                var_18 = rec->scale_distance_offset + 100;
+                lo_val = var_18 + lo * 40;
+                hi1_val = var_18 + hi1 * 40;
+                var_18 += hi2 * 40;
             }
             cursor++;
             rec->script_min_distances[var_5] = lo_val;
             rec->script_max_distances[var_5] = hi1_val;
-            rec->filtered_script_max_distances[var_5] = hi2_val;
+            rec->filtered_script_max_distances[var_5] = var_18;
         }
     }
     other_record = p->other;

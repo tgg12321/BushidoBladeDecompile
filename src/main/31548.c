@@ -198,13 +198,13 @@ void slot_BlendTwoPosesIntoNodeMatrices(
     SVECTOR buf;
     Unk80045878Node *ents;
     MATRIX *out2;
-    s32 offset;
+    s32 var_6;
     u16 *p;
     Unk80045878Node *var_9;
     ents = &slot_object->transform_nodes[1];
     do {
-        offset = (*tbl) * 6;
-        p = (u16 *)(offset + (s32)a1);
+        var_6 = (*tbl) * 6;
+        p = (u16 *)(var_6 + (s32)a1);
         buf.vx = p[0];
         buf.vy = -p[1];
         buf.vz = -p[2];
@@ -212,8 +212,8 @@ void slot_BlendTwoPosesIntoNodeMatrices(
         tbl++;
         /* FAKE: offset becomes the a2-side address (addu s0,s0,s2); a fresh sum
          * loads through v1 (score 4) */
-        offset = offset + (s32)a2;
-        p = (u16 *)offset;
+        var_6 = var_6 + (s32)a2;
+        p = (u16 *)var_6;
         buf.vx = p[0];
         buf.vy = -p[1];
         buf.vz = -p[2];
