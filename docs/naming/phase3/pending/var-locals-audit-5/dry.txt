@@ -1,0 +1,32 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs. naming_member_apply.py handles T.m=n only
+("no T.m=n pairs"; same tool result as waves 16-36); naming_keycheck.py compares an already-applied base/new pair of trees and
+naming_wave.py is function-name only. Local pairs are proven at the apply gate (keycheck cc1
+differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(base = every src/ and include/ .c/.h/.inc file plus Makefile read from the lane worktree ln-naming-c, HEAD 3d6995990 = main at queue time; NAMING_KEYCHECK_ROOT = the worktree)
+accepted all 19 pairs (102 token substitutions: 17AFC.c 23, 2B344.c 14, 31548.c 6, 4510C.c 7, 4D0A8.c 31, 87A0.c 16, 9F9C.c 5; no include/ file touched; comment edits needed, see notes.txt
+R6 WATCH). Each pair was also run alone: all 19 accepted, none rejected (alone-counts sum to 102, equal to the together total).
+The count of every pair equals a token scan of the binding in its definition (signature and body, comments and strings excluded, ./-> member tokens excluded; separate
+tokenizer, not the plan), pair by pair, line list and count: no mismatch (19/19 equal; the counts also equal the research file counts). The runs modified no file in the worktree (git status showed only this draft directory).
+Per-pair substitutions (function:old=new count):
+  math_TestPreparedTriangleSphere:dist=circle_radius_sq 9
+  math_TestPreparedTriangleSphere:flag=arg0 5
+  math_TryPrepareTriangleNormalFrame:dist=var_3 9
+  gpu_BuildFogImageLevels:r_src=red 8
+  gpu_BuildFogImageLevels:g_src=green_work 6
+  fighter_InitCpuControl:hi2_val=var_18 7
+  fighter_UpdateInputSteeredForwardMotion:sub_result=var_5 5
+  softbody_SolveSprings:thresh=var_4 16
+  slot_BlendTwoPosesIntoNodeMatrices:offset=var_6 6
+  gpu_DrawModeSizedPanelWithSelectedCellOpaque:mode_off=dr_mode 5
+  gpu_DrawTimeFieldsAndDecimalCounter:end_off=end_addr 3
+  gpu_DrawTwoDigitCounterWithOptionalSecondSide:end_off=end_addr 3
+  gpu_DrawPackedComparisonRowsAndTotals:end_off=end_addr 3
+  gpu_DrawPairedMarkRowsAndTimeFields:end_off=end_addr 3
+  gpu_DrawImageAndAdvanceSplitWipe:end_off=end_addr 3
+  gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite:end_off=end_addr 2
+  gpu_DrawSpriteAtPackedTablePosition:end_off=end_addr 3
+  gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells:end_off=end_addr 3
+  gpu_DrawIndexedCellsDigitPairsAndGrowingBars:end_off=end_addr 3
+  (sum 102; per-file alone-sums: 17AFC.c 9+5+9, 2B344.c 8+6, 4510C.c 7, 9F9C.c 5, 87A0.c 16, 31548.c 6, 4D0A8.c 5+3x7+2)
+Same destination end_addr for nine pairs in nine different functions: scoped (local) names, no collision (no function has another end_addr; scoped_plan accepted the 19-pair set). var_3 / var_4 / var_5 / var_6 / var_18 / arg0 are each a destination once in the set.
+Refused, so not in the pair set (NO_NAME rows): eff_DrawAndAdvanceRotatedQuadClusters:prim=var_9 and eff_DrawYawedSlotQuads:prim=var_6 (re-run read-only in this drafting): both refused by scoped_plan, "src/main/51268.c: prim is an argument of function-like macro setlen, whose body names a macro or a member/tag/label/brace token" (setlen, include/psxsdk/libgpu.h:29).

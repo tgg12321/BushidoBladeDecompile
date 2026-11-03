@@ -1,0 +1,53 @@
+var-locals-audit-5 (naming-c 2026-11-03): the 21 audit-1 bindings left NO_NAME only because a /* FAKE */ comment cites the old token (pending/var-locals-audit-1/notes.txt, "FAKE-cited overclaims"). Owner Q133 (naming-bar step 4): a FAKE comment may change by the pair word alone; R6 fails an edit whose reason or claim moved.
+Tree: ln-naming-c = main 3d6995990. Research: tmp/codex/var-locals-audit-5-research.md (21 bindings: 13 RENAME, 6 RESET, 2 NO_NAME; 19 pairs).
+Method (drafter, re-derived, not copied): every definition read at 3d6995990; a token scan of signature + body (comments and strings blanked, ./-> member tokens excluded; a tokenizer separate from scoped_plan) gives DECL and every use line; roles read from the code; every comment in the definition or the 15 lines above that names the old token extracted and swapped by the pair word alone; FRESH by token scan of the function plus git grep -n -w <new> -- src include (and a col-0 / #define check); scoped_plan run read-only from a scratch script (dry.txt).
+Result: 19 research rows, 0 dropped, 19 kept (13 RENAME, 6 RESET; 102 substitutions; each pair alone equals its USES count, all 19 together accepted, 102 = sum of the alone counts). All 19 USES counts equal the research counts (the scan line lists equal the research line lists); the runs modified no file in the worktree.
+
+ROWS (13 RENAME, 6 RESET)
+RENAME
+- math_TestPreparedTriangleSphere:dist=circle_radius_sq (9)
+- gpu_BuildFogImageLevels:r_src=red (8), :g_src=green_work (6)  [plain green is taken by the masked field at 2B344.c:1667; fallback in the row]
+- gpu_DrawModeSizedPanelWithSelectedCellOpaque:mode_off=dr_mode (5)
+- end_off=end_addr in nine 4D0A8.c functions: DrawTimeFieldsAndDecimalCounter 3, DrawTwoDigitCounterWithOptionalSecondSide 3, DrawPackedComparisonRowsAndTotals 3, DrawPairedMarkRowsAndTimeFields 3, DrawImageAndAdvanceSplitWipe 3, DrawOneOrTwoDigitValueAndDigitCountShiftedSprite 2, DrawSpriteAtPackedTablePosition 3, DrawFixedSpriteCellsStretchedQuadAndRedTintedCells 3, DrawIndexedCellsDigitPairsAndGrowingBars 3 (all gpu_ prefixed)
+RESET (two roles each)
+- math_TestPreparedTriangleSphere:flag=arg0 (5, parameter 0)
+- math_TryPrepareTriangleNormalFrame:dist=var_3 (9)
+- fighter_InitCpuControl:hi2_val=var_18 (7)
+- fighter_UpdateInputSteeredForwardMotion:sub_result=var_5 (5)
+- softbody_SolveSprings:thresh=var_4 (16)
+- slot_BlendTwoPosesIntoNodeMatrices:offset=var_6 (6)
+Neutral spelling: parameter -> arg<index> (0-based); local -> var_<n>, n = 0-based position among the function local declarations in source order, parameters not counted (as audit-1 confirmed); each position and its free-ness is in the row.
+
+NO_NAME (not in pairs.txt; 2 bindings)
+- eff_DrawAndAdvanceRotatedQuadClusters:prim (51268.c:951, 33 uses; role RESET var_9) and eff_DrawYawedSlotQuads:prim (51268.c:1454, 25 uses; role RESET var_6): scoped_plan refuses both (re-run here): "src/main/51268.c: prim is an argument of function-like macro setlen, whose body names a macro or a member/tag/label/brace token" (setlen, include/psxsdk/libgpu.h:29). Macro-argument class, parked on wip/keycheck-macro-args. Both are two-role (work-area base, then the quad cursor): future RESETs once the tooling releases them. Their comment edits (carried from the research, FAKE and plain comments at 51268.c:961-966, 1068-1070, 1460-1467, 1547-1549, prim -> var_9 / var_6 by the pair word) wait for that wave and are NOT part of this apply. Their use counts (33 / 25) are the research counts, not re-derived here beyond the refusal and the declaration positions (prim is local 9 / 6).
+
+DROPPED: none.
+
+R6 WATCH (comments / width; line numbers at 3d6995990; pair word alone, Q133; the apply must make exactly these 20 comment-line edits, every one inside a FAKE comment)
+17AFC.c (4 lines)
+- 3053 (comment 3053-3056, "breaks the m == dist") dist -> circle_radius_sq; 3055 ("not dist (s1), as in math_TestSegmentCircle2D") dist -> circle_radius_sq.
+- 3026 (comment 3025-3027, the finished flag parameter) flag -> arg0.
+- 3124 (comment 3124-3126, staged through dist) dist -> var_3.
+2B344.c (2 lines)
+- 1599 (function header FAKE inventory, comment 1592-1600): r_src / g_src -> red / green_work.
+- 1672 (comment 1672-1675): r_src / g_src -> red / green_work.
+4510C.c (1 line)
+- 429 (comment 428-432): hi2_val -> var_18.
+9F9C.c (1 line)
+- 4427 (comment 4426-4428): sub_result -> var_5 (in backticks in the source).
+87A0.c (1 line, two tokens)
+- 203 (comment 202-204): thresh so it shares thresh's register -> var_4 so it shares var_4's register.
+31548.c (1 line)
+- 213 (comment 213-214): offset becomes -> var_6 becomes.
+4D0A8.c (10 lines)
+- 60 (comment 59-63): mode_off -> dr_mode.
+- 483, 651, 809, 1097, 1356, 1471, 1555, 1597, 1685 (the "(end_off - argN)" line of each FAKE; comments 482-484, 650-652, 808-810, 1096-1098, 1355-1357, 1470-1472, 1554-1556, 1596-1598, 1684-1686): end_off -> end_addr.
+Total 4 + 2 + 1 + 1 + 1 + 1 + 10 = 20 lines. The comment scan found every comment naming an old token in the definitions and the 15 lines above them; all are FAKE comments, no plain comment names an old token. The claim and reason of each stay true after the swap (the flag parameter is still the finished parameter unread after the mode test; end_addr - argN is still the chunk end minus its start).
+Line width (80 columns; python tools/format.py re-wraps, token-preserving): the only lines over 80 after the swaps are 17AFC.c:3053 (73 -> 85) and 17AFC.c:3055 (80 -> 92); format.py re-wraps that comment. Lines that change but stay within 80: 2B344.c:1599 (75 -> 78), 2B344.c:1672 (76 -> 79), 87A0.c:203 (78 -> 76), 17AFC.c:3124 (72 -> 73), the nine 4D0A8.c end_off lines (+1 each, 67 -> 68; 1685 is 50 -> 51), and all code use lines (checked: none over 80; 17AFC.c:3075 / 3082 / 3086 gain 12 columns and stay under 80). Re-point any line cite against the base after format.py.
+STAYS UNCHANGED
+- 17AFC.c:2581 prototype extern s32 math_TestPreparedTriangleSphere(s32 flag, ...): prototype parameter names are not f:l targets (Q119); likewise 17AFC.c:2577 (math_TestSphereAgainstPreparedAxialVertexSpan has its own flag) and 17AFC.c:2974-2978 (a local flag of another function).
+- Dated history: docs/grind/borderline.md:195-198 and docs/grind/owner-rulings-2026-09-26.md:789 quote end_off; memory/grind/** ledgers and layer2 verdict json cite end_off; docs/foundation/backlog.tsv and docs/naming/phase3/backlog.tsv are bookkeeping.
+- NEW vs the research: .claude/rules/ordinary-c-judge-decidable.md:94 (Q77) quotes "end_off = arg2 + 0x4F0; size = end_off - arg2;" as the REJECTED sibling candidate for gpu_DrawModeSizedPanelWithSelectedCellOpaque. It is dated ruling text (a spelling that was rejected, not a live identifier in code); the apply should leave it unedited (rules are outside an identifier-only wave). Flag it to the reviewer.
+- Live registries / headers: symbol_addrs.txt, named_syms.txt, include/**, docs/engine/*.md hold none of the old tokens (grep of hi2_val, sub_result, r_src, g_src, mode_off: only the definitions; end_off: only the files above).
+- engine/volatile_cheats.py:809 keys the gpu_DrawPackedComparisonRowsAndTotals pad row by shape (commit 428910063), not by a local name, so end_off there touches no allowlist.
+- Plain comment 2B344.c:1668-1669 (the source blue, weighted, then blended in place) names no old token: stays.
