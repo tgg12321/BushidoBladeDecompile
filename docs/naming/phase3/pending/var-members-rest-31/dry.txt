@@ -1,0 +1,27 @@
+PASS Unk8006919CRec.unk_34=sheets_over_flat_quads, Unk80076FF8Rec.unk_38=sheets_over_flat_quads
+decl Unk8006919CRec.unk_34 -> sheets_over_flat_quads  include/game.h:2555
+decl Unk80076FF8Rec.unk_38 -> sheets_over_flat_quads  include/game.h:374
+  round 0: 2 member error line(s)
+    src/main/596CC.c:555 unk_34 x1
+    src/main/63D2C.c:307 unk_38 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -374 +374 @@
+-    Unk8009B0E0Record **unk_38;
++    Unk8009B0E0Record **sheets_over_flat_quads;
+@@ -2555 +2555 @@
+-    Unk8009B0E0Record **unk_34;
++    Unk8009B0E0Record **sheets_over_flat_quads;
+--- a/src/main/596CC.c
++++ b/src/main/596CC.c
+@@ -555 +555 @@
+-    sheet_headers = ((Unk8006919CRec *)draw_context[1])->unk_34;
++    sheet_headers = ((Unk8006919CRec *)draw_context[1])->sheets_over_flat_quads;
+--- a/src/main/63D2C.c
++++ b/src/main/63D2C.c
+@@ -307 +307 @@
+-    sheet_headers = draw_context->resource_root.v80076FF8->unk_38;
++    sheet_headers = draw_context->resource_root.v80076FF8->sheets_over_flat_quads;
+DRY RUN: 3 file(s) would change; nothing written
+OK: every member access renamed

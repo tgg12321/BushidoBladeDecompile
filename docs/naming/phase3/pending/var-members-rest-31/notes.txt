@@ -1,0 +1,34 @@
+var-members-rest-31 -- draft notes (research: tmp/codex/var-members-rest-31-research.md, hints only; re-derived at ec18c55c0 with git grep -nw over src include tools asm and a line-by-line read of 596CC.c:500-625, 631-673 and 63D2C.c:283-365).
+
+BASIS: 2 RENAME rows sharing one name: Unk8006919CRec.unk_34 and Unk80076FF8Rec.unk_38 -> sheets_over_flat_quads. Same layering form as the landed sibling Unk8006919CRec.unk_14 = sheets_over_white_tile (rest-29): the sheets list is drawn over a set of opaque flat quads, by OT order. The two rows stand or fall together; if a reviewer rejects OT-order 'over' or the shared name, drop both.
+
+RE-DERIVATION:
+- Uses (git grep -nw): unk_34 -> include/game.h:2555 (decl) and src/main/596CC.c:555 only (unk_34E/unk_34F, game.h:1793-1794, are other members). unk_38 -> include/game.h:374 (decl), game.h:360 (comment) and src/main/63D2C.c:307 only. No access in asm/ by member name (asm/funcs/*.s only jal to the two draw functions, which are C in src). Both are R-only, one reader each; the generic relocation (596CC.c:192-199 twelve-slot run; 64FD8.c menu_RelocateSelLists) gives no role.
+- Reader 1: 596CC.c gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads (:500): mode tiles at ot+0x11 (:519-548), sheets [0..2] at s.ot_idx 0x12, s.x=s.y=0 (:551-567), DR_MODE with [0]'s tpage at ot+0x12 (:569-574), three POLY_F4 (SetSemiTrans 0) at ot+0x13 (:576-617). Callers 596CC.c:369, 1493, 1754, 2262, 2373, 2601.
+- Reader 2: 63D2C.c gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads (:283): optional phase-0 TILE (0x3F,0x30,0x202,0xB0) at ot+0x1E (:291-302), sheets [0..2] at ot_idx 0x1F (:304-315), DR_MODE [0] tpage at ot+0x1F (:317-320), three POLY_F4 at ot+0x20 (:322-362). One C caller, 64FD8.c:1285 (plus asm menu_RunSelPhases).
+- Same three quads: compared coordinate by coordinate, identical in both: (0,0xB9)(0x122,0)(0,0xEF)(0x122,0xEF); (0x15E,0)(0x27F,0)(0x15E,0xEF)(0x27F,0x36); (0x122,0)(0x15E,0)(0x122,0xEF)(0x15E,0xEF). Both opaque (SetSemiTrans 0), colour from gpu_SetPolyF4RgbFromBlockFlag. Both sheet loops read exactly [0..2]; the tpage mode comes from [0].
+- OT order: the menu OT is ClearOTagR(g_gpu_ot_ptr, 0x1008) (64FD8.c:1186, 1772, 1882; 5ED34.c:68) and the frame is drawn from the top end (6CF8.c:371 DrawOTag(&ot[0x1007])), so a higher index is drawn earlier: quads (0x13 / 0x20) are drawn first, the sheets (0x12 / 0x1F) over them, the tile (0x11 / 0x1E) over the sheets. AddPrim prepends within a bucket, so the DR_MODE added after the sprites runs before them. Limit: I did not trace which DrawOTag call consumes the OT in the 64FD8/596CC screens (the only DrawOTag(&..ot[0x1007]) sites in src are 6CF8.c:371, 507); the claim rests on ClearOTagR(..., 0x1008) plus the precedent's accepted reading, and is layering only, not screen geometry.
+- FRESH: git grep -nw sheets_over_flat_quads over src include tools asm docs = 0 hits (before this draft); in no docs/naming/phase3/pending/*/pairs.txt; not a type, macro or keyword.
+- Rows kept: 2. Rows dropped: 0.
+
+PRECEDENT CHECK (Unk8006919CRec.unk_14 = sheets_over_white_tile, 596CC.c:631-673): gpu_DrawWhiteTileAndSheets draws a full-screen white 640x240 TILE at ot+0x14, a DR_MODE from [0] at ot+0x11, then [0..2] at ot_idx 0x10, s.x=s.y=0. Sheets (0x10) over the tile (0x14) under the reversed OT. The analogy holds structurally: same call shape (three sheets at origin, DR_MODE from [0], opaque flat prims in higher buckets, so beneath). Differences: there the underlay is one TILE and the DR_MODE sits one bucket above the sheets; here the underlay is three POLY_F4 and the DR_MODE shares the sheets' bucket. The precedent's reader is dead code (no caller); these two readers are live (callers above), so the evidence is a little stronger, but the same limits apply: only [0..2] are read, list length unshown, no screen identity.
+
+COUNTER: (1) only [0..2] read; the name claims the sheets that sit over the quads, not the list's full contents; (2) 'over' is OT order, not checked against screen geometry; (3) the name is shared across two screens' resource roots (MOD.BIN root and D_SEL.BIN root), justified because the reader sequence and the quad rectangles are identical; rest-21/22/26 'three sheets at origin, no role evidence' is answered by naming only the layering. Fallback NO_NAME for both.
+
+NO_NAME rows carried from the research (not re-derived, not drafted):
+- Unk8006D808Rec.unk_00: [0..2] at x=y=0 (596CC.c:2404, 2406, 2411), DR_MODE from [0]; no layered primitive beneath; rest-12/13 objection stands.
+- Unk8006919CRec.unk_1C: one list indexed by five unrelated drawers (596CC.c:700, 778, 845, 862, 931); no single role.
+- Unk80076FF8Rec.unk_14 / unk_1C / unk_30: multi-role / argument-indexed / tied to multi-role SelWork.f3C (64FD8.c); rest-21/22/26 stand.
+- Unk80101E60Rec.unk3E: write-only wait tally (cdrom.c:25, 63, 73).
+- Unk80045878Obj.unk_18F4: permuted &transform_nodes[k].node.xf.mat (309CC.c:369-388); rest-11/22 stand.
+- SPRT-array members of Unk8005C8A8Rec/Unk8005D814Rec/Unk8005E54CRec/Unk8005FC9CRec/Unk800600C8Rec/Unk80060544Rec: reached only via cursor + sizeof, never by member access (rest-13).
+- Unk8005C8A8Rec.unk_4E4 / Unk80060414Rec.unk_20 / Unk80060544Rec.unk_5E8: tail padding, never written.
+
+COMMENT PASS:
+- include/game.h:360 ' * unk_14..unk_38, the ten lists menu_RelocateSelLists relocates, each a list of' cites the old member; it must become ' * unk_14..sheets_over_flat_quads, the ten lists menu_RelocateSelLists relocates, ...' and be reflowed to 80 columns (rewrap game.h:360-364). The leading unk_14 stays (Unk80076FF8Rec.unk_14 remains NO_NAME).
+- include/game.h:2532 names the range ends only (sheets_over_white_tile..cursor_row_sheets); unk_34 is inside the range and not cited: no edit.
+- No other comment names unk_34 / unk_38: git grep over src include tools asm and docs/formats, docs/engine, symbol_addrs.txt found only the lines above. Other unk_34 spellings (unk_34E/unk_34F) belong to other types: leave.
+
+LAND claim list: topic:type:Unk8006919CRec topic:type:Unk80076FF8Rec topic:tu:main/596CC topic:tu:main/63D2C (+ include/game.h). The compiled dry run (dry.txt; run in WSL because tools/naming_member_apply.py needs the mipsel cpp and cc1, the Windows PowerShell run fails with FileNotFoundError on cpp) touches include/game.h (:374, :2555), src/main/596CC.c (:555), src/main/63D2C.c (:307): PASS, round 0 two member-error lines, round 1 zero.
+
+FORMAT: run python tools/format.py on src/main/596CC.c and src/main/63D2C.c after applying: the longer name overflows 80 columns at 596CC.c:555 and 63D2C.c:307. Token-preserving, so no byte or layer-2 key change.
