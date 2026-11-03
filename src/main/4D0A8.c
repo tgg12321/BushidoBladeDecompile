@@ -18,13 +18,13 @@
  * order (Q65). */
 static s32 g_gpu_jitter_random_state;
 
-extern Unk8009B400Record D_8009B194[3];
-extern Unk8009B400Record D_8009B1AC[2];
-extern Unk8009B400Record D_8009B1BC[2];
+extern Unk8009B400Record g_gpu_mode_panel_pause_title_cells[3];
+extern Unk8009B400Record g_gpu_mode_panel_continue_cells[2];
+extern Unk8009B400Record g_gpu_mode_panel_rematch_cells[2];
 extern Unk8009B400Record D_8009B20C[6];
-extern Unk8009B400Record D_8009B23C[12];
-extern Unk8009B400Record D_8009B29C[2];
-extern Unk8009B400Record *D_8009B2AC[4];
+extern Unk8009B400Record g_gpu_mode_panel_toggle_row_label_cells[12];
+extern Unk8009B400Record g_gpu_mode_panel_toggle_state_cells[2];
+extern Unk8009B400Record *g_gpu_mode_panel_menu_item_cell_tables[4];
 /* AddPrim has no prototype here: this TU called it as an implicit-int function.
  * With PsyQ's void AddPrim(void *, void *),
  * gpu_DrawIndexedCellsDigitPairsAndGrowingBars's return value is computed after
@@ -71,15 +71,17 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
     switch (mode) {
     case 2:
         s.header = &g_gpu_mode_panel_sheet_headers[2];
-        s.table = D_8009B184;
+        s.table = g_gpu_mode_panel_divider_end_cells;
         y_base = 0x33;
         s.y = top + 0x73;
         s.x = 0;
         s.semi = 0;
         s.sprt_out = cur;
         s.ot_idx = ot_index;
-        D_8009B184[0].x = (0x280 - g_panel_frame_sizes[2].w) / 2;
-        D_8009B184[1].x = (g_panel_frame_sizes[2].w + 0x280) / 2 - 0xC;
+        g_gpu_mode_panel_divider_end_cells[0].x =
+            (0x280 - g_panel_frame_sizes[2].w) / 2;
+        g_gpu_mode_panel_divider_end_cells[1].x =
+            (g_panel_frame_sizes[2].w + 0x280) / 2 - 0xC;
         cur = gpu_AddSpriteCells(&s);
         s.header = &g_gpu_mode_panel_sheet_headers[8];
         s.table = D_8009B20C;
@@ -94,8 +96,9 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
             } else {
                 s.semi = 1;
             }
-            s.header = &D_8009B14C;
-            s.table = &D_8009B23C[j * s.header->count];
+            s.header = &g_gpu_mode_panel_toggle_row_label_sheet_header;
+            s.table =
+                &g_gpu_mode_panel_toggle_row_label_cells[j * s.header->count];
             s.x = 0;
             s.y = 0;
             s.sprt_out = cur;
@@ -107,8 +110,8 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
                 } else {
                     s.semi = 1;
                 }
-                s.header = &D_8009B158;
-                s.table = &D_8009B29C[i];
+                s.header = &g_gpu_mode_panel_toggle_state_sheet_header;
+                s.table = &g_gpu_mode_panel_toggle_state_cells[i];
                 s.x = 0;
                 s.y = j * 15;
                 s.sprt_out = cur;
@@ -142,7 +145,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
         } else {
             s.semi = 1;
         }
-        s.table = D_8009B1AC;
+        s.table = g_gpu_mode_panel_continue_cells;
         s.header = &g_gpu_mode_panel_sheet_headers[4];
         s.x = 0;
         s.sprt_out = cur;
@@ -151,7 +154,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
         cur = gpu_AddSpriteCells(&s);
         s.header = &g_gpu_mode_panel_sheet_headers[3];
         s.has_color = 0;
-        s.table = D_8009B194;
+        s.table = g_gpu_mode_panel_pause_title_cells;
         s.x = 0;
         s.y = top;
         s.semi = 0;
@@ -160,14 +163,16 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
         cur = gpu_AddSpriteCells(&s);
         top += 0xE;
         s.header = &g_gpu_mode_panel_sheet_headers[2];
-        s.table = D_8009B184;
+        s.table = g_gpu_mode_panel_divider_end_cells;
         s.x = 0;
         s.y = top;
         s.semi = 0;
         s.sprt_out = cur;
         s.ot_idx = ot_index;
-        D_8009B184[0].x = (0x280 - g_panel_frame_sizes[mode].w) / 2;
-        D_8009B184[1].x = (g_panel_frame_sizes[mode].w + 0x280) / 2 - 0xC;
+        g_gpu_mode_panel_divider_end_cells[0].x =
+            (0x280 - g_panel_frame_sizes[mode].w) / 2;
+        g_gpu_mode_panel_divider_end_cells[1].x =
+            (g_panel_frame_sizes[mode].w + 0x280) / 2 - 0xC;
         cur = gpu_AddSpriteCells(&s);
         for (i = 0; i < 2; i++) {
             SetTile(tile);
@@ -196,7 +201,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
             s.semi = 1;
         }
         s.header = &g_gpu_mode_panel_sheet_headers[5];
-        s.table = D_8009B1BC;
+        s.table = g_gpu_mode_panel_rematch_cells;
         s.x = 0;
         s.y = top;
         s.sprt_out = cur;
@@ -213,7 +218,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
             s.semi = 1;
         }
         s.header = &g_gpu_mode_panel_sheet_headers[4 + j];
-        s.table = D_8009B2AC[j];
+        s.table = g_gpu_mode_panel_menu_item_cell_tables[j];
         s.x = 0;
         s.y = y_base + top;
         s.sprt_out = cur;
@@ -223,21 +228,25 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
 
     s.has_color = 0;
     s.header = &g_gpu_mode_panel_sheet_headers[0];
-    s.table = D_8009B164[0];
+    s.table = g_gpu_mode_panel_corner_cells[0];
     s.x = 0;
     s.y = (0xF0 - g_panel_frame_sizes[mode].h) / 2;
     s.semi = 0;
     s.sprt_out = cur;
     s.ot_idx = ot_index;
-    D_8009B164[0][0].x = (0x280 - g_panel_frame_sizes[mode].w) / 2;
-    D_8009B164[0][1].x = (g_panel_frame_sizes[mode].w + 0x280) / 2 - 0xC;
+    g_gpu_mode_panel_corner_cells[0][0].x =
+        (0x280 - g_panel_frame_sizes[mode].w) / 2;
+    g_gpu_mode_panel_corner_cells[0][1].x =
+        (g_panel_frame_sizes[mode].w + 0x280) / 2 - 0xC;
     cur = gpu_AddSpriteCells(&s);
     s.header = &g_gpu_mode_panel_sheet_headers[1];
-    s.table = D_8009B164[1];
+    s.table = g_gpu_mode_panel_corner_cells[1];
     s.y = (g_panel_frame_sizes[mode].h + 0xF0) / 2;
     s.sprt_out = cur;
-    D_8009B164[1][0].x = (0x280 - g_panel_frame_sizes[mode].w) / 2;
-    D_8009B164[1][1].x = (g_panel_frame_sizes[mode].w + 0x280) / 2 - 0xC;
+    g_gpu_mode_panel_corner_cells[1][0].x =
+        (0x280 - g_panel_frame_sizes[mode].w) / 2;
+    g_gpu_mode_panel_corner_cells[1][1].x =
+        (g_panel_frame_sizes[mode].w + 0x280) / 2 - 0xC;
     gpu_AddSpriteCells(&s);
 
     for (j = 0; j < 2; j++) {
@@ -758,10 +767,10 @@ s32 gpu_DrawDecrementedSingleSideCounter(
 extern Unk8009B0E0Record D_8009ADB4;
 extern Unk8009B400Record D_8009ADC0[3];
 extern Unk8009B400Record D_8009ADD8[][3];
-extern Unk8009B0E0Record D_8009B4B0;
+extern Unk8009B0E0Record g_gpu_comparison_unrecorded_match_sheet_header;
 extern Unk8009B400Record g_gpu_comparison_unrecorded_match_cells[5];
-extern Unk8009B0E0Record D_8009B4E4;
-extern Unk8009B0E0Record D_8009B4F0;
+extern Unk8009B0E0Record g_gpu_comparison_score_and_center_sheet_header;
+extern Unk8009B0E0Record g_gpu_comparison_score_mark_sheet_header;
 extern Unk8009B400Record g_gpu_comparison_higher_score_cell;
 extern Unk8009B400Record g_gpu_comparison_lower_score_cell;
 extern Unk8009B400Record g_gpu_comparison_equal_score_cell;
@@ -775,7 +784,7 @@ extern Unk8009B400Record D_8009B554[3];
 extern Unk8009B400Record D_8009B56C[2];
 extern Unk8009B400Record D_8009B57C[2];
 extern u8 D_8009B58C[];
-extern u8 D_800A3270[];
+extern u8 g_gpu_comparison_unrecorded_match_cell_indices[];
 
 s32 gpu_DrawPackedComparisonRowsAndTotals(
     u32 packed_row_values, s32 arg1, s32 ot_index) {
@@ -856,14 +865,15 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
             s.y = i * 34 + 0x4F;
         }
         if (var_1[0] == 3 || var_1[1] == 3) {
-            s.header = &D_8009B4B0;
+            s.header = &g_gpu_comparison_unrecorded_match_sheet_header;
             s.x = 0;
             s.y += 2;
-            s.table = &g_gpu_comparison_unrecorded_match_cells[D_800A3270[i]];
+            s.table = &g_gpu_comparison_unrecorded_match_cells
+                          [g_gpu_comparison_unrecorded_match_cell_indices[i]];
             s.sprt_out = cur;
             cur = gpu_AddSpriteCells(&s);
         } else {
-            s.header = &D_8009B4E4;
+            s.header = &g_gpu_comparison_score_and_center_sheet_header;
             s.x = 0;
             s.table = &g_gpu_comparison_center_cell;
             s.sprt_out = cur;
@@ -882,7 +892,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
             }
             s.y += 5;
             for (j = 0; j < 2; j++) {
-                s.header = &D_8009B4F0;
+                s.header = &g_gpu_comparison_score_mark_sheet_header;
                 s.table = &g_gpu_comparison_score_mark_cell;
                 for (k = 0; k < var_1[j]; k++) {
                     if (j) {
@@ -897,7 +907,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
         }
     }
 
-    s.header = &D_8009B4E4;
+    s.header = &g_gpu_comparison_score_and_center_sheet_header;
     s.x = 0;
     if (g_working_record.match_count_index == 2) {
         totals_y = 0xC6;
@@ -923,7 +933,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
         }
     }
     for (j = 0; j < 2; j++) {
-        s.header = &D_8009B4F0;
+        s.header = &g_gpu_comparison_score_mark_sheet_header;
         s.table = &g_gpu_comparison_score_mark_cell;
         for (k = 0; k < var_1[j]; k++) {
             if (j) {
@@ -1577,7 +1587,7 @@ extern Unk8009B400Record D_8009B7D0;
 extern Unk8009B400Record D_8009B7D8[5];
 extern Unk8009B400Record D_8009B800[4];
 extern Unk8009B400Record D_8009B820[4];
-extern Unk8009B400Record D_8009B840[2];
+extern Unk8009B400Record g_gpu_red_tinted_line_segment_cells[2];
 
 s32 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells(
     s32 arg0, s32 ot_index) {
@@ -1633,7 +1643,7 @@ s32 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells(
     s.sprt_out = cur;
     cur = gpu_AddSpriteCells(&s);
     tinted_draw_count = 0;
-    p1 = D_8009B840;
+    p1 = g_gpu_red_tinted_line_segment_cells;
     p0 = &g_gpu_digit_label_and_line_segment_sheet_headers[2];
     s.col_r = 0xFF;
     s.col_b = 0x10;
@@ -1925,41 +1935,43 @@ Unk8009B0E0Record g_gpu_mode_panel_sheet_headers[9] = {
     {0x1F, 0x00, 4, 0x00, 0x3E0, 0x1FC, 0x0, 0x0},
     {0x1F, 0x00, 6, 0x00, 0x3E0, 0x1FC, 0x0, 0x0},
 };
-Unk8009B0E0Record D_8009B14C = {0x1F, 0x00, 4, 0x00, 0x3E0, 0x1FC, 0x0, 0x0};
-Unk8009B0E0Record D_8009B158 = {0x1F, 0x00, 1, 0x00, 0x3C0, 0x1FF, 0x0, 0x0};
+Unk8009B0E0Record g_gpu_mode_panel_toggle_row_label_sheet_header = {
+    0x1F, 0x00, 4, 0x00, 0x3E0, 0x1FC, 0x0, 0x0};
+Unk8009B0E0Record g_gpu_mode_panel_toggle_state_sheet_header = {
+    0x1F, 0x00, 1, 0x00, 0x3C0, 0x1FF, 0x0, 0x0};
 
 /* gpu_DrawModeSizedPanelWithSelectedCellOpaque's cell tables D_8009B164 /
  * D_8009B184 .. D_8009B29C; D_8009B2AC, the cell-table pointers it picks by j
  * (D_8009B1AC twice, D_8009B1CC, D_8009B1EC; the last two have no other
  * reader); g_panel_frame_sizes, the frame sizes per mode. */
-Unk8009B400Record D_8009B164[2][2] = {
+Unk8009B400Record g_gpu_mode_panel_corner_cells[2][2] = {
     {{0, 0, 0x00, 0x00, 0x10, 0x06}, {0, 0, 0x10, 0x00, 0x10, 0x06}},
     {{0, -6, 0x00, 0x00, 0x10, 0x08}, {0, -6, 0x10, 0x00, 0x10, 0x08}},
 };
-Unk8009B400Record D_8009B184[2] = {
+Unk8009B400Record g_gpu_mode_panel_divider_end_cells[2] = {
     {0, -4, 0x00, 0x00, 0x10, 0x0A},
     {0, -4, 0x10, 0x00, 0x10, 0x0A},
 };
-Unk8009B400Record D_8009B194[3] = {
+Unk8009B400Record g_gpu_mode_panel_pause_title_cells[3] = {
     {247, 3, 0x00, 0x00, 0x40, 0x0C},
     {311, 3, 0x40, 0x00, 0x40, 0x0C},
     {375, 3, 0x80, 0x00, 0x14, 0x0C},
 };
-Unk8009B400Record D_8009B1AC[2] = {
+Unk8009B400Record g_gpu_mode_panel_continue_cells[2] = {
     {265, 18, 0x00, 0x00, 0x40, 0x0C},
     {329, 18, 0x40, 0x00, 0x2D, 0x0C},
 };
-Unk8009B400Record D_8009B1BC[2] = {
+Unk8009B400Record g_gpu_mode_panel_rematch_cells[2] = {
     {266, 4, 0x00, 0x00, 0x40, 0x0C},
     {330, 4, 0x40, 0x00, 0x2B, 0x0C},
 };
-Unk8009B400Record D_8009B1CC[4] = {
+Unk8009B400Record g_gpu_mode_panel_return_to_sub_menu_cells[4] = {
     {200, 19, 0x00, 0x5D, 0x40, 0x0C},
     {264, 19, 0x40, 0x5D, 0x35, 0x0C},
     {317, 19, 0x00, 0x6A, 0x39, 0x0C},
     {374, 19, 0xA9, 0x5D, 0x41, 0x0C},
 };
-Unk8009B400Record D_8009B1EC[4] = {
+Unk8009B400Record g_gpu_mode_panel_return_to_top_menu_cells[4] = {
     {203, 34, 0x00, 0x5D, 0x40, 0x0C},
     {267, 34, 0x40, 0x5D, 0x40, 0x0C},
     {331, 34, 0x80, 0x5D, 0x40, 0x0C},
@@ -1970,7 +1982,7 @@ Unk8009B400Record D_8009B20C[6] = {
     {415, 165, 0x00, 0xA9, 0x42, 0x0D}, {182, 178, 0x00, 0xB6, 0xC0, 0x0D},
     {374, 178, 0xC0, 0xB6, 0x40, 0x0D}, {438, 178, 0x00, 0xC3, 0x13, 0x0D},
 };
-Unk8009B400Record D_8009B23C[12] = {
+Unk8009B400Record g_gpu_mode_panel_toggle_row_label_cells[12] = {
     {180, 64, 0x00, 0x8F, 0x40, 0x0C}, {244, 64, 0x40, 0x8F, 0x18, 0x0C},
     {284, 64, 0x4E, 0xA9, 0x32, 0x0C}, {334, 64, 0x80, 0xA9, 0x1A, 0x0C},
     {180, 79, 0x5B, 0x8F, 0x40, 0x0C}, {244, 79, 0x9B, 0x8F, 0x28, 0x0C},
@@ -1978,15 +1990,15 @@ Unk8009B400Record D_8009B23C[12] = {
     {180, 94, 0x9C, 0xA9, 0x0C, 0x0D}, {192, 94, 0xA8, 0xA9, 0x0C, 0x0D},
     {204, 94, 0xB4, 0xA9, 0x0C, 0x0D}, {216, 94, 0xC0, 0xA9, 0x1D, 0x0D},
 };
-Unk8009B400Record D_8009B29C[2] = {
+Unk8009B400Record g_gpu_mode_panel_toggle_state_cells[2] = {
     {430, 63, 0xDC, 0x2A, 0x1E, 0x0C},
     {380, 63, 0xC0, 0x2A, 0x1C, 0x0C},
 };
-Unk8009B400Record *D_8009B2AC[4] = {
-    D_8009B1AC,
-    D_8009B1AC,
-    D_8009B1CC,
-    D_8009B1EC,
+Unk8009B400Record *g_gpu_mode_panel_menu_item_cell_tables[4] = {
+    g_gpu_mode_panel_continue_cells,
+    g_gpu_mode_panel_continue_cells,
+    g_gpu_mode_panel_return_to_sub_menu_cells,
+    g_gpu_mode_panel_return_to_top_menu_cells,
 };
 Unk8009B2BCRecord g_panel_frame_sizes[3] = {
     {258, 65},
@@ -2057,7 +2069,7 @@ Unk8009B400Record g_gpu_decimal_digit_cells[10] = {
  * file's by layout, between its gp-reached objects (Q80) */
 Unk8009B400Record D_800A3264 = {0xB3, 0x4E, 0x00, 0x00, 0x18, 0x0C};
 s32 g_gpu_jittered_quad_pair_cycle = 0;
-u8 D_800A3270[8] = {0, 1, 2, 3, 4, 0, 0, 0};
+u8 g_gpu_comparison_unrecorded_match_cell_indices[8] = {0, 1, 2, 3, 4, 0, 0, 0};
 s32 g_gpu_split_wipe_frame = 0;
 RECT D_800A327C = {0x380, 0, 0x40, 0x100};
 RECT D_800A3284 = {0x3E0, 0x1FF, 0x10, 1};

@@ -151,8 +151,8 @@ glabel gpu_DrawPackedComparisonRowsAndTotals
     /* 4EF78 8005E778 17004314 */  bne        $v0, $v1, .L8005E7D8
     /* 4EF7C 8005E77C 2800A427 */   addiu     $a0, $sp, 0x28
   .L8005E780:
-    /* 4EF80 8005E780 0A80023C */  lui        $v0, %hi(D_8009B4B0)
-    /* 4EF84 8005E784 B0B44224 */  addiu      $v0, $v0, %lo(D_8009B4B0)
+    /* 4EF80 8005E780 0A80023C */  lui        $v0, %hi(g_gpu_comparison_unrecorded_match_sheet_header)
+    /* 4EF84 8005E784 B0B44224 */  addiu      $v0, $v0, %lo(g_gpu_comparison_unrecorded_match_sheet_header)
     /* 4EF88 8005E788 2800A2AF */  sw         $v0, 0x28($sp)
     /* 4EF8C 8005E78C 00141400 */  sll        $v0, $s4, 16
     /* 4EF90 8005E790 03140200 */  sra        $v0, $v0, 16
@@ -161,9 +161,9 @@ glabel gpu_DrawPackedComparisonRowsAndTotals
     /* 4EF9C 8005E79C 4000A0AF */  sw         $zero, 0x40($sp)
     /* 4EFA0 8005E7A0 02006324 */  addiu      $v1, $v1, 0x2
     /* 4EFA4 8005E7A4 4400A3AF */  sw         $v1, 0x44($sp)
-    /* 4EFA8 8005E7A8 0A80013C */  lui        $at, %hi(D_800A3270)
+    /* 4EFA8 8005E7A8 0A80013C */  lui        $at, %hi(g_gpu_comparison_unrecorded_match_cell_indices)
     /* 4EFAC 8005E7AC 21082200 */  addu       $at, $at, $v0
-    /* 4EFB0 8005E7B0 70322390 */  lbu        $v1, %lo(D_800A3270)($at)
+    /* 4EFB0 8005E7B0 70322390 */  lbu        $v1, %lo(g_gpu_comparison_unrecorded_match_cell_indices)($at)
     /* 4EFB4 8005E7B4 0A80023C */  lui        $v0, %hi(g_gpu_comparison_unrecorded_match_cells)
     /* 4EFB8 8005E7B8 BCB44224 */  addiu      $v0, $v0, %lo(g_gpu_comparison_unrecorded_match_cells)
     /* 4EFBC 8005E7BC 3000B2AF */  sw         $s2, 0x30($sp)
@@ -174,8 +174,8 @@ glabel gpu_DrawPackedComparisonRowsAndTotals
     /* 4EFD0 8005E7D0 657A0108 */  j          .L8005E994
     /* 4EFD4 8005E7D4 21904000 */   addu      $s2, $v0, $zero
   .L8005E7D8:
-    /* 4EFD8 8005E7D8 0A80023C */  lui        $v0, %hi(D_8009B4E4)
-    /* 4EFDC 8005E7DC E4B44224 */  addiu      $v0, $v0, %lo(D_8009B4E4)
+    /* 4EFD8 8005E7D8 0A80023C */  lui        $v0, %hi(g_gpu_comparison_score_and_center_sheet_header)
+    /* 4EFDC 8005E7DC E4B44224 */  addiu      $v0, $v0, %lo(g_gpu_comparison_score_and_center_sheet_header)
     /* 4EFE0 8005E7E0 2800A2AF */  sw         $v0, 0x28($sp)
     /* 4EFE4 8005E7E4 0A80023C */  lui        $v0, %hi(g_gpu_comparison_center_cell)
     /* 4EFE8 8005E7E8 14B54224 */  addiu      $v0, $v0, %lo(g_gpu_comparison_center_cell)
@@ -246,8 +246,8 @@ glabel gpu_DrawPackedComparisonRowsAndTotals
     /* 4F0D4 8005E8D4 4400A2AF */  sw         $v0, 0x44($sp)
   .L8005E8D8:
     /* 4F0D8 8005E8D8 00241100 */  sll        $a0, $s1, 16
-    /* 4F0DC 8005E8DC 0A80023C */  lui        $v0, %hi(D_8009B4F0)
-    /* 4F0E0 8005E8E0 F0B44224 */  addiu      $v0, $v0, %lo(D_8009B4F0)
+    /* 4F0DC 8005E8DC 0A80023C */  lui        $v0, %hi(g_gpu_comparison_score_mark_sheet_header)
+    /* 4F0E0 8005E8E0 F0B44224 */  addiu      $v0, $v0, %lo(g_gpu_comparison_score_mark_sheet_header)
     /* 4F0E4 8005E8E4 2800A2AF */  sw         $v0, 0x28($sp)
     /* 4F0E8 8005E8E8 0A80023C */  lui        $v0, %hi(g_gpu_comparison_score_mark_cell)
     /* 4F0EC 8005E8EC 1CB54224 */  addiu      $v0, $v0, %lo(g_gpu_comparison_score_mark_cell)
@@ -313,8 +313,8 @@ glabel gpu_DrawPackedComparisonRowsAndTotals
   .L8005E9C8:
     /* 4F1C8 8005E9C8 0A80023C */  lui        $v0, %hi(D_8009BD38)
     /* 4F1CC 8005E9CC 38BD428C */  lw         $v0, %lo(D_8009BD38)($v0)
-    /* 4F1D0 8005E9D0 0A80033C */  lui        $v1, %hi(D_8009B4E4)
-    /* 4F1D4 8005E9D4 E4B46324 */  addiu      $v1, $v1, %lo(D_8009B4E4)
+    /* 4F1D0 8005E9D0 0A80033C */  lui        $v1, %hi(g_gpu_comparison_score_and_center_sheet_header)
+    /* 4F1D4 8005E9D4 E4B46324 */  addiu      $v1, $v1, %lo(g_gpu_comparison_score_and_center_sheet_header)
     /* 4F1D8 8005E9D8 2800A3AF */  sw         $v1, 0x28($sp)
     /* 4F1DC 8005E9DC 000C4330 */  andi       $v1, $v0, 0xC00
     /* 4F1E0 8005E9E0 00080224 */  addiu      $v0, $zero, 0x800
@@ -384,8 +384,8 @@ glabel gpu_DrawPackedComparisonRowsAndTotals
     /* 4F2C8 8005EAC8 21A00002 */  addu       $s4, $s0, $zero
     /* 4F2CC 8005EACC 00241100 */  sll        $a0, $s1, 16
   .L8005EAD0:
-    /* 4F2D0 8005EAD0 0A80023C */  lui        $v0, %hi(D_8009B4F0)
-    /* 4F2D4 8005EAD4 F0B44224 */  addiu      $v0, $v0, %lo(D_8009B4F0)
+    /* 4F2D0 8005EAD0 0A80023C */  lui        $v0, %hi(g_gpu_comparison_score_mark_sheet_header)
+    /* 4F2D4 8005EAD4 F0B44224 */  addiu      $v0, $v0, %lo(g_gpu_comparison_score_mark_sheet_header)
     /* 4F2D8 8005EAD8 2800A2AF */  sw         $v0, 0x28($sp)
     /* 4F2DC 8005EADC 0A80023C */  lui        $v0, %hi(g_gpu_comparison_score_mark_cell)
     /* 4F2E0 8005EAE0 1CB54224 */  addiu      $v0, $v0, %lo(g_gpu_comparison_score_mark_cell)

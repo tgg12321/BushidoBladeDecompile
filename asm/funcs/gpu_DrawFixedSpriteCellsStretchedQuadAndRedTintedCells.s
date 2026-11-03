@@ -88,8 +88,8 @@ glabel gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
     /* 50E80 80060680 2000B3AF */   sw        $s3, 0x20($sp)
     /* 50E84 80060684 21984000 */  addu       $s3, $v0, $zero
     /* 50E88 80060688 21900000 */  addu       $s2, $zero, $zero
-    /* 50E8C 8006068C 0A80113C */  lui        $s1, %hi(D_8009B840)
-    /* 50E90 80060690 40B83126 */  addiu      $s1, $s1, %lo(D_8009B840)
+    /* 50E8C 8006068C 0A80113C */  lui        $s1, %hi(g_gpu_red_tinted_line_segment_cells)
+    /* 50E90 80060690 40B83126 */  addiu      $s1, $s1, %lo(g_gpu_red_tinted_line_segment_cells)
     /* 50E94 80060694 0A80103C */  lui        $s0, %hi(D_8009B3B0)
     /* 50E98 80060698 B0B31026 */  addiu      $s0, $s0, %lo(D_8009B3B0)
     /* 50E9C 8006069C FF000224 */  addiu      $v0, $zero, 0xFF

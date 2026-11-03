@@ -101,18 +101,18 @@ extern Unk8009B400Record g_gpu_paired_mark_line_segment_cells[2][2];
 extern Unk8009B400Record g_gpu_comparison_line_segment_cells[2][2];
 
 extern Unk8009B0E0Record g_gpu_mode_panel_sheet_headers[9];
-extern Unk8009B0E0Record D_8009B14C;
-extern Unk8009B0E0Record D_8009B158;
+extern Unk8009B0E0Record g_gpu_mode_panel_toggle_row_label_sheet_header;
+extern Unk8009B0E0Record g_gpu_mode_panel_toggle_state_sheet_header;
 
 /* 2 x 2 table of 8-byte sprite records;
  * gpu_DrawModeSizedPanelWithSelectedCellOpaque passes row 1 as the second
  * draw's cell table and stores column 1's x in each row. */
-extern Unk8009B400Record D_8009B164[2][2];
+extern Unk8009B400Record g_gpu_mode_panel_corner_cells[2][2];
 
 /* Two 8-byte sprite records, a cell table
  * gpu_DrawModeSizedPanelWithSelectedCellOpaque passes (the sheet header's count
  * is 2) after storing each record's x. */
-extern Unk8009B400Record D_8009B184[2];
+extern Unk8009B400Record g_gpu_mode_panel_divider_end_cells[2];
 
 /* One 8-byte sprite cell (x, y = 0, u, v = 0, w 0x14, h 0x0E), the cell
  * table gpu_DrawSpriteAtPackedTablePosition hands gpu_AddSpriteCells in its
