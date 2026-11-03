@@ -245,7 +245,7 @@ typedef struct {
 extern u8 g_vab_id_list[];
 
 s32 snd_ReloadListedVabsFromFileAndInstallBillboards(
-    s32 load_addr, s32 stage_index, s32 arg2, s32 arg3) {
+    s32 load_addr, s32 stage_index, s32 first_vab_class, s32 second_vab_class) {
     VabLoad vab_load;
     u8 *p;
     s32 base;
@@ -271,16 +271,16 @@ s32 snd_ReloadListedVabsFromFileAndInstallBillboards(
     eff_SetBillboardList(((s32 *)p)[12]);
     vab_count = 3;
     base = (s32)p;
-    if (arg2 == arg3) {
+    if (first_vab_class == second_vab_class) {
         vab_count = 2;
     }
     vab_load.ent[0].off = ((VabEnt *)p)[0].off;
     vab_load.ent[0].size = ((VabEnt *)p)[0].size;
-    vab_load.ent[1].off = ((VabEnt *)p)[arg2 + 1].off;
-    vab_load.ent[1].size = ((VabEnt *)p)[arg2 + 1].size;
+    vab_load.ent[1].off = ((VabEnt *)p)[first_vab_class + 1].off;
+    vab_load.ent[1].size = ((VabEnt *)p)[first_vab_class + 1].size;
     if (vab_count == 3) {
-        vab_load.ent[2].off = ((VabEnt *)p)[arg3 + 1].off;
-        vab_load.ent[2].size = ((VabEnt *)p)[arg3 + 1].size;
+        vab_load.ent[2].off = ((VabEnt *)p)[second_vab_class + 1].off;
+        vab_load.ent[2].size = ((VabEnt *)p)[second_vab_class + 1].size;
     }
     for (vab_list_index = 0; vab_list_index < vab_count; vab_list_index++) {
         vab_load.ent[vab_list_index].off += (s32)p;

@@ -247,13 +247,13 @@ void StepSlideProgressCommitPendingStateAndQueueSound(void);
 void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(Unk8006EACCRec *);
 
 s32 StepSlideBuildFrameRecordAndDispatchStateHandler(
-    s32 arg0, s32 pad_buttons) {
+    s32 held_buttons, s32 pad_buttons) {
     Unk8006EACCRec draw_context;
     Unk8006E49CRec *prim_buffer_record;
     s32 temp_v1;
 
     g_entry_menu_gpu_db = &g_gpu_db[g_gpu_presented_frame_count & 1];
-    g_entry_menu_held_buttons = arg0;
+    g_entry_menu_held_buttons = held_buttons;
     g_entry_menu_pressed_buttons = pad_buttons;
     if (g_entry_menu_mode == 2) {
         g_entry_menu_pressed_buttons = pad_buttons & 0xFFFF;

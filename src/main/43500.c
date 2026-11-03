@@ -773,8 +773,9 @@ INCLUDE_ASM("asm/funcs", func_800545F4);
 const char g_motion_playback_arena_shortfall_msg[28] =
     "Destruction tiny model.\n";
 
-s32 motion_StartPlayback(s32 playback_index, s32 start_pair, s32 a2, s32 a3,
-                         s32 a4, s32 a5, s32 dest_addr) {
+s32 motion_StartPlayback(
+    s32 playback_index, s32 start_pair, s32 first_weapon_entry_id,
+    s32 second_weapon_entry_id, s32 a4, s32 a5, s32 dest_addr) {
     Unk800EFAE8Rec *s = &g_motion_playback_record;
     s32 playback_file_id = playback_index + 0x131;
     s32 ret;
@@ -807,8 +808,8 @@ s32 motion_StartPlayback(s32 playback_index, s32 start_pair, s32 a2, s32 a3,
     s->origin_z = *start_position_cursor++;
     s->rotation_x = 0;
     s->rotation_z = 0;
-    s->weapon_entry_ids[0] = a2;
-    s->weapon_entry_ids[1] = a3;
+    s->weapon_entry_ids[0] = first_weapon_entry_id;
+    s->weapon_entry_ids[1] = second_weapon_entry_id;
     s->unk48[0] = a4;
     s->unk48[1] = a5;
     s->rotation_y = (((s->control_word >> 8) & 0x7F) << 14) / 360;
@@ -850,11 +851,13 @@ s32 motion_StartPlayback(s32 playback_index, s32 start_pair, s32 a2, s32 a3,
 extern s16 g_motion_playback_file_id_bases[];
 
 void motion_StartPlaybackAtIndexedBasePlusOffset(
-    s32 file_base_index, s32 file_id_offset, s32 start_pair, s32 a3, s32 a4,
-    s32 a5, s32 a6, s32 dest_addr) {
+    s32 file_base_index, s32 file_id_offset, s32 start_pair,
+    s32 first_weapon_entry_id, s32 second_weapon_entry_id, s32 a5, s32 a6,
+    s32 dest_addr) {
     motion_StartPlayback(g_motion_playback_file_id_bases[file_base_index] +
                              file_id_offset - 0x131,
-                         start_pair, a3, a4, a5, a6, dest_addr);
+                         start_pair, first_weapon_entry_id,
+                         second_weapon_entry_id, a5, a6, dest_addr);
 }
 
 void motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock(void) {

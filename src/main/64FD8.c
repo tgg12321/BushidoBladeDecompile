@@ -1429,9 +1429,9 @@ s32 InitWithCachedValueAndStoredBitsBlackBg(s32 prim_buffer_pair_addr) {
     return 1;
 }
 
-s32 StepThenCloseVab1OnNonzero(s32 arg0, s32 pressed_buttons) {
-    s32 ret =
-        StepSlideBuildFrameRecordAndDispatchStateHandler(arg0, pressed_buttons);
+s32 StepThenCloseVab1OnNonzero(s32 held_buttons, s32 pressed_buttons) {
+    s32 ret = StepSlideBuildFrameRecordAndDispatchStateHandler(
+        held_buttons, pressed_buttons);
     if (ret) {
         snd_CloseVab1();
     }
