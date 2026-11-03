@@ -134846,6 +134846,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80065800	eff_DrawAnimatedQuads	group-battle-shainto-wins-1@27428197ed01	bout1	10367	10367	1	bout1.10600@10600#7c36a64f2d7e	hitmap:first 1 hits per phase only	0	
 0x80065800	eff_DrawAnimatedQuads	group-battle-shainto-wins-1@27428197ed01	bout2	19079	19079	1	bout2.19200@19200#1671069b72d9	hitmap:first 1 hits per phase only	0	
 0x80065800	eff_DrawAnimatedQuads	group-battle-shainto-wins-1@27428197ed01	bout3	21801	21801	1	bout3.22100@22100#a22351cf6dfd	hitmap:first 1 hits per phase only	0	
+0x80065800	eff_DrawAnimatedQuads	hud-eff-ippon-1/baseline@e77bc7d83b22	bout1	10373	10393	154	bout1.10374@10374#1b6e8c01ce52;bout1.10376@10376#4e114feb02b0;bout1.10378@10378#3a9733314217;bout1.10380@10380#b9bb2ad4a09a;bout1.10384@10384#0bef38feda9f;bout1.10388@10388#47d340d83705;bout1.10392@10392#afeccd0959ab;bout1.10396@10396#87cbab06c024	recorded hits only; capture limits apply	0	
 0x80065800	eff_DrawAnimatedQuads	lib-story-final-fight-retail-1@2c1def7be909	after_katze	130556	130556	1	s.141700@141700#465f2f0709be	hitmap:first 1 hits per phase only	0	
 0x80065800	eff_DrawAnimatedQuads	lib-story-final-fight-retail-1@2c1def7be909	final_fight	154499	154499	1	s.154500@154500#31bf9352c528	hitmap:first 1 hits per phase only	0	
 0x80065800	eff_DrawAnimatedQuads	lib-story-final-fight-retail-1@2c1def7be909	katze	126608	126608	1	s.127900@127900#f3de50fc58bd	hitmap:first 1 hits per phase only	0	

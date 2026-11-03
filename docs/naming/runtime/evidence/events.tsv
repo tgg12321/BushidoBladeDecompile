@@ -1777,6 +1777,26 @@ g_fight_match_cursor	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	group-bat
 g_fight_match_cursor	write	fight_RecordMatchResult	t_bout2	0x800341F4	coverage	0	1	1	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 g_fight_match_cursor	write	fight_RecordMatchResult	t_bout3	0x800341F4	coverage	0	1	1	[2]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 g_fight_match_cursor	write	fight_RecordMatchResult	t_result	0x800341F4	coverage	0	1	1	[3]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F18	report	0	2	6	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F18	report	288	2	10	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F18	report	296	2	6	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F1C	report	2	2	6	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F1C	report	290	2	10	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F1C	report	298	2	6	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F44	report	292	2	10	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F44	report	300	2	6	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F44	report	4	2	6	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F58	report	294	2	10	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F58	report	302	2	6	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F58	report	6	2	6	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F6C	report	292	2	10	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F6C	report	300	2	6	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F6C	report	4	2	6	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F90	report	294	2	10	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F90	report	302	2	6	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	bout1	0x80065F90	report	6	2	6	[null]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	1	missing_value;partial_read
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires	bout1	0x80065688	report			11	[[12,2148121460,528482352,528482476]]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires	bout1	0x800656A4	report			11	[[14,1107968,16777215,4278190080],[14,1125968,16777215,4278190080]]	0	hud-eff-ippon-1/baseline@e77bc7d83b22	0	
 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells	call	fight_UpdateCommandStreamImageLoadAndResume	t_stage	0x8003B914	report			2	[[2149419008,1,24,1],[2149497856,1,24,1]]	0	hud-story-stage-card-1/baseline@f4ba42592c0e	0	
 gpu_DrawSpriteAtPackedTablePosition	call	gpu_DrawDisplayModeOnLocalOtAndSync	stage_card	0x800176DC	report			1	[[32776,2148479960,0,2148122324]]	0	hud-story-stage-card-1/baseline@f4ba42592c0e	0	
 0x8009B7A0	read	gpu_AddSpriteCells	t_stage	0x80073564	report	4	2	2	[null]	0	hud-story-stage-card-2/baseline@51313dfe6a2b	1	missing_value;partial_read

@@ -1,0 +1,13 @@
+{
+  "description": "group-battle-orange-slot2-poke's run (group-battle-3-0 cut at 10500; bout 1's IPPON at 10371, screenshots every 2-4 frames over its orange effect 10368-10396 and 10450), unchanged; hud-eff-ippon-1 breaks on eff_DrawAnimatedQuads (mode_index in a0) under a read watch on the TexRec records D_8009B8C8 .. D_8009B9F7, and its poked variants move one TexRec's u (D_8009B8C8, D_8009B9E8, D_8009B9F0[0]) at t_bout1 so the IPPON frames each one textures can be told apart",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/hud-eff-ippon-1/baseline/spec.json",
+    "docs/naming/runtime/hud-eff-ippon-1/B8C8-u/spec.json",
+    "docs/naming/runtime/hud-eff-ippon-1/B9E8-u/spec.json",
+    "docs/naming/runtime/hud-eff-ippon-1/B9F0-u/spec.json"
+  ],
+  "extends": "group-battle-orange-slot2-poke",
+  "end_frame": 10500,
+  "shots": []
+}
