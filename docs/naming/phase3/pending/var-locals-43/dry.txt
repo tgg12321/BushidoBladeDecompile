@@ -1,0 +1,24 @@
+var-locals-43 (naming-a 2026-11-03): 13 local bindings in 4 files: axis-false names (dy/dz/y holding another axis), the cell-grid x/y of three gpu_*Cell* functions, two group-flag holders and the distance d of fighter_FindNearestNavCrossing.
+Tree: ln-naming-a = lanes/naming-a = main 01472131f (clean). Research: tmp/codex/var-locals-43-research.md (13 rows, written at 96f252080; re-read at 01472131f, no line moved).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (naming_member_apply.py handles T.m=n only; naming_wave.py is function-name only; same tool result as var-locals-42). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(base = naming_keycheck.read_working_tree() of the lane worktree ln-naming-a, HEAD 01472131f; NAMING_KEYCHECK_ROOT = the worktree; read-only scratch drivers, removed after the run)
+accepted all 13 pairs (43 token substitutions: 2B344.c 18, 9F9C.c 13, 4510C.c 8, 17AFC.c 4; no include/ file touched; no comment edit needed, see notes.txt R6 WATCH). Each pair was also run alone: all 13 accepted, none rejected (alone-counts sum to 43, equal to the together total, and every pair's alone line list equals the drafter's independent token scan, 13/13). Two pairs rename to the same new name group_flag in different functions (fight_AdvanceOpponentOrder:z, fight_BuildOpponentOrder:lookup) and cell_x / cell_z are shared across three functions; scoped_plan accepts the set.
+Per-pair substitutions (function:old=new count (lines)):
+  fighter_CalcHorizontalSeparation:dy=dz 7 (2685,2687,2691,2691,2692,2697,2697)
+  fighter_CalcHorizontalSeparation:dy_squared=dz_squared 2 (2697,2698)
+  fighter_FindNearestNavCrossing:dy=dz 4 (1426,1448,1449,1449)
+  fighter_FindNearestNavCrossing:d=crossing_distance 4 (1427,1449,1450,1451)
+  fight_UpdatePairedMoves:dz=collision_dy 4 (2850,2916,2926,2926)
+  gpu_SetCellGateBit:y=cell_z 3 (2379,2380,2381)
+  gpu_SetCellGateBit:x=cell_x 3 (2378,2380,2381)
+  gpu_SetCellForceBit:y=cell_z 3 (2387,2388,2389)
+  gpu_SetCellForceBit:x=cell_x 3 (2386,2388,2389)
+  gpu_ResetAndStampViewCenteredCellAttributes:y=cell_z 3 (2359,2360,2368)
+  gpu_ResetAndStampViewCenteredCellAttributes:x=cell_x 3 (2365,2366,2368)
+  fight_AdvanceOpponentOrder:z=group_flag 2 (5868,5870)
+  fight_BuildOpponentOrder:lookup=group_flag 2 (5835,5838)
+
+Line widths after substitution (over 80; python tools/format.py reflows them in the naming commit; token-preserving):
+  alone: 2B344.c 2368 (77->82, either cell rename alone); 17AFC.c 5868 (77->86)
+  all 13 together: 2B344.c 2368 (77->87); 17AFC.c 5868 (77->86)
+None of these lines contains a function-like macro call (checked against every #define NAME( in src/ and include/); 2368 is an array store `g_gpu_cell_draw_attributes[(cell_z << 5) + cell_x] |= bits;` and 5868 is a plain declaration; neither continues a macro call. 0 rows flagged.

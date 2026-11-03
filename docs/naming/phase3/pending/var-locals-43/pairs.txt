@@ -1,0 +1,13 @@
+fighter_CalcHorizontalSeparation:dy=dz
+fighter_CalcHorizontalSeparation:dy_squared=dz_squared
+fighter_FindNearestNavCrossing:dy=dz
+fighter_FindNearestNavCrossing:d=crossing_distance
+fight_UpdatePairedMoves:dz=collision_dy
+gpu_SetCellGateBit:y=cell_z
+gpu_SetCellGateBit:x=cell_x
+gpu_SetCellForceBit:y=cell_z
+gpu_SetCellForceBit:x=cell_x
+gpu_ResetAndStampViewCenteredCellAttributes:y=cell_z
+gpu_ResetAndStampViewCenteredCellAttributes:x=cell_x
+fight_AdvanceOpponentOrder:z=group_flag
+fight_BuildOpponentOrder:lookup=group_flag
