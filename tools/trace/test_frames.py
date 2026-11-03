@@ -138,6 +138,85 @@ class TraceLoopTest(unittest.TestCase):
             for record in other:
                 self.assertTrue({"frame", "pause_n", "frame_note"}.isdisjoint(record))
 
+    def test_capped_watch_keeps_same_address_watch(self):
+        # PCSX-Redux's z finds breakpoints by address alone: the fake stub's
+        # clear removes every kind set on an overlapping range.
+        addr = 0x800A38A8
+
+        class FakeGdb:
+            features = {}
+
+            def __init__(self):
+                self.set = []
+                self.console = []
+                self.late_stops = []
+                self.cur = None
+
+            def cmd(self, command):
+                return "S05"
+
+            def interrupt(self, *args):
+                return "S05"
+
+            def set_bp(self, kind, a, n=4):
+                self.set.append((kind, a, n))
+                return True
+
+            def clear_bp(self, kind, a, n=4):
+                self.set = [s for s in self.set
+                            if not (s[1] <= a < s[1] + s[2])]
+                return True
+
+            def regs(self):
+                return [0] * 37 + [0x80040000]
+
+            def mem(self, a, n):
+                return bytes(n)
+
+            def cont(self):
+                pass
+
+            def close(self):
+                pass
+
+        gdb = FakeGdb()
+        accesses = ["w", "r"] * 6  # the game's alternating store / load
+        pos = [0]
+
+        def wait_running(*args):
+            kinds = {s[0] for s in gdb.set if s[1] == addr}
+            while pos[0] < len(accesses):
+                a = accesses[pos[0]]
+                pos[0] += 1
+                if (2 if a == "w" else 3) in kinds:
+                    gdb.cur = (0x80040000, addr, 4, a == "w", 0)
+                    return "T05"
+            return "W00"
+
+        syms = argparse.Namespace(path="fake.map", addr=lambda at: int(at, 0))
+        spec = dict(watch=[dict(at=hex(addr), kind="write", max_hits=2),
+                           dict(at=hex(addr), kind="read")])
+        scratch = Path(__file__).resolve().parents[2] / "tmp"
+        scratch.mkdir(exist_ok=True)
+        directory = scratch / ("frames-test-" + uuid.uuid4().hex)
+        directory.mkdir()
+        self.addCleanup(shutil.rmtree, directory)
+        out = directory / "capture.jsonl"
+        args = argparse.Namespace(out=str(out), map="fake.map", result={},
+                                  expect={}, duration=60, stall=1)
+        with patch.object(gdbtrace, "wait_running", side_effect=wait_running), \
+                patch.object(gdbtrace, "decode_access",
+                             side_effect=lambda *a: [gdb.cur]):
+            gdbtrace.trace(gdb, syms, spec, args)
+        records = [json.loads(line) for line in out.read_text().splitlines()]
+        hits = [r["kind"] for r in records if r["ev"] == "hit"]
+        self.assertEqual(hits.count(2), 2)
+        self.assertEqual(hits.count(3), 6)  # every load, after the cap too
+        self.assertEqual([r["after_hits"] for r in records
+                          if r["ev"] == "disarmed"], [2])
+        self.assertFalse(any(r["ev"] == "unmatched-stop" for r in records))
+        self.assertEqual(gdb.set, [])  # the end clears both
+
 
 if __name__ == "__main__":
     unittest.main()

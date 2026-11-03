@@ -1148,6 +1148,23 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
     script_pause = None  # runkit.read_pause() at the last script stop
     ambiguous = 0
 
+    def disarm(e):
+        """Clear e in the stub. PCSX-Redux's z finds breakpoints by address
+        alone (an interval search at e's address) and also removes the
+        client's breakpoints of other kinds there: a capped write watch once
+        took the same-address read watch along and truncated a capture. The
+        target is halted here, so every other entry overlapping e's range is
+        set again before it runs (a superset of what z can remove; a
+        duplicate left in the stub is harmless: Redux sends one stop per
+        continue, and a later z removes every copy)."""
+        gdb.clear_bp(e["kind"], e["addr"], e["len"])
+        del armed[(e["kind"], e["addr"])]
+        for o in armed.values():
+            if (phys(o["addr"]) < phys(e["addr"]) + e["len"]
+                    and phys(e["addr"]) < phys(o["addr"]) + o["len"]):
+                if not gdb.set_bp(o["kind"], o["addr"], o["len"]):
+                    raise GdbError(f"re-set 0x{o['addr']:08X} refused")
+
     def entry_for_stop(regs, reply, interrupted):
         pc = regs[37] if len(regs) > 37 else 0
         if (0, pc) in armed:
@@ -1302,8 +1319,7 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 args.result["canary_hit"] = {"pc": regs[37], "phase": phase}
                 emit({"ev": "canary", "t": round(time.time() - t0, 3),
                       "pc": regs[37], "phase": phase})
-                gdb.clear_bp(0, e["addr"], 4)
-                del armed[(0, e["addr"])]
+                disarm(e)
                 if script_stop and state[3]:
                     break
                 continue
@@ -1366,14 +1382,11 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 e["phase_hits"] += 1
                 if e["phase_hits"] >= e["per_phase"]:
                     # Enough for this phase: off until the next one.
-                    gdb.clear_bp(e["kind"], e["addr"], e["len"])
-                    key = (e["kind"], e["addr"])
-                    del armed[key]
-                    suspended[key] = e
+                    disarm(e)
+                    suspended[(e["kind"], e["addr"])] = e
                 continue
             if e["hits"] >= int(sp.get("max_hits", 1 << 30)):
-                gdb.clear_bp(e["kind"], e["addr"], e["len"])
-                del armed[(e["kind"], e["addr"])]
+                disarm(e)
                 # From here on this entry covers nothing: a hit map must
                 # not read later phases as "not reached".
                 emit({"ev": "disarmed", "t": round(time.time() - t0, 3),
