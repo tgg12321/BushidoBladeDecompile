@@ -1,5 +1,5 @@
 /* PsyQ LIBSND UT_VVOL: SsUtGetDetVVol, SsUtSetDetVVol, SsUtGetVVol and
- * func_80086130 (at SsUtSetVVol's place). .text 0x80085FD8..0x800861BC. An
+ * SsUtSetVVol (at SsUtSetVVol's place). .text 0x80085FD8..0x800861BC. An
  * interim LIBSND build (between PsyQ 4.0 and 4.1); module start from the
  * libscan near tier (SsUtGetDetVVol at 0x80085FD8, XDEF +0x0; Q109). */
 #include "common.h"
@@ -35,7 +35,7 @@ s32 SsUtGetVVol(s16 a0, s16 *a1, s16 *a2) {
     return -1;
 }
 
-s32 func_80086130(s16 idx, s16 x, s16 y) {
+s32 SsUtSetVVol(s16 idx, s16 x, s16 y) {
     if ((u16)idx < 0x18) {
         s16 vx = x * 129;
         s16 vy = y * 129;

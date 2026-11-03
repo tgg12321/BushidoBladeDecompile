@@ -94,7 +94,7 @@ void snd_ResetVoicesAndQueue(void) {
     for (i = 0; i < 24; i++) {
         g_snd_queue[i].req = 0;
         g_snd_queue[i].volr = g_snd_queue[i].voll = 0x7F;
-        func_80086130((s16)i, 0, 0);
+        SsUtSetVVol((s16)i, 0, 0);
     }
 }
 

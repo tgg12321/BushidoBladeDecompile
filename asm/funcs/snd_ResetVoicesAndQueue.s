@@ -23,7 +23,7 @@ glabel snd_ResetVoicesAndQueue
     /* 4BDFC 8005B5FC 0F80013C */  lui        $at, %hi(D_800EFB7C)
     /* 4BE00 8005B600 21083000 */  addu       $at, $at, $s0
     /* 4BE04 8005B604 7CFB33A0 */  sb         $s3, %lo(D_800EFB7C)($at)
-    /* 4BE08 8005B608 4C18020C */  jal        func_80086130
+    /* 4BE08 8005B608 4C18020C */  jal        SsUtSetVVol
     /* 4BE0C 8005B60C 21300000 */   addu      $a2, $zero, $zero
     /* 4BE10 8005B610 08005226 */  addiu      $s2, $s2, 0x8
     /* 4BE14 8005B614 01003126 */  addiu      $s1, $s1, 0x1

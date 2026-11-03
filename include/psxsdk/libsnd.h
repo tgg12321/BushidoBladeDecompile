@@ -72,7 +72,7 @@ extern void SsSepStop(s16, s16);
 extern s16 SsUtKeyOnV(s16, s16, s16, s16, s16, s16, s16, s16);
 extern s16 SsUtKeyOffV(s16);
 extern s32 SsUtSetDetVVol(s16, s16, s16);
-extern s32 func_80086130(s16, s16, s16);
+extern s32 SsUtSetVVol(s16, s16, s16);
 extern void SsUtReverbOn(void);
 extern void SsUtReverbOff(void);
 extern void SsUtSetReverbDepth(s16, s16);
