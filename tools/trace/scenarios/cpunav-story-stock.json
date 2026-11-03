@@ -1,0 +1,12 @@
+{
+  "description": "story-final-fight-stages cut at 93400 (its inputs to there unchanged, no pokes; the run's opponents include the roster 0x1B CPU, cpu_profile 0x15, at about 81300-92950, and roster 0x1D CPUs, cpu_profile 0x17, a flags & 0x300 profile, at about 9000-80550, around a roster 0x1A fight at about 35400-45200). trace-cpu-nav unit 5: do the CPU stock branches of fighter_UpdateCpuNavigationChooseScriptsAndHeldInput (throw_charges_left for profile 0x15, weapon_ammo for flags & 0x300 profiles once g_fight_stage_command_count >= 6) run, and which code stores throw_charges_left / weapon_ammo",
+  "covers": [
+    "mode:story"
+  ],
+  "evidence": [
+    "docs/naming/runtime/cpunav-story-stock-1/spec.json",
+    "docs/naming/runtime/cpunav-story-stock-2/spec.json"
+  ],
+  "extends": "story-final-fight-stages",
+  "end_frame": 93400
+}
