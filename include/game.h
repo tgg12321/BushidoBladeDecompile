@@ -1276,12 +1276,12 @@ typedef struct {
     s16 local_end_z;
     s16 unk5A;
     s32 (*unk5C)(s32, s32);
-    s32 unk60;
-    s32 unk64;
-    s32 unk68;
-    s32 unk6C;
-    s32 unk70;
-    s32 unk74;
+    s32 walk_start_u;
+    s32 walk_v;
+    s32 walk_end_u;
+    s32 walk_end_v;
+    s32 walk_delta_u;
+    s32 walk_delta_v;
     s32 walk_minor_step;
     s32 walk_slope;
     s32 unk80;

@@ -49,27 +49,28 @@ s32 collision_WalkSegmentGrid(s32 *hit_point, s16 *hit_normal) {
     s32 z_direction;
     s32 axes_swapped;
 
-    g_collision_segment_work->unk60 =
+    g_collision_segment_work->walk_start_u =
         g_collision_segment_work->seg_start.vx + 32000;
-    g_collision_segment_work->unk64 =
+    g_collision_segment_work->walk_v =
         g_collision_segment_work->seg_start.vz + 32000;
-    g_collision_segment_work->unk68 =
+    g_collision_segment_work->walk_end_u =
         g_collision_segment_work->seg_end.vx + 32000;
     g_collision_segment_work->nearest_dist_sq = 0x7FFFFFFF;
-    g_collision_segment_work->unk6C =
+    g_collision_segment_work->walk_end_v =
         g_collision_segment_work->seg_end.vz + 32000;
-    g_collision_segment_work->unk70 =
-        g_collision_segment_work->unk68 - g_collision_segment_work->unk60;
+    g_collision_segment_work->walk_delta_u =
+        g_collision_segment_work->walk_end_u -
+        g_collision_segment_work->walk_start_u;
     g_collision_segment_work->walk_cell.x =
-        g_collision_segment_work->unk60 / 2000;
+        g_collision_segment_work->walk_start_u / 2000;
     g_collision_segment_work->walk_cell.z =
-        g_collision_segment_work->unk64 / 2000;
+        g_collision_segment_work->walk_v / 2000;
     g_collision_segment_work->end_cell.x =
-        g_collision_segment_work->unk68 / 2000;
+        g_collision_segment_work->walk_end_u / 2000;
     g_collision_segment_work->end_cell.z =
-        g_collision_segment_work->unk6C / 2000;
-    g_collision_segment_work->unk74 =
-        g_collision_segment_work->unk6C - g_collision_segment_work->unk64;
+        g_collision_segment_work->walk_end_v / 2000;
+    g_collision_segment_work->walk_delta_v =
+        g_collision_segment_work->walk_end_v - g_collision_segment_work->walk_v;
     if (g_collision_segment_work->walk_cell.x ==
             g_collision_segment_work->end_cell.x &&
         g_collision_segment_work->walk_cell.z ==
@@ -89,53 +90,69 @@ s32 collision_WalkSegmentGrid(s32 *hit_point, s16 *hit_normal) {
             g_collision_segment_work->walk_cell.x * 2000 + 1000;
         g_collision_segment_work->start_cell_center_z =
             g_collision_segment_work->walk_cell.z * 2000 + 1000;
-        g_collision_segment_work->unk60 -= g_collision_segment_work->unk80;
-        g_collision_segment_work->unk64 -=
+        g_collision_segment_work->walk_start_u -=
+            g_collision_segment_work->unk80;
+        g_collision_segment_work->walk_v -=
             g_collision_segment_work->start_cell_center_z;
-        g_collision_segment_work->unk68 -= g_collision_segment_work->unk80;
-        g_collision_segment_work->unk6C -=
+        g_collision_segment_work->walk_end_u -= g_collision_segment_work->unk80;
+        g_collision_segment_work->walk_end_v -=
             g_collision_segment_work->start_cell_center_z;
-        if (g_collision_segment_work->unk70 < 0) {
+        if (g_collision_segment_work->walk_delta_u < 0) {
             x_direction = -1;
-            g_collision_segment_work->unk70 = -g_collision_segment_work->unk70;
-            g_collision_segment_work->unk60 = -g_collision_segment_work->unk60;
-            g_collision_segment_work->unk68 = -g_collision_segment_work->unk68;
+            g_collision_segment_work->walk_delta_u =
+                -g_collision_segment_work->walk_delta_u;
+            g_collision_segment_work->walk_start_u =
+                -g_collision_segment_work->walk_start_u;
+            g_collision_segment_work->walk_end_u =
+                -g_collision_segment_work->walk_end_u;
         } else {
             x_direction = 1;
         }
-        if (g_collision_segment_work->unk74 < 0) {
+        if (g_collision_segment_work->walk_delta_v < 0) {
             z_direction = -1;
-            g_collision_segment_work->unk74 = -g_collision_segment_work->unk74;
-            g_collision_segment_work->unk64 = -g_collision_segment_work->unk64;
-            g_collision_segment_work->unk6C = -g_collision_segment_work->unk6C;
+            g_collision_segment_work->walk_delta_v =
+                -g_collision_segment_work->walk_delta_v;
+            g_collision_segment_work->walk_v =
+                -g_collision_segment_work->walk_v;
+            g_collision_segment_work->walk_end_v =
+                -g_collision_segment_work->walk_end_v;
         } else {
             z_direction = 1;
         }
-        if (g_collision_segment_work->unk74 > g_collision_segment_work->unk70) {
+        if (g_collision_segment_work->walk_delta_v >
+            g_collision_segment_work->walk_delta_u) {
             axes_swapped = 1;
-            g_collision_segment_work->unk80 = g_collision_segment_work->unk70;
-            g_collision_segment_work->unk70 = g_collision_segment_work->unk74;
-            g_collision_segment_work->unk74 = g_collision_segment_work->unk80;
-            g_collision_segment_work->unk80 = g_collision_segment_work->unk60;
-            g_collision_segment_work->unk60 = g_collision_segment_work->unk64;
-            g_collision_segment_work->unk64 = g_collision_segment_work->unk80;
-            g_collision_segment_work->unk80 = g_collision_segment_work->unk68;
-            g_collision_segment_work->unk68 = g_collision_segment_work->unk6C;
-            g_collision_segment_work->unk6C = g_collision_segment_work->unk80;
+            g_collision_segment_work->unk80 =
+                g_collision_segment_work->walk_delta_u;
+            g_collision_segment_work->walk_delta_u =
+                g_collision_segment_work->walk_delta_v;
+            g_collision_segment_work->walk_delta_v =
+                g_collision_segment_work->unk80;
+            g_collision_segment_work->unk80 =
+                g_collision_segment_work->walk_start_u;
+            g_collision_segment_work->walk_start_u =
+                g_collision_segment_work->walk_v;
+            g_collision_segment_work->walk_v = g_collision_segment_work->unk80;
+            g_collision_segment_work->unk80 =
+                g_collision_segment_work->walk_end_u;
+            g_collision_segment_work->walk_end_u =
+                g_collision_segment_work->walk_end_v;
+            g_collision_segment_work->walk_end_v =
+                g_collision_segment_work->unk80;
         } else {
             axes_swapped = 0;
         }
-        g_collision_segment_work->unk68 += 1000;
-        g_collision_segment_work->unk60 += 1000;
-        g_collision_segment_work->unk64 += 1000;
+        g_collision_segment_work->walk_end_u += 1000;
+        g_collision_segment_work->walk_start_u += 1000;
+        g_collision_segment_work->walk_v += 1000;
         g_collision_segment_work->walk_steps_left =
-            g_collision_segment_work->unk68 / 2000 -
-            g_collision_segment_work->unk60 / 2000 + 1;
+            g_collision_segment_work->walk_end_u / 2000 -
+            g_collision_segment_work->walk_start_u / 2000 + 1;
         g_collision_segment_work->walk_slope =
-            (g_collision_segment_work->unk74 << 12) /
-            g_collision_segment_work->unk70;
-        g_collision_segment_work->unk64 -=
-            (g_collision_segment_work->unk60 *
+            (g_collision_segment_work->walk_delta_v << 12) /
+            g_collision_segment_work->walk_delta_u;
+        g_collision_segment_work->walk_v -=
+            (g_collision_segment_work->walk_start_u *
              g_collision_segment_work->walk_slope) >>
             12;
         g_collision_segment_work->walk_minor_step =
@@ -147,13 +164,13 @@ s32 collision_WalkSegmentGrid(s32 *hit_point, s16 *hit_normal) {
                          g_collision_segment_work->walk_cell.z)) != 0) {
                 break;
             }
-            g_collision_segment_work->unk64 %= 2000;
-            g_collision_segment_work->unk64 +=
+            g_collision_segment_work->walk_v %= 2000;
+            g_collision_segment_work->walk_v +=
                 g_collision_segment_work->walk_minor_step;
             if (g_collision_segment_work->walk_steps_left == 0) {
                 break;
             }
-            if (g_collision_segment_work->unk64 > 2000) {
+            if (g_collision_segment_work->walk_v > 2000) {
                 if (axes_swapped) {
                     if (x_direction < 0) {
                         g_collision_segment_work->walk_cell.x--;
