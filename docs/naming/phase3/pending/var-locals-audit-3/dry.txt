@@ -1,0 +1,16 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs. naming_member_apply.py handles T.m=n only
+("no T.m=n pairs"; same tool result as waves 16-36); naming_keycheck.py compares an already-applied base/new pair of trees and
+naming_wave.py is function-name only. Local pairs are proven at the apply gate (keycheck cc1
+differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(base = every src/ and include/ .c/.h/.inc file plus Makefile read from the lane worktree ln-naming-b, HEAD a013f1c27 = main at queue time; NAMING_KEYCHECK_ROOT = the worktree)
+accepted all 5 pairs (52 token substitutions, all in 4510C.c; no include/ file touched; the one comment edit needed is 4510C.c:1462, see notes.txt
+R6 WATCH). Each pair was also run alone: all accepted, none rejected (alone-counts sum to 52, equal to the together total).
+The count of every pair equals a token scan of the binding in its definition (signature and body, comments and strings excluded, ./-> member tokens excluded; separate
+tokenizer, not the plan), pair by pair, line list and count: no mismatch (5/5 line lists equal the manifest USES lists). The runs modified no file in the worktree.
+Per-pair substitutions (function:old=new count):
+  fighter_FindNearestNavCrossing:polygon_index=chain_index 6
+  fighter_FindNearestNavCrossing:nav_poly=nav_chain 10
+  fighter_GetNavCornerPoint:nav_poly=nav_chain 10
+  fighter_AppendNavDetour:polygon_edge_count=chain_edge_count 5
+  fighter_AppendNavDetour:poly=nav_chain 21
+Same destination nav_chain for three pairs in three different functions: scoped (local) names, no collision (no function has another nav_chain).

@@ -1,0 +1,5 @@
+fighter_FindNearestNavCrossing:polygon_index=chain_index
+fighter_FindNearestNavCrossing:nav_poly=nav_chain
+fighter_GetNavCornerPoint:nav_poly=nav_chain
+fighter_AppendNavDetour:polygon_edge_count=chain_edge_count
+fighter_AppendNavDetour:poly=nav_chain

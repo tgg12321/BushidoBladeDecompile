@@ -33,3 +33,22 @@ RE-FINDS, still blocked (checked at 437f3a0ff)
   softbody_CreateForNode:point_count (scoped_plan: "function-local aggregate definitions are unsupported").
 
 Leads and true names per binding: pending/var-locals-audit-1/notes.txt, pending/var-locals-audit-2/notes.txt.
+
+var-locals-audit-3 round 2 (naming-b 2026-11-02, tree a013f1c27)
+Result: 5 research rows, 0 dropped, 5 kept (all RENAMEs; 52 token substitutions, all in src/main/4510C.c; each pair alone equals its token-scan USES count, all five together accepted, 52 = sum of the alone counts; the runs modified no file in the worktree). 5/5 use-line lists equal the manifest USES lists.
+
+ROWS
+- fighter_FindNearestNavCrossing:polygon_index=chain_index (6), :nav_poly=nav_chain (10)
+- fighter_GetNavCornerPoint:nav_poly=nav_chain (10; parameter)
+- fighter_AppendNavDetour:polygon_edge_count=chain_edge_count (5), :poly=nav_chain (21)
+Common reason: flags & 0x80 marks an open chain (include/game.h NavVertexChain doc 1470-1474; tested at 4510C.c:1433, 1561, 1568, 1649, 1686), so these bindings are not always polygons; the type's own word is chain.
+RENAMED BY THE DRAFTER (0 rows): every research spelling kept. DROPPED (0): all rows shown at every use from the source.
+
+R6 WATCH (comments / width, line numbers at a013f1c27)
+- Required comment edit: 4510C.c:1462 'at vertex vertex_index of chain nav_poly' -> 'chain nav_chain' (the only comment in 1405-1716 citing an old token; no FAKE in the range; the 1501 comment names only the member cpu_route.poly). Line becomes 77 columns.
+- Line width after the renames: 4510C.c:1598 `fighter_GetNavCornerPoint(poly, next, &end_corner_x, &end_corner_z);` goes 80 -> 85 columns with nav_chain: format.py reflows it in the naming commit (token-preserving); re-point cites against the base. Next-longest after rename: 1445 (79), 1444 (77), 1462 (77); all other changed lines stay within 80. chain_index / chain_edge_count only shorten lines.
+- Live docs: symbol_addrs.txt, named_syms.txt, include/**, docs/engine/*.md hold none of the old tokens; they occur only in earlier pending/ manifests (history, not live).
+
+NEUTRAL (left unchanged on purpose)
+- CpuRoute.poly member (include/game.h:1464): member track; its comment already says 'index into the stage's NavVertexChainSet.chains'. The cpu_route.poly tokens at 4510C.c:1452, 1551 are member tokens and are excluded from every scan. (A member rename to chain_index was blocked earlier by a local `poly` in 596CC.c, pending/var-members-audit-1/notes.txt:11, a separate matter.)
+- edge_vertex_index, k, n, i, iter, next in these functions: audit ok.
