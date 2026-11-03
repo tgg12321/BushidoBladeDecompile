@@ -1,0 +1,23 @@
+# python tools/data_wave.py --manifest-csv docs/naming/phase3/pending/var-globals-eff-texrec-4/data_manifest.csv (dry run, exit 0; re-run after pre-apply on the CONFIRM rows, suggested spellings for 0x8009B9D8 / 0x8009B990)
+==============================================================================
+DATA WAVE — 4 addresses, 4 identifiers remapped
+  0x8009b9d8: D_8009B9D8 -> g_eff_quad_pair_first_early_and_pair_first_shaped_quad_square_tex_rec
+  0x8009b990: D_8009B990 -> g_eff_quad_pair_first_late_and_pair_first_shaped_quad_strip_tex_rec
+  0x800a327c: D_800A327C -> g_gpu_split_wipe_image_rect
+  0x800a3284: D_800A3284 -> g_gpu_split_wipe_image_clut_rect
+
+-- file edits (7) --
+  asm/funcs/eff_DrawAnimatedQuads.s  (8)
+  asm/funcs/gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe.s  (4)
+  include/bb2.h  (2)
+  src/main/4D0A8.c  (6)
+  src/main/d_8BC50.c  (2)
+  src/main/eff.c  (4)
+  symbol_addrs.txt  (3)
+
+-- registry lines --
+  symbol_addrs.txt:789 D_800A327C -> g_gpu_split_wipe_image_rect
+  symbol_addrs.txt:795 D_8009B9D8 -> g_eff_quad_pair_first_early_and_pair_first_shaped_quad_square_tex_rec
+  symbol_addrs.txt:1013 D_800A3284 -> g_gpu_split_wipe_image_clut_rect
+
+DRY RUN — nothing written. Re-run with --apply.

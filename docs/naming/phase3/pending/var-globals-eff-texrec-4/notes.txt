@@ -1,0 +1,26 @@
+# var-globals-eff-texrec-4 notes (cites at WT HEAD 18bef3404, lane ln-naming-b; research tmp/codex/var-globals-eff-texrec-4-research.md (Opus, read-only); every use re-derived by the drafter with git grep -w over the tree; verdicts left empty for the reviewer)
+Result: 4 rows proposed (group A: 0x8009B9D8, 0x8009B990; group B: 0x800A327C, 0x800A3284), 0 rows dropped, names changed from research: none. All research line citations re-checked at HEAD and hold: defs d_8BC50.c:209/200, 4D0A8.c:2091/2092; externs bb2.h:618/615, 4D0A8.c:1323/1324; readers eff.c:2208/2210 (case 10/11), :2228/:2237 (case 6/7); 4D0A8.c:1335/1336 with LoadImage at :1337/:1339; size_sel eff.c:2241-2251 (goto at :2220); shape code eff.c:2456-2506; mode_index < 9 tail :2507-2514; sheet headers d_8BC50.c:102-104; caller 2B344.c:732; asm listings eff_DrawAnimatedQuads.s:212-213/217-218/281-282/307-308 and gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe.s:18-19/28-29. Registry: symbol_addrs.txt:789, :795, :1013 only (rewritten by data_wave); no named_syms, undefined_syms_auto, bb2.ld or engine hit. Fresh: all four names 0 hits outside pending/ and backlog.tsv:192-193 (the 'pair_shaped' lead) and pending/var-globals-eff-texrec-3/notes.txt:25 / var-globals-hud-5/notes.txt:18 (leads without the final names).
+dry.txt: data_wave dry run (python tools/data_wave.py --manifest-csv docs/naming/phase3/pending/var-globals-eff-texrec-4/data_manifest.csv; no --apply, no --manifest) exit 0, 4 addresses, 4 identifiers, 7 files, 3 registry lines.
+Runtime basis (Q124) for group A: docs/naming/runtime/hud-eff-tatsumi-pov-1/ and hud-eff-tatsumi-side-1/ (and hud-eff-kimigaura-1 reads B990). Group B has no runtime capture: code geometry only.
+
+Weakest rows for the reviewer
+1. 0x8009B9D8 / 0x8009B990 'and_pair_shaped_quad': claims modes 10/11 draw a single quad through the same size_sel and shape code as the pair's first quad (6/7) and nothing else does; 'pair_shaped' could be read as 'two quads' or 'shaped by a pair'. Fallback spelling: '..._and_pair_first_shaped_quad_...' (longer, clearer). 'early'/'late' are the 6/7 pick only: the 10/11 pick takes every counter (eff.c:2205-2210), which the name does not hide but does not state. 10/11 have their own colour code (eff.c:2211-2219), so the name claims shape only, not whole-effect equivalence. Names are 63 and 62 chars. If 'pair_shaped' is rejected, prefer NO_NAME over the earlier-failed 'unpaired_quad'/'single_quad'.
+2. 'strip' / 'square': coined words for the 64x16 vs 64x64 windows (0x20x0x80 vs 0x80x0x80 bases) of the only arm picking each record; no on-screen claim. The two group-A rows stand independently of each other and of the landed -3 rows.
+3. 0x800A327C g_gpu_split_wipe_image_rect: no runtime capture; relies on {0x380,0,0x40,0x100} matching the sheet header's 4-bit 256x256 page (tp0 0x0E) and the single caller chain into the split wipe. The same VRAM page is the effect texture area at other times; the name says what the RECT uploads for, not what the page holds always.
+4. 0x800A3284 g_gpu_split_wipe_image_clut_rect: 'image_' vs the wipe's untextured gradient quads; fallback g_gpu_split_wipe_clut_rect. Both sheet headers (d_8BC50.c:103-104) name CLUT (0x3E0,0x1FF).
+
+NO_NAME (no covering role word; no rows)
+- 0x8009B8C8 D_8009B8C8: four unrelated families (modes 0, 5, 12-15 last phase, 16/17).
+- 0x8009B8E0 D_8009B8E0: single pick, 0 reads in all captures; dead or unshown code stays neutral.
+
+Comment / doc occurrences of the old spellings (data_wave rewrites code, asm operands and registry lines, not comments or json)
+- tools/trace/scenarios/hud-eff-{tatsumi-pov,tatsumi-side,kimigaura}.json:2 description strings (spell D_8009B9D8 / D_8009B990): trace-a's claim; left. docs/naming/runtime/hud-eff-*/**, docs/naming/runtime/evidence/events.tsv: capture history, leave.
+- No src/include/asm comments spell any of the four. History, leave: docs/naming/phase3/wave06/wave08 manifests, remaining_data_classification.json, memory/grind/phase2-2026-10-03/**, docs/grind/borderline.md, docs/naming/phase3/pending/**.
+
+Formatting: the longer names re-wrap eff.c (:2208-2237) and 4D0A8.c; run tools/format.py on eff.c, d_8BC50.c, 4D0A8.c (token-preserving).
+
+Pre-apply result (naming-reviewer, naming-b 2026-11-03): 2 PASS, 2 FAIL -> suggested.
+- PASS, CONFIRM: 0x800A327C g_gpu_split_wipe_image_rect, 0x800A3284 g_gpu_split_wipe_image_clut_rect (only caller chain 2B344.c:732 -> handler 0x13 -> gpu_DrawImageAndAdvanceSplitWipe; exact page / CLUT geometry of g_gpu_split_wipe_image_sheet_headers; no capture needed).
+- FAIL on R4/N4: 0x8009B9D8 / 0x8009B990 '..._and_pair_shaped_quad_...': 'pair' overclaims, the 10/11 quad runs only the pair's FIRST quad code (size_sel eff.c:2241-2251, shape block :2456-2515); the second quad (8/9) is shaped at :2252-2264, :2371-2379. Mechanics confirmed (shape code reached only by 6/7/10/11; square / strip / early / late hold).
+- Replaced by the reviewer's suggestions (the drafter's fallbacks), marked suggested in the manifest; R6 judges them fresh: 0x8009B9D8 g_eff_quad_pair_first_early_and_pair_first_shaped_quad_square_tex_rec, 0x8009B990 g_eff_quad_pair_first_late_and_pair_first_shaped_quad_strip_tex_rec.
+- dry.txt re-run on the final pairs.
