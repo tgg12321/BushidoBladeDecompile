@@ -15263,6 +15263,9 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8001BE08	pad_ClearStateBits	versus-cpu-clear-retail-1@d1b76e2e5d49	opp5	22625	22625	1	opp5.23100@23100#516a33e1d875	hitmap:first 1 hits per phase only	0	
 0x8001BE08	pad_ClearStateBits	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8824	8824	1	opp1.last@8850#cbd475543ab8	hitmap:first 1 hits per phase only	0	
 0x8001BE08	pad_ClearStateBits	versus-cpu-tatsumi-1@016e75c2a56c	opp2	10505	10505	1	opp2.last@10540#fbea24a640a6	hitmap:first 1 hits per phase only	0	
+0x8001BE20	fighter_BuildCpuOrMappedPadState	cpunav-padscript-retreat-1@22651bf9bb61	fight	8350	8697	122	fight.8400@8400#f13dfdcf71b6;fight.8500@8500#343521fe34ab;fight.8600@8600#ad58178c94ba	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x8001BE20	fighter_BuildCpuOrMappedPadState	cpunav-padscript-retreat-1@22651bf9bb61	fight_late	8700	9399	276	fight.8800@8800#8ddeda0367f9;fight.9200@9200#6bf1282e33b4	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x8001BE20	fighter_BuildCpuOrMappedPadState	cpunav-padscript-retreat-1@22651bf9bb61	t_load	8341	8347	3	fight.first@8350#3854ff364f14	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x8001BE20	fighter_BuildCpuOrMappedPadState	group-battle-draw-1@2004f4b160e6	bout1	9445	9445	1	bout1.first@9450#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x8001BE20	fighter_BuildCpuOrMappedPadState	group-battle-draw-1@2004f4b160e6	bout1_again	24840	24840	1	bout1_again.first@24845#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x8001BE20	fighter_BuildCpuOrMappedPadState	group-battle-draw-1@2004f4b160e6	bout2	13913	13913	1	bout2.first@13918#96d6d20da860	hitmap:first 1 hits per phase only	0	
@@ -23662,6 +23665,9 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80021A3C	motion_GetCommonScriptAtFighterBufferIndexedOffset	versus-cpu-clear-retail-1@d1b76e2e5d49	opp5	22623	22623	1	opp5.23100@23100#516a33e1d875	hitmap:first 1 hits per phase only	0	
 0x80021A3C	motion_GetCommonScriptAtFighterBufferIndexedOffset	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8822	8822	1	opp1.last@8850#cbd475543ab8	hitmap:first 1 hits per phase only	0	
 0x80021A3C	motion_GetCommonScriptAtFighterBufferIndexedOffset	versus-cpu-tatsumi-1@016e75c2a56c	opp2	10503	10503	1	opp2.last@10540#fbea24a640a6	hitmap:first 1 hits per phase only	0	
+0x80021A98	fighter_StartMoveScript	cpunav-padscript-retreat-1@22651bf9bb61	fight	8362	8688	9	fight.8400@8400#f13dfdcf71b6;fight.8500@8500#343521fe34ab;fight.8600@8600#ad58178c94ba	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x80021A98	fighter_StartMoveScript	cpunav-padscript-retreat-1@22651bf9bb61	fight_late	8727	9363	36	fight.8800@8800#8ddeda0367f9;fight.9200@9200#6bf1282e33b4	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x80021A98	fighter_StartMoveScript	cpunav-padscript-retreat-1@22651bf9bb61	t_load	8270	8344	2	fight.first@8350#3854ff364f14	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80021A98	fighter_StartMoveScript	data-lead-D_800A38A8-versus-2p-effects-1@316c0b4c2585	fight	8318	12506	362	fight.10100@10100#c5614b72d6a1;fight.10300@10300#f1ce26643642;fight.10500@10500#25829ca7181e;fight.10700@10700#3a60c4d99023;fight.10900@10900#7426edaa898a;fight.11100@11100#548e38ba9c99;fight.11300@11300#c315076d2ca9;fight.11500@11500#d4cf7a0d78b4;fight.11700@11700#94353ff75b0a;fight.11900@11900#3f92ae2434bf;fight.12100@12100#4e02822dd7a3;fight.12300@12300#ed907c76e5a1;fight.12400@12400#a77aab7ef995;fight.12500@12500#84aa5c88b788;fight.8500@8500#eb1be34555fe;fight.8700@8700#3fcb1ac330a9;fight.8900@8900#980264db0c76;fight.9100@9100#9381c7e9ebea;fight.9300@9300#91b89128b10b;fight.9500@9500#ed51701bf4b3;fight.9700@9700#ae95b32b42ef;fight.9900@9900#d003f0c25b22;fight.last@12512#818638b47297	recorded hits only; capture limits apply	0	
 0x80021A98	fighter_StartMoveScript	data-lead-D_800A38A8-versus-2p-effects-1@316c0b4c2585	rematch_menu	12974	13966	208	rematch_menu.13300@13300#585edfe69ec0;rematch_menu.13600@13600#8c67a468ed1c;rematch_menu.last@13969#a234259648fd	recorded hits only; capture limits apply	0	
 0x80021A98	fighter_StartMoveScript	data-lead-D_800A38A8-versus-2p-effects-1@316c0b4c2585	t_ko	12750	12968	24	t_ko.12800@12800#a555b0a2b93d;t_ko.12900@12900#05b10a304641;t_ko.last@12969#017cf7391db6	recorded hits only; capture limits apply	0	
@@ -24473,6 +24479,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80022568	fighter_ResetBoneGroupHitState	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8862	8862	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x80022568	fighter_ResetBoneGroupHitState	versus-cpu-tatsumi-1@016e75c2a56c	opp2	10543	10543	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x80022568	fighter_ResetBoneGroupHitState	versus-cpu-tatsumi-1@016e75c2a56c	t_load	7650	7650	1	t_load.mid@8000#aa39ad949db8	hitmap:first 1 hits per phase only	0	
+0x80022580	fighter_Init	cpunav-padscript-retreat-1@22651bf9bb61	t_load	7650	7650	4	fight.first@8350#3854ff364f14	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80022580	fighter_Init	data-lead-Unk80101EC8Record-unk_272-versus-2p-kimigaura-paired-1@0f54f019e8f7	c09	9410	9410	8	c09.95@9425#f1275550f647	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80022580	fighter_Init	data-lead-Unk80101EC8Record-unk_272-versus-2p-kimigaura-paired-1@0f54f019e8f7	t_load	7485	7485	8	t_load.mid@7900#35444b75f27e	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80022580	fighter_Init	data-lead-Unk80101EC8Record-unk_272-versus-2p-wound-1@f741b8ae586b	t_load	7535	7535	8	fight.first@8350#c958a848220b	recorded hits only; capture limits apply	1	coverage_next_start_bound
@@ -33660,6 +33667,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8003043C	object_ResetPool	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8862	8862	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x8003043C	object_ResetPool	versus-cpu-tatsumi-1@016e75c2a56c	opp2	10543	10543	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x8003043C	object_ResetPool	versus-cpu-tatsumi-1@016e75c2a56c	t_load	7650	7650	1	t_load.mid@8000#aa39ad949db8	hitmap:first 1 hits per phase only	0	
+0x8003047C	object_InitKindQueue	cpunav-padscript-retreat-1@22651bf9bb61	t_load	7650	7650	8	fight.first@8350#3854ff364f14	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x8003047C	object_InitKindQueue	group-battle-draw-1@2004f4b160e6	t_bout1_again	24239	24239	1	t_bout1_again.mid@24538#aa713a6468ff	hitmap:first 1 hits per phase only	0	
 0x8003047C	object_InitKindQueue	group-battle-draw-1@2004f4b160e6	t_bout2	13530	13530	1	t_bout2.mid@13720#8dab36e468fa	hitmap:first 1 hits per phase only	0	
 0x8003047C	object_InitKindQueue	group-battle-draw-1@2004f4b160e6	t_bout3	18720	18720	1	t_bout3.mid@18951#21edff9c0cf6	hitmap:first 1 hits per phase only	0	
@@ -121973,6 +121981,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x800550E8	fighter_HalveCpuTally	story-pov-rematch-1@766b7b5b6104	t_rematch	13119	13119	1	t_rematch.last@13199#439ff30dbe35	hitmap:first 1 hits per phase only	0	
 0x800550E8	fighter_HalveCpuTally	versus-cpu-clear-retail-1@d1b76e2e5d49	opp2	11540	11540	1	opp2.12000@12000#8b7f445ec35b	hitmap:first 1 hits per phase only	0	
 0x800550E8	fighter_HalveCpuTally	versus-cpu-clear-retail-1@d1b76e2e5d49	opp5	22820	22820	1	opp5.23100@23100#516a33e1d875	hitmap:first 1 hits per phase only	0	
+0x80055138	fighter_InitCpuControl	cpunav-padscript-retreat-1@22651bf9bb61	t_load	8270	8270	1	fight.first@8350#3854ff364f14	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80055138	fighter_InitCpuControl	data-lead-D_800A37D2-training-practice-ko-1@8b1d3a53778c	f12000	12432	12432	1	f12000.12500@12500#52c082e842ef	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80055138	fighter_InitCpuControl	data-lead-D_800A37D2-training-practice-ko-1@8b1d3a53778c	f14000	14710	14710	1	f15000.first@15000#0aafd5753c7c	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80055138	fighter_InitCpuControl	data-lead-D_800A37D2-training-practice-ko-1@8b1d3a53778c	t_load	9215	9215	1	pause_menu.first@9300#6286ed3de1cc	recorded hits only; capture limits apply	1	coverage_next_start_bound
@@ -122110,6 +122119,9 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80055B44	fighter_StartCpuPadScript	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8628	8628	1	opp1.last@8850#cbd475543ab8	hitmap:first 1 hits per phase only	0	
 0x80055B44	fighter_StartCpuPadScript	versus-cpu-tatsumi-1@016e75c2a56c	opp2	9770	9770	1	opp2.10000@10000#345997568672	hitmap:first 1 hits per phase only	0	
 0x80055B44	fighter_StartCpuPadScript	versus-cpu-tatsumi-1@016e75c2a56c	opp3	11146	11146	1	opp3.11200@11200#599ec9aae5e9	hitmap:first 1 hits per phase only	0	
+0x80055B60	fighter_BuildCpuPad	cpunav-padscript-retreat-1@22651bf9bb61	fight	8350	8697	122	fight.8400@8400#f13dfdcf71b6;fight.8500@8500#343521fe34ab;fight.8600@8600#ad58178c94ba	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x80055B60	fighter_BuildCpuPad	cpunav-padscript-retreat-1@22651bf9bb61	fight_late	8700	9399	276	fight.8800@8800#8ddeda0367f9;fight.9200@9200#6bf1282e33b4	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x80055B60	fighter_BuildCpuPad	cpunav-padscript-retreat-1@22651bf9bb61	t_load	8341	8347	3	fight.first@8350#3854ff364f14	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80055B60	fighter_BuildCpuPad	lib-story-final-fight-retail-1@2c1def7be909	after_katze	130480	130480	1	s.141700@141700#465f2f0709be	hitmap:first 1 hits per phase only	0	
 0x80055B60	fighter_BuildCpuPad	lib-story-final-fight-retail-1@2c1def7be909	boot_intro	8866	8866	1	s.8899@8899#86d5daef52e3	hitmap:first 1 hits per phase only	0	
 0x80055B60	fighter_BuildCpuPad	lib-story-final-fight-retail-1@2c1def7be909	final_fight	154397	154397	1	s.154400@154400#5a01b4b272fb	hitmap:first 1 hits per phase only	0	
@@ -157169,6 +157181,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8007855C	StepTimedSpriteSequenceWithSkip	story-gengoro-stage-0e-1@1e4d10fc1ac3	t_story	6351	6351	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x8007855C	StepTimedSpriteSequenceWithSkip	story-pov-rematch-1@766b7b5b6104	t_story	6351	6351	1	t_story.mid@6455#5a01b4b272fb	hitmap:first 1 hits per phase only	0	
 0x8007855C	StepTimedSpriteSequenceWithSkip	story-pov-sub-menu-1@5b40305ad49e	t_story	6351	6351	1	t_story.mid@6455#5a01b4b272fb	hitmap:first 1 hits per phase only	0	
+?	?	cpunav-padscript-retreat-1@22651bf9bb61	boot_intro	273	464	20	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	data-lead-D_8008E5A8-versus-2p-kimigaura-throw-jo-1@365e4630d80e	boot_intro	258	258	1	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	data-lead-D_8008E5A8-versus-2p-kimigaura-throw-kaun-1@79c53268c9be	boot_intro	258	258	1	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	data-lead-D_8008E5A8-versus-2p-kimigaura-throw-mikado-1@3ae2e63dbbb2	boot_intro	258	258	1	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function

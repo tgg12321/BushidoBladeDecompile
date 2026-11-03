@@ -1,0 +1,59 @@
+{
+  "description": "Vs. CPU Mode's first fight (stock stage; inputs identical to cpunav-padscript-retreat: the weapon pick at CROSS 7400, then P1 holds LEFT 8360-9320) with the CPU's pad script set to D_8009A8B4 once (a modified game): at 8390 (in the unmodified cpunav-padscript-retreat-1 the CPU is in move_kind 0x15 from 8362 to 8438) fighter 1's cpu_pad_script_cursor (+0x3B4) is poked to 0x8009A8B4 with delay 0 (+0x3B8), cpu_pad_script_kind (+0x3BC) 2 and cpu_pad_script_held (+0x3C8) 0, as fighter_StartCpuPadScript(p, D_8009A8B4, 2, 0) leaves them minus cpu_pad_decision_result; the run ends at 9400. trace-cpu-nav unit 3: does the script's pad bit reach the CPU pad and the stock fields",
+  "covers": [
+    "mode:vs_cpu"
+  ],
+  "evidence": [
+    "docs/naming/runtime/cpunav-padscript-8b4-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 9400,
+  "inputs": [
+    "6080:DOWN",
+    "6200:CROSS",
+    "6500:START",
+    "6800:CROSS",
+    "7100:START",
+    "7400:CROSS",
+    "8360:LEFT/960"
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6200:t_char",
+    "6500:char_select",
+    "6800:t_weapon",
+    "6900:weapon_select",
+    "7400:t_load",
+    "8350:fight",
+    "8390:fight_poke",
+    "8700:fight_late"
+  ],
+  "shots": [
+    "6900:weapon_select.first",
+    "8350:fight.first",
+    "8400:fight.8400",
+    "8500:fight.8500",
+    "8600:fight.8600",
+    "8800:fight.8800",
+    "9200:fight.9200"
+  ],
+  "pokes": [
+    {
+      "at": "0x801026C8",
+      "hex": "B4A8098000",
+      "phase": "fight_poke"
+    },
+    {
+      "at": "0x801026D0",
+      "hex": "02",
+      "phase": "fight_poke"
+    },
+    {
+      "at": "0x801026DC",
+      "hex": "00000000",
+      "phase": "fight_poke"
+    }
+  ]
+}

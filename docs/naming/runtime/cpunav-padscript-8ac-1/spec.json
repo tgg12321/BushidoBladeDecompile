@@ -1,0 +1,245 @@
+{
+  "max_events": 100000,
+  "duration_s": 7200,
+  "watch": [
+    {
+      "at": "0x8009A8AC",
+      "len": 28,
+      "kind": "read",
+      "max_hits": 5000
+    },
+    {
+      "at": "0x8010237E",
+      "len": 2,
+      "kind": "write",
+      "max_hits": 5000
+    },
+    {
+      "at": "0x80102644",
+      "len": 32,
+      "kind": "write",
+      "max_hits": 5000
+    },
+    {
+      "at": "0x801026EC",
+      "len": 4,
+      "kind": "write",
+      "max_hits": 20000
+    }
+  ],
+  "breakpoints": [
+    {
+      "at": "fighter_StartCpuPadScript",
+      "max_hits": 5000,
+      "dump": [
+        {
+          "base": "a1",
+          "len": 12
+        },
+        {
+          "base": "a0",
+          "off": 12,
+          "len": 4
+        },
+        {
+          "base": "a0",
+          "off": 816,
+          "len": 32
+        },
+        {
+          "base": "a0",
+          "off": 1088,
+          "len": 4
+        }
+      ]
+    },
+    {
+      "at": "object_ThrowQueuedKind",
+      "max_hits": 5000,
+      "dump": [
+        {
+          "base": "a0",
+          "off": 816,
+          "len": 32
+        },
+        {
+          "base": "a0",
+          "off": 106,
+          "len": 2
+        }
+      ]
+    }
+  ],
+  "script": {
+    "end_frame": 9400,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6200,
+        "name": "t_char"
+      },
+      {
+        "frame": 6500,
+        "name": "char_select"
+      },
+      {
+        "frame": 6800,
+        "name": "t_weapon"
+      },
+      {
+        "frame": 6900,
+        "name": "weapon_select"
+      },
+      {
+        "frame": 7400,
+        "name": "t_load"
+      },
+      {
+        "frame": 8350,
+        "name": "fight"
+      },
+      {
+        "frame": 8390,
+        "name": "fight_poke"
+      },
+      {
+        "frame": 8700,
+        "name": "fight_late"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6080,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6500,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6800,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7100,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7400,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8360,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 960
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6900,
+        "name": "weapon_select.first"
+      },
+      {
+        "frame": 8350,
+        "name": "fight.first"
+      },
+      {
+        "frame": 8400,
+        "name": "fight.8400"
+      },
+      {
+        "frame": 8500,
+        "name": "fight.8500"
+      },
+      {
+        "frame": 8600,
+        "name": "fight.8600"
+      },
+      {
+        "frame": 8800,
+        "name": "fight.8800"
+      },
+      {
+        "frame": 9200,
+        "name": "fight.9200"
+      }
+    ]
+  },
+  "pokes": [
+    {
+      "at": "0x801026C8",
+      "hex": "ACA8098000",
+      "phase": "fight_poke"
+    },
+    {
+      "at": "0x801026D0",
+      "hex": "02",
+      "phase": "fight_poke"
+    },
+    {
+      "at": "0x801026DC",
+      "hex": "00000000",
+      "phase": "fight_poke"
+    }
+  ]
+}

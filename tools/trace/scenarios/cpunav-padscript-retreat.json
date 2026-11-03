@@ -1,0 +1,41 @@
+{
+  "description": "Vs. CPU Mode's first fight (stock stage), unmodified: versus-cpu-first-fight's menu inputs to the weapon pick (CROSS 7400), then P1 holds LEFT from 8360 to 9320 to keep its distance from the CPU. trace-cpu-nav unit 3: whether the CPU starts D_8009A8AC / D_8009A8B4 / D_8009A8C0 on its own against a retreating P1",
+  "covers": [
+    "mode:vs_cpu"
+  ],
+  "evidence": [
+    "docs/naming/runtime/cpunav-padscript-retreat-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 9400,
+  "inputs": [
+    "6080:DOWN",
+    "6200:CROSS",
+    "6500:START",
+    "6800:CROSS",
+    "7100:START",
+    "7400:CROSS",
+    "8360:LEFT/960"
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6200:t_char",
+    "6500:char_select",
+    "6800:t_weapon",
+    "6900:weapon_select",
+    "7400:t_load",
+    "8350:fight",
+    "8700:fight_late"
+  ],
+  "shots": [
+    "6900:weapon_select.first",
+    "8350:fight.first",
+    "8400:fight.8400",
+    "8500:fight.8500",
+    "8600:fight.8600",
+    "8800:fight.8800",
+    "9200:fight.9200"
+  ]
+}
