@@ -5,7 +5,9 @@
   ],
   "evidence": [
     "docs/naming/runtime/cpunav-story-stock-1/spec.json",
-    "docs/naming/runtime/cpunav-story-stock-2/spec.json"
+    "docs/naming/runtime/cpunav-story-stock-2/spec.json",
+    "docs/naming/runtime/cpunav-story-stock-3/spec.json",
+    "docs/naming/runtime/cpunav-story-stock-4/spec.json"
   ],
   "extends": "story-final-fight-stages",
   "end_frame": 93400
