@@ -1,5 +1,5 @@
 {
-  "description": "story-concede's run cut at 8790, screenshots over the Story Mode stage card (gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells, gpu_DrawSpriteAtPackedTablePosition); poked variants move one 0x8009B7D0..0x8009B84F sprite cell's or 0x800A328C's y so the cell it places can be told apart; run 2 (hud-story-stage-card-2) pokes one field each of D_8009B820[0] (x, u, v, w, h) and of its sheet header D_8009B7A0 (tp0, tp1, count, unk3, cx, cy, ubase, vbase) under a read watch on the header",
+  "description": "story-concede's run cut at 8790, screenshots over the Story Mode stage card (gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells, gpu_DrawSpriteAtPackedTablePosition); poked variants move one 0x8009B7D0..0x8009B84F sprite cell's or 0x800A328C's y so the cell it places can be told apart; run 2 (hud-story-stage-card-2) pokes one field each of D_8009B820[0] (x, u, v, w, h) and of its sheet header D_8009B7A0 (tp0, tp1, count, unk3, cx, cy, ubase, vbase) under a read watch on the header; run 3 (hud-story-stage-card-3) pokes tp0, tp1 and unk3 of g_gpu_digit_label_and_line_segment_sheet_headers[3] (the header the card's draw mode takes its tpage from) under a read watch on it",
   "covers": [],
   "evidence": [
     "docs/naming/runtime/hud-story-stage-card-1/baseline/spec.json",
@@ -33,7 +33,11 @@
     "docs/naming/runtime/hud-story-stage-card-2/B7A0-cx/spec.json",
     "docs/naming/runtime/hud-story-stage-card-2/B7A0-cy/spec.json",
     "docs/naming/runtime/hud-story-stage-card-2/B7A0-ubase/spec.json",
-    "docs/naming/runtime/hud-story-stage-card-2/B7A0-vbase/spec.json"
+    "docs/naming/runtime/hud-story-stage-card-2/B7A0-vbase/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-3/baseline/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-3/B3BC-tp0/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-3/B3BC-tp1/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-3/B3BC-unk3/spec.json"
   ],
   "extends": "story-concede",
   "end_frame": 8790,
