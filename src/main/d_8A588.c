@@ -12,9 +12,9 @@
  * (fighter_CalcOpponentDistanceThresholdFromTables) and D_8009A838
  * (fighter_CalcOpponentDistanceThresholdFromTables,
  * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput); the pad scripts
- * D_8009A870 .. D_8009A8C0 (0x80 ends a script, fighter_StepCpuPadScript);
- * g_vab_id_list (u8[4], the run's end). Under -G8 the original compiler puts
- * them in .sdata, so no -G8 file defined them.
+ * D_8009A870 .. g_cpu_ballistic_pad_script (0x80 ends a script,
+ * fighter_StepCpuPadScript); g_vab_id_list (u8[4], the run's end). Under -G8
+ * the original compiler puts them in .sdata, so no -G8 file defined them.
  * 3. Neighbours in .data link order: 4510C.c and snd.c, -G8 code modules
  *    with their own .sdata / .sbss and gp accesses, whose .text is adjacent
  *    (0x8005490C + 0x6B30 = 0x8005B43C); so no code module owns them.
