@@ -46,7 +46,8 @@ workable, change nothing, close the lane and stop (report why).
 - **Landing.** `python tools/lanes/lanes.py land <lane>` replays the lane's commits onto the current
   main in a private landing worktree, then:
   - runs the gates (`verify-oracle --rebuild`, `tus-check`, integrity, `engine test`,
-    `test_label_census.py`) and checks the SHA1;
+    `test_label_census.py`) and checks the SHA1, in a throwaway WSL clone (`~/bb2-gate`; after
+    a gate-mirror error, `lanes.py gate-mirror --reset` and land again);
   - regenerates the census (never merge `function-names.csv` by hand);
   - merges backlog rows row by row;
   - fast-forwards main and pushes (the main lock is held only for this last step).

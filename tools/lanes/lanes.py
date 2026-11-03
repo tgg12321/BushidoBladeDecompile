@@ -44,6 +44,7 @@ Usage (Windows Python, from any cwd):
   python tools/lanes/lanes.py path  <lane> [--wsl]
   python tools/lanes/lanes.py recover <lane>                # after an interrupted land
   python tools/lanes/lanes.py push                          # retry a failed push (exit 5)
+  python tools/lanes/lanes.py gate-mirror [--reset]         # create / re-clone the WSL gate copy
 
 The session identity is $CLAUDE_CODE_SESSION_ID (override with --session for tests).
 Exit codes: 0 ok, 1 refused, 3 land bounced on a conflict, 4 a gate failed, 5 push failed,
@@ -59,6 +60,7 @@ import math
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import time
@@ -599,6 +601,219 @@ def run_shell(ctx: Ctx, wt: Path, cmd: str, log) -> int:
     if tail:
         print("\n".join("lanes:     " + t for t in tail.splitlines()), flush=True)
     return r.returncode
+
+
+# ---------------------------------------------------------------- gate mirror
+#
+# lanes.json `gate_mirror`: the gates run in a throwaway clone on the WSL ext4 disk
+# ($HOME/<path>), fetched read-only from the Windows repo for the exact commit being landed.
+# WSL never writes the Windows repo and the clone holds nothing that exists only there
+# (`lanes.py gate-mirror --reset` deletes and re-creates it; a missing clone is created on the
+# next land). Its untracked toolchain (`copy`) is copied from main once, at creation. One flock
+# serialises every use, so two lands never share a checkout.
+
+# Markers live inside .git (never a worktree file, never cleaned). OWNED is written right after
+# the clone: --reset (and a land that finds a half-made clone) may delete only a directory
+# holding it. DONE is written last: without it the clone is incomplete and is re-made.
+MIRROR_OWNED = ".git/lanes-gate-mirror-owned"
+MIRROR_DONE = ".git/lanes-gate-mirror"
+GATE_LINE = re.compile(r"^@@gate (\d+) rc=(\d+) secs=(\d+)$", re.M)
+SHA1_LINE = re.compile(r"^@@sha1 ([0-9a-f]{40}|missing)$", re.M)
+OUT_LINE = re.compile(r"^@@out (.+?)\s*$", re.M)
+MIRROR_TIMEOUT_SECS = 3 * 3600
+# Build outputs the landing worktree's regenerate / checks read (build_census.py: bb2.map),
+# copied back from the mirror after the gates.
+MIRROR_ARTIFACTS_DEFAULT = ["build/bb2.exe", "build/bb2.map", "build/bb2.elf"]
+
+
+def mirror_cfg(ctx: Ctx) -> dict | None:
+    m = ctx.cfg.get("gate_mirror")
+    if not m or ctx.cfg.get("runner") == "local" or os.environ.get("BB2_LANES_NO_MIRROR"):
+        return None
+    return m
+
+
+def _safe_rel(p: str) -> bool:
+    return bool(re.fullmatch(r"[\w./-]+", p)) and ".." not in p and not p.startswith("/")
+
+
+def _mirror_prelude(ctx: Ctx, m: dict) -> str:
+    name = m.get("path", "bb2-gate")
+    if not re.fullmatch(r"[\w.-]+", name) or name in (".", ".."):
+        raise Refuse(f"gate_mirror.path must be one directory name under $HOME, not {name!r}")
+    return ("set -u\n"
+            f'M="$HOME/{name}"\n'
+            f"SRC={shlex.quote(wsl_path(ctx.main))}\n"
+            'exec 9>"$M.lock"\nflock 9\n')
+
+
+def mirror_create_script(ctx: Ctx, m: dict, reset: bool) -> str:
+    """Bash that (re)creates the clone: delete only a directory this tool made (OWNED marker),
+    clone main read-only, copy the untracked toolchain, make the venv, then mark it DONE."""
+    copies = "".join(
+        f'if [ -e "$SRC/{p}" ] && [ ! -e "$M/{p}" ]; then mkdir -p "$(dirname "$M/{p}")" && '
+        f'cp -a "$SRC/{p}" "$M/{p}" || exit 93; fi\n'
+        f'echo "/{p}" >> .git/info/exclude\n'
+        for p in m.get("copy", []) if _safe_rel(p))
+    s = _mirror_prelude(ctx, m)
+    gone = ("[ -f \"$M/" + MIRROR_DONE + "\" ] || " if not reset else "")
+    s += (f'if [ -e "$M" ]; then {gone}{{\n'
+          f'  [ -f "$M/{MIRROR_OWNED}" ] || {{ echo "lanes-mirror: $M exists but was not made by '
+          f'lanes.py (no {MIRROR_OWNED}); not deleting it"; exit 94; }}\n'
+          '  echo "lanes-mirror: removing $M"\n'
+          '  rm -rf -- "$M" || exit 94\n'
+          '}\nfi\n')
+    s += ('if [ ! -e "$M" ]; then\n'
+          '  git -c safe.directory="*" clone -q --no-checkout "$SRC" "$M" || exit 93\n'
+          f'  date > "$M/{MIRROR_OWNED}"\n'
+          '  cd "$M" || exit 93\n'
+          '  git remote set-url --push origin no-push-from-the-gate-mirror || exit 93\n'
+          '  git checkout -q --detach main || exit 93\n'
+          + "".join("  " + ln + "\n" for ln in copies.splitlines()) +
+          '  python3 -m venv .venv || exit 93\n'
+          '  .venv/bin/pip install -q -r requirements.txt || exit 93\n'
+          '  cp requirements.txt .git/lanes-requirements.txt || exit 93\n'
+          f'  date > "$M/{MIRROR_DONE}"\n'
+          '  echo "lanes-mirror: created $M"\n'
+          'fi\n')
+    return s
+
+
+def mirror_gate_script(ctx: Ctx, m: dict, ref: str, sha: str, gates, oracle_exe: str,
+                       lane: str = "") -> str:
+    """Bash: (re)create the clone if missing or incomplete, fetch `ref` from main, check out
+    exactly `sha`, run every gate in order (stop at the first failure), print the built exe's
+    SHA1, and stage the build outputs for the landing worktree under $M.out/<lane>."""
+    if not re.fullmatch(r"[\w.-]*", lane):
+        raise Refuse(f"lane name {lane!r} is not safe for the gate mirror")
+    arts = [a for a in m.get("artifacts", MIRROR_ARTIFACTS_DEFAULT) if _safe_rel(a)]
+    s = mirror_create_script(ctx, m, reset=False)
+    s += ('cd "$M" || exit 91\n'
+          f'git -c safe.directory="*" fetch -q --no-tags "$SRC" "+{ref}:refs/gate/candidate" '
+          '|| exit 91\n'
+          f'git checkout -q -f --detach {sha} || exit 91\n'
+          'git clean -fdq || exit 91\n'  # untracked, not ignored (build/, .venv stay)
+          f'[ "$(git rev-parse HEAD)" = "{sha}" ] || {{ echo "lanes-mirror: HEAD is not {sha}"; '
+          'exit 92; }\n'
+          'if ! cmp -s requirements.txt .git/lanes-requirements.txt; then\n'
+          '  .venv/bin/pip install -q -r requirements.txt || exit 91\n'
+          '  cp requirements.txt .git/lanes-requirements.txt\n'
+          'fi\n'
+          + wsl_env_exports() +
+          '. .venv/bin/activate || exit 91\n')
+    for i, g in enumerate(gates):
+        s += (f'echo "@@gate {i} start"\nT0=$(date +%s)\n( {g} )\nRC=$?\n'
+              f'echo "@@gate {i} rc=$RC secs=$(( $(date +%s) - T0 ))"\n'
+              f'[ "$RC" = 0 ] || exit 100\n')
+    s += (f'if [ -f {shlex.quote(oracle_exe)} ]; then echo "@@sha1 $(sha1sum {shlex.quote(oracle_exe)}'
+          ' | cut -c1-40)"; else echo "@@sha1 missing"; fi\n'
+          f'O="$M.out/{lane or "_"}"\n'
+          'rm -rf -- "$O" && mkdir -p "$O" || exit 95\n'
+          + "".join(f'if [ -f {shlex.quote(a)} ]; then mkdir -p "$O/$(dirname {shlex.quote(a)})" '
+                    f'&& cp {shlex.quote(a)} "$O/{a}" || exit 95; fi\n' for a in arts) +
+          'echo "@@out $(wslpath -w "$O")"\n')
+    return s
+
+
+def parse_mirror_output(out: str, gates) -> tuple[list[tuple[str, int, int]], str | None]:
+    """[(gate, rc, secs)] for every gate that ran, and the exe SHA1 line (None if absent)."""
+    ran = [(gates[int(i)], int(rc), int(secs)) for i, rc, secs in GATE_LINE.findall(out)
+           if int(i) < len(gates)]
+    m = SHA1_LINE.search(out)
+    return ran, (m.group(1) if m else None)
+
+
+def run_wsl_script(ctx: Ctx, name: str, text: str) -> subprocess.CompletedProcess:
+    d = ctx.state_dir / "gate-mirror"
+    d.mkdir(parents=True, exist_ok=True)
+    script = d / f"{name}.sh"
+    script.write_text(text, encoding="utf-8", newline="\n")
+    try:
+        return subprocess.run(["wsl", "bash", wsl_path(script)], capture_output=True, text=True,
+                              encoding="utf-8", errors="replace", timeout=MIRROR_TIMEOUT_SECS)
+    except FileNotFoundError:
+        raise Refuse("`wsl` is not available: the gate mirror needs WSL "
+                     "(BB2_LANES_NO_MIRROR=1 gates in the landing worktree)", 4)
+    except subprocess.TimeoutExpired:
+        raise Refuse(f"the gate mirror script ran over {MIRROR_TIMEOUT_SECS // 3600} h; "
+                     f"killed (log in {d})", 4)
+
+
+def run_gates_mirror(ctx: Ctx, lane: str, ld: Path, gates, log) -> str | None:
+    """Run `gates` in the mirror on ld's HEAD; returns the built exe's SHA1 (None when no SHA1
+    line was printed). Raises Refuse(4) on a failed gate or a mirror error."""
+    m = mirror_cfg(ctx)
+    sha = git("rev-parse", "HEAD", cwd=ld)
+    ref = f"refs/lanes-gate/{lane}"
+    git("update-ref", ref, sha, cwd=ctx.main)  # the Windows side's only write
+    print(f"lanes: gates in the WSL mirror ~/{m.get('path', 'bb2-gate')} at {sha[:9]}", flush=True)
+    try:
+        r = run_wsl_script(ctx, f"gate-{lane}",
+                           mirror_gate_script(ctx, m, ref, sha, gates, ctx.cfg["oracle_exe"],
+                                              lane))
+    finally:
+        git("update-ref", "-d", ref, cwd=ctx.main, check=False)
+    logname = getattr(log, "name", "?")
+    out = (r.stdout or "") + (r.stderr or "")
+    log.write(f"\n$ [gate mirror {sha}]\n{out}\n[exit {r.returncode}]\n")
+    ran, sha1 = parse_mirror_output(out, gates)
+    for g, rc, secs in ran:
+        print(f"lanes:   $ {g}  ({secs}s{'' if rc == 0 else f', exit {rc}'})", flush=True)
+        log.write(f"[gate {g}: {secs}s]\n")
+    log.flush()
+    if r.returncode != 0:
+        tail = "\n".join("lanes:     " + t for t in out.strip().splitlines()[-8:])
+        if tail:
+            print(tail, flush=True)
+        failed = next((g for g, rc, _ in ran if rc != 0), None)
+        raise Refuse(f"gate failed: {failed}  (log {logname})" if failed else
+                     f"gate mirror error (exit {r.returncode}; log {logname}); "
+                     f"`lanes.py gate-mirror --reset` rebuilds it", 4)
+    if len(ran) != len(gates):
+        raise Refuse(f"gate mirror ran {len(ran)} of {len(gates)} gates (log {logname})", 4)
+    copy_mirror_artifacts(out, ld)
+    ctx.mirror_gated = sha
+    return sha1
+
+
+def copy_mirror_artifacts(out: str, ld: Path):
+    """Windows side: copy the build outputs the mirror staged (`@@out <\\wsl path>`) into the
+    landing worktree's build/, so regenerate (the census reads build/bb2.map) and the checks
+    there see the tree that was gated, never an older land's build."""
+    m = OUT_LINE.search(out)
+    if not m:
+        raise Refuse("the gate mirror staged no build outputs (no @@out line)", 4)
+    src = Path(m.group(1))
+    if not src.is_dir():
+        raise Refuse(f"the gate mirror's build outputs are not readable at {src}", 4)
+    for f in src.rglob("*"):
+        if f.is_file():
+            dst = ld / f.relative_to(src)
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(f, dst)
+
+
+def mirror_tip_extra(ctx: Ctx, gated: str, tip: str, cwd: Path) -> list[str]:
+    """Paths where `tip`'s tree differs from the gated commit's, outside the regenerated files.
+    Trees, not ancestry: regenerate amends the gated commit (or drops it when it empties)."""
+    regen = {r["path"] for r in ctx.cfg.get("regenerate", [])}
+    return sorted(set(git("diff", "--name-only", "--no-renames", gated, tip, cwd=cwd).split())
+                  - regen)
+
+
+def cmd_gate_mirror(ctx: Ctx, a):
+    m = ctx.cfg.get("gate_mirror")
+    if not m or ctx.cfg.get("runner") == "local":
+        raise Refuse("no gate_mirror in lanes.json (or the local runner): gates run in the "
+                     "landing worktree")
+    r = run_wsl_script(ctx, "create", mirror_create_script(ctx, m, reset=a.reset))  # flocked
+    out = ((r.stdout or "") + (r.stderr or "")).strip()
+    if out:
+        print(out)
+    if r.returncode != 0:
+        raise Refuse(f"gate mirror setup failed (exit {r.returncode})", 1)
+    print(f"lanes: gate mirror ~/{m.get('path', 'bb2-gate')} ready")
+    return 0
 
 
 # ---------------------------------------------------------------- row merge
@@ -1273,6 +1488,7 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
     git("reset", "-q", "--hard", base, cwd=ld)
     ctx.replayed = {}  # lane sha -> the candidate commit holding it (base's tip if it was empty)
     ctx.gated, ctx.cand_paths = "full", set()
+    ctx.mirror_gated = ctx.mirror_tip = None
     hows = []
     for sha in commits:
         try:
@@ -1313,19 +1529,37 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
         gates = scope_gates(ctx, ld, base, new_paths,
                             ctx.cfg["gates"].get(kind, ctx.cfg["gates"]["foundation"]))
     check_untracked(ld)
-    for g in gates:
-        t0 = time.time()
-        rc = run_shell(ctx, ld, g, log)
-        log.write(f"[gate {g}: {time.time() - t0:.0f}s]\n")
-        if rc != 0:
-            raise Refuse(f"gate failed: {g}  (log {log.name})", 4)
-    if gates and not quick and ctx.cfg.get("oracle_sha1"):
-        exe = ld / ctx.cfg["oracle_exe"]
-        got = hashlib.sha1(exe.read_bytes()).hexdigest() if exe.exists() else "missing"
+    mirrored = bool(gates) and mirror_cfg(ctx) is not None
+    if mirrored and quick and not any("verify-oracle" in g for g in gates):
+        gates = ["python3 -m engine.cli verify-oracle --rebuild"] + gates
+    if mirrored:
+        mirror_sha1 = run_gates_mirror(ctx, lane, ld, gates, log)
+    else:
+        for g in gates:
+            t0 = time.time()
+            rc = run_shell(ctx, ld, g, log)
+            log.write(f"[gate {g}: {time.time() - t0:.0f}s]\n")
+            if rc != 0:
+                raise Refuse(f"gate failed: {g}  (log {log.name})", 4)
+    if gates and (not quick or mirrored) and ctx.cfg.get("oracle_sha1"):
+        if mirrored:
+            exe, got = f"~/{mirror_cfg(ctx).get('path', 'bb2-gate')}/{ctx.cfg['oracle_exe']}", \
+                mirror_sha1 or "missing"
+        else:
+            exe = ld / ctx.cfg["oracle_exe"]
+            got = hashlib.sha1(exe.read_bytes()).hexdigest() if exe.exists() else "missing"
         if got != ctx.cfg["oracle_sha1"]:
             raise Refuse(f"{exe} SHA1 {got} != oracle {ctx.cfg['oracle_sha1']}", 4)
         print(f"lanes: SHA1 == oracle ({got[:12]})")
+    gated_sha = git("rev-parse", "HEAD", cwd=ld)
     regenerated = regenerate(ctx, lane, ld, log, docs_only=docs_only)
+    if mirrored:  # what lands is the gated commit plus only the regenerated files
+        extra = mirror_tip_extra(ctx, gated_sha, "HEAD", ld)
+        if ctx.mirror_gated != gated_sha or extra:
+            raise Refuse(f"the gated commit {str(ctx.mirror_gated)[:9]} is not the candidate "
+                         f"{gated_sha[:9]}" + (f" (after it: {', '.join(extra[:5])})"
+                                               if extra else ""), 4)
+        ctx.mirror_tip = gated_sha  # cmd_land re-checks the tip it fast-forwards
     input_checks(ctx, ld, base, log)
     tip_checks(ctx, ld, log, regenerated)
     if git("status", "--porcelain", "--untracked-files=no", cwd=ld):
@@ -1730,6 +1964,10 @@ def cmd_land(ctx: Ctx, a):
                 # recorded first: a mapping is trusted only once its commit is in main, so this
                 # is harmless if the fast-forward fails, and a failure here cannot leave main
                 # holding lane work it does not know has landed
+                gated = getattr(ctx, "mirror_tip", None)
+                if gated and mirror_tip_extra(ctx, gated, tip, ctx.main):
+                    raise Refuse(f"the tip {tip[:9]} is not the mirror-gated commit "
+                                 f"{gated[:9]} plus regenerated files; main was not changed", 4)
                 mark_landed(ctx, lane, ctx.replayed)
                 git("merge", "-q", "--ff-only", tip, cwd=ctx.main)
                 main_fast_forwarded = True
@@ -1820,14 +2058,16 @@ def main(argv=None) -> int:
     s = sub.add_parser("path"); s.add_argument("lane"); s.add_argument("--wsl", action="store_true")
     s = sub.add_parser("recover"); s.add_argument("lane")
     sub.add_parser("push")
+    s = sub.add_parser("gate-mirror"); s.add_argument("--reset", action="store_true")
     a = p.parse_args(argv)
     try:
-        if a.cmd not in ("status", "path") and not a.session:
+        if a.cmd not in ("status", "path", "gate-mirror") and not a.session:
             raise Refuse("no session id: $CLAUDE_CODE_SESSION_ID is unset (pass --session)")
         ctx = Ctx(find_main(Path(__file__).resolve().parent), a.session)
         return {"status": cmd_status, "open": cmd_open, "fresh": cmd_fresh, "drop": cmd_drop, "claim": cmd_claim,
                 "unclaim": cmd_unclaim, "land": cmd_land, "close": cmd_close,
-                "path": cmd_path, "recover": cmd_recover, "push": cmd_push}[a.cmd](ctx, a)
+                "path": cmd_path, "recover": cmd_recover, "push": cmd_push,
+                "gate-mirror": cmd_gate_mirror}[a.cmd](ctx, a)
     except Refuse as e:
         print(f"lanes: REFUSED: {e}", file=sys.stderr)
         return e.code

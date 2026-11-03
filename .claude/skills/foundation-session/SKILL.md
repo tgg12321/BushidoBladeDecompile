@@ -35,6 +35,8 @@ live session owns, and say which one you took.
   main and pushes. The gates run without the main lock; the lock covers only the final check and
   fast-forward. A land takes many minutes (full rebuild + engine test), so run it with
   `run_in_background: true` and wait for the completion notice, never under a short tool timeout.
+  The gates run in a throwaway clone on the WSL disk (`~/bb2-gate`, lanes.json `gate_mirror`);
+  a land that reports a gate-mirror error is retried after `lanes.py gate-mirror --reset`.
   If a land was interrupted anyway, `lanes.py recover <lane>` (the next `land` also does it).
   You may keep working in the lane meanwhile; commits made during it land next time (if the
   branch could not be moved because of uncommitted edits, just land again: already-landed

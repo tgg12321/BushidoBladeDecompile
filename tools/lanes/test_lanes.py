@@ -275,6 +275,138 @@ class WslRunnerEnvTest(unittest.TestCase):
         self.assertNotIn("export", self.run_wsl({"BB2_CAPTURE_STORE": ""}))
 
 
+from unittest.mock import patch  # noqa: E402
+
+
+class GateMirrorTest(unittest.TestCase):
+    """lanes-gate-mirror: gates in a WSL clone, the Windows repo only read (bar one temp ref)."""
+    GATES = ["python3 -m engine.cli verify-oracle --rebuild", "python3 -m engine.cli test"]
+
+    def ctx(self, d, **cfg):
+        from types import SimpleNamespace
+        base = {"runner": "wsl", "oracle_exe": "build/bb2.exe",
+                "gate_mirror": {"path": "bb2-gate", "copy": ["tools/gcc-2.7.2", "../etc", "disc"]}}
+        base.update(cfg)
+        return SimpleNamespace(cfg=base, main=Path(d) / "main", state_dir=Path(d) / "state")
+
+    def test_mirror_only_for_the_wsl_runner_and_not_when_disabled(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.assertIsNotNone(lanes.mirror_cfg(self.ctx(d)))
+            self.assertIsNone(lanes.mirror_cfg(self.ctx(d, runner="local")))
+            self.assertIsNone(lanes.mirror_cfg(self.ctx(d, gate_mirror=None)))
+            with patch.dict(os.environ, {"BB2_LANES_NO_MIRROR": "1"}):
+                self.assertIsNone(lanes.mirror_cfg(self.ctx(d)))
+
+    def test_scripts_stay_under_home_and_delete_only_a_marked_clone(self):
+        with tempfile.TemporaryDirectory() as d:
+            c = self.ctx(d)
+            s = lanes.mirror_create_script(c, c.cfg["gate_mirror"], reset=True)
+            self.assertIn('M="$HOME/bb2-gate"', s)
+            self.assertIn("flock 9", s)
+            self.assertIn(f'[ -f "$M/{lanes.MIRROR_OWNED}" ] ||', s)
+            self.assertLess(s.index(lanes.MIRROR_OWNED), s.index('rm -rf -- "$M"'))
+            # OWNED right after the clone, DONE last: a half-made clone can be reset
+            self.assertLess(s.index("clone -q"), s.index(f'date > "$M/{lanes.MIRROR_OWNED}"'))
+            self.assertLess(s.index("pip install"), s.index(f'date > "$M/{lanes.MIRROR_DONE}"'))
+            self.assertIn("set-url --push origin no-push", s)
+            self.assertIn("tools/gcc-2.7.2", s)
+            self.assertNotIn("../etc", s)  # a copy entry leaving the repo is ignored
+            # without --reset only an incomplete clone of ours is removed
+            self.assertIn(f'[ -f "$M/{lanes.MIRROR_DONE}" ] || {{',
+                          lanes.mirror_create_script(c, c.cfg["gate_mirror"], False))
+            for bad in ("", "..", "a/b", "$(x)", "~"):
+                with self.assertRaises(lanes.Refuse):
+                    lanes.mirror_create_script(c, {"path": bad}, reset=True)
+            g = lanes.mirror_gate_script(c, c.cfg["gate_mirror"], "refs/lanes-gate/x", "a" * 40,
+                                         self.GATES, "build/bb2.exe", "x")
+            self.assertIn('O="$M.out/x"', g)
+            self.assertIn("cp build/bb2.map", g)
+            with self.assertRaises(lanes.Refuse):
+                lanes.mirror_gate_script(c, c.cfg["gate_mirror"], "r", "a" * 40, [], "b", "../x")
+            self.assertIn('[ "$(git rev-parse HEAD)" = "' + "a" * 40 + '" ]', g)
+            self.assertIn("git checkout -q -f --detach " + "a" * 40, g)
+            self.assertLess(g.index("( python3 -m engine.cli verify-oracle --rebuild )"),
+                            g.index("( python3 -m engine.cli test )"))
+            self.assertNotIn("\r", g)
+
+    def run_mirror(self, out, rc=0):
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as d:
+            c = self.ctx(d)
+            calls = []
+
+            def fake_git(*a, cwd, check=True):
+                calls.append(a)
+                return "c" * 40 if a[0] == "rev-parse" else ""
+            log = io.StringIO()
+            with patch.object(lanes, "git", fake_git), \
+                    patch.object(lanes, "copy_mirror_artifacts", lambda out, ld: None), \
+                    patch.object(lanes, "run_wsl_script",
+                                 return_value=SimpleNamespace(returncode=rc, stdout=out, stderr="")), \
+                    redirect_stdout(io.StringIO()):
+                try:
+                    return lanes.run_gates_mirror(c, "x", Path(d), self.GATES, log), c, calls, log
+                except lanes.Refuse as e:
+                    return e, c, calls, log
+
+    def test_pass_records_the_gated_sha_and_drops_the_temp_ref(self):
+        out = ("@@gate 0 start\n@@gate 0 rc=0 secs=40\n@@gate 1 start\n@@gate 1 rc=0 secs=90\n"
+               "@@sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa\n")
+        got, c, calls, log = self.run_mirror(out)
+        self.assertEqual(got, "62efab4f73f992798c43e8c730aa43baa10bb4fa")
+        self.assertEqual(c.mirror_gated, "c" * 40)
+        self.assertIn(("update-ref", "refs/lanes-gate/x", "c" * 40), calls)
+        self.assertEqual(calls[-1], ("update-ref", "-d", "refs/lanes-gate/x"))
+        self.assertIn(f"[gate {self.GATES[1]}: 90s]", log.getvalue())
+
+    def test_artifacts_are_copied_back_into_the_landing_build(self):
+        with tempfile.TemporaryDirectory() as d:
+            staged = Path(d) / "out"
+            (staged / "build").mkdir(parents=True)
+            (staged / "build" / "bb2.map").write_text("fresh", encoding="utf-8")
+            ld = Path(d) / "ld"
+            (ld / "build").mkdir(parents=True)
+            (ld / "build" / "bb2.map").write_text("stale", encoding="utf-8")
+            lanes.copy_mirror_artifacts(f"x\n@@out {staged}\n", ld)
+            self.assertEqual((ld / "build" / "bb2.map").read_text(encoding="utf-8"), "fresh")
+            with self.assertRaises(lanes.Refuse):
+                lanes.copy_mirror_artifacts("no out line", ld)
+
+    def test_tip_check_accepts_an_amended_regenerate_and_nothing_else(self):
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as d:
+            r = Path(d)
+            g = lambda *a: subprocess.run(["git", *a], cwd=r, check=True, capture_output=True,
+                                          text=True).stdout.strip()
+            g("init", "-q")
+            g("config", "user.email", "t@t"); g("config", "user.name", "t")
+            (r / "a.c").write_text("1", encoding="utf-8")
+            g("add", "-A"); g("commit", "-qm", "base")
+            (r / "a.c").write_text("2", encoding="utf-8")
+            g("commit", "-qam", "lane")
+            gated = g("rev-parse", "HEAD")
+            (r / "census.csv").write_text("x", encoding="utf-8")  # regenerate amends
+            g("add", "-A"); g("commit", "-q", "--amend", "--no-edit")
+            c = SimpleNamespace(cfg={"regenerate": [{"path": "census.csv"}]})
+            self.assertEqual(lanes.mirror_tip_extra(c, gated, "HEAD", r), [])
+            (r / "a.c").write_text("3", encoding="utf-8")  # anything else is refused
+            g("commit", "-qam", "late")
+            self.assertEqual(lanes.mirror_tip_extra(c, gated, "HEAD", r), ["a.c"])
+
+    def test_failed_gate_missing_gate_or_mirror_error_refuse_4(self):
+        e, c, calls, _ = self.run_mirror("@@gate 0 rc=0 secs=1\n@@gate 1 rc=2 secs=5\n", rc=100)
+        self.assertIsInstance(e, lanes.Refuse)
+        self.assertEqual(e.code, 4)
+        self.assertIn(self.GATES[1], str(e))
+        self.assertFalse(getattr(c, "mirror_gated", None))
+        self.assertEqual(calls[-1], ("update-ref", "-d", "refs/lanes-gate/x"))
+        e, *_ = self.run_mirror("lanes-mirror: HEAD is not ...\n", rc=92)
+        self.assertEqual(e.code, 4)
+        self.assertIn("gate-mirror --reset", str(e))
+        e, *_ = self.run_mirror("@@gate 0 rc=0 secs=1\n@@sha1 missing\n", rc=0)  # one gate lost
+        self.assertEqual(e.code, 4)
+
+
 class InputCheckTest(unittest.TestCase):
     """Dispatch tests independent of shell transport and lane fixture setup."""
 
