@@ -2787,8 +2787,8 @@ glabel fighter_UpdateCpuNavigationChooseScriptsAndHeldInput
     /* 4B598 8005AD98 94116228 */   slti      $v0, $v1, 0x1194
     /* 4B59C 8005AD9C 06004010 */  beqz       $v0, .L8005ADB8
     /* 4B5A0 8005ADA0 15000224 */   addiu     $v0, $zero, 0x15
-    /* 4B5A4 8005ADA4 0A80133C */  lui        $s3, %hi(D_8009A8C0)
-    /* 4B5A8 8005ADA8 C0A87326 */  addiu      $s3, $s3, %lo(D_8009A8C0)
+    /* 4B5A4 8005ADA4 0A80133C */  lui        $s3, %hi(g_cpu_ballistic_pad_script)
+    /* 4B5A8 8005ADA8 C0A87326 */  addiu      $s3, $s3, %lo(g_cpu_ballistic_pad_script)
     /* 4B5AC 8005ADAC DE6B0108 */  j          .L8005AF78
     /* 4B5B0 8005ADB0 00000000 */   nop
   .L8005ADB4:
@@ -2906,13 +2906,13 @@ glabel fighter_UpdateCpuNavigationChooseScriptsAndHeldInput
     /* 4B754 8005AF54 01004230 */  andi       $v0, $v0, 0x1
     /* 4B758 8005AF58 05004010 */  beqz       $v0, .L8005AF70
     /* 4B75C 8005AF5C 00000000 */   nop
-    /* 4B760 8005AF60 0A80133C */  lui        $s3, %hi(D_8009A8B4)
-    /* 4B764 8005AF64 B4A87326 */  addiu      $s3, $s3, %lo(D_8009A8B4)
+    /* 4B760 8005AF60 0A80133C */  lui        $s3, %hi(g_cpu_double_stock_use_pad_script)
+    /* 4B764 8005AF64 B4A87326 */  addiu      $s3, $s3, %lo(g_cpu_double_stock_use_pad_script)
     /* 4B768 8005AF68 DE6B0108 */  j          .L8005AF78
     /* 4B76C 8005AF6C 00000000 */   nop
   .L8005AF70:
-    /* 4B770 8005AF70 0A80133C */  lui        $s3, %hi(D_8009A8AC)
-    /* 4B774 8005AF74 ACA87326 */  addiu      $s3, $s3, %lo(D_8009A8AC)
+    /* 4B770 8005AF70 0A80133C */  lui        $s3, %hi(g_cpu_stock_use_pad_script)
+    /* 4B774 8005AF74 ACA87326 */  addiu      $s3, $s3, %lo(g_cpu_stock_use_pad_script)
   .L8005AF78:
     /* 4B778 8005AF78 05006012 */  beqz       $s3, .L8005AF90
     /* 4B77C 8005AF7C 21200002 */   addu      $a0, $s0, $zero

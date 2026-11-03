@@ -1724,9 +1724,9 @@ extern u8 D_8009A890[];
 extern u8 D_8009A898[];
 extern u8 D_8009A89C[];
 extern u8 D_8009A8A4[];
-extern u8 D_8009A8AC[];
-extern u8 D_8009A8B4[];
-extern u8 D_8009A8C0[];
+extern u8 g_cpu_stock_use_pad_script[];
+extern u8 g_cpu_double_stock_use_pad_script[];
+extern u8 g_cpu_ballistic_pad_script[];
 extern u8 g_cpu_move_range_rules[8][4];
 extern NavVertexChainSet g_cpu_stage_nav_sets[];
 extern u16 D_8009A928[][23];
@@ -2889,7 +2889,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                             [p->other->variant_index] <
                         g_fighter_horizontal_separation &&
                     g_fighter_horizontal_separation < 4500) {
-                    var_10 = D_8009A8C0;
+                    var_10 = g_cpu_ballistic_pad_script;
                 } else {
                     s32 var_60;
 
@@ -2928,9 +2928,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     if (var_40) {
                         if ((g_cpu_profiles[p->cpu_profile].flags & 0x10) &&
                             var_60 >= 2 && (rand() & 1)) {
-                            var_10 = D_8009A8B4;
+                            var_10 = g_cpu_double_stock_use_pad_script;
                         } else {
-                            var_10 = D_8009A8AC;
+                            var_10 = g_cpu_stock_use_pad_script;
                         }
                     }
                 }
