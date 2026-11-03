@@ -8487,6 +8487,28 @@ def test_naming_keycheck_scoped_pairs() -> None:
                         {"src/a.c": text.replace("int l", "int n").replace("A4(l) + l", "A4(n) + n")})
         check("keycheck: local macro argument " + body,
               ok if reason is None else not ok and reason in why)
+    # A fixed member access or cast tag in the body (libgpu setlen / setRGB0 /
+    # setVector shape) passes; a parameter as the member or tag, a member followed by
+    # a call or a name, a bare-name or leading/trailing access, a keyword member, and
+    # a tag outside a cast's type name still fail.
+    tag = "struct T { int len; int x; int y; }; struct T s, arr[2];\n"
+    for body, passes in [("(((struct T *)(x))->len = 1)", True), ("((x) + s.len)", False),
+                         ("((&s)->len + (x))", True), ("((x) + (&s)->len)", True),
+                         ("((x) + arr[0].len)", True), ("(((struct T *)(x))->len = (x))", True),
+                         ("((&s)->x + (x))", False), ("((x) + (&s)->len(1))", False),
+                         ("((x) + (&s)->len y)", False), ("((x) + (s)->)", False),
+                         ("(->len + (x))", False), ("((x) + (&s)->int)", False),
+                         ("((struct T *)(x) == 0)", True), ("((struct x *)(x) == 0)", False),
+                         ("(struct T *(x))", False), ("((struct T x) + (x))", False),
+                         ("((struct T { int q; } *)(x))", False), ("((struct int *)(x))", False)]:
+        text = "#define A4(x) " + body + "\n" + tag + "int f(int l){return A4(l) + l;}\n"
+        try:
+            nk.scoped_plan({"src/a.c": text}, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check(f"keycheck: local macro argument fixed member access {body} ({why})",
+              why == "" if passes else "argument of function-like macro A4" in why)
     # Review probes: a parameter forwarded into another macro, or an identity
     # macro invoked where its expansion is a member, tag or label, fails; so does
     # a #define reached through a ../ or #import include.

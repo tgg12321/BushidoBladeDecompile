@@ -3118,6 +3118,31 @@ def local_aggregate_hazard(ts, start, end, names):
     return False
 
 
+def fixed_member_access(body, j, params):
+    """body[j] (a . / -> or a tag keyword) introduces a fixed member or tag, spelled
+    by the macro and not by an argument, so no argument can land in the member or tag namespace:
+    a `.` / `->` with a ) or ] before it, followed by an identifier that is no
+    parameter and no keyword, then by neither `(` nor another name
+    (`((P_TAG *)(p))->len`); or a cast's whole type name, `(` struct / union / enum T,
+    `*`s, `)` (`(struct T *)(p)`). A parameter as the member or tag still refuses."""
+    if body[j] in (".", "->"):
+        if not (0 < j and body[j - 1] in (")", "]")):
+            return False
+    elif body[j] in ("struct", "union", "enum"):
+        # Only a cast's whole type name: `(` tag T, then `*`s, then `)`.
+        k = j + 2
+        while body[k:k + 1] == ("*",):
+            k += 1
+        return (0 < j and body[j - 1] == "(" and body[k:k + 1] == (")",)
+                and IDENT.fullmatch(body[j + 1] if j + 1 < len(body) else "") is not None
+                and body[j + 1] not in params and body[j + 1] not in C_KEYWORDS)
+    else:
+        return False
+    return (j + 1 < len(body) and IDENT.fullmatch(body[j + 1]) is not None
+            and body[j + 1] not in params and body[j + 1] not in C_KEYWORDS
+            and not (body[j + 2:j + 3] and (body[j + 2] == "(" or IDENT.fullmatch(body[j + 2]))))
+
+
 def reject_unexpanded_macro_arguments(text, old, records, path, indices=None, local=False):
     """Member pairs keep an unchanged macro argument naming m only when every
     definition of that macro expands all of its parameters plainly (each occurs in
@@ -3128,7 +3153,9 @@ def reject_unexpanded_macro_arguments(text, old, records, path, indices=None, lo
     tokens (indices, local=True): a plainly expanded argument is pasted at the call
     site in f's scope, so renaming it renames exactly that use. There a parameter must
     also stay an operand: after . -> goto struct union enum or before : (a member, tag
-    or label) it fails; a body that names any macro fails (the parameter could be
+    or label) it fails, and so does any other member/tag/label/brace token in the
+    body except a fixed member access or tag (fixed_member_access: `)->len`, `].x`,
+    `(struct T *)`, whose member or tag the macro spells itself); a body that names any macro fails (the parameter could be
     forwarded into one); and an invocation after . -> struct union enum goto # ## or a
     label-address &&, or before : or ##, fails (its expansion's edge would sit there).
     So no macro moves the local into another namespace."""
@@ -3165,13 +3192,15 @@ def reject_unexpanded_macro_arguments(text, old, records, path, indices=None, lo
                 raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, "
                                  "beside a macro name in its arguments")
             for params, body in defs:
-                if any(tok in forms or tok in LOCAL_MACRO_BODY_BANNED for tok in body):
+                if any(tok in forms or (tok in LOCAL_MACRO_BODY_BANNED and not fixed_member_access(body, j, params))
+                       for j, tok in enumerate(body)):
                     raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, "
                                      "whose body names a macro or a member/tag/label/brace token")
                 # Allowlist shape: no keyword but a cast's type words (no
                 # __attribute__, sizeof, typeof, _Pragma ...) and no name before `(`.
                 for j, tok in enumerate(body):
-                    if (tok in C_KEYWORDS or tok in ("_Pragma", "defined")) and tok not in LOCAL_MACRO_BODY_KEYWORDS:
+                    if ((tok in C_KEYWORDS or tok in ("_Pragma", "defined")) and tok not in LOCAL_MACRO_BODY_KEYWORDS
+                            and not fixed_member_access(body, j, params)):
                         raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, "
                                          f"whose body holds the keyword {tok}")
                     if IDENT.fullmatch(tok) and body[j + 1:j + 2] == ("(",):
