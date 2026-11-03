@@ -1,0 +1,80 @@
+{
+  "kind": "compare",
+  "version": 1,
+  "base": "../baseline/capture.jsonl",
+  "other": "capture.jsonl",
+  "outputs": [
+    {
+      "path": "compare.opp2.9134.diff.png",
+      "sha1": "0b4935cf98c0c920311fd5f6a7ab9ee308202863",
+      "size": 25479,
+      "stored": true
+    },
+    {
+      "path": "compare.opp2.9136.diff.png",
+      "sha1": "026c7534a4dbdd0b66606058a8732c6efd2506bd",
+      "size": 26059,
+      "stored": true
+    },
+    {
+      "path": "compare.opp2.9138.diff.png",
+      "sha1": "db3f06757bbcb332bede30fc722b4242f0882001",
+      "size": 26922,
+      "stored": true
+    },
+    {
+      "path": "compare.opp2.9214.diff.png",
+      "sha1": "69f7e5a9820033d8298bd25885867c5411534349",
+      "size": 29706,
+      "stored": true
+    },
+    {
+      "path": "compare.opp2.9216.diff.png",
+      "sha1": "23a020eed48f8118f48f7b2890914bc09c4709c3",
+      "size": 29974,
+      "stored": true
+    },
+    {
+      "path": "compare.opp2.9218.diff.png",
+      "sha1": "2273546888cee6bf53304af4c286345c30521d90",
+      "size": 30188,
+      "stored": true
+    },
+    {
+      "path": "compare.opp3.10592.diff.png",
+      "sha1": "b3b837f23e5566c76e25b59f7abeac1942023f29",
+      "size": 29817,
+      "stored": true
+    },
+    {
+      "path": "compare.opp3.10594.diff.png",
+      "sha1": "eff9589578bc209c0df6728c9effcf057d3884a2",
+      "size": 29763,
+      "stored": true
+    },
+    {
+      "path": "compare.opp3.10596.diff.png",
+      "sha1": "2f578e03b6cf41b780c5d2efa15c1708bb67e5e4",
+      "size": 29739,
+      "stored": true
+    },
+    {
+      "path": "compare.opp3.12214.diff.png",
+      "sha1": "397a48a19eeffe4709678f3e6f32884b0d6a81c4",
+      "size": 35825,
+      "stored": true
+    },
+    {
+      "path": "compare.opp3.12216.diff.png",
+      "sha1": "f29f53cf5c0d55f53bba2d85d46b5a009140983b",
+      "size": 35227,
+      "stored": true
+    },
+    {
+      "path": "compare.opp3.12218.diff.png",
+      "sha1": "3aa15ca0ce058f0ef9015d3382b14dd924b5152f",
+      "size": 35348,
+      "stored": true
+    }
+  ]
+}

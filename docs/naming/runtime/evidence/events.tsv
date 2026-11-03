@@ -1898,6 +1898,164 @@ eff_DrawAnimatedQuads	call	eff_DrawAndAdvancePreseededGrowingQuadFirstSlot	fight
 eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting	fight	0x80065598	report			6	[[7,2148121460,528482352,2148591936],[7,2148121460,528482352,2148591976],[7,2148121460,528482352,2148609936],[7,2148121460,528482352,2148609976]]	0	hud-eff-kimigaura-1/baseline@17899d345f8a	0	
 eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceRateSelectedCosineScaledQuad	fight	0x80065498	report			378	[[5,2148121460,528482352,528482434],[5,2148121460,528482352,2148592256],[5,2148121460,528482352,2148610256]]	0	hud-eff-kimigaura-1/baseline@17899d345f8a	0	
 eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureFirstSlot	fight	0x8006534C	report			44	[[1,2148121460,528482352,2148591896],[1,2148121460,528482352,2148592256],[1,2148121460,528482352,2148592416],[1,2148121460,528482352,2148609896],[1,2148121460,528482352,2148610256],[1,2148121460,528482352,2148610416]]	0	hud-eff-kimigaura-1/baseline@17899d345f8a	0	
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F18	report	0	2	40	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F18	report	16	2	44	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F1C	report	18	2	44	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F1C	report	2	2	40	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F44	report	20	2	44	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F44	report	4	2	40	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F58	report	22	2	44	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F58	report	6	2	40	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F6C	report	20	2	44	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F6C	report	4	2	40	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F90	report	22	2	44	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F90	report	6	2	40	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F18	report	0	2	2	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F18	report	8	2	4	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F1C	report	10	2	4	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F1C	report	2	2	2	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F44	report	12	2	4	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F44	report	4	2	2	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F58	report	14	2	4	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F58	report	6	2	2	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F6C	report	12	2	4	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F6C	report	4	2	2	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F90	report	14	2	4	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F90	report	6	2	2	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F18	report	0	2	2	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F18	report	8	2	4	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F1C	report	10	2	4	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F1C	report	2	2	2	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F44	report	12	2	4	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F44	report	4	2	2	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F58	report	14	2	4	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F58	report	6	2	2	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F6C	report	12	2	4	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F6C	report	4	2	2	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F90	report	14	2	4	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F90	report	6	2	2	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp1	0x80065F18	report	0	2	6	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp1	0x80065F1C	report	2	2	6	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp1	0x80065F44	report	4	2	6	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp1	0x80065F58	report	6	2	6	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp1	0x80065F6C	report	4	2	6	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp1	0x80065F90	report	6	2	6	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp2	0x80065F18	report	0	2	6	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp2	0x80065F1C	report	2	2	6	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp2	0x80065F44	report	4	2	6	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp2	0x80065F58	report	6	2	6	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp2	0x80065F6C	report	4	2	6	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp2	0x80065F90	report	6	2	6	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp3	0x80065F18	report	0	2	3	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp3	0x80065F18	report	8	2	3	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp3	0x80065F1C	report	10	2	3	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp3	0x80065F1C	report	2	2	3	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp3	0x80065F44	report	12	2	3	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp3	0x80065F44	report	4	2	3	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp3	0x80065F58	report	14	2	3	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp3	0x80065F58	report	6	2	3	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp3	0x80065F6C	report	12	2	3	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp3	0x80065F6C	report	4	2	3	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp3	0x80065F90	report	14	2	3	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+0x8009B9D8	read	eff_DrawAnimatedQuads	opp3	0x80065F90	report	6	2	3	[null]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	1	missing_value;partial_read
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceCosineScaledQuad	opp3	0x800652FC	report			23	[[0,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvancePreseededGrowingQuadFirstSlot	opp2	0x800653EC	report			6	[[3,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceQuadNotMirroredByViewSetting	opp1	0x80065638	report			6	[[11,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceQuadNotMirroredByViewSetting	opp2	0x80065638	report			6	[[11,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceQuadPairWithFirstMirroredByViewSettingOutsideReplay	opp3	0x80065548	report			6	[[6,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceRateSelectedCosineScaledQuad	opp3	0x80065498	report			17	[[5,2148121460,528482352,528482476],[5,2148121460,528482352,4278190080]]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureFirstSlot	opp3	0x8006534C	report			33	[[1,2148121460,528482352,528482476],[1,2148121460,528482352,4278190080]]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureSecondSlot	opp3	0x8006539C	report			11	[[2,2148121460,528482352,4278190080]]	0	hud-eff-tatsumi-pov-1/baseline@e6ff20f39f98	0	
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp2	0x80065F18	report	8	2	11	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp2	0x80065F1C	report	10	2	11	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp2	0x80065F44	report	12	2	11	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp2	0x80065F58	report	14	2	11	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp2	0x80065F6C	report	12	2	11	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp2	0x80065F90	report	14	2	11	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F18	report	0	2	167	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F18	report	8	2	22	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F1C	report	10	2	22	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F1C	report	2	2	167	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F44	report	12	2	22	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F44	report	4	2	167	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F58	report	14	2	22	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F58	report	6	2	167	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F6C	report	12	2	22	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F6C	report	4	2	167	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F90	report	14	2	22	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B8C8	read	eff_DrawAnimatedQuads	opp3	0x80065F90	report	6	2	167	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp1	0x80065F18	report	0	2	2	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp1	0x80065F18	report	8	2	4	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp1	0x80065F1C	report	10	2	4	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp1	0x80065F1C	report	2	2	2	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp1	0x80065F44	report	12	2	4	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp1	0x80065F44	report	4	2	2	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp1	0x80065F58	report	14	2	4	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp1	0x80065F58	report	6	2	2	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp1	0x80065F6C	report	12	2	4	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp1	0x80065F6C	report	4	2	2	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp1	0x80065F90	report	14	2	4	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp1	0x80065F90	report	6	2	2	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F18	report	0	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F18	report	16	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F18	report	24	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F18	report	8	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F1C	report	10	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F1C	report	18	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F1C	report	2	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F1C	report	26	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F44	report	12	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F44	report	20	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F44	report	28	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F44	report	4	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F58	report	14	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F58	report	22	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F58	report	30	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F58	report	6	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F6C	report	12	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F6C	report	20	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F6C	report	28	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F6C	report	4	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F90	report	14	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F90	report	22	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F90	report	30	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp2	0x80065F90	report	6	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F18	report	0	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F18	report	16	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F18	report	24	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F18	report	8	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F1C	report	10	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F1C	report	18	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F1C	report	2	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F1C	report	26	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F44	report	12	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F44	report	20	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F44	report	28	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F44	report	4	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F58	report	14	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F58	report	22	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F58	report	30	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F58	report	6	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F6C	report	12	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F6C	report	20	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F6C	report	28	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F6C	report	4	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F90	report	14	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F90	report	22	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F90	report	30	2	12	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+0x8009B978	read	eff_DrawAnimatedQuads	opp3	0x80065F90	report	6	2	6	[null]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	1	missing_value;partial_read
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceCosineScaledQuad	opp3	0x800652FC	report			23	[[0,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvancePreseededGrowingQuadFirstSlot	opp1	0x800653EC	report			6	[[3,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvancePreseededGrowingQuadFirstSlot	opp2	0x800653EC	report			6	[[3,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvancePreseededGrowingQuadFirstSlot	opp3	0x800653EC	report			6	[[3,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay	opp3	0x800655E8	report			6	[[10,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting	opp2	0x80065598	report			12	[[7,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting	opp3	0x80065598	report			6	[[7,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceQuadPairWithFirstMirroredByViewSettingOutsideReplay	opp3	0x80065548	report			6	[[6,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceRateSelectedCosineScaledQuad	opp3	0x80065498	report			144	[[5,2148121460,528482352,528482476],[5,2148121460,528482352,4278190080]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureFirstSlot	opp2	0x8006534C	report			11	[[1,2148121460,528482352,528482476]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureFirstSlot	opp3	0x8006534C	report			11	[[1,2148121460,528482352,528482476],[1,2148121460,528482352,4278190080]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
+eff_DrawAnimatedQuads	call	eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureSecondSlot	opp3	0x8006539C	report			11	[[2,2148121460,528482352,4278190080]]	0	hud-eff-tatsumi-side-1/baseline@176f7d5cc442	0	
 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells	call	fight_UpdateCommandStreamImageLoadAndResume	t_stage	0x8003B914	report			2	[[2149419008,1,24,1],[2149497856,1,24,1]]	0	hud-story-stage-card-1/baseline@f4ba42592c0e	0	
 gpu_DrawSpriteAtPackedTablePosition	call	gpu_DrawDisplayModeOnLocalOtAndSync	stage_card	0x800176DC	report			1	[[32776,2148479960,0,2148122324]]	0	hud-story-stage-card-1/baseline@f4ba42592c0e	0	
 0x8009B7A0	read	gpu_AddSpriteCells	t_stage	0x80073564	report	4	2	2	[null]	0	hud-story-stage-card-2/baseline@51313dfe6a2b	1	missing_value;partial_read

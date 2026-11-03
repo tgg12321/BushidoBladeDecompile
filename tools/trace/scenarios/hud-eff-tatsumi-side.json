@@ -1,0 +1,52 @@
+{
+  "description": "versus-cpu-tatsumi's run with RIGHT at 6070 on the top menu's Story row (as story-pov-rematch: that row's view set to POV) before the DOWN at 6080 to the Vs. CPU row, which stays on Side View, so the fight renders in side view; this input changes the run against versus-cpu-tatsumi: the fight shots 8350-12400 show 0 KILLS against one opponent on one stage and the run ends on the post-KO Rematch menu (12999); opp1 / opp2 / opp3 are versus-cpu-tatsumi's phase labels (8350 / 8900 / 10560), not opponents; screenshots every 2 frames over the eff_DrawAnimatedQuads effects an exploratory, uncommitted run of the same script found: modes 7 with its mode-9 re-run (9128-9140, 9208-9220, 12208-12220), 6 with its mode-8 re-run (10586-10598) and 10 (10622-10634); hud-eff-tatsumi-side-1 breaks on eff_DrawAnimatedQuads (mode_index in a0) under read watches on the TexRec records 0x8009B8C8..0x8009B8E7, 0x8009B978..0x8009B997 and 0x8009B9D8..0x8009B9F7, and its poked variants move one TexRec's u (D_8009B988, D_8009B990) when opp1 starts",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/hud-eff-tatsumi-side-1/baseline/spec.json",
+    "docs/naming/runtime/hud-eff-tatsumi-side-1/B988-u/spec.json",
+    "docs/naming/runtime/hud-eff-tatsumi-side-1/B990-u/spec.json"
+  ],
+  "extends": "versus-cpu-tatsumi",
+  "inputs": [
+    "6070:RIGHT"
+  ],
+  "shots": [
+    "6079:top_menu.story_pov",
+    "6120:top_menu.vs_cpu_side",
+    "9128:opp2.9128",
+    "9130:opp2.9130",
+    "9132:opp2.9132",
+    "9134:opp2.9134",
+    "9136:opp2.9136",
+    "9138:opp2.9138",
+    "9140:opp2.9140",
+    "9208:opp2.9208",
+    "9210:opp2.9210",
+    "9212:opp2.9212",
+    "9214:opp2.9214",
+    "9216:opp2.9216",
+    "9218:opp2.9218",
+    "9220:opp2.9220",
+    "10586:opp3.10586",
+    "10588:opp3.10588",
+    "10590:opp3.10590",
+    "10592:opp3.10592",
+    "10594:opp3.10594",
+    "10596:opp3.10596",
+    "10598:opp3.10598",
+    "10622:opp3.10622",
+    "10624:opp3.10624",
+    "10626:opp3.10626",
+    "10628:opp3.10628",
+    "10630:opp3.10630",
+    "10632:opp3.10632",
+    "10634:opp3.10634",
+    "12208:opp3.12208",
+    "12210:opp3.12210",
+    "12212:opp3.12212",
+    "12214:opp3.12214",
+    "12216:opp3.12216",
+    "12218:opp3.12218",
+    "12220:opp3.12220"
+  ]
+}
