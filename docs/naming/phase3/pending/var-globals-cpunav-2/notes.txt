@@ -1,0 +1,31 @@
+# var-globals-cpunav-2 notes (cites at WT HEAD b3478f106, lane ln-naming-b; research tmp/codex/var-globals-cpunav-2-research.md (Opus, read-only, cited e28649075); every access re-derived by the drafter by git grep -w over src, include, asm, bb2.ld, tools, engine, symbol_addrs.txt, named_syms.txt, undefined_syms_auto.txt, docs/naming/function-names.csv; verdicts left empty for the reviewer)
+Result: 3 rows proposed (all research rows), 0 rows dropped, names changed from research: none. data_wave dry run rc=0, no refusals (3 addresses; edits asm/funcs/fighter_UpdateCpuNavigationChooseScriptsAndHeldInput.s (6), src/main/4510C.c (6), src/main/d_8A588.c (3)); git status shows only the new pending dir. Research line cites matched at HEAD (gate 4510C.c:2874-2939, decoder :483-575, 9F9C.c:1105-1111, 0x78 sites 4510C.c:926/:2830/:2886, 9F9C.c:5817).
+
+Access sets re-derived (equal to the research)
+- D_8009A8AC: 4510C.c:1727 extern, :2933 (var_10 =); d_8A588.c:267 def; asm fighter_UpdateCpuNavigationChooseScriptsAndHeldInput.s:2914-2915 (%hi/%lo).
+- D_8009A8B4: 4510C.c:1728 extern, :2931; d_8A588.c:268-269 def; asm .s:2909-2910.
+- D_8009A8C0: 4510C.c:1729 extern, :2892; d_8A588.c:270 def (+ :15 header comment); asm .s:2790-2791.
+- None in include, bb2.ld, engine, symbol_addrs.txt, named_syms.txt, undefined_syms_auto.txt, function-names.csv. tools/ hits are trace scenario JSON descriptions only (cpunav-padscript-{8ac,8b4,8c0,retreat}.json:2, data-lead-D_8009A8AC-*.json:2,:4): history, not rewritten by the dry run.
+- Fresh: g_cpu_stock_use_pad_script and g_cpu_double_stock_use_pad_script: 0 hits in src, include, asm, registries, function-names.csv; docs only as a proposed lead (docs/naming/phase3/backlog.tsv:60, pending/var-globals-s/notes.txt:8). g_cpu_ballistic_pad_script: 0 hits tracked tree-wide.
+
+Weakest rows for the reviewer
+1. 0x8009A8AC (g_cpu_stock_use_pad_script): the weapon_ammo branch (profile flags & 0x300, stage command count >= 6, 4510C.c:2905-2909) is untraced; the name rests on the gate there. Fallback per research: NO_NAME if the reviewer rejects a name resting on the gate for that branch ('throw' deliberately not used). Also profile 0x15 (throw_charges_left) untraced.
+2. 0x8009A8C0 (g_cpu_ballistic_pad_script): no capture breaks on fight_CreateBallisticRecordAndDispatchEvent; the name rests on the (0x78 >> collision_hit_tag) & 1 && hit_record_group_6_9_intact gate matching 9F9C.c:5815-5821. Fallback: NO_NAME.
+3. 0x8009A8B4 (g_cpu_double_stock_use_pad_script): second press matched command 0x80D5 (per-character mask), so it may start nothing for some characters; the gate (var_60 >= 2, flags & 0x10) still requires two units. Fallback: NO_NAME (no weaker spelling proposed).
+4. Pad word is not config-mapped (9F9C.c:1107-1110), so the human-mapping objection does not reach these words; Q124 captures cpunav-padscript-*-1/-2 are modified-game corroboration only.
+
+NO_NAME (carried from the research)
+- D_8009A870 / D_8009A874: threat-response press of bit 5 / bit 6 (4510C.c:1842-1843, :1922); resulting move is data, no capture, unk_AF unnamed.
+- D_8009A878 / D_8009A880 / D_8009A888 / D_8009A890: d-pad double taps (bits 14/12/13/15); probe-direction to screen-direction map and the tap's move untraced; 'double_tap' cannot tell the four apart (N4).
+- D_8009A898: one press of bit 3 (4510C.c:2977); what it starts is untraced.
+- D_8009A89C / D_8009A8A4: three-bit sequences (4510C.c:2249-2257, action case 8); no capture, moves are data.
+- Open gaps for trace-cpu-nav: 0x300-profile running AC with stage command count >= 6 (does weapon_ammo fall?); profile 0x15 throw_charges_left; breakpoint on fight_CreateBallisticRecordAndDispatchEvent with collision_hit_tag 3..6 for 8C0.
+
+Comment / doc occurrences of the old spellings (comment pass if applied; data_wave rewrites code, asm operands and registry lines, not comments)
+- src/main/d_8A588.c:15: ' * D_8009A870 .. D_8009A8C0 (0x80 ends a script, fighter_StepCpuPadScript);' -> range end becomes g_cpu_ballistic_pad_script (re-wrap at 80 columns; run tools/format.py on d_8A588.c and 4510C.c, longer names may re-wrap 4510C.c:1727-1729, :2892, :2931, :2933 and d_8A588.c:267-270). Also check the d_8A588.c header comment near :14 for the script list.
+- No other comment occurrence in src/ or include/.
+
+History, leave
+- docs/naming/phase3/backlog.tsv (incl. :53, :54, :59, :60, :175); docs/foundation/backlog.tsv:9,:24-26; pending/var-globals-{cpunav,hud,n,o,s,t}/notes.txt, pending/var-locals-{35,36,37}/ (+ var-locals-37/prompt.txt); docs/naming/runtime/cpunav-padscript-*/ and data-lead-D_8009A8AC-*/ captures; tools/trace/scenarios/{cpunav-padscript-*,data-lead-D_8009A8AC-*}.json descriptions and capture ids. Follow-up: var-locals-35 notes.txt:62 and var-locals-36 notes.txt:35 wait on these names for var_10 / var_60.
+
+Pre-apply (naming-reviewer, naming-b 2026-11-03): 3 PASS, 0 FAIL. Reviewer: comment pass must rewrite the d_8A588.c:15 range end D_8009A8C0 -> g_cpu_ballistic_pad_script (still the last script) and re-wrap with tools/format.py; the cited -2 capture dirs (cf2dbfdff) are on main.

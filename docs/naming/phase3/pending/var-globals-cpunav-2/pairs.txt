@@ -1,0 +1,3 @@
+D_8009A8AC=g_cpu_stock_use_pad_script
+D_8009A8B4=g_cpu_double_stock_use_pad_script
+D_8009A8C0=g_cpu_ballistic_pad_script
