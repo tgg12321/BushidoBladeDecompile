@@ -1,0 +1,29 @@
+wave123 (func-sony-ident-1): 1 RENAME (0x80086130 func_80086130 -> SsUtSetVVol, class libscan-near); 5 NO_NAME (notes only, not in FUNCS). Verdict is PENDING: the naming-reviewer sets it.
+Wave id: wave123 (lane naming-b). Drafted 2026-11-03 at HEAD 3bd4e4969. Research input tmp/codex/func-sony-ident-1-research.md (untrusted); re-derived at HEAD in the lane worktree unless marked. Research tag for the NO_NAME record at land: w123.
+Evidence files (researcher's scratch, read in place): tmp/sony-ident-1/ scan6.py/.out, scan6b.py/.out, scan7.py/.out, scan7b.py/.out, uniq.py, vvol.py, vvol36.out, xdefs.py. Not re-run (the PsyQ LIB/signature sources were deleted by the researcher); the 0/35 counts are cited from scan6.out:64-69, scan6b.out:32-37, scan7.out:58-60.
+
+### 0x80086130 -> SsUtSetVVol (RENAME)
+- HOMES: definition src/main/psxsdk/libsnd/ut_vvol.c:38; header comment ut_vvol.c:2 ("func_80086130 (at SsUtSetVVol's place)") MUST be rewritten in the apply's comment pass (the dry run substitutes only the identifier; the comment pass is naming_keycheck --sub-comments in apply.sh); declaration include/psxsdk/libsnd.h:75; glabel asm/funcs/func_80086130.s:1; census docs/naming/function-names.csv:1375 (splat-auto/AUTO).
+- USES: one caller src/main/snd.c:97 (snd_ResetVoicesAndQueue) and the jal at asm/funcs/snd_ResetVoicesAndQueue.s:26. No symbol_addrs.txt entry; named_syms.txt:61/:255 are RESET notes for retired aliases (text, leave).
+- BODY: re-read ut_vvol.c:38-49 and asm/funcs/func_80086130.s; 35 words 0x80086130..0x800861BC, the asm hex words equal the oracle words at file offset 0x76930 (checked programmatically; first word 0x27BDFFF8). Relocation targets from the asm: j .L800861B0 (own epilogue), %hi/%lo(_svm_sreg_buf + 0x2) / (_svm_sreg_buf), %hi/%lo(_svm_sreg_dirty). Matches the research.
+- FRESH: SsUtSetVVol is no identifier in src include asm symbol_addrs.txt named_syms.txt; its only occurrences are the ut_vvol.c:2 comment and docs. build.py's fresh() ignores comments for this reason.
+- The masked-word compare against the PsyQ libraries was NOT re-derived here (the library data is not in the tree); it is cited from the researcher's scan outputs above. The oracle side and the relocation targets were re-derived.
+- Class libscan-near (docs/naming/libscan/near-tier-ruling-2026-09-07.md): its "Not admitted" list (:46-49) held SsUtSetVVol until a caller or a closer build proves it; the 3.5/3.6/3.7 function-level 0/35 match is that closer build (stated in the row's evidence).
+
+DRY RUN: see dry.txt. rc=0, 1 RENAME, 1 identifier remapped; edits: asm/funcs/func_80086130.s (2), asm/funcs/snd_ResetVoicesAndQueue.s (1), include/psxsdk/libsnd.h (1), src/main/psxsdk/libsnd/ut_vvol.c (1), src/main/snd.c (1); 1 .s rename (-> asm/funcs/SsUtSetVVol.s); no ledger dir rename and no registry line deletion. NOTE: a grind ledger file memory/grind/_completed/func_80086130.json exists (a file, not a directory) and the dry run does not list it; the lander should check whether it needs a rename or retarget. Link map reported STALE, which apply.sh tolerates with --stale-map-ok. The dry run stages a CONFIRM copy under phase3/zz-wave123-dry (removed) and restores function-names.csv; docs/naming/phase3/wave123/ is kept for the lander (build.py regenerates it); tmp/p3w123 is scratch.
+
+### The five NO_NAME rows (recorded in the NO_NAME ledger at land with tag w123 from the research file; none in FUNCS)
+- 0x800790A4 func_800790A4: data-in-text template at LIBAPI/SENDPAD .text+0xA4 (four words copied by _send_pad); Sony's OBJ has no XDEF or LOCAL there (section-relative relocations only), so there is no Sony name to take (class verbatim-no-symbol).
+- 0x80084CC0 func_80084CC0: LIBSND/MIDIREAD; 4.0 XDEF _SsGetSeqData lands exactly on this start but 112/233 words mismatch; no version matches, layout pointer only.
+- 0x800858D0 func_800858D0: LIBSND/UT_AKO; no version matches (best 40/59 in 4.0; entry-aligned 4.1-4.3 SsUtAllKeyOff 51/72); SsUtAllKeyOff stays a pointer.
+- 0x80087770 func_80087770: LIBSND/VM_SEQ; no version matches (best 231/335, 4.0); _SsVmSetSeqVol is a layout/semantics pointer and its callers are non-verbatim.
+- 0x8008B488 func_8008B488: no LIBSPU version matches (best 155/372, 4.1+ SN_SVA); SpuSetVoiceAttr is a call-graph pointer only and the Sony spelling for this build is undetermined (SpuSetVoiceAttr vs _SpuSetVoiceAttr).
+Research claims for these five were not re-derived here (they feed notes only; no rename depends on them).
+
+LAND steps: the lander copies the latest tmp/p3w*/gates.sh into tmp/p3w123 before gates.ps1; record the five NO_NAME rows with naming_noname.py add tmp/codex/func-sony-ident-1-research.md --tag w123 (the research CSV also carries the 0x80086130 RENAME row, which must not be added as NO_NAME).
+
+Weak spots for the reviewer
+ (1) The module is not verbatim against any obtained version (81/119 vs 3.6 UT_VVOL); the identity is function-level plus module order plus the ruling's "closer build" clause.
+ (2) Sony's SsUtSetVVol returns short; the C keeps s32 (naming only).
+ (3) 4.0's own SsUtSetVVol is a different 57-word routine; the match is to the 3.x body, consistent with the interim-build lineage.
+ (4) The ut_vvol.c:2 header comment says "an interim LIBSND build (between PsyQ 4.0 and 4.1)": the comment pass should keep that statement coherent with the now-identified 3.x-identical function.

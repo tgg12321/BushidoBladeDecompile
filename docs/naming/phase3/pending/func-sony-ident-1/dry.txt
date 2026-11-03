@@ -1,0 +1,27 @@
+rc=0
+==============================================================================
+NAMING WAVE — 1 operations (0 RESET, 1 RENAME)
+  1 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_funcs_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (5) --
+  asm: 2 files, 3 substitutions
+      asm/funcs/func_80086130.s  (2)
+      asm/funcs/snd_ResetVoicesAndQueue.s  (1)
+  include: 1 files, 1 substitutions
+      include/psxsdk/libsnd.h  (1)
+  src: 2 files, 2 substitutions
+      src/main/psxsdk/libsnd/ut_vvol.c  (1)
+      src/main/snd.c  (1)
+
+-- .s file renames (1) --
+  asm/funcs/func_80086130.s -> asm/funcs/SsUtSetVVol.s
+
+-- ledger directory renames (0) --
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (0) --
+
+DRY RUN — nothing written. Re-run with --apply.
