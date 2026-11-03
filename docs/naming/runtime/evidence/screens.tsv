@@ -129350,6 +129350,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8005C8A8	gpu_DrawModeSizedPanelWithSelectedCellOpaque	versus-2p-tatsumi-drop-1@23ee9986923d	fight	9885	9885	1	fight.10000@10000#bd2269918768	hitmap:first 1 hits per phase only	0	
 0x8005C8A8	gpu_DrawModeSizedPanelWithSelectedCellOpaque	versus-cpu-clear-retail-1@d1b76e2e5d49	opp2	11406	11406	1	opp2.12000@12000#8b7f445ec35b	hitmap:first 1 hits per phase only	0	
 0x8005C8A8	gpu_DrawModeSizedPanelWithSelectedCellOpaque	versus-cpu-clear-retail-1@d1b76e2e5d49	opp5	22666	22666	1	opp5.23100@23100#516a33e1d875	hitmap:first 1 hits per phase only	0	
+0x8005D46C	gpu_DrawSheetPairSelectedByDrawMode	hud-versus-loading-1/baseline@1abd77ca5154	t_load	7535	7557	6	t_load.7600@7600#bc0812d41ad3	recorded hits only; capture limits apply	1	max_hits_reached:Z0:gpu_DrawSheetPairSelectedByDrawMode:6
 0x8005D46C	gpu_DrawSheetPairSelectedByDrawMode	lib-versus-2p-kimigaura-effects-1@19e872f6ca37	t_load	7485	7485	1	t_load.mid@7900#35444b75f27e	hitmap:first 1 hits per phase only	0	
 0x8005D46C	gpu_DrawSheetPairSelectedByDrawMode	lib-versus-2p-kimigaura-kick-2p-1@fd688595c842	t_load	7485	7485	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
 0x8005D46C	gpu_DrawSheetPairSelectedByDrawMode	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	t_load	7485	7485	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
@@ -129443,6 +129444,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8005D46C	gpu_DrawSheetPairSelectedByDrawMode	versus-cpu-tatsumi-1@016e75c2a56c	opp2	8900	8900	1	opp2.9200@9200#d3c3c0478b43	hitmap:first 1 hits per phase only	0	
 0x8005D46C	gpu_DrawSheetPairSelectedByDrawMode	versus-cpu-tatsumi-1@016e75c2a56c	opp3	10561	10561	1	opp3.10800@10800#2a6301f92dcd	hitmap:first 1 hits per phase only	0	
 0x8005D46C	gpu_DrawSheetPairSelectedByDrawMode	versus-cpu-tatsumi-1@016e75c2a56c	t_load	7650	7650	1	t_load.mid@8000#aa39ad949db8	hitmap:first 1 hits per phase only	0	
+0x8005D554	gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle	hud-versus-loading-1/baseline@1abd77ca5154	t_load	7575	7721	6	t_load.7600@7600#bc0812d41ad3;t_load.7800@7800#03e915f82d15	recorded hits only; capture limits apply	1	max_hits_reached:Z0:gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle:6
 0x8005D554	gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle	lib-versus-2p-kimigaura-effects-1@19e872f6ca37	t_load	7577	7577	1	t_load.mid@7900#35444b75f27e	hitmap:first 1 hits per phase only	0	
 0x8005D554	gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle	lib-versus-2p-kimigaura-kick-2p-1@fd688595c842	t_load	7577	7577	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
 0x8005D554	gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	t_load	7577	7577	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	

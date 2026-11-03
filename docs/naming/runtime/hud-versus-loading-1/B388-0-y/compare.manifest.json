@@ -1,0 +1,38 @@
+{
+  "kind": "compare",
+  "version": 1,
+  "base": "../baseline/capture.jsonl",
+  "other": "capture.jsonl",
+  "outputs": [
+    {
+      "path": "compare.t_load.7600.diff.png",
+      "sha1": "badcb6344960ee604eb09374d655b1a1ff4a48cb",
+      "size": 6951,
+      "stored": true
+    },
+    {
+      "path": "compare.t_load.7800.diff.png",
+      "sha1": "b6044c71f4ca61544fe7c19c25a22690acdcc71b",
+      "size": 9034,
+      "stored": true
+    },
+    {
+      "path": "compare.t_load.mid.diff.png",
+      "sha1": "63ea3c07e0d75446320e1f0266eb10d7f4d8e7e8",
+      "size": 9403,
+      "stored": true
+    },
+    {
+      "path": "compare.t_load.8000.diff.png",
+      "sha1": "dd20618a2d83c12783a08fdd6cc34954cb1c5aac",
+      "size": 9684,
+      "stored": true
+    },
+    {
+      "path": "compare.t_load.8200.diff.png",
+      "sha1": "f0f56b490462da60c92f3b85621a5273c7797ed0",
+      "size": 11659,
+      "stored": true
+    }
+  ]
+}

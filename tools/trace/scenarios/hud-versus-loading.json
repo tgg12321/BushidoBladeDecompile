@@ -1,0 +1,26 @@
+{
+  "description": "versus-2p-bamboo's run cut at 8240, screenshots over the Vs. loading screen (gpu_DrawSheetPairSelectedByDrawMode, gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle); poked variants move one 0x8009B340..0x8009B397 sprite cell's y so the cell it places can be told apart",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/hud-versus-loading-1/baseline/spec.json",
+    "docs/naming/runtime/hud-versus-loading-1/B340-0-y/spec.json",
+    "docs/naming/runtime/hud-versus-loading-1/B340-1-y/spec.json",
+    "docs/naming/runtime/hud-versus-loading-1/B340-2-y/spec.json",
+    "docs/naming/runtime/hud-versus-loading-1/B358-0-y/spec.json",
+    "docs/naming/runtime/hud-versus-loading-1/B358-1-y/spec.json",
+    "docs/naming/runtime/hud-versus-loading-1/B358-2-y/spec.json",
+    "docs/naming/runtime/hud-versus-loading-1/B358-3-y/spec.json",
+    "docs/naming/runtime/hud-versus-loading-1/B358-4-y/spec.json",
+    "docs/naming/runtime/hud-versus-loading-1/B358-5-y/spec.json",
+    "docs/naming/runtime/hud-versus-loading-1/B388-0-y/spec.json",
+    "docs/naming/runtime/hud-versus-loading-1/B388-1-y/spec.json"
+  ],
+  "extends": "versus-2p-bamboo",
+  "end_frame": 8240,
+  "shots": [
+    "7600:t_load.7600",
+    "7800:t_load.7800",
+    "8000:t_load.8000",
+    "8200:t_load.8200"
+  ]
+}
