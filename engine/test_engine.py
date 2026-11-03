@@ -6806,8 +6806,63 @@ def test_naming_keycheck_scoped_pairs() -> None:
     b = "#define ID(x) (x)\n" + plain_base.replace("SQ(u->m)", "ID(m)") .replace("int f(", "int m;\nint f(")
     n_ = "#define ID(x) (x)\n" + plain_new.replace("SQ(u->m)", "ID(m)").replace("int f(", "int m;\nint f(")
     ok, why = proof("T.m=n", {"src/a.c": b}, {"src/a.c": n_}, cpp=mini_cpp)
-    check("keycheck: kept m in a macro argument that is not a member access refused (" + why + ")",
-          not ok and "member access" in why)
+    check("keycheck: kept m in a macro argument expanded as an ordinary identifier passes (" + why + ")", ok)
+    # The PTR_OFF shape (368E4.c): a local named m passed to a plain macro.
+    ptr_off = "#define PTR_OFF(b, o) ((b) + (o))\n"
+    local_use = "int g(char *s) { int m = 1; return *PTR_OFF(s, m); }\nint f("
+    ok, why = proof("T.m=n", {"src/a.c": ptr_off + plain_base.replace("int f(", local_use)},
+                    {"src/a.c": ptr_off + plain_new.replace("int f(", local_use)}, cpp=mini_cpp)
+    check("keycheck: a local named m passed to a plain macro passes (" + why + ")", ok)
+    # Not an ordinary identifier: a tag, a goto label, a member declaration, an
+    # old-style designator or an offsetof member stay refused.
+    for label, defs, use in [
+            ("struct tag", "#define SZ(x) sizeof(struct x)\n", "int g(void) { return SZ(m); }\n"),
+            ("goto label", "#define GO(x) goto x\n", "void g(void) { GO(m); m: ; }\n"),
+            ("member declaration", "#define FIELD(x) int x;\n", "struct V { FIELD(m) };\n"),
+            ("old-style designator", "#define D(x) { x: 1 }\n", "struct U du = D(m);\n"),
+            ("offsetof member", "#define OFF(x) __builtin_offsetof(struct U, x)\n", "int g(void) { return OFF(m); }\n")]:
+        ok, why = proof("T.m=n", {"src/a.c": defs + plain_base.replace("int f(", use + "int f(")},
+                        {"src/a.c": defs + plain_new.replace("int f(", use + "int f(")}, cpp=mini_cpp)
+        check("keycheck: kept m in a macro argument refused as a " + label + " (" + why + ")",
+              not ok and bool(why))
+    # The namespace step itself, on cpp token streams (S is the sentinel).
+    class Stream:
+        def __init__(self, text):
+            self.stream = [(("src/a.c", 1), token) for token in text.split()]
+
+    def namespace_ok(text, kind, scope):
+        try:
+            nk.sentinel_namespaces(Stream(text), {"S": (kind, scope)})
+        except ValueError as e:
+            return False, str(e)
+        return True, ""
+    arg = "\x00macro-argument"
+    for label, text, want in [
+            ("ordinary use", "int g ( void ) { return S ; }", True),
+            ("member access", "int g ( struct U * p ) { return p -> S ; }", True),
+            ("conditional operand", "int g ( int c ) { return c ? S : 0 ; }", True),
+            ("struct tag", "int g ( void ) { return sizeof ( struct S ) ; }", False),
+            ("member declaration", "struct V { int S ; } ;", False),
+            ("offsetof member", "int g ( void ) { return __builtin_offsetof ( struct U , S ) ; }", False),
+            ("label", "void g ( void ) { S : ; }", False),
+            ("goto", "void g ( void ) { goto S ; }", False)]:
+        ok, why = namespace_ok(text, "member", arg)
+        check("keycheck: macro-argument namespace " + label + " (" + why + ")", ok == want)
+    for label, text, want in [
+            ("prototype parameter", "int f ( int a , int * S ) ;", True),
+            ("array prototype parameter", "int f ( int S [ 2 ] ) ;", True),
+            ("definition parameter", "int f ( int S ) { return 0 ; }", False),
+            ("another function's prototype", "int g ( int S ) ;", False),
+            ("nested parameter list", "int f ( int ( * cb ) ( int S ) ) ;", False),
+            ("block-scope prototype", "void g ( void ) { int f ( int S ) ; }", False),
+            ("sizeof argument list", "int x = sizeof f ( 1 , g * S ) ;", False),
+            ("sizeof dereference", "int x = sizeof * f ( 1 , g * S ) ;", False),
+            ("multiplication", "int x = 2 * f ( 1 , g * S ) ;", False),
+            ("typedef multiplication", "int x = g * f ( 1 , g * S ) ;", False),
+            ("extern pointer prototype", "extern u8 * f ( int a , int S ) ;", True),
+            ("tagged return prototype", "struct T * f ( int a , int S ) ;", True)]:
+        ok, why = namespace_ok(text, "prototype", "f")
+        check("keycheck: prototype namespace " + label + " (" + why + ")", ok == want)
     # item 2: conditional code and headers no TU includes
     b = plain_base.replace("int f(", "#if 0\nint g(struct U *u) { return SQ(u->m); }\n#endif\nint f(")
     n_ = plain_new.replace("int f(", "#if 0\nint g(struct U *u) { return SQ(u->m); }\n#endif\nint f(")
@@ -6981,6 +7036,117 @@ def test_naming_keycheck_scoped_pairs() -> None:
     text = "int f(void) { int l; l = 1; return l; }"
     check("keycheck: simple outer local", proof("f:l=fresh", {"src/a.c": text},
           {"src/a.c": text.replace("l", "fresh")})[0])
+    # Prototype scope: a renamed parameter's spelling in a file-scope prototype of f
+    # may retain l or become the destination; a prototype-only pair (the definition
+    # already names n) must rename every prototype spelling.
+    proto = "int f(int a, int l);\nint f(int a, int l) { return a + l; }\n"
+    renamed_def = proto.replace("int a, int l) {", "int a, int fresh) {").replace("a + l", "a + fresh")
+    ok, why = proof("f:l=fresh", {"src/a.c": proto}, {"src/a.c": renamed_def.replace("int l);", "int fresh);")})
+    check("keycheck: prototype parameter renamed with its definition (" + why + ")", ok)
+    ok, why = proof("f:l=fresh", {"src/a.c": proto}, {"src/a.c": renamed_def})
+    check("keycheck: prototype parameter may keep the old name (" + why + ")", ok)
+    header = "int f(int a, int l);\n"
+    body = '#include "t.h"\nint f(int a, int l) { return a + l; }\n'
+    ok, why = proof("f:l=fresh", {"include/t.h": header, "src/a.c": body},
+                    {"include/t.h": header.replace("int l", "int fresh"),
+                     "src/a.c": body.replace("int l", "int fresh").replace("a + l", "a + fresh")})
+    check("keycheck: header prototype parameter renamed (" + why + ")", ok)
+    synced = proto.replace("int a, int l) {", "int a, int fresh) {").replace("a + l", "a + fresh")
+    ok, why = proof("f:l=fresh", {"src/a.c": synced}, {"src/a.c": synced.replace("int l);", "int fresh);")})
+    check("keycheck: prototype-only pair syncs the prototype to the definition (" + why + ")", ok)
+    ok, why = proof("f:l=fresh", {"src/a.c": synced}, {"src/a.c": synced})
+    check("keycheck: prototype-only pair must be applied (" + why + ")", not ok and "required" in why)
+    edits = nk.scoped_plan({"src/a.c": synced}, {"f:l": "fresh"}, {})
+    check("keycheck: prototype-only pair plans only the prototype name",
+          edits["src/a.c"] == {7: ("fresh", False)})
+    for label, text in [
+            ("prototype at another position", "int f(int l, int a);\nint f(int a, int l) { return a + l; }\n"),
+            ("destination in the prototype", "int f(int fresh, int l);\nint f(int a, int l) { return a + l; }\n"),
+            ("function-pointer prototype parameter", "int f(int a, int (*l)(void));\nint f(int a, int l) { return a + l; }\n"),
+            ("prototype repeating the name", "int f(int a, int l[sizeof l]);\nint f(int a, int l) { return a + l; }\n"),
+            ("prototype with fewer parameters", "int f(int l);\nint f(int a, int l) { return a + l; }\n"),
+            ("conditional prototype", "#if 1\nint f(int a, int l);\n#endif\nint f(int a, int l) { return a + l; }\n")]:
+        ok, why = proof("f:l=fresh", {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "fresh", text)})
+        check("keycheck: prototype rejects " + label + " (" + why + ")", not ok and bool(why))
+    for label, text in [
+            ("type-named prototype-only pair", "typedef int l;\nint f(int a, const l);\nint f(int a, int fresh) { return a + fresh; }\n"),
+            ("prototype-only pair at another position", "int f(int l, int a);\nint f(int a, int fresh) { return a + fresh; }\n")]:
+        ok, why = proof("f:l=fresh", {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "fresh", text)})
+        check("keycheck: prototype-only pair rejects " + label + " (" + why + ")", not ok and bool(why))
+    # Review probes: a qualifier before the name (`const l`, l a macro-made typedef)
+    # refuses; a prototype in another TU is compiled by the cc1 differential; a
+    # prototype-only pair keeps the local-pair source allowlist.
+    for label, base_text, new_text in [
+            ("qualifier-led prototype", "int f(int a, const l);\nint f(int a, int l) { return a + l; }\n", None),
+            ("qualifier-led prototype-only pair", "int f(int a, const l);\nint f(int a, int fresh) { return a + fresh; }\n", None)]:
+        ok, why = proof("f:l=fresh", {"src/a.c": base_text}, {"src/a.c": re.sub(r"\bl\b", "fresh", base_text)})
+        check("keycheck: prototype rejects " + label + " (" + why + ")", not ok and bool(why))
+    # Review 2: a prototype-only pair refuses any prototype of f it cannot plan (a
+    # macro argument, block scope, a macro in the prototype); a regular pair leaves
+    # such a prototype unplanned and passes when the wave leaves it alone.
+    defn = "int f(int a, int fresh) { return a + fresh; }\n"
+    for label, other in [
+            ("macro-argument prototype", "#define DECL(x) x\nDECL(int f(int a, int l));\nint f(int a, int l);\n"),
+            ("block-scope prototype", "int f(int a, int l);\nint g(int x) { int f(int a, int l); return f(1, x); }\n"),
+            ("macro in the prototype", "#define PFX int z,\nint f(int a, PFX int l);\n"),
+            ("prototype built from a macro argument",
+             "int f(int a, int l);\n#define PROTO(name, p) int name(int a, int p)\nPROTO(f, l);\n"),
+            ("sizeof expression posing as a prototype",
+             "int f(int a, int l);\nint g1, l;\nint x = sizeof f(1, g1 * l);\n"),
+            ("sizeof dereference posing as a prototype",
+             "int f(int a, int l);\nint g1, l;\nint x = sizeof *f(1, g1 * l);\n"),
+            ("prototype through a macro alias","int f(int a, int l);\n#define F f\nint F(int a, int l);\n"),
+            ("block-scope prototype through an alias",
+             "int f(int a, int l);\n#define F f\nint g(int x) { int F(int a, int l); return F(1, x); }\n")]:
+        ok, why = proof("f:l=fresh", {"src/a.c": defn, "src/b.c": other},
+                        {"src/b.c": other.replace("int f(int a, int l);\n", "int f(int a, int fresh);\n", 1)
+                         if "PFX" not in other else other.replace("PFX int l", "PFX int fresh")})
+        check("keycheck: prototype-only pair rejects a " + label + " (" + why + ")", not ok and bool(why))
+    expr = "int *f(int a, int l);\nint g1, l;\nint x = sizeof *f(1, g1 * l);\n"
+    ok, why = proof("f:l=fresh", {"src/a.c": "int *f(int a, int l) { return 0; }\n", "src/b.c": expr},
+                    {"src/a.c": "int *f(int a, int fresh) { return 0; }\n",
+                     "src/b.c": expr.replace("g1 * l)", "g1 * fresh)")})
+    check("keycheck: regular pair never plans a sizeof operand as a prototype site (" + why + ")", not ok)
+    # Review 6: the source layer classifies on its own: directive tokens neither end
+    # the declaration-prefix walk nor move the depth counters, and a header's first
+    # declaration counts only when every #include of it sits at file scope.
+    fdef = {"src/a.c": "int f(int a, int l) { return a + l; }\n"}
+    for label, files in [
+            ("directive mid-expression", {"src/b.c": "int g1, l, w;\nint v = 1 +\n#define Q 1\ng1 * f(1, g1 * l);\n"}),
+            ("header included mid-expression", {"include/t.h": "g1 * f(1, g1 * l);\n",
+                                                "src/b.c": 'int g1, l;\nint v = 1 +\n#include "t.h"\n'}),
+            ("directive brace", {"src/b.c": "#define END }\nint g1, l;\nvoid g(void) { g1 * f(1, g1 * l); }\n"}),
+            ("conditional semicolon", {"src/b.c": "int g1, l;\nint v = 1 +\n#if 0\n;\n#endif\ng1 * f(1, g1 * l);\n"}),
+            ("nested header in a block", {"src/b.c": 'int g1, l;\nvoid g(void) {\n#include "outer.h"\n}\n',
+                                          "include/outer.h": 'int z;\n#include "t.h"\n',
+                                          "include/t.h": "g1 * f(1, g1 * l);\n"}),
+            (".c included mid-expression", {"src/b.c": 'int g1, l;\nint v = 1 +\n#include "inc.c"\n',
+                                            "src/inc.c": "g1 * f(1, g1 * l);\n"})]:
+        sites = nk.prototype_sites({**fdef, **files}, "f", "l", "fresh")
+        check("keycheck: source layer plans no prototype site for a " + label + " " + repr(sites), sites == {})
+    sites = nk.prototype_sites({**fdef, "include/t.h": "int f(int a, int l);\n",
+                                "src/b.c": '#include "t.h"\nint g(void);\n'}, "f", "l", "fresh")
+    check("keycheck: a header prototype included at file scope is a site " + repr(sites), sites == {"include/t.h": [7]})
+    other = "int f(int a, int (*l)(void));\n"
+    ok, why = proof("f:l=fresh", {"src/a.c": "int f(int a, int l) { return a + l; }\n", "src/b.c": other},
+                    {"src/a.c": "int f(int a, int fresh) { return a + fresh; }\n"})
+    check("keycheck: regular pair leaves an unsupported prototype unplanned (" + why + ")", ok)
+    compiled = []
+
+    def recording_cc1(tree, tu):
+        compiled.append((tree.label, tu))
+        return fake_cc1(tree, tu)
+    other = "int f(int a, int l);\nint g(int x) { return f(1, x); }\n"
+    ok, why = proof("f:l=fresh", {"src/a.c": "int f(int a, int l) { return a + l; }\n", "src/b.c": other},
+                    {"src/a.c": "int f(int a, int fresh) { return a + fresh; }\n",
+                     "src/b.c": other.replace("int l", "int fresh")}, cc1=recording_cc1)
+    check("keycheck: another TU's prototype edit is compiled by the cc1 differential (" + why + ")",
+          ok and {("cc1-fresh", "src/b.c"), ("cc1-destination", "src/b.c")} <= set(compiled))
+    ok, why = proof("f:l=fresh", {"src/a.c": "int f(int a, int fresh) { return a + fresh; }\n",
+                                  "src/b.c": '#include "../lib/t.h"\nint f(int a, int l);\n',
+                                  "lib/t.h": "typedef short q;\n"},
+                    {"src/b.c": '#include "../lib/t.h"\nint f(int a, int fresh);\n'})
+    check("keycheck: prototype-only pair keeps the closed-source allowlist (" + why + ")", not ok and "not plain" in why)
     for label, text in [
             ("nested local", "int f(void) { { int l; l = 1; } return 0; }"),
             ("doubly nested local", "int f(int x) { if (x) { while (x) { int l = x; x -= l; } } return x; }"),

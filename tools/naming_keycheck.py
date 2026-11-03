@@ -111,7 +111,12 @@ f:l=n replaces the one simple parameter/local binding and its uses in the unique
 The destination must be fresh in f and C file-scope/enum text, and absent from macro names/bodies
 (excluding a macro's own parameters). Real prototype and other functions' parameter lists/bodies
 are excluded from freshness; K&R exclusions include the parameter declarations between ) and the
-body, using the tree's typedef names. A K&R function as the local-pair target stays unsupported.
+body, using the tree's typedef names. A K&R function as the local-pair target stays unsupported. A renamed parameter's spelling in a
+file-scope prototype of f (prototype_sites: same position, plain shape, old once and n absent)
+is an optional edit; f:l=n whose definition already names parameter n and whose prototype still
+names l there is a prototype-only pair (prototype_sync), its prototype edits required. Their cpp
+sentinels must sit in f's one ;-terminated file-scope parameter list, and the cc1 differential
+varies them too.
 Undeclared asm/linker names are allowed. A binding in an inner block needs every use inside that
 block, after the declaration. A later declarator of a list binds only as `*`s, the name and array
 bounds (`T a, *l`, `T a, l[2]`), after a first declarator naming a plain identifier after
@@ -191,8 +196,9 @@ only at paren depth 0 (one inside a macro call's parentheses refuses). For membe
 argument naming m (edited to n or unchanged) is allowed only when every definition of that
 macro expands all its parameters plainly (no dropped, stringized, pasted or variadic parameter;
 not an object-like alias; not chained), and its cpp sentinel proves it: emitted by a compiled
-TU, never dropped, stringized or pasted (also through nested forwarding), and after . or -> in
-every TU that emits it. A stale m that reached the renamed T.m then fails to compile, and member
+TU, never dropped, stringized or pasted (also through nested forwarding), and in every TU that
+emits it either after . or -> or, for a kept m, an ordinary identifier (no member declaration,
+tag, label, goto, designator or offsetof operand: a local or global the rename cannot reach). A stale m that reached the renamed T.m then fails to compile, and member
 pairs require the oracle build. Closure macro guards use cpp -dD
 definitions from every included file and command-line definition, in both trees. Object- and
 function-like call openers fail, as do local tokens adjacent to either kind of macro invocation.
@@ -978,6 +984,225 @@ def function_names(text: str) -> set[str]:
     return {name for name, *_ in function_definitions(text)}
 
 
+def parameter_segments(ts, open_index):
+    """(first, last) token indices of each depth-1 comma segment of a parameter list."""
+    close = balanced(ts, open_index, "(", ")")
+    segments, first, depth = [], open_index + 1, 0
+    for k in range(open_index + 1, close):
+        depth += (ts[k] in ("(", "[", "{")) - (ts[k] in (")", "]", "}"))
+        if ts[k] == "," and depth == 0:
+            segments.append((first, k - 1))
+            first = k + 1
+    segments.append((first, close - 1))
+    return segments, close
+
+
+# The words a prototype parameter name may follow besides `*` and a typedef name. A
+# qualifier or storage class (`const l`) would leave a typedef l reading as the type.
+PROTOTYPE_TYPE_WORDS = frozenset({"char", "short", "int", "long", "float", "double", "void",
+                                  "signed", "unsigned"})
+
+
+def prototype_name_follows(prev, macros=frozenset()):
+    """A prototype parameter name may follow `*`, a base type word or a typedef name."""
+    return prev == "*" or prev in PROTOTYPE_TYPE_WORDS or (
+        prev is not None and IDENT.fullmatch(prev) is not None and prev not in C_KEYWORDS
+        and prev not in macros)
+
+
+# Keywords a file-scope prototype's declaration specifiers may hold before the name.
+PROTOTYPE_PREFIX_KEYWORDS = PROTOTYPE_TYPE_WORDS | frozenset({
+    "extern", "static", "const", "volatile", "__const", "__const__", "__volatile", "__volatile__",
+    "inline", "__inline", "__inline__", "struct", "union", "enum"})
+
+
+def declaration_prefix_ok(ts, i, macros=frozenset(), skip=lambda k: False, start_ok=True,
+                          conditional=lambda k: False):
+    """The tokens from the previous `;` `{` `}` up to the name at i, skipping directive
+    tokens (`skip`), are declaration specifiers and `*`s only: identifiers that are no
+    macro and no keyword outside PROTOTYPE_PREFIX_KEYWORDS, ending in a base type word, a
+    typedef name or a tag (`struct S *f`). `sizeof *f(`, `2 * f(`, `x = g * f(` all fail.
+    Reaching the start of the text proves nothing for a file an includer may reach mid-
+    expression: start_ok=False fails there. A walked or boundary token inside
+    preprocessor-conditional code (`conditional`) fails: its `;` may never be compiled."""
+    run, k = [], i - 1
+    while k >= 0 and ts[k] not in (";", "{", "}") or k >= 0 and skip(k):
+        if conditional(k):
+            return False
+        if not skip(k):
+            run.append(ts[k])
+        k -= 1
+    if k < 0 and not start_ok or k >= 0 and conditional(k):
+        return False
+    run.reverse()
+    words = [(j, t) for j, t in enumerate(run) if t != "*"]
+    if not words:
+        return False
+    for _, t in words:
+        if IDENT.fullmatch(t) is None or t in macros or t in C_KEYWORDS and t not in PROTOTYPE_PREFIX_KEYWORDS:
+            return False
+    j, last = words[-1]
+    if j and run[j - 1] in ("struct", "union", "enum"):
+        return last not in C_KEYWORDS
+    return last in PROTOTYPE_TYPE_WORDS or last not in C_KEYWORDS
+
+
+def header_at_file_scope(cfiles, path, seen=None):
+    """Every #include naming path's file name in the C sources sits at file scope of
+    its includer: the last code token before the directive is `;` or `}` (or none)
+    at brace and paren depth 0, and every includer (header or .c) is itself included
+    only at file scope, recursively.
+    Matching is by file name (an over-match only adds includers to check)."""
+    seen = set() if seen is None else seen
+    if path in seen:
+        return True
+    seen.add(path)
+    name = path.rsplit("/", 1)[-1]
+    for includer, text in cfiles.items():
+        ms = code_spans(text)
+        directives, _ = pp_regions(text)
+        for a, b in directives:
+            line = text[a:b]
+            m = re.match(r"\s*#\s*include\s*[<\"]([^>\"]+)[>\"]", line)
+            if not m or m.group(1).rsplit("/", 1)[-1] != name:
+                continue
+            code = [x for x in ms if x.start() < a and not any(p <= x.start() < q for p, q in directives)]
+            tokens = [x[0] for x in code]
+            depth = sum((t in ("{", "(", "[")) - (t in ("}", ")", "]")) for t in tokens)
+            if depth or tokens and tokens[-1] not in (";", "}"):
+                return False
+            if not header_at_file_scope(cfiles, includer, seen):
+                return False
+    return True
+
+
+def prototype_sites(cfiles, scope, old, new, anchor=None, macros=frozenset()):
+    """Prototype-scope spellings of f:old: path -> token indices.
+
+    A parameter of f's unique definition named old may also be named in a file-scope
+    prototype of f (`T *f(A a, B old);`). That spelling has prototype scope, so it may
+    retain old or become new. Planned only in the plain shape: the prototype sits at
+    brace and paren depth 0 outside directives, its name follows a type word or `*`, its
+    `)` is followed by `;`, it has as many parameters as the definition, and its parameter
+    at the definition's position ends with old (optionally followed by `[...]` bounds)
+    after a type word or `*`, with no parentheses, and no macro name in the prototype
+    (shape, count and position are read in the source; the declaration prefix back to the
+    previous `;` `{` `}` skips directives, and a header's first declaration counts only when
+    every #include of that header sits at file scope: header_at_file_scope). old must occur once in that
+    prototype and new nowhere in it. A file-scope prototype naming old outside that shape
+    is left unplanned (an edit to it is then unexplained). A body local (no parameter
+    named old) has no prototype sites. With anchor, the definition's parameter position
+    is the one naming anchor instead of old (prototype_sync), and every other spelling
+    refuses: an unsupported file-scope prototype, and any `f(` anywhere else (a block-scope
+    prototype, a macro argument or #define body, a K&R declaration list) whose parentheses
+    hold old, and any spelling of f in a directive or not followed by `(` (a macro alias
+    or argument could build a prototype out of sight), so a prototype-only pair never
+    leaves old behind.
+    """
+    strict = anchor is not None
+
+    def unsupported(message):
+        if strict:
+            raise ValueError(message)
+    found = []
+    for path, text in cfiles.items():
+        found.extend((path, name_at, params) for name, name_at, params, _ in function_definitions(text)
+                     if name == scope)
+    if len(found) != 1:
+        return {}
+    path, _, params = found[0]
+    ts = [m[0] for m in code_spans(cfiles[path])]
+    segments, _ = parameter_segments(ts, params)
+    position = [p for p, (a, b) in enumerate(segments) if (anchor or old) in ts[a:b + 1]]
+    if len(position) != 1:
+        return {}
+    position = position[0]
+    sites, seen = {}, set()
+    for path, text in cfiles.items():
+        ms = code_spans(text)
+        if scope not in (m[0] for m in ms):
+            continue
+        ts = [m[0] for m in ms]
+        directives, conditions = pp_regions(text)
+        definitions = {name_at for name, name_at, _, _ in function_definitions(text)}
+        depth = parens = 0
+        for i, tok in enumerate(ts):
+            if (tok == scope and i not in definitions and depth == 0 and parens == 0
+                    and ts[i + 1:i + 2] == ["("]
+                    and not any(a <= ms[i].start() < b for a, b in directives)):
+                proto, close = parameter_segments(ts, i + 1)
+                span = ts[i + 1:close + 1]
+                if old in span or new in span:
+                    seen.add((path, i))
+                    shaped = declaration_prefix_ok(
+                        ts, i, macros, lambda x: any(a <= ms[x].start() < b for a, b in directives),
+                        start_ok=header_at_file_scope(cfiles, path),
+                        conditional=lambda x: any(a <= ms[x].start() < b for a, b in conditions)
+                    ) and ts[close + 1:close + 2] == [";"]
+                    if new in span:
+                        unsupported(f"{scope}:{old}: destination {new} occurs in a prototype of {scope} ({path})")
+                        continue
+                    if (not shaped or len(proto) != len(segments) or span.count(old) != 1
+                            or set(span) & set(macros)):
+                        unsupported(f"{scope}:{old}: unsupported prototype naming {old} ({path})")
+                        continue
+                    a, b = proto[position]
+                    k = next((x for x in range(a, b + 1) if ts[x] == old), None)
+                    tail = ts[k + 1:b + 1] if k is not None else None
+                    while tail and tail[0] == "[" and "]" in tail:
+                        tail = tail[tail.index("]") + 1:]
+                    if (k is None or tail or k == a or "(" in ts[a:b + 1] or old in macros
+                            or not prototype_name_follows(ts[k - 1], macros)):
+                        unsupported(f"{scope}:{old}: unsupported prototype naming {old} ({path})")
+                        continue
+                    if any(a <= ms[x].start() < b for x in range(i, close + 1) for a, b in directives):
+                        unsupported(f"{scope}:{old}: directive inside a prototype naming {old} ({path})")
+                        continue
+                    sites.setdefault(path, []).append(k)
+            if any(a <= ms[i].start() < b for a, b in directives):
+                continue   # directive bodies are not C at this point of the file
+            depth += (tok == "{") - (tok == "}")
+            parens += (tok in ("(", "[")) - (tok in (")", "]"))
+        if strict:
+            # Every spelling of f must be a plain `f(` the scan below reads: f in a
+            # directive (an alias `#define F f`, a #define body) or not followed by `(`
+            # (a macro argument `PROTO(f, l)`, an address) could carry a prototype of f
+            # that cpp builds out of sight.
+            for i, tok in enumerate(ts):
+                if tok == scope and (ts[i + 1:i + 2] != ["("]
+                                     or any(a <= ms[i].start() < b for a, b in directives)):
+                    raise ValueError(f"{scope}:{old}: {scope} is spelled other than as a plain {scope}( "
+                                     f"({path}); a prototype-only pair cannot see every prototype")
+            for i, tok in enumerate(ts):
+                if (tok == scope and ts[i + 1:i + 2] == ["("] and (path, i) not in seen
+                        and i not in definitions and old in ts[i + 2:balanced(ts, i + 1, "(", ")")]):
+                    raise ValueError(f"{scope}:{old}: a prototype or use of {scope} naming {old} "
+                                     f"outside a plain file-scope prototype ({path})")
+    return sites
+
+
+def prototype_sync(cfiles, scope, old, new, types=frozenset(), macros=frozenset()):
+    """Sites of a prototype-only pair f:old=new, or {} when f:old=new is no such pair.
+
+    The pair is prototype-only when f's unique definition no longer spells old
+    anywhere, names new as a parameter, and a file-scope prototype of f still names
+    old at that parameter's position (prototype_sites, anchored on new): its edits are
+    required and touch only those prototype-scope names. old and new must not be type
+    names (`const T` would read T as a parameter name)."""
+    found = [(path, params, end) for path, text in cfiles.items()
+             for name, _, params, end in function_definitions(text) if name == scope]
+    if len(found) != 1:
+        return {}
+    path, params, end = found[0]
+    ts = [m[0] for m in code_spans(cfiles[path])]
+    if old in ts[params:end + 1] or new not in ts[params:balanced(ts, params, "(", ")")]:
+        return {}
+    sites = prototype_sites(cfiles, scope, old, new, anchor=new, macros=macros)
+    if sites and (old in types or new in types):
+        raise ValueError(f"{scope}:{old}: a prototype-only pair cannot name a type")
+    return sites
+
+
 def function_tokens(text: str, name: str) -> list[str]:
     if name in C_KEYWORDS:
         return []
@@ -1408,6 +1633,29 @@ def verify_local_cc1(base, normal, scoped, global_pairs, base_tree=None):
     for k, (spec, dest) in enumerate(local.items()):
         scope, old = spec.split(":")
         scope = scoped_type_name(scope, global_pairs)
+        fresh = f"__kc_fresh_{k}"
+        while any(fresh in text for text in base.values()) or any(fresh in token for ts in cpp_tokens.values() for token in ts):
+            fresh += "_"
+        cfiles = {p: t for p, t in base.items() if p.startswith(("src/", "include/")) and p.endswith((".c", ".h"))}
+        sync = prototype_sync(cfiles, scope, old, dest)
+        if sync:
+            # Prototype-only pair: every TU that sees one of its prototypes compiles
+            # identically with the prototype name fresh or the destination.
+            contexts = [tu for tu, output in normal.items() if any(p in output.sources for p in sync)]
+            if not contexts:
+                raise ValueError(f"{spec}: local cc1 proof prototype never compiled")
+            for tu in contexts:
+                if any(name == dest for name, _, _ in normal[tu].macros):
+                    raise ValueError(f"{spec}: destination is a cpp macro name")
+                jobs.setdefault(tu, []).extend((old, dest, fresh))
+            fresh_names.append(fresh)
+            for proto_path, sites in sync.items():
+                proto_spans = code_spans(base[proto_path])
+                for index in sites:
+                    for label, replacement in (("fresh", fresh), ("destination", dest)):
+                        replacements[label].setdefault(proto_path, []).append(
+                            (proto_spans[index].start(), proto_spans[index].end(), replacement))
+            continue
         found = []
         for path, text in base.items():
             if path.startswith(("src/", "include/")) and path.endswith((".c", ".h")):
@@ -1415,9 +1663,6 @@ def verify_local_cc1(base, normal, scoped, global_pairs, base_tree=None):
         if len(found) != 1:
             raise ValueError(f"{spec}: local cc1 proof requires exactly one source definition")
         path, start, end = found[0]
-        fresh = f"__kc_fresh_{k}"
-        while any(fresh in text for text in base.values()) or any(fresh in token for ts in cpp_tokens.values() for token in ts):
-            fresh += "_"
         fresh_names.append(fresh)
         text, spans = base[path], code_spans(base[path])
         tokens = [m[0] for m in spans]
@@ -1443,6 +1688,20 @@ def verify_local_cc1(base, normal, scoped, global_pairs, base_tree=None):
                 continue
             for label, replacement in (("fresh", fresh), ("destination", dest)):
                 replacements[label].setdefault(path, []).append((token.start(), token.end(), replacement))
+        # Prototype-scope spellings of a renamed parameter vary with it, and every
+        # TU that sees one of those prototypes compiles in the differential too.
+        proto = prototype_sites(cfiles, scope, old, dest)
+        for tu, output in normal.items():
+            if tu not in contexts and any(p in output.sources for p in proto):
+                if any(name == dest for name, _, _ in output.macros):
+                    raise ValueError(f"{spec}: destination is a cpp macro name")
+                jobs.setdefault(tu, []).extend((old, dest, fresh))
+        for proto_path, sites in proto.items():
+            proto_spans = code_spans(base[proto_path])
+            for index in sites:
+                for label, replacement in (("fresh", fresh), ("destination", dest)):
+                    replacements[label].setdefault(proto_path, []).append(
+                        (proto_spans[index].start(), proto_spans[index].end(), replacement))
     for label, files in (("fresh", fresh_files), ("destination", dest_files)):
         for path, rows in replacements[label].items():
             for a, b, replacement in sorted(rows, reverse=True):
@@ -1883,7 +2142,10 @@ def sentinel_namespaces(output, names):
     ts = [token for _, token in output.stream]
     declarations, conditional_colons, aggregate_bodies = {}, set(), set()
     nesting, questions = [], []
+    open_at = {}  # sentinel index -> the delimiters open around it
     for i, token in enumerate(ts):
+        if token in names:
+            open_at[i] = tuple(nesting)
         if token in ("(", "[", "{"):
             nesting.append((i, token))
         elif token in (")", "]", "}"):
@@ -1974,6 +2236,26 @@ def sentinel_namespaces(output, names):
                     or prev in (".", "->", "struct", "union", "enum", "goto")
                     or following == ":" and i + 1 not in conditional_colons):
                 raise ValueError("local sentinel changed namespace in cpp output: " + token)
+        elif kind == "prototype":
+            # Prototype scope: a parameter declarator name directly inside the one
+            # file-scope parameter list of a `;`-terminated declaration of f.
+            opened = open_at[i]
+            close = balanced(ts, opened[0][0], "(", ")") if len(opened) == 1 and opened[0][1] == "(" else None
+            if (close is None or opened[0][0] < 2 or ts[opened[0][0] - 1] != scope
+                    or not declaration_prefix_ok(ts, opened[0][0] - 1)
+                    or ts[close + 1:close + 2] != [";"] or following not in (",", ")", "[")
+                    or not prototype_name_follows(prev)):
+                raise ValueError("prototype sentinel changed namespace in cpp output: " + token)
+        elif (scope == "\x00macro-argument" and prev not in (".", "->")
+              and i not in aggregate_bodies
+              and prev not in ("struct", "union", "enum", "goto")
+              and not (following == ":" and i + 1 not in conditional_colons)
+              and not any(o and ts[o - 1] in ("offsetof", "__builtin_offsetof") for o, _ in open_at[i])):
+            # An unchanged m from a macro argument that comes out as an ordinary
+            # identifier (no . / -> before it, no member declaration, designator,
+            # tag, label or offsetof) names no member: the member rename cannot
+            # reach it.
+            continue
         elif prev not in (".", "->") and not set(scope.split("|")) & declarations.get(i, set()):
             if scope in ("\x00macro-argument", "\x00member-access"):
                 raise ValueError("unchanged member name in a " + scope[1:].replace("-", " ")
@@ -2232,8 +2514,20 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
         if any(":" in spec for spec in (scoped or {})):
             raise ValueError("local cc1 proof requires an applied local edit")
         return
+    cfiles = {p: t for p, t in base.items()
+              if p.startswith(("src/", "include/")) and p.endswith((".c", ".h"))}
+    prototypes, sync_specs = {}, set()  # spec -> path -> prototype-scope token indices
     for spec, dest in (scoped or {}).items():
-        if ":" not in spec:
+        if ":" in spec:
+            func, old = spec.split(":")
+            func = scoped_type_name(func, global_pairs)
+            prototypes[spec] = prototype_sync(cfiles, func, old, dest)
+            if prototypes[spec]:
+                sync_specs.add(spec)   # prototype-only: no local binding to prove
+            else:
+                prototypes[spec] = prototype_sites(cfiles, func, old, dest)
+    for spec, dest in (scoped or {}).items():
+        if ":" not in spec or spec in sync_specs:
             continue
         func, old = spec.split(":")
         for path, text in base.items():
@@ -2255,6 +2549,8 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
             elif any(name == scoped_type_name(scope, global_pairs) and start <= k <= end
                      for name, start, _, end in function_definitions(base[path])):
                 owners.append(("local", scoped_type_name(scope, global_pairs)))
+            elif k in prototypes[spec].get(path, ()):
+                owners.append(("prototype", scoped_type_name(scope, global_pairs)))
         if len(owners) > 1 and all(kind == "member" for kind, _ in owners):
             # Member pairs sharing m and n: the sentinel may sit in any of their
             # aggregates (an access needs only . or ->).
@@ -2353,7 +2649,7 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
                         for p, q, start, _, old, n in local_spans
                         if old == spec.split(":")[1] and n == dest)}
                 if edit_sites & cache[key].keys():
-                    closure_macro_checks(cache[key].macros, active_scoped)
+                    closure_macro_checks(cache[key].macros, {**active_scoped, **{s: scoped[s] for s in sync_specs}})
                     resolved = {scoped_type_name(spec.split(":")[0], global_pairs, label == "new") + ":" + spec.split(":")[1] if ":" in spec else spec: dest
                                 for spec, dest in active_scoped.items()}
                     cpp_source_guards(cache[key], tree, resolved)
@@ -3440,6 +3736,32 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
         for macro_path, macro_text in cfiles.items():
             if not member and macro_uses(macro_text, new, body_only=True):
                 raise ValueError(f"{spec}: destination {new} occurs in a #define body or token paste in {macro_path}")
+        sync = {} if member else prototype_sync(cfiles, scope, old, new, types | typedef_names | transformed_types,
+                                                frozenset(macros) | frozenset(object_macros))
+        if sync:
+            # The local-pair source allowlist holds here too: fresh destination,
+            # no macro naming either name, every C source closed and plain.
+            local_freshness(transformed_base, new, frozenset(macros) | frozenset(object_macros), frozenset(transformed_types))
+            if any(macro_uses(t, old, body_only=True) or macro_uses(t, old, name_only=True) for t in cfiles.values()):
+                raise ValueError(f"{spec}: {old} occurs in a #define body or token paste")
+            if sources_closed is None:
+                sources_closed = c_sources_closed(cfiles)
+            if not sources_closed:
+                raise ValueError(f"{spec}: a C source is not plain, pastes tokens (##) or #includes a "
+                                 "file outside the .c / .h sources (macros there are unchecked)")
+            # A prototype-only pair: f's definition already names the parameter new;
+            # only the prototype-scope spellings of old change, and all must.
+            for p, sites in sync.items():
+                spans = code_spans(cfiles[p])
+                _, conditions = pp_regions(cfiles[p])
+                edits = plan.setdefault(p, {})
+                for k in sites:
+                    if any(a <= spans[k].start() < b for a, b in conditions):
+                        raise ValueError(f"{spec}: scoped substitution touches preprocessor-conditional code in {p}")
+                    if k in edits and edits[k] != (new, False):
+                        raise ValueError(f"{spec}: overlapping scoped pairs")
+                    edits[k] = (new, False)
+            continue
         if member:
             if new in types or new in transformed_types:
                 raise ValueError(f"{spec}: member destination is a typedef/type name")
@@ -3794,6 +4116,10 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                     if any(ts[k] == old and not local_exception(ts, k)
                            for k in range(block_end, indices[-1] + 1)):
                         raise ValueError(f"{spec}: use after the nested local binding's block")
+        # A parameter's prototype-scope spellings in file-scope prototypes of f are
+        # optional edits (they may retain old or become new).
+        proto_sites = {} if member else prototype_sites(cfiles, scope, old, new,
+                                                        macros=frozenset(macros) | frozenset(object_macros))
         for p, t in cfiles.items():
             spans = code_spans(t)
             toks = [m[0] for m in spans]
@@ -3810,15 +4136,16 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                 if any(a <= spans[k].start() < b for a, b in directives):
                     continue
                 replacement = None
-                if tok == old and ((p == path and k in indices)
+                prototype = k in proto_sites.get(p, ())
+                if tok == old and ((p == path and k in indices) or prototype
                                    or member and k and k not in aggregates
                                    and toks[k - 1] in (".", "->")):
-                    if member or not local_exception(toks, k):
+                    if member or prototype or not local_exception(toks, k):
                         replacement = new
                 if replacement is not None and replacement != tok:
                     if any(a <= spans[k].start() < b for a, b in conditions):
                         raise ValueError(f"{spec}: scoped substitution touches preprocessor-conditional code in {p}")
-                    value = (replacement, bool(member and not (p == path and k in indices)))
+                    value = (replacement, bool(prototype or member and not (p == path and k in indices)))
                     if k in edits and edits[k] != value:
                         if edits[k][1] and value[1]:
                             previous = edits[k][0]
