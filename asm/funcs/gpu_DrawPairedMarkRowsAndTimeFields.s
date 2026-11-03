@@ -530,8 +530,8 @@ glabel gpu_DrawPairedMarkRowsAndTimeFields
     /* 5018C 8005F98C 00000000 */   nop
     /* 50190 8005F990 0A80033C */  lui        $v1, %hi(D_8009BD38)
     /* 50194 8005F994 38BD638C */  lw         $v1, %lo(D_8009BD38)($v1)
-    /* 50198 8005F998 0A80023C */  lui        $v0, %hi(D_8009B5E8)
-    /* 5019C 8005F99C E8B54224 */  addiu      $v0, $v0, %lo(D_8009B5E8)
+    /* 50198 8005F998 0A80023C */  lui        $v0, %hi(g_gpu_seconds_hundredths_separator_cell)
+    /* 5019C 8005F99C E8B54224 */  addiu      $v0, $v0, %lo(g_gpu_seconds_hundredths_separator_cell)
     /* 501A0 8005F9A0 00306330 */  andi       $v1, $v1, 0x3000
     /* 501A4 8005F9A4 08007414 */  bne        $v1, $s4, .L8005F9C8
     /* 501A8 8005F9A8 1C00A2AF */   sw        $v0, 0x1C($sp)

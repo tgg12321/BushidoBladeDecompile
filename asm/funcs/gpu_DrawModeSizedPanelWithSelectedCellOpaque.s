@@ -92,8 +92,8 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4D20C 8005CA0C 1800A427 */  addiu      $a0, $sp, 0x18
     /* 4D210 8005CA10 48001026 */  addiu      $s0, $s0, 0x48
     /* 4D214 8005CA14 5000A88F */  lw         $t0, 0x50($sp)
-    /* 4D218 8005CA18 0A80033C */  lui        $v1, %hi(D_8009B20C)
-    /* 4D21C 8005CA1C 0CB26324 */  addiu      $v1, $v1, %lo(D_8009B20C)
+    /* 4D218 8005CA18 0A80033C */  lui        $v1, %hi(g_gpu_mode_panel_footer_cells)
+    /* 4D21C 8005CA1C 0CB26324 */  addiu      $v1, $v1, %lo(g_gpu_mode_panel_footer_cells)
     /* 4D220 8005CA20 1800B0AF */  sw         $s0, 0x18($sp)
     /* 4D224 8005CA24 1C00A3AF */  sw         $v1, 0x1C($sp)
     /* 4D228 8005CA28 3000A0AF */  sw         $zero, 0x30($sp)

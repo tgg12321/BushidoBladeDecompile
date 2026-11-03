@@ -21,7 +21,7 @@ static s32 g_gpu_jitter_random_state;
 extern Unk8009B400Record g_gpu_mode_panel_pause_title_cells[3];
 extern Unk8009B400Record g_gpu_mode_panel_continue_cells[2];
 extern Unk8009B400Record g_gpu_mode_panel_rematch_cells[2];
-extern Unk8009B400Record D_8009B20C[6];
+extern Unk8009B400Record g_gpu_mode_panel_footer_cells[6];
 extern Unk8009B400Record g_gpu_mode_panel_toggle_row_label_cells[12];
 extern Unk8009B400Record g_gpu_mode_panel_toggle_state_cells[2];
 extern Unk8009B400Record *g_gpu_mode_panel_menu_item_cell_tables[4];
@@ -84,7 +84,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
             (g_panel_frame_sizes[2].w + 0x280) / 2 - 0xC;
         cur = gpu_AddSpriteCells(&s);
         s.header = &g_gpu_mode_panel_sheet_headers[8];
-        s.table = D_8009B20C;
+        s.table = g_gpu_mode_panel_footer_cells;
         s.x = 0;
         s.y = 0;
         s.sprt_out = cur;
@@ -415,7 +415,7 @@ s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32 ft4_out_addr, s32 arg1) {
             /* FAKE: integer sum keeps `addu v0,s0,fp`; the byte-pointer sum
              * swaps it: score 1 */
             s.header = (Unk8009B0E0Record *)(row_off + (s32)var_12);
-            s.table = &D_8009B388[0];
+            s.table = &g_gpu_jittered_quad_pair_cells[0];
             g_gpu_jitter_random_state ^= rand();
             s.scale_y = var_10;
             s.scale_x = var_10;
@@ -441,7 +441,7 @@ s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32 ft4_out_addr, s32 arg1) {
             s.has_color = 0;
             s.scale_y = var_10;
             s.scale_x = var_10;
-            s.table = &D_8009B388[1];
+            s.table = &g_gpu_jittered_quad_pair_cells[1];
             s.header = random_header_pair + (g_gpu_jitter_random_state & 1);
             g_gpu_jitter_random_state ^= rand();
             /* Ruling 4 compound-assignment split; one expression: score 3. */
@@ -1082,7 +1082,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
 extern Unk8009B0E0Record g_gpu_paired_mark_sheet_headers[2];
 extern Unk8009B400Record g_gpu_paired_mark_cells[2][2];
 extern Unk8009B400Record g_gpu_paired_mark_label_cells[2];
-extern Unk8009B400Record D_8009B5E8;
+extern Unk8009B400Record g_gpu_seconds_hundredths_separator_cell;
 
 s32 gpu_DrawPairedMarkRowsAndTimeFields(
     Unk8001CD68Rec *time_fields, s32 packed_mark_counts, s32 arg2,
@@ -1254,7 +1254,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
             s.sprt_out = cur;
             cur = gpu_AddSpriteCells(&s);
         }
-        s.table = &D_8009B5E8;
+        s.table = &g_gpu_seconds_hundredths_separator_cell;
         if (g_working_record.time_limit_index == 2) {
             s.x = j * 6 + 0x145;
         } else {
@@ -1457,7 +1457,8 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
 /* gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite's sheets: the frame
  * header (3 cells, g_gpu_digit_count_shifted_sprite_cells) and the digit header
  * (1 cell; one of the ten digit cells g_gpu_large_decimal_digit_cells). */
-extern Unk8009B0E0Record D_8009B6F0[2];
+extern Unk8009B0E0Record
+    g_gpu_digit_count_shifted_sprite_and_large_digit_sheet_headers[2];
 extern Unk8009B400Record g_gpu_large_decimal_digit_cells[10];
 extern Unk8009B400Record g_gpu_digit_count_shifted_sprite_cells[3];
 
@@ -1474,7 +1475,8 @@ s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
     s32 cur = arg1;
     s32 digit_index;
 
-    s.header = &D_8009B6F0[0];
+    s.header =
+        &g_gpu_digit_count_shifted_sprite_and_large_digit_sheet_headers[0];
     s.has_color = 0;
     s.semi = 0;
     s.y = 0;
@@ -1487,7 +1489,8 @@ s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
     s.table = g_gpu_digit_count_shifted_sprite_cells;
     s.sprt_out = cur;
     cur = gpu_AddSpriteCells(&s);
-    s.header = &D_8009B6F0[1];
+    s.header =
+        &g_gpu_digit_count_shifted_sprite_and_large_digit_sheet_headers[1];
     d[0] = d[1] = displayed_value;
     d[1] = d[1] / 10 % 10;
     d[0] = d[0] % 10;
@@ -1504,7 +1507,11 @@ s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
             break;
         }
     }
-    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(D_8009B6F0, 0), 0);
+    SetDrawMode(
+        dr_mode, 1, 0,
+        gpu_GetSheetTPage(
+            g_gpu_digit_count_shifted_sprite_and_large_digit_sheet_headers, 0),
+        0);
     AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     return end_off - arg1;
 }
@@ -1981,7 +1988,7 @@ Unk8009B400Record g_gpu_mode_panel_return_to_top_menu_cells[4] = {
     {331, 34, 0x80, 0x5D, 0x40, 0x0C},
     {395, 34, 0xC0, 0x5D, 0x2A, 0x0C},
 };
-Unk8009B400Record D_8009B20C[6] = {
+Unk8009B400Record g_gpu_mode_panel_footer_cells[6] = {
     {159, 165, 0x00, 0x9C, 0xC0, 0x0D}, {351, 165, 0xC0, 0x9C, 0x40, 0x0D},
     {415, 165, 0x00, 0xA9, 0x42, 0x0D}, {182, 178, 0x00, 0xB6, 0xC0, 0x0D},
     {374, 178, 0xC0, 0xB6, 0x40, 0x0D}, {438, 178, 0x00, 0xC3, 0x13, 0x0D},
@@ -2044,7 +2051,7 @@ Unk8009B400Record D_8009B358[6] = {
     {556, 134, 0x50, 0x00, 0x40, 0x40}, {476, 198, 0x00, 0x40, 0x10, 0x18},
     {492, 198, 0x10, 0x40, 0x40, 0x18}, {556, 198, 0x50, 0x40, 0x40, 0x18},
 };
-Unk8009B400Record D_8009B388[2] = {
+Unk8009B400Record g_gpu_jittered_quad_pair_cells[2] = {
     {0, 0, 0x00, 0x00, 0x24, 0x14},
     {0, 0, 0x00, 0x00, 0x0E, 0x06},
 };

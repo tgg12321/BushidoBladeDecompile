@@ -90,7 +90,7 @@ extern Unk8009B450Record g_gpu_time_and_counter_line_origins[2];
 /* Two 8-byte sprite cells, the cell table
  * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle hands gpu_AddScaledSpriteQuads
  * for the row's header record 2 (cell 0) and records 3/4 (cell 1). */
-extern Unk8009B400Record D_8009B388[2];
+extern Unk8009B400Record g_gpu_jittered_quad_pair_cells[2];
 
 /* 2 x 2 table of 8-byte sprite records (gpu_DrawPairedMarkRowsAndTimeFields).
  */

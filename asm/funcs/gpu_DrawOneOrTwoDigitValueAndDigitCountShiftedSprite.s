@@ -7,8 +7,8 @@ glabel gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
     /* 508DC 800600DC 6000B4AF */  sw         $s4, 0x60($sp)
     /* 508E0 800600E0 21A0C000 */  addu       $s4, $a2, $zero
     /* 508E4 800600E4 21484002 */  addu       $t1, $s2, $zero
-    /* 508E8 800600E8 0A80023C */  lui        $v0, %hi(D_8009B6F0)
-    /* 508EC 800600EC F0B64224 */  addiu      $v0, $v0, %lo(D_8009B6F0)
+    /* 508E8 800600E8 0A80023C */  lui        $v0, %hi(g_gpu_digit_count_shifted_sprite_and_large_digit_sheet_headers)
+    /* 508EC 800600EC F0B64224 */  addiu      $v0, $v0, %lo(g_gpu_digit_count_shifted_sprite_and_large_digit_sheet_headers)
     /* 508F0 800600F0 5C00B3AF */  sw         $s3, 0x5C($sp)
     /* 508F4 800600F4 B4005326 */  addiu      $s3, $s2, 0xB4
     /* 508F8 800600F8 6400B5AF */  sw         $s5, 0x64($sp)
@@ -98,8 +98,8 @@ glabel gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
     /* 50A38 80060238 E7FF4014 */  bnez       $v0, .L800601D8
     /* 50A3C 8006023C 40101000 */   sll       $v0, $s0, 1
   .L80060240:
-    /* 50A40 80060240 0A80043C */  lui        $a0, %hi(D_8009B6F0)
-    /* 50A44 80060244 F0B68424 */  addiu      $a0, $a0, %lo(D_8009B6F0)
+    /* 50A40 80060240 0A80043C */  lui        $a0, %hi(g_gpu_digit_count_shifted_sprite_and_large_digit_sheet_headers)
+    /* 50A44 80060244 F0B68424 */  addiu      $a0, $a0, %lo(g_gpu_digit_count_shifted_sprite_and_large_digit_sheet_headers)
     /* 50A48 80060248 20B9010C */  jal        gpu_GetSheetTPage
     /* 50A4C 8006024C 21280000 */   addu      $a1, $zero, $zero
     /* 50A50 80060250 21206002 */  addu       $a0, $s3, $zero

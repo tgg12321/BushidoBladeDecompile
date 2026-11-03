@@ -62,8 +62,8 @@ glabel gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
     /* 4DE3C 8005D63C 0C00C227 */  addiu      $v0, $fp, 0xC
     /* 4DE40 8005D640 21100202 */  addu       $v0, $s0, $v0
     /* 4DE44 8005D644 4000A2AF */  sw         $v0, 0x40($sp)
-    /* 4DE48 8005D648 0A80173C */  lui        $s7, %hi(D_8009B388)
-    /* 4DE4C 8005D64C 88B3F726 */  addiu      $s7, $s7, %lo(D_8009B388)
+    /* 4DE48 8005D648 0A80173C */  lui        $s7, %hi(g_gpu_jittered_quad_pair_cells)
+    /* 4DE4C 8005D64C 88B3F726 */  addiu      $s7, $s7, %lo(g_gpu_jittered_quad_pair_cells)
   .L8005D650:
     /* 4DE50 8005D650 21101E02 */  addu       $v0, $s0, $fp
     /* 4DE54 8005D654 3800A0A3 */  sb         $zero, 0x38($sp)
