@@ -84,7 +84,10 @@ Reading a report: call sites are ra-8, i.e. the `jal`/`jalr` that entered the
 function; a function reached by a tail-call `j` is credited to its caller's
 caller. Watch hits name the load/store at the stop pc (pc-4 too when the stub reports
 the address); a store in a branch delay slot may be missed and then shows as an
-`unmatched-stop` event.
+`unmatched-stop` event. PCSX-Redux also stops a watch on RAM a DMA transfer
+reads or writes: such a hit names the channel and the CHCR store that started
+it ("dma"; see dma_kick), and a DMA stop that fits several armed watches of its
+direction, or none, is a `dma-stop` event, credited to none.
 A trace covers one scenario, never everything a function can do.
 
 Reproducible runs (owner ruling Q124): with a "script" block the run starts
@@ -502,6 +505,31 @@ def decode_access(gdb: Gdb, regs: list[int], pc: int, also_prev: bool):
         elif store and op != 0x3A:
             value = regs[rt] & ((1 << (8 * width)) - 1)
         yield at, addr, width, store, value
+
+
+DMA_REGS = 0x1F801080  # channel n: MADR +0x10n, BCR +4, CHCR +8 (n 0..6)
+
+
+def dma_kick(gdb: Gdb, regs: list[int], pc: int):
+    """The DMA transfer a watch stop with no CPU access of its own came from.
+    PCSX-Redux checks its breakpoints against the RAM a DMA reads or writes
+    (cause "DMA channel n read/write") and stops on the instruction after the
+    word store to the channel's CHCR that started the transfer, e.g. _otc's
+    ClearOTagR kick (ch6, a write). Returns {"ch", "chcr", "kick_pc",
+    "from_ram"} for a `sw` at pc-4 to a CHCR with the start bit (24) set,
+    else None. CHCR bit 0 is the direction: 1 reads RAM (a read watch),
+    0 writes it (a write watch); OTC (ch6) always writes."""
+    for acc in decode_access(gdb, regs, pc - 4, False):
+        at, addr, width, store, value = acc
+        a = phys(addr)
+        if not (store and width == 4 and value is not None and at == pc - 4
+                and DMA_REGS <= a < DMA_REGS + 0x70 and a & 0xF == 8
+                and value & (1 << 24)):
+            continue
+        ch = (a - DMA_REGS) >> 4
+        return {"ch": ch, "chcr": value, "kick_pc": at,
+                "from_ram": ch != 6 and bool(value & 1)}
+    return None
 
 
 def compare_memory(gdb: Gdb, addr: int, want: bytes | None) -> str:
@@ -954,7 +982,7 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
     def emit(rec):
         if (stamp["fields"] is not None
                 and rec["ev"] in ("hit", "canary", "ambiguous-stop",
-                                  "unmatched-stop")):
+                                  "unmatched-stop", "dma-stop")):
             rec.update(stamp["fields"])
         out.write(json.dumps(rec, separators=(",", ":")) + "\n")
         out.flush()
@@ -1191,6 +1219,23 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                     return e, acc
         return None, (cands[0] if cands else None)
 
+    def dma_entry(regs, reply, interrupted):
+        """(entry, dma) for a stop no CPU access explains but a DMA kick
+        does (dma_kick): the watch of the transfer's direction (an access
+        watch either way) when exactly one such watch is armed; else (several
+        or none) no entry, and dma["candidates"] names those that fit."""
+        pc = regs[37] if len(regs) > 37 else 0
+        watches = [e for (k, _), e in armed.items() if k]
+        if not watches or interrupted or (0, pc) in armed:
+            return None, None
+        dma = dma_kick(gdb, regs, pc)
+        if dma is None:
+            return None, None
+        want = 3 if dma["from_ram"] else 2
+        fits = [e for e in watches if e["kind"] in (want, 4)]
+        dma["candidates"] = [f"Z{e['kind']}:{e['spec']['at']}" for e in fits]
+        return (fits[0] if len(fits) == 1 else None), dma
+
     try:
         while events < max_events and time.time() - t0 < duration:
             now = time.time()
@@ -1302,8 +1347,13 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                                 armed, suspended)
                     apply_pokes(gdb, pokes, phase, regs, new[1], emit)
             # A Lua pause can land on any load/store, like our own ^C.
-            e, acc = entry_for_stop(regs, reply,
-                                    (interrupted and not raced) or script_stop)
+            quiet = (interrupted and not raced) or script_stop
+            e, acc = entry_for_stop(regs, reply, quiet)
+            dma = None
+            if e is None:
+                e, dma = dma_entry(regs, reply, quiet)
+                if e is not None:
+                    acc = None
             if e is not None and (e.get("canary_only") or e.get("canary")) \
                     and "canary_hit" not in args.result:
                 # At the EXE entry no game code has run yet: the disc's EXE
@@ -1334,6 +1384,8 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                     # pause or our ^C stopped on cannot be told from the
                     # pause: say so (the run then cannot meet Q124).
                     e2, acc2 = entry_for_stop(regs, reply, False)
+                    if e2 is None:
+                        e2, _ = dma_entry(regs, reply, False)
                     if e2 is not None:
                         # Redux may raise the watch again on resume: let
                         # that stop through as the hit.
@@ -1344,7 +1396,14 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                               "access": list(acc2) if acc2 else None})
                 if script_stop and state[3]:
                     break
-                if (not interrupted or raced) and not script_stop:
+                if dma is not None:
+                    # A DMA hit, but on which of several watches of its
+                    # direction the stop does not say: no hit is credited.
+                    emit({"ev": "dma-stop", "pc": regs[37], "ra": regs[31],
+                          "phase": phase, "dma": dma, "stop": reply})
+                    args.result["dma_unattributed"] = \
+                        args.result.get("dma_unattributed", 0) + 1
+                elif (not interrupted or raced) and not script_stop:
                     emit({"ev": "unmatched-stop", "pc": regs[37],
                           "ra": regs[31], "stop": reply,
                           "access": list(acc) if acc else None})
@@ -1370,6 +1429,8 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             if acc:
                 rec["access"] = {"pc": acc[0], "addr": acc[1], "width": acc[2],
                                  "store": acc[3], "value": acc[4]}
+            if dma:
+                rec["dma"] = dma
             if sp.get("regs"):
                 rec["regs"] = {r: regs[REG_INDEX[r]] for r in sp["regs"]}
             if sp.get("dump"):
@@ -1866,7 +1927,8 @@ def report(args) -> int:
                 values[rec["i"]].append(rec)
             elif rec["ev"] == "phase":
                 phases.append(rec)
-            elif rec["ev"] in ("unmatched-stop", "ambiguous-stop"):
+            elif rec["ev"] in ("unmatched-stop", "ambiguous-stop",
+                               "dma-stop"):
                 odd[rec["ev"]] += 1
             elif rec["ev"] == "disarmed":
                 disarmed[(rec["at"], rec["kind"])] = rec
@@ -1965,6 +2027,8 @@ def report(args) -> int:
         else:
             sites = collections.Counter(
                 syms.name(r["access"]["pc"]) if r.get("access")
+                else f"DMA ch{r['dma']['ch']} kicked at "
+                f"{syms.name(r['dma']['kick_pc'])}" if r.get("dma")
                 else f"stop pc {syms.name(r['pc'])}" for r in recs)
             w.append("Accessing instructions:")
         for c, n in sites.most_common(10):

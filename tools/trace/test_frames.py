@@ -217,6 +217,125 @@ class TraceLoopTest(unittest.TestCase):
         self.assertFalse(any(r["ev"] == "unmatched-stop" for r in records))
         self.assertEqual(gdb.set, [])  # the end clears both
 
+    KICK_PC = 0x8007CB3C  # after _otc's `sw v1, 0(v0)` to DMA6 CHCR
+
+    def dma_gdb(self, chcr=0x11000002, chcr_addr=0x1F8010E8):
+        kick = self.KICK_PC - 4
+
+        class FakeGdb:
+            features = {}
+
+            def __init__(self):
+                self.set = []
+                self.console = []
+                self.late_stops = []
+
+            def cmd(self, command):
+                return "S05"
+
+            def interrupt(self, *args):
+                return "S05"
+
+            def set_bp(self, kind, a, n=4):
+                self.set.append((kind, a, n))
+                return True
+
+            def clear_bp(self, kind, a, n=4):
+                self.set = [s for s in self.set
+                            if not (s[1] <= a < s[1] + s[2])]
+                return True
+
+            def regs(self):
+                r = [0] * 38
+                r[2], r[3], r[37] = chcr_addr, chcr, kick + 4
+                return r
+
+            def mem(self, a, n):
+                if a == kick:  # sw v1, 0(v0)
+                    return (0xAC430000).to_bytes(4, "little")
+                return bytes(n)
+
+            def cont(self):
+                pass
+
+            def close(self):
+                pass
+        return FakeGdb()
+
+    def run_dma(self, gdb, watch, stops, fires):
+        # The stub stops only while a watch of a kind in `fires` (the DMA's
+        # direction, or access) is set.
+        left = [stops]
+
+        def wait_running(*args):
+            if left[0] and any(s[0] in fires for s in gdb.set):
+                left[0] -= 1
+                return "T05"
+            return "W00"
+
+        syms = argparse.Namespace(path="fake.map", addr=lambda at: int(at, 0))
+        scratch = Path(__file__).resolve().parents[2] / "tmp"
+        scratch.mkdir(exist_ok=True)
+        directory = scratch / ("frames-test-" + uuid.uuid4().hex)
+        directory.mkdir()
+        self.addCleanup(shutil.rmtree, directory)
+        out = directory / "capture.jsonl"
+        args = argparse.Namespace(out=str(out), map="fake.map", result={},
+                                  expect={}, duration=60, stall=1)
+        with patch.object(gdbtrace, "wait_running", side_effect=wait_running):
+            gdbtrace.trace(gdb, syms, dict(watch=watch), args)
+        return ([json.loads(line) for line in out.read_text().splitlines()],
+                args.result)
+
+    def test_dma_write_credits_the_write_watch(self):
+        # ClearOTagR's OTC DMA writes a watched OT word: PCSX-Redux stops
+        # after the CHCR store, with no load or store of the word at pc.
+        ot = 0x800F94A8
+        records, _ = self.run_dma(self.dma_gdb(), [
+            dict(at=hex(ot), kind="write", max_hits=2),
+            dict(at=hex(ot), kind="read")], stops=5, fires={2, 4})
+        hits = [r for r in records if r["ev"] == "hit"]
+        self.assertEqual([r["kind"] for r in hits], [2, 2])
+        self.assertEqual(hits[0]["dma"]["ch"], 6)
+        self.assertEqual(hits[0]["dma"]["kick_pc"], self.KICK_PC - 4)
+        self.assertNotIn("access", hits[0])
+        self.assertEqual([r["after_hits"] for r in records
+                          if r["ev"] == "disarmed"], [2])
+        self.assertFalse(any(r["ev"] in ("unmatched-stop", "dma-stop")
+                             for r in records))
+
+    def test_dma_from_ram_credits_the_read_watch(self):
+        # GPU block DMA (ch2, CHCR 0x01000201: start, from RAM).
+        buf = 0x80118800
+        records, _ = self.run_dma(
+            self.dma_gdb(chcr=0x01000201, chcr_addr=0x1F8010A8), [
+                dict(at=hex(buf), kind="write"),
+                dict(at=hex(buf), kind="read", max_hits=1)], stops=3,
+            fires={3, 4})
+        hits = [r for r in records if r["ev"] == "hit"]
+        self.assertEqual([(r["kind"], r["dma"]["ch"]) for r in hits], [(3, 2)])
+
+    def test_dma_stop_on_two_fitting_watches_credits_none(self):
+        records, result = self.run_dma(self.dma_gdb(), [
+            dict(at="0x800F94A8", kind="write"),
+            dict(at="0x800F9000", kind="access")], stops=2, fires={2, 4})
+        self.assertFalse(any(r["ev"] == "hit" for r in records))
+        dma = [r for r in records if r["ev"] == "dma-stop"]
+        self.assertEqual(len(dma), 2)
+        self.assertEqual(sorted(dma[0]["dma"]["candidates"]),
+                         ["Z2:0x800F94A8", "Z4:0x800F9000"])
+        self.assertEqual(result["dma_unattributed"], 2)
+
+    def test_dma_kick_needs_the_start_bit_and_a_chcr(self):
+        gdb = self.dma_gdb(chcr=0x00000002)  # start bit clear
+        self.assertIsNone(gdbtrace.dma_kick(gdb, gdb.regs(), self.KICK_PC))
+        gdb = self.dma_gdb(chcr_addr=0x1F8010E0)  # ch6 MADR, not CHCR
+        self.assertIsNone(gdbtrace.dma_kick(gdb, gdb.regs(), self.KICK_PC))
+        gdb = self.dma_gdb()
+        self.assertEqual(gdbtrace.dma_kick(gdb, gdb.regs(), self.KICK_PC),
+                         {"ch": 6, "chcr": 0x11000002,
+                          "kick_pc": self.KICK_PC - 4, "from_ram": False})
+
 
 if __name__ == "__main__":
     unittest.main()
