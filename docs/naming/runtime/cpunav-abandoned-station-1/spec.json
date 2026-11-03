@@ -1,0 +1,239 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "watch": [
+    {
+      "at": "0x8009A090",
+      "len": 1936,
+      "kind": "read",
+      "max_hits": 20000
+    },
+    {
+      "at": "0x80102674",
+      "len": 52,
+      "kind": "write",
+      "max_hits": 5000
+    },
+    {
+      "at": "0x800A36A4",
+      "len": 2,
+      "kind": "write",
+      "max_hits": 50
+    }
+  ],
+  "breakpoints": [
+    {
+      "at": "fighter_Init",
+      "max_hits": 50
+    },
+    {
+      "at": "resource_LoadOrReuseSelectedBlock",
+      "max_hits": 50
+    },
+    {
+      "at": "fighter_FindNearestNavCrossing",
+      "max_hits": 2000,
+      "dump": [
+        {
+          "base": "a0",
+          "off": 244,
+          "len": 12
+        }
+      ]
+    },
+    {
+      "at": "fighter_AppendNavDetour",
+      "max_hits": 2000,
+      "dump": [
+        {
+          "base": "a0",
+          "off": 244,
+          "len": 12
+        }
+      ]
+    },
+    {
+      "at": "fighter_GetNavCornerPoint",
+      "max_hits": 5000
+    }
+  ],
+  "script": {
+    "end_frame": 11000,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6200,
+        "name": "t_char"
+      },
+      {
+        "frame": 6500,
+        "name": "char_select"
+      },
+      {
+        "frame": 6800,
+        "name": "t_weapon"
+      },
+      {
+        "frame": 6900,
+        "name": "weapon_select"
+      },
+      {
+        "frame": 7400,
+        "name": "t_load"
+      },
+      {
+        "frame": 7700,
+        "name": "t_load_stage"
+      },
+      {
+        "frame": 8350,
+        "name": "fight"
+      },
+      {
+        "frame": 9700,
+        "name": "fight_late"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6080,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6500,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6800,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7100,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7400,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6500,
+        "name": "char_select.first"
+      },
+      {
+        "frame": 6900,
+        "name": "weapon_select.first"
+      },
+      {
+        "frame": 7399,
+        "name": "weapon_select.last"
+      },
+      {
+        "frame": 8000,
+        "name": "t_load.mid"
+      },
+      {
+        "frame": 8350,
+        "name": "fight.first"
+      },
+      {
+        "frame": 8700,
+        "name": "fight.8700"
+      },
+      {
+        "frame": 9000,
+        "name": "fight.9000"
+      },
+      {
+        "frame": 9400,
+        "name": "fight.9400"
+      },
+      {
+        "frame": 9700,
+        "name": "fight_late.first"
+      },
+      {
+        "frame": 10200,
+        "name": "fight_late.10200"
+      },
+      {
+        "frame": 10600,
+        "name": "fight_late.10600"
+      },
+      {
+        "frame": 10999,
+        "name": "fight_late.last"
+      }
+    ]
+  },
+  "pokes": [
+    {
+      "at": "0x800A36A4",
+      "hex": "1900",
+      "phase": "t_load_stage"
+    }
+  ]
+}

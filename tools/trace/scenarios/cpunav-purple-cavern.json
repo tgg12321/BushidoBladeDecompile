@@ -1,0 +1,55 @@
+{
+  "description": "Vs. CPU Mode's first fight moved to stage index 0x18 (Purple Cavern) (a modified game): versus-cpu-first-fight's menu inputs up to the weapon pick (CROSS 7400), then g_fight_stage_index (0x800A36A4) poked to 0x18 at 7700, after fight_AdvanceOpponentOrder sets the opponent's stage (7649) and before the fight load reads it (7869); P1 sends no fight input, P2 is the CPU opponent, the run ends at 11000. One of the trace-cpu-nav family cpunav-*, identical but for the poked index",
+  "covers": [
+    "mode:vs_cpu",
+    "stage:purple_cavern"
+  ],
+  "evidence": [
+    "docs/naming/runtime/cpunav-purple-cavern-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 11000,
+  "inputs": [
+    "6080:DOWN",
+    "6200:CROSS",
+    "6500:START",
+    "6800:CROSS",
+    "7100:START",
+    "7400:CROSS"
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6200:t_char",
+    "6500:char_select",
+    "6800:t_weapon",
+    "6900:weapon_select",
+    "7400:t_load",
+    "7700:t_load_stage",
+    "8350:fight",
+    "9700:fight_late"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6500:char_select.first",
+    "6900:weapon_select.first",
+    "7399:weapon_select.last",
+    "8000:t_load.mid",
+    "8350:fight.first",
+    "8700:fight.8700",
+    "9000:fight.9000",
+    "9400:fight.9400",
+    "9700:fight_late.first",
+    "10200:fight_late.10200",
+    "10600:fight_late.10600",
+    "10999:fight_late.last"
+  ],
+  "pokes": [
+    {
+      "at": "0x800A36A4",
+      "hex": "1800",
+      "phase": "t_load_stage"
+    }
+  ]
+}
