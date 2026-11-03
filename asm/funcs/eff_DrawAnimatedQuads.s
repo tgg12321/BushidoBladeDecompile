@@ -130,13 +130,13 @@ glabel eff_DrawAnimatedQuads
     /* 561F4 800659F4 A10F4228 */  slti       $v0, $v0, 0xFA1
     /* 561F8 800659F8 05004014 */  bnez       $v0, .L80065A10
     /* 561FC 800659FC 00000000 */   nop
-    /* 56200 80065A00 0A80023C */  lui        $v0, %hi(D_8009B8D0)
-    /* 56204 80065A04 D0B84224 */  addiu      $v0, $v0, %lo(D_8009B8D0)
+    /* 56200 80065A00 0A80023C */  lui        $v0, %hi(g_eff_spinning_quad_far_tex_rec)
+    /* 56204 80065A04 D0B84224 */  addiu      $v0, $v0, %lo(g_eff_spinning_quad_far_tex_rec)
     /* 56208 80065A08 86960108 */  j          .L80065A18
     /* 5620C 80065A0C 00000000 */   nop
   .L80065A10:
-    /* 56210 80065A10 0A80023C */  lui        $v0, %hi(D_8009B8D8)
-    /* 56214 80065A14 D8B84224 */  addiu      $v0, $v0, %lo(D_8009B8D8)
+    /* 56210 80065A10 0A80023C */  lui        $v0, %hi(g_eff_spinning_quad_near_tex_rec)
+    /* 56214 80065A14 D8B84224 */  addiu      $v0, $v0, %lo(g_eff_spinning_quad_near_tex_rec)
   .L80065A18:
     /* 56218 80065A18 BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 5621C 80065A1C FF000224 */  addiu      $v0, $zero, 0xFF

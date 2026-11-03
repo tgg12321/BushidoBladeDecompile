@@ -53,8 +53,8 @@ glabel gpu_DrawImageAndAdvanceSplitWipe
     /* 50568 8005FD68 2DEA010C */  jal        AddPrim
     /* 5056C 8005FD6C 21204400 */   addu      $a0, $v0, $a0
     /* 50570 8005FD70 AC01838F */  lw         $v1, %gp_rel(g_gpu_split_wipe_frame)($gp)
-    /* 50574 8005FD74 0A80023C */  lui        $v0, %hi(D_8009B6B0)
-    /* 50578 8005FD78 B0B64224 */  addiu      $v0, $v0, %lo(D_8009B6B0)
+    /* 50574 8005FD74 0A80023C */  lui        $v0, %hi(g_gpu_split_wipe_image_cells)
+    /* 50578 8005FD78 B0B64224 */  addiu      $v0, $v0, %lo(g_gpu_split_wipe_image_cells)
     /* 5057C 8005FD7C 4000A0A3 */  sb         $zero, 0x40($sp)
     /* 50580 8005FD80 2800A0AF */  sw         $zero, 0x28($sp)
     /* 50584 8005FD84 3000A0AF */  sw         $zero, 0x30($sp)
@@ -189,8 +189,8 @@ glabel gpu_DrawImageAndAdvanceSplitWipe
     /* 50774 8005FF74 40180200 */  sll        $v1, $v0, 1
     /* 50778 8005FF78 21186200 */  addu       $v1, $v1, $v0
     /* 5077C 8005FF7C 80180300 */  sll        $v1, $v1, 2
-    /* 50780 8005FF80 0A80083C */  lui        $t0, %hi(D_8009B698)
-    /* 50784 8005FF84 98B60825 */  addiu      $t0, $t0, %lo(D_8009B698)
+    /* 50780 8005FF80 0A80083C */  lui        $t0, %hi(g_gpu_split_wipe_image_sheet_headers)
+    /* 50784 8005FF84 98B60825 */  addiu      $t0, $t0, %lo(g_gpu_split_wipe_image_sheet_headers)
     /* 50788 8005FF88 21186800 */  addu       $v1, $v1, $t0
     /* 5078C 8005FF8C 5000A88F */  lw         $t0, 0x50($sp)
     /* 50790 8005FF90 80110200 */  sll        $v0, $v0, 6
@@ -231,8 +231,8 @@ glabel gpu_DrawImageAndAdvanceSplitWipe
     /* 50818 80060018 02004228 */  slti       $v0, $v0, 0x2
     /* 5081C 8006001C 67FF4014 */  bnez       $v0, .L8005FDBC
     /* 50820 80060020 00000000 */   nop
-    /* 50824 80060024 0A80043C */  lui        $a0, %hi(D_8009B698)
-    /* 50828 80060028 98B68424 */  addiu      $a0, $a0, %lo(D_8009B698)
+    /* 50824 80060024 0A80043C */  lui        $a0, %hi(g_gpu_split_wipe_image_sheet_headers)
+    /* 50828 80060028 98B68424 */  addiu      $a0, $a0, %lo(g_gpu_split_wipe_image_sheet_headers)
     /* 5082C 8006002C 20B9010C */  jal        gpu_GetSheetTPage
     /* 50830 80060030 20000524 */   addiu     $a1, $zero, 0x20
     /* 50834 80060034 01000524 */  addiu      $a1, $zero, 0x1

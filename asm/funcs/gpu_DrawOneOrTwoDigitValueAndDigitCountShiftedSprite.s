@@ -29,8 +29,8 @@ glabel gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
   .L80060130:
     /* 50930 80060130 3000A2AF */  sw         $v0, 0x30($sp)
     /* 50934 80060134 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 50938 80060138 0A80023C */  lui        $v0, %hi(D_8009B758)
-    /* 5093C 8006013C 58B74224 */  addiu      $v0, $v0, %lo(D_8009B758)
+    /* 50938 80060138 0A80023C */  lui        $v0, %hi(g_gpu_digit_count_shifted_sprite_cells)
+    /* 5093C 8006013C 58B74224 */  addiu      $v0, $v0, %lo(g_gpu_digit_count_shifted_sprite_cells)
     /* 50940 80060140 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* 50944 80060144 4BCD010C */  jal        gpu_AddSpriteCells
     /* 50948 80060148 2000A9AF */   sw        $t1, 0x20($sp)
@@ -72,8 +72,8 @@ glabel gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
   .L800601D8:
     /* 509D8 800601D8 2110A203 */  addu       $v0, $sp, $v0
     /* 509DC 800601DC 48004284 */  lh         $v0, 0x48($v0)
-    /* 509E0 800601E0 0A80033C */  lui        $v1, %hi(D_8009B708)
-    /* 509E4 800601E4 08B76324 */  addiu      $v1, $v1, %lo(D_8009B708)
+    /* 509E0 800601E0 0A80033C */  lui        $v1, %hi(g_gpu_large_decimal_digit_cells)
+    /* 509E4 800601E4 08B76324 */  addiu      $v1, $v1, %lo(g_gpu_large_decimal_digit_cells)
     /* 509E8 800601E8 C0100200 */  sll        $v0, $v0, 3
     /* 509EC 800601EC 21104300 */  addu       $v0, $v0, $v1
     /* 509F0 800601F0 1C00A2AF */  sw         $v0, 0x1C($sp)

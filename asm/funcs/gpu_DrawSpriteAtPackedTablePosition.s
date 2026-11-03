@@ -5,8 +5,8 @@ glabel gpu_DrawSpriteAtPackedTablePosition
     /* 50C20 80060420 5000B2AF */  sw         $s2, 0x50($sp)
     /* 50C24 80060424 2190C000 */  addu       $s2, $a2, $zero
     /* 50C28 80060428 FF7F8330 */  andi       $v1, $a0, 0x7FFF
-    /* 50C2C 8006042C 0A80023C */  lui        $v0, %hi(D_8009B850)
-    /* 50C30 80060430 50B84224 */  addiu      $v0, $v0, %lo(D_8009B850)
+    /* 50C2C 8006042C 0A80023C */  lui        $v0, %hi(g_gpu_packed_sprite_positions)
+    /* 50C30 80060430 50B84224 */  addiu      $v0, $v0, %lo(g_gpu_packed_sprite_positions)
     /* 50C34 80060434 40180300 */  sll        $v1, $v1, 1
     /* 50C38 80060438 21186200 */  addu       $v1, $v1, $v0
     /* 50C3C 8006043C 4C00B1AF */  sw         $s1, 0x4C($sp)

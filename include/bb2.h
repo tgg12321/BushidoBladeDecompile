@@ -82,9 +82,9 @@ extern u8 g_entry_menu_entry_flags[];
 /* Table of 4 sprite-sheet headers, 12 bytes each
  * (gpu_DrawTwoDigitCounterWithOptionalSecondSide,
  * gpu_DrawPackedComparisonRowsAndTotals). */
-extern Unk8009B0E0Record D_8009B398[4];
+extern Unk8009B0E0Record g_gpu_digit_label_and_line_segment_sheet_headers[4];
 extern Unk8009B400Record g_gpu_decimal_digit_cells[10];
-extern Unk8009B400Record D_8009B458[3][2];
+extern Unk8009B400Record g_gpu_two_digit_counter_cells[3][2];
 extern Unk8009B450Record g_gpu_time_and_counter_line_origins[2];
 
 /* Two 8-byte sprite cells, the cell table
@@ -94,11 +94,11 @@ extern Unk8009B400Record D_8009B388[2];
 
 /* 2 x 2 table of 8-byte sprite records (gpu_DrawPairedMarkRowsAndTimeFields).
  */
-extern Unk8009B400Record D_8009B5F0[2][2];
+extern Unk8009B400Record g_gpu_paired_mark_line_segment_cells[2][2];
 
 /* 2 x 2 table of 8-byte sprite records (gpu_DrawPackedComparisonRowsAndTotals).
  */
-extern Unk8009B400Record D_8009B490[2][2];
+extern Unk8009B400Record g_gpu_comparison_line_segment_cells[2][2];
 
 extern Unk8009B0E0Record g_gpu_mode_panel_sheet_headers[9];
 extern Unk8009B0E0Record D_8009B14C;
@@ -597,8 +597,8 @@ extern u8 g_fight_step_row_object_ids[][5];
 extern TexRec D_8009B890[4];
 extern TexRec D_8009B8B0[3];
 extern TexRec D_8009B8C8[1];
-extern TexRec D_8009B8D0[1];
-extern TexRec D_8009B8D8[1];
+extern TexRec g_eff_spinning_quad_far_tex_rec[1];
+extern TexRec g_eff_spinning_quad_near_tex_rec[1];
 extern TexRec D_8009B8E0[1];
 extern TexRec g_eff_jittered_billboard_tex_recs[7];
 extern TexRec g_eff_yawed_slot_quad_tex_recs[4];

@@ -458,7 +458,8 @@ s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32 ft4_out_addr, s32 arg1) {
 }
 
 /* gpu_DrawTimeFieldsAndDecimalCounter's 7 sprite cells: [0..2] drawn with
- * header D_8009B398[0], [3..4] with [1], [5] / [6] with [2] / [3] */
+ * header g_gpu_digit_label_and_line_segment_sheet_headers[0], [3..4] with [1],
+ * [5] / [6] with [2] / [3] */
 extern Unk8009B400Record g_gpu_time_and_counter_cells[7];
 
 s32 gpu_DrawTimeFieldsAndDecimalCounter(
@@ -484,7 +485,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
     s.x = 0;
     s.ot_idx = ot_index;
     s.semi = 0;
-    s.header = &D_8009B398[0];
+    s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[0];
     cur = arg2 + sizeof(draw_chunk->chunk_tiles);
     dr_mode = &draw_chunk->chunk_draw_mode;
     end_off = arg2 + sizeof(Unk8005D814Rec);
@@ -494,7 +495,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
         cur = gpu_AddSpriteCells(&s);
     }
 
-    s.header = &D_8009B398[1];
+    s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[1];
     for (i = 0; i < 2; i++) {
         s.table = &g_gpu_time_and_counter_cells[3 + i];
         if (i != 0) {
@@ -508,7 +509,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
         cur = gpu_AddSpriteCells(&s);
     }
 
-    s.header = &D_8009B398[0];
+    s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[0];
     s.has_color = 0;
     s.y = 0x16;
     s.semi = 0;
@@ -567,7 +568,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
         }
     }
 
-    s.header = &D_8009B398[0];
+    s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[0];
     var_2[0] = var_2[1] = var_2[2] = arg1;
     var_2[2] = var_2[2] % 10;
     var_2[1] = var_2[1] / 10 % 10;
@@ -610,21 +611,24 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
         AddPrim(g_gpu_ot_ptr + ot_index, tile);
         tile++;
         s.y = g_gpu_time_and_counter_line_origins[j].y;
-        s.header = &D_8009B398[2];
+        s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[2];
         s.table = &g_gpu_time_and_counter_cells[5];
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
-        s.header = &D_8009B398[3];
+        s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[3];
         s.table = &g_gpu_time_and_counter_cells[6];
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
     }
-    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(&D_8009B398[0], 0), 0);
+    SetDrawMode(dr_mode, 1, 0,
+                gpu_GetSheetTPage(
+                    &g_gpu_digit_label_and_line_segment_sheet_headers[0], 0),
+                0);
     AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     return end_off - arg2;
 }
 
-extern Unk8009B400Record D_8009B488;
+extern Unk8009B400Record g_gpu_single_side_counter_label_cell;
 
 s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(
     s32 arg0, s32 arg1, s32 arg2, s32 ot_index) {
@@ -646,21 +650,21 @@ s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(
     s.y = 0;
     s.x = 0;
     s.semi = 0;
-    s.header = &D_8009B398[1];
+    s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[1];
     cur = arg2 + sizeof(draw_chunk->chunk_tiles);
     dr_mode = &draw_chunk->chunk_draw_mode;
     end_off = arg2 + sizeof(Unk8005D814Rec);
     s.ot_idx = ot_index;
     for (i = 0; i < 2; i++) {
         if (arg0 < 0) {
-            s.table = &D_8009B488;
+            s.table = &g_gpu_single_side_counter_label_cell;
             if (arg1 == 1) {
                 s.table->w = 0x2D;
             } else {
                 s.table->w = 0x3C;
             }
         } else {
-            s.table = &D_8009B458[0][i];
+            s.table = &g_gpu_two_digit_counter_cells[0][i];
         }
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
@@ -669,7 +673,7 @@ s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(
         }
     }
 
-    s.header = &D_8009B398[0];
+    s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[0];
     s.has_color = 0;
     s.semi = 0;
     s.y = 0x16;
@@ -725,19 +729,22 @@ s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(
         AddPrim(g_gpu_ot_ptr + ot_index, tile);
         tile++;
         s.y = 0x24;
-        s.header = &D_8009B398[2];
-        s.table = &D_8009B458[j + 1][0];
+        s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[2];
+        s.table = &g_gpu_two_digit_counter_cells[j + 1][0];
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
-        s.header = &D_8009B398[3];
-        s.table = &D_8009B458[j + 1][1];
+        s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[3];
+        s.table = &g_gpu_two_digit_counter_cells[j + 1][1];
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
         if (arg0 < 0) {
             break;
         }
     }
-    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(&D_8009B398[0], 0), 0);
+    SetDrawMode(dr_mode, 1, 0,
+                gpu_GetSheetTPage(
+                    &g_gpu_digit_label_and_line_segment_sheet_headers[0], 0),
+                0);
     AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     return end_off - arg2;
 }
@@ -752,14 +759,14 @@ extern Unk8009B0E0Record D_8009ADB4;
 extern Unk8009B400Record D_8009ADC0[3];
 extern Unk8009B400Record D_8009ADD8[][3];
 extern Unk8009B0E0Record D_8009B4B0;
-extern Unk8009B400Record D_8009B4BC[5];
+extern Unk8009B400Record g_gpu_comparison_unrecorded_match_cells[5];
 extern Unk8009B0E0Record D_8009B4E4;
 extern Unk8009B0E0Record D_8009B4F0;
-extern Unk8009B400Record D_8009B4FC;
-extern Unk8009B400Record D_8009B504;
-extern Unk8009B400Record D_8009B50C;
-extern Unk8009B400Record D_8009B514;
-extern Unk8009B400Record D_8009B51C;
+extern Unk8009B400Record g_gpu_comparison_higher_score_cell;
+extern Unk8009B400Record g_gpu_comparison_lower_score_cell;
+extern Unk8009B400Record g_gpu_comparison_equal_score_cell;
+extern Unk8009B400Record g_gpu_comparison_center_cell;
+extern Unk8009B400Record g_gpu_comparison_score_mark_cell;
 extern Unk8009B0E0Record D_8009B524;
 extern Unk8009B0E0Record D_8009B530;
 extern Unk8009B0E0Record D_8009B53C;
@@ -852,23 +859,23 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
             s.header = &D_8009B4B0;
             s.x = 0;
             s.y += 2;
-            s.table = &D_8009B4BC[D_800A3270[i]];
+            s.table = &g_gpu_comparison_unrecorded_match_cells[D_800A3270[i]];
             s.sprt_out = cur;
             cur = gpu_AddSpriteCells(&s);
         } else {
             s.header = &D_8009B4E4;
             s.x = 0;
-            s.table = &D_8009B514;
+            s.table = &g_gpu_comparison_center_cell;
             s.sprt_out = cur;
             cur = gpu_AddSpriteCells(&s);
             for (j = 0; j < 2; j++) {
                 s.x = j * 70;
                 if (var_1[j] > var_1[!j]) {
-                    s.table = &D_8009B4FC;
+                    s.table = &g_gpu_comparison_higher_score_cell;
                 } else if (var_1[j] < var_1[!j]) {
-                    s.table = &D_8009B504;
+                    s.table = &g_gpu_comparison_lower_score_cell;
                 } else {
-                    s.table = &D_8009B50C;
+                    s.table = &g_gpu_comparison_equal_score_cell;
                 }
                 s.sprt_out = cur;
                 cur = gpu_AddSpriteCells(&s);
@@ -876,7 +883,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
             s.y += 5;
             for (j = 0; j < 2; j++) {
                 s.header = &D_8009B4F0;
-                s.table = &D_8009B51C;
+                s.table = &g_gpu_comparison_score_mark_cell;
                 for (k = 0; k < var_1[j]; k++) {
                     if (j) {
                         s.x = k * 16 + 0x179;
@@ -900,7 +907,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
         totals_y = 0xBE;
     }
     s.y = totals_y + 3;
-    s.table = &D_8009B514;
+    s.table = &g_gpu_comparison_center_cell;
     s.sprt_out = cur;
     cur = gpu_AddSpriteCells(&s);
     /* FAKE: one 32-bit store clears the whole pair (target `sw
@@ -917,7 +924,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     }
     for (j = 0; j < 2; j++) {
         s.header = &D_8009B4F0;
-        s.table = &D_8009B51C;
+        s.table = &g_gpu_comparison_score_mark_cell;
         for (k = 0; k < var_1[j]; k++) {
             if (j) {
                 s.x = (k >> 1) * 20 + 0x181;
@@ -988,18 +995,19 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
             s.scale_y = 0x400;
             s.y += 6;
             for (j = 0; j < 2; j++) {
-                s.header = &D_8009B398[j + 2];
-                s.table = D_8009B490[j];
+                s.header =
+                    &g_gpu_digit_label_and_line_segment_sheet_headers[j + 2];
+                s.table = g_gpu_comparison_line_segment_cells[j];
                 s.ft4_out = ft4_out_addr;
                 ft4_out_addr = gpu_AddScaledSpriteQuads(&s, 0);
-                s.table = &D_8009B490[j][1];
+                s.table = &g_gpu_comparison_line_segment_cells[j][1];
                 s.ft4_out = ft4_out_addr;
                 ft4_out_addr = gpu_AddScaledSpriteQuads(&s, 0);
             }
         }
     }
 
-    s.header = &D_8009B398[0];
+    s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[0];
     s.semi = 0;
     if (g_working_record.match_count_index == 2) {
         s.y = 0xC9;
@@ -1061,9 +1069,9 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     return end_off - arg1;
 }
 
-extern Unk8009B0E0Record D_8009B5A0[2];
-extern Unk8009B400Record D_8009B5B8[2][2];
-extern Unk8009B400Record D_8009B5D8[2];
+extern Unk8009B0E0Record g_gpu_paired_mark_sheet_headers[2];
+extern Unk8009B400Record g_gpu_paired_mark_cells[2][2];
+extern Unk8009B400Record g_gpu_paired_mark_label_cells[2];
 extern Unk8009B400Record D_8009B5E8;
 
 s32 gpu_DrawPairedMarkRowsAndTimeFields(
@@ -1101,7 +1109,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
     end_off = arg2 + sizeof(Unk8005D814Rec);
     s.ot_idx = ot_index;
     for (mark_group_index = 0; mark_group_index < 2; mark_group_index++) {
-        s.header = &D_8009B5A0[mark_group_index];
+        s.header = &g_gpu_paired_mark_sheet_headers[mark_group_index];
         packed_side_mark_counts =
             (packed_mark_counts >> (mark_group_index * 8)) & 0xFF;
         if (mark_group_index != 0) {
@@ -1117,7 +1125,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
                 } else {
                     s.x = (0x1C - mark_group_index * 8) * k;
                 }
-                s.table = &D_8009B5B8[mark_group_index][0];
+                s.table = &g_gpu_paired_mark_cells[mark_group_index][0];
                 if (k >=
                     ((packed_side_mark_counts >> (side_index * 4)) & 0xF)) {
                     s.table++;
@@ -1127,7 +1135,8 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
             }
         }
     }
-    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(&D_8009B5A0[0], 0), 0);
+    SetDrawMode(dr_mode, 1, 0,
+                gpu_GetSheetTPage(&g_gpu_paired_mark_sheet_headers[0], 0), 0);
     AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     /* The second DR_MODE goes at the record's end, past the size this function
      * returns (its caller, 9F9C fight_UpdateModeDisplaysAndMatchProgress,
@@ -1137,12 +1146,12 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
     s.has_color = 0;
     s.y = 0;
     s.semi = 0;
-    s.header = &D_8009B398[1];
+    s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[1];
     s.ot_idx = ot_index;
     for (k = 0; k < 2; k++) {
         for (j = 0; j < 2; j++) {
             s.x = j * 550;
-            s.table = &D_8009B5D8[k];
+            s.table = &g_gpu_paired_mark_label_cells[k];
             s.sprt_out = cur;
             cur = gpu_AddSpriteCells(&s);
         }
@@ -1169,18 +1178,18 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
             AddPrim(g_gpu_ot_ptr + ot_index, tile);
             tile++;
             s.y = k * 20 + 0x24;
-            s.header = &D_8009B398[2];
-            s.table = &D_8009B5F0[j][0];
+            s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[2];
+            s.table = &g_gpu_paired_mark_line_segment_cells[j][0];
             s.sprt_out = cur;
             cur = gpu_AddSpriteCells(&s);
-            s.header = &D_8009B398[3];
-            s.table = &D_8009B5F0[j][1];
+            s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[3];
+            s.table = &g_gpu_paired_mark_line_segment_cells[j][1];
             s.sprt_out = cur;
             cur = gpu_AddSpriteCells(&s);
         }
     }
 
-    s.header = &D_8009B398[0];
+    s.header = &g_gpu_digit_label_and_line_segment_sheet_headers[0];
     s.has_color = 0;
     s.y = 0x16;
     s.semi = 0;
@@ -1244,7 +1253,10 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
     }
-    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(&D_8009B398[1], 0), 0);
+    SetDrawMode(dr_mode, 1, 0,
+                gpu_GetSheetTPage(
+                    &g_gpu_digit_label_and_line_segment_sheet_headers[1], 0),
+                0);
     AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     return end_off - arg2;
 }
@@ -1317,8 +1329,8 @@ void gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe(
     g_gpu_split_wipe_frame = 0;
 }
 
-extern Unk8009B0E0Record D_8009B698[2];
-extern Unk8009B400Record D_8009B6B0[8];
+extern Unk8009B0E0Record g_gpu_split_wipe_image_sheet_headers[2];
+extern Unk8009B400Record g_gpu_split_wipe_image_cells[8];
 
 s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
     Unk8005FC9CRec *draw_chunk = (Unk8005FC9CRec *)arg0;
@@ -1359,7 +1371,7 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
     s.semi = 0;
     s.x = 0;
     s.ot_idx = ot_index;
-    s.table = D_8009B6B0;
+    s.table = g_gpu_split_wipe_image_cells;
     off = (g_gpu_split_wipe_frame - 0xB4) * 24;
     do {
         if (g_gpu_split_wipe_frame >= 0xB5) {
@@ -1410,7 +1422,7 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
             gradient_quad_cursor++;
         }
         for (sheet_index = 0; sheet_index < 2; sheet_index++) {
-            s.header = &D_8009B698[sheet_index];
+            s.header = &g_gpu_split_wipe_image_sheet_headers[sheet_index];
             s.y = sheet_index << 6;
             s.sprt_out = cur;
             cur = gpu_AddSpriteCells(&s);
@@ -1422,7 +1434,9 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
         }
         side_index++;
     } while (side_index < 2);
-    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(D_8009B698, 0x20), 0);
+    SetDrawMode(
+        dr_mode, 1, 0,
+        gpu_GetSheetTPage(g_gpu_split_wipe_image_sheet_headers, 0x20), 0);
     AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     if (off <= 0x140) {
         g_gpu_split_wipe_frame++;
@@ -1431,11 +1445,11 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
 }
 
 /* gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite's sheets: the frame
- * header (3 cells, D_8009B758) and the digit header (1 cell; one of the ten
- * digit cells D_8009B708). */
+ * header (3 cells, g_gpu_digit_count_shifted_sprite_cells) and the digit header
+ * (1 cell; one of the ten digit cells g_gpu_large_decimal_digit_cells). */
 extern Unk8009B0E0Record D_8009B6F0[2];
-extern Unk8009B400Record D_8009B708[10];
-extern Unk8009B400Record D_8009B758[3];
+extern Unk8009B400Record g_gpu_large_decimal_digit_cells[10];
+extern Unk8009B400Record g_gpu_digit_count_shifted_sprite_cells[3];
 
 s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
     s32 displayed_value, s32 arg1, s32 ot_index) {
@@ -1460,7 +1474,7 @@ s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
     } else {
         s.x = 0xA3;
     }
-    s.table = D_8009B758;
+    s.table = g_gpu_digit_count_shifted_sprite_cells;
     s.sprt_out = cur;
     cur = gpu_AddSpriteCells(&s);
     s.header = &D_8009B6F0[1];
@@ -1468,7 +1482,7 @@ s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
     d[1] = d[1] / 10 % 10;
     d[0] = d[0] % 10;
     for (digit_index = 0; digit_index < 2; digit_index++) {
-        s.table = &D_8009B708[d[digit_index]];
+        s.table = &g_gpu_large_decimal_digit_cells[d[digit_index]];
         if (displayed_value < 0xA) {
             s.x = 0x64;
         } else {
@@ -1520,7 +1534,7 @@ void gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions(
 
 extern Unk8009B0E0Record D_8009B7AC[3];
 /* packed screen positions: x = (v >> 7) + 0x37, y = (v & 0x7F) + 0x2A */
-extern u16 D_8009B850[];
+extern u16 g_gpu_packed_sprite_positions[];
 
 s32 gpu_DrawSpriteAtPackedTablePosition(
     s16 flagged_position_index, s32 arg1, s32 ot_index) {
@@ -1536,8 +1550,12 @@ s32 gpu_DrawSpriteAtPackedTablePosition(
     s.has_color = 0;
     s.semi = 0;
     s.ot_idx = ot_index;
-    s.x = (D_8009B850[flagged_position_index & 0x7FFF] >> 7) + 0x37;
-    s.y = (D_8009B850[flagged_position_index & 0x7FFF] & 0x7F) + 0x2A;
+    s.x =
+        (g_gpu_packed_sprite_positions[flagged_position_index & 0x7FFF] >> 7) +
+        0x37;
+    s.y = (g_gpu_packed_sprite_positions[flagged_position_index & 0x7FFF] &
+           0x7F) +
+          0x2A;
     if (flagged_position_index & 0x8000) {
         s.header = &D_8009B7AC[0];
     } else if (g_working_record.match_picks[0][0].round_grid_pick < 0xC) {
@@ -1616,7 +1634,7 @@ s32 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells(
     cur = gpu_AddSpriteCells(&s);
     tinted_draw_count = 0;
     p1 = D_8009B840;
-    p0 = &D_8009B398[2];
+    p0 = &g_gpu_digit_label_and_line_segment_sheet_headers[2];
     s.col_r = 0xFF;
     s.col_b = 0x10;
     s.col_g = 0x10;
@@ -1979,7 +1997,8 @@ Unk8009B2BCRecord g_panel_frame_sizes[3] = {
 /* gpu_DrawSheetPairSelectedByDrawMode /
  * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle's header rows D_8009B2C8 and
  * their cells D_8009B340 / D_8009B358 / D_8009B388; the sheet headers
- * D_8009B398 that gpu_DrawTimeFieldsAndDecimalCounter ..
+ * g_gpu_digit_label_and_line_segment_sheet_headers that
+ * gpu_DrawTimeFieldsAndDecimalCounter ..
  * gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells draw with, the cells
  * g_gpu_time_and_counter_cells, and the ten digit cells
  * g_gpu_decimal_digit_cells. */
@@ -2013,7 +2032,7 @@ Unk8009B400Record D_8009B388[2] = {
     {0, 0, 0x00, 0x00, 0x24, 0x14},
     {0, 0, 0x00, 0x00, 0x0E, 0x06},
 };
-Unk8009B0E0Record D_8009B398[4] = {
+Unk8009B0E0Record g_gpu_digit_label_and_line_segment_sheet_headers[4] = {
     {0x1F, 0x00, 1, 0x00, 0x3C0, 0x1FD, 0x0, 0x0},
     {0x1F, 0x00, 1, 0x00, 0x3E0, 0x1FD, 0x0, 0x0},
     {0x1F, 0x00, 1, 0x00, 0x3C0, 0x1FE, 0x0, 0x0},

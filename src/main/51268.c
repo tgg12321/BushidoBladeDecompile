@@ -2162,9 +2162,9 @@ again:
     case 1:
     case 2:
         if (*g_eff_depth_work > 4000) {
-            g_eff_current_tex_rec = D_8009B8D0;
+            g_eff_current_tex_rec = g_eff_spinning_quad_far_tex_rec;
         } else {
-            g_eff_current_tex_rec = D_8009B8D8;
+            g_eff_current_tex_rec = g_eff_spinning_quad_near_tex_rec;
         }
         prim->r0 = 0xFF;
         prim->g0 = 0x80;

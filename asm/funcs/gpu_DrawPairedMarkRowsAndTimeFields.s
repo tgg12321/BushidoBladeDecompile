@@ -33,8 +33,8 @@ glabel gpu_DrawPairedMarkRowsAndTimeFields
     /* 4FA40 8005F240 40100400 */  sll        $v0, $a0, 1
     /* 4FA44 8005F244 21104400 */  addu       $v0, $v0, $a0
     /* 4FA48 8005F248 80100200 */  sll        $v0, $v0, 2
-    /* 4FA4C 8005F24C 0A80033C */  lui        $v1, %hi(D_8009B5A0)
-    /* 4FA50 8005F250 A0B56324 */  addiu      $v1, $v1, %lo(D_8009B5A0)
+    /* 4FA4C 8005F24C 0A80033C */  lui        $v1, %hi(g_gpu_paired_mark_sheet_headers)
+    /* 4FA50 8005F250 A0B56324 */  addiu      $v1, $v1, %lo(g_gpu_paired_mark_sheet_headers)
     /* 4FA54 8005F254 5800AA8F */  lw         $t2, 0x58($sp)
     /* 4FA58 8005F258 21104300 */  addu       $v0, $v0, $v1
     /* 4FA5C 8005F25C 1800A2AF */  sw         $v0, 0x18($sp)
@@ -67,8 +67,8 @@ glabel gpu_DrawPairedMarkRowsAndTimeFields
     /* 4FABC 8005F2BC 039C0200 */  sra        $s3, $v0, 16
     /* 4FAC0 8005F2C0 80281300 */  sll        $a1, $s3, 2
     /* 4FAC4 8005F2C4 00110700 */  sll        $v0, $a3, 4
-    /* 4FAC8 8005F2C8 0A800A3C */  lui        $t2, %hi(D_8009B5B8)
-    /* 4FACC 8005F2CC B8B54A25 */  addiu      $t2, $t2, %lo(D_8009B5B8)
+    /* 4FAC8 8005F2C8 0A800A3C */  lui        $t2, %hi(g_gpu_paired_mark_cells)
+    /* 4FACC 8005F2CC B8B54A25 */  addiu      $t2, $t2, %lo(g_gpu_paired_mark_cells)
     /* 4FAD0 8005F2D0 21804A00 */  addu       $s0, $v0, $t2
     /* 4FAD4 8005F2D4 08001726 */  addiu      $s7, $s0, 0x8
   .L8005F2D8:
@@ -131,8 +131,8 @@ glabel gpu_DrawPairedMarkRowsAndTimeFields
     /* 4FBA8 8005F3A8 02004228 */  slti       $v0, $v0, 0x2
     /* 4FBAC 8005F3AC A3FF4014 */  bnez       $v0, .L8005F23C
     /* 4FBB0 8005F3B0 00240600 */   sll       $a0, $a2, 16
-    /* 4FBB4 8005F3B4 0A80043C */  lui        $a0, %hi(D_8009B5A0)
-    /* 4FBB8 8005F3B8 A0B58424 */  addiu      $a0, $a0, %lo(D_8009B5A0)
+    /* 4FBB4 8005F3B4 0A80043C */  lui        $a0, %hi(g_gpu_paired_mark_sheet_headers)
+    /* 4FBB8 8005F3B8 A0B58424 */  addiu      $a0, $a0, %lo(g_gpu_paired_mark_sheet_headers)
     /* 4FBBC 8005F3BC 20B9010C */  jal        gpu_GetSheetTPage
     /* 4FBC0 8005F3C0 21280000 */   addu      $a1, $zero, $zero
     /* 4FBC4 8005F3C4 01000524 */  addiu      $a1, $zero, 0x1
@@ -142,8 +142,8 @@ glabel gpu_DrawPairedMarkRowsAndTimeFields
     /* 4FBD4 8005F3D4 92F0010C */  jal        SetDrawMode
     /* 4FBD8 8005F3D8 1000A0AF */   sw        $zero, 0x10($sp)
     /* 4FBDC 8005F3DC 21900000 */  addu       $s2, $zero, $zero
-    /* 4FBE0 8005F3E0 0A80113C */  lui        $s1, %hi(D_8009B5D8)
-    /* 4FBE4 8005F3E4 D8B53126 */  addiu      $s1, $s1, %lo(D_8009B5D8)
+    /* 4FBE0 8005F3E0 0A80113C */  lui        $s1, %hi(g_gpu_paired_mark_label_cells)
+    /* 4FBE4 8005F3E4 D8B53126 */  addiu      $s1, $s1, %lo(g_gpu_paired_mark_label_cells)
     /* 4FBE8 8005F3E8 7800A58F */  lw         $a1, 0x78($sp)
     /* 4FBEC 8005F3EC 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
     /* 4FBF0 8005F3F0 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
@@ -200,8 +200,8 @@ glabel gpu_DrawPairedMarkRowsAndTimeFields
     /* 4FCB4 8005F4B4 21900000 */  addu       $s2, $zero, $zero
     /* 4FCB8 8005F4B8 0A80173C */  lui        $s7, %hi(D_8009B3B0)
     /* 4FCBC 8005F4BC B0B3F726 */  addiu      $s7, $s7, %lo(D_8009B3B0)
-    /* 4FCC0 8005F4C0 0A80163C */  lui        $s6, %hi(D_8009B5F0)
-    /* 4FCC4 8005F4C4 F0B5D626 */  addiu      $s6, $s6, %lo(D_8009B5F0)
+    /* 4FCC0 8005F4C0 0A80163C */  lui        $s6, %hi(g_gpu_paired_mark_line_segment_cells)
+    /* 4FCC4 8005F4C4 F0B5D626 */  addiu      $s6, $s6, %lo(g_gpu_paired_mark_line_segment_cells)
     /* 4FCC8 8005F4C8 6800AA8F */  lw         $t2, 0x68($sp)
     /* 4FCCC 8005F4CC FF000224 */  addiu      $v0, $zero, 0xFF
     /* 4FCD0 8005F4D0 4100A2A3 */  sb         $v0, 0x41($sp)
@@ -302,8 +302,8 @@ glabel gpu_DrawPairedMarkRowsAndTimeFields
     /* 4FE44 8005F644 6666103C */  lui        $s0, (0x66666667 >> 16)
     /* 4FE48 8005F648 67661036 */  ori        $s0, $s0, (0x66666667 & 0xFFFF)
     /* 4FE4C 8005F64C 6800AB8F */  lw         $t3, 0x68($sp)
-    /* 4FE50 8005F650 0A80023C */  lui        $v0, %hi(D_8009B398)
-    /* 4FE54 8005F654 98B34224 */  addiu      $v0, $v0, %lo(D_8009B398)
+    /* 4FE50 8005F650 0A80023C */  lui        $v0, %hi(g_gpu_digit_label_and_line_segment_sheet_headers)
+    /* 4FE54 8005F654 98B34224 */  addiu      $v0, $v0, %lo(g_gpu_digit_label_and_line_segment_sheet_headers)
     /* 4FE58 8005F658 1800A2AF */  sw         $v0, 0x18($sp)
     /* 4FE5C 8005F65C 16000224 */  addiu      $v0, $zero, 0x16
     /* 4FE60 8005F660 4000A0A3 */  sb         $zero, 0x40($sp)

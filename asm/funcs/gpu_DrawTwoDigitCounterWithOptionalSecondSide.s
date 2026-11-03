@@ -7,8 +7,8 @@ glabel gpu_DrawTwoDigitCounterWithOptionalSecondSide
     /* 4E8AC 8005E0AC 7000B0AF */  sw         $s0, 0x70($sp)
     /* 4E8B0 8005E0B0 21800000 */  addu       $s0, $zero, $zero
     /* 4E8B4 8005E0B4 7400B1AF */  sw         $s1, 0x74($sp)
-    /* 4E8B8 8005E0B8 0A80113C */  lui        $s1, %hi(D_8009B488)
-    /* 4E8BC 8005E0BC 88B43126 */  addiu      $s1, $s1, %lo(D_8009B488)
+    /* 4E8B8 8005E0B8 0A80113C */  lui        $s1, %hi(g_gpu_single_side_counter_label_cell)
+    /* 4E8BC 8005E0BC 88B43126 */  addiu      $s1, $s1, %lo(g_gpu_single_side_counter_label_cell)
     /* 4E8C0 8005E0C0 8400B5AF */  sw         $s5, 0x84($sp)
     /* 4E8C4 8005E0C4 5000A6AF */  sw         $a2, 0x50($sp)
     /* 4E8C8 8005E0C8 5000B58F */  lw         $s5, 0x50($sp)
@@ -51,8 +51,8 @@ glabel gpu_DrawTwoDigitCounterWithOptionalSecondSide
     /* 4E954 8005E154 2000B2AF */   sw        $s2, 0x20($sp)
   .L8005E158:
     /* 4E958 8005E158 43130200 */  sra        $v0, $v0, 13
-    /* 4E95C 8005E15C 0A80033C */  lui        $v1, %hi(D_8009B458)
-    /* 4E960 8005E160 58B46324 */  addiu      $v1, $v1, %lo(D_8009B458)
+    /* 4E95C 8005E15C 0A80033C */  lui        $v1, %hi(g_gpu_two_digit_counter_cells)
+    /* 4E960 8005E160 58B46324 */  addiu      $v1, $v1, %lo(g_gpu_two_digit_counter_cells)
     /* 4E964 8005E164 21104300 */  addu       $v0, $v0, $v1
     /* 4E968 8005E168 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* 4E96C 8005E16C 2000B2AF */  sw         $s2, 0x20($sp)
@@ -74,8 +74,8 @@ glabel gpu_DrawTwoDigitCounterWithOptionalSecondSide
     /* 4E9A4 8005E1A4 6766F736 */  ori        $s7, $s7, (0x66666667 & 0xFFFF)
     /* 4E9A8 8005E1A8 1800B127 */  addiu      $s1, $sp, 0x18
     /* 4E9AC 8005E1AC 5800AA8F */  lw         $t2, 0x58($sp)
-    /* 4E9B0 8005E1B0 0A80023C */  lui        $v0, %hi(D_8009B398)
-    /* 4E9B4 8005E1B4 98B34224 */  addiu      $v0, $v0, %lo(D_8009B398)
+    /* 4E9B0 8005E1B0 0A80023C */  lui        $v0, %hi(g_gpu_digit_label_and_line_segment_sheet_headers)
+    /* 4E9B4 8005E1B4 98B34224 */  addiu      $v0, $v0, %lo(g_gpu_digit_label_and_line_segment_sheet_headers)
     /* 4E9B8 8005E1B8 1800A2AF */  sw         $v0, 0x18($sp)
     /* 4E9BC 8005E1BC 16000224 */  addiu      $v0, $zero, 0x16
     /* 4E9C0 8005E1C0 4000A0A3 */  sb         $zero, 0x40($sp)

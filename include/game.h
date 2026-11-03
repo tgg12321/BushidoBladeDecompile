@@ -224,7 +224,8 @@ typedef struct {
  * gpu_DrawTwoDigitCounterWithOptionalSecondSide index it with a 0..9 value),
  * and 0x8009B458..0x8009B487 6 more
  * (gpu_DrawTwoDigitCounterWithOptionalSecondSide);
- * g_gpu_time_and_counter_line_origins and D_8009B488 follow. */
+ * g_gpu_time_and_counter_line_origins and g_gpu_single_side_counter_label_cell
+ * follow. */
 typedef struct {
     s16 x;
     s16 y;
@@ -461,8 +462,8 @@ typedef struct {
  * gpu_DrawImageAndAdvanceSplitWipe returns the chunk size, 0x2F8. The 32 SPRTs
  * are the most it writes: gpu_AddSpriteCells writes at most one per cell of the
  * sheet header it is given (cell count: the byte at +2), and each of the two
- * passes draws D_8009B698's header and the one 12 bytes after it (8 cells
- * each). */
+ * passes draws g_gpu_split_wipe_image_sheet_headers's header and the one 12
+ * bytes after it (8 cells each). */
 typedef struct {
     SPRT unk_00[32];
     DR_MODE chunk_draw_mode;
@@ -501,8 +502,8 @@ typedef struct {
  * the chunk size, 0x5F4; the last 0xC bytes are never written. The walkers
  * write at most one primitive per cell of the sheet header they are given (cell
  * count: the byte at +2): at most 19 SPRTs (D_8009B770[0..2] hold 5 / 4 / 4
- * cells, D_8009B7A0 4, D_8009B398[2] / [3] 1 each) and 1 POLY_FT4
- * (D_8009B770[3] holds 1). */
+ * cells, D_8009B7A0 4, g_gpu_digit_label_and_line_segment_sheet_headers[2] /
+ * [3] 1 each) and 1 POLY_FT4 (D_8009B770[3] holds 1). */
 typedef struct {
     SPRT unk_00[63];
     POLY_FT4 chunk_textured_quads[6];
