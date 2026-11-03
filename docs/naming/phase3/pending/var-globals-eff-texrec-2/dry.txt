@@ -1,0 +1,12 @@
+==============================================================================
+DATA WAVE — 2 addresses, 2 identifiers remapped
+  0x8009b980: D_8009B980 -> g_eff_growing_quad_and_quad_pair_second_early_tex_rec
+  0x8009b978: D_8009B978 -> g_eff_growing_quad_and_quad_pair_second_late_tex_rec
+
+-- file edits (4) --
+  asm/funcs/eff_DrawAnimatedQuads.s  (8)
+  include/bb2.h  (2)
+  src/main/51268.c  (4)
+  src/main/d_8BC50.c  (2)
+
+DRY RUN — nothing written. Re-run with --apply.

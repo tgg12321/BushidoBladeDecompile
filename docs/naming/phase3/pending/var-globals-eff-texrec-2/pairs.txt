@@ -1,0 +1,2 @@
+D_8009B980=g_eff_growing_quad_and_quad_pair_second_early_tex_rec
+D_8009B978=g_eff_growing_quad_and_quad_pair_second_late_tex_rec
