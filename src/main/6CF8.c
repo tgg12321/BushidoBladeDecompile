@@ -781,15 +781,16 @@ s32 softbody_Create(Func80017A44Input *input) {
 void softbody_Free(s32 slot_index) { g_softbody_slots[slot_index].points = 0; }
 
 void softbody_RebaseBuffer(s32 slot_index, s32 byte_offset) {
-    Func80017A44Output *ptr = &g_softbody_slots[slot_index];
+    Func80017A44Output *softbody = &g_softbody_slots[slot_index];
 
-    ptr->nodes = (Func80017A44Record *)((u8 *)ptr->nodes + byte_offset);
-    ptr->edges = (Func80017848Edge *)(ptr->nodes + ptr->count);
+    softbody->nodes =
+        (Func80017A44Record *)((u8 *)softbody->nodes + byte_offset);
+    softbody->edges = (Func80017848Edge *)(softbody->nodes + softbody->count);
 }
 
 void softbody_RebasePoints(s32 slot_index, s32 byte_offset) {
-    Func80017A44Output *ptr = &g_softbody_slots[slot_index];
-    ptr->points = (SVECTOR *)((u8 *)ptr->points + byte_offset);
+    Func80017A44Output *softbody = &g_softbody_slots[slot_index];
+    softbody->points = (SVECTOR *)((u8 *)softbody->points + byte_offset);
 }
 
 void scratchpad_Save(void) {

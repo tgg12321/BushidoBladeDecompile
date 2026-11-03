@@ -1227,37 +1227,37 @@ void font_BeginFrame(void) {
 }
 
 void font_AddTpage(void) {
-    DR_TPAGE *p = &g_font_tpage[g_font_buf_index];
+    DR_TPAGE *dr_tpage = &g_font_tpage[g_font_buf_index];
     OTag *ot;
-    setlen(p, 1);
-    p->code[0] = 0xE100001F;
+    setlen(dr_tpage, 1);
+    dr_tpage->code[0] = 0xE100001F;
     ot = (OTag *)g_gpu_ot_ptr;
-    setaddr(p, ot->addr);
-    ot->addr = (u32)p;
+    setaddr(dr_tpage, ot->addr);
+    ot->addr = (u32)dr_tpage;
 }
 
 extern SPRT_8 g_font_sprites[2][32];
 
 void font_DrawChar(s32 x, s32 y, s32 character, s32 color) {
     s32 n = g_font_sprite_count;
-    SPRT_8 *p;
+    SPRT_8 *sprite;
     OTag *ot;
 
     if (n == 0x20)
         return;
     g_font_sprite_count = n + 1;
-    p = &g_font_sprites[g_font_buf_index][n];
-    setlen(p, 3);
-    p->code = 0x74;
-    p->x0 = x;
-    p->y0 = y;
-    p->u0 = (character & 7) * 8 - 0x40;
-    p->v0 = (character >> 5) * 8 - 0x20;
-    p->clut = ((character >> 3) & 3) << 6 | 0x773F;
-    *(u32 *)&p->r0 = (color >> 1) | 0x74000000;
+    sprite = &g_font_sprites[g_font_buf_index][n];
+    setlen(sprite, 3);
+    sprite->code = 0x74;
+    sprite->x0 = x;
+    sprite->y0 = y;
+    sprite->u0 = (character & 7) * 8 - 0x40;
+    sprite->v0 = (character >> 5) * 8 - 0x20;
+    sprite->clut = ((character >> 3) & 3) << 6 | 0x773F;
+    *(u32 *)&sprite->r0 = (color >> 1) | 0x74000000;
     ot = (OTag *)g_gpu_ot_ptr;
-    setaddr(p, ot->addr);
-    ot->addr = (u32)p;
+    setaddr(sprite, ot->addr);
+    ot->addr = (u32)sprite;
 }
 
 void font_DrawString(s32 x, s32 y, u8 *str, s32 color) {
@@ -1470,7 +1470,7 @@ extern void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
 
 void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
     s16 *rec;
-    s32 *ptr;
+    s32 *span_limit_entry;
     s32 dist;
     s32 offset;
 
@@ -1510,7 +1510,7 @@ void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
         }
         g_gpu_fog_latch_last_grid_and_fog_control =
             (u16)g_gpu_grid_and_fog_control;
-        ptr = &g_gpu_fog_depth_span_limits[arg0];
+        span_limit_entry = &g_gpu_fog_depth_span_limits[arg0];
         {
             /* FAKE: g_gpu_fog_move_settings[arg0][1] read as a byte offset off
                the array base; element reads are scheduled past the
@@ -1518,10 +1518,10 @@ void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
                the `sh`: score 8 */
             s32 idx = arg0 * 4;
             gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
-                arg1, 0x1F, g_gpu_fog_row_moves, *ptr,
+                arg1, 0x1F, g_gpu_fog_row_moves, *span_limit_entry,
                 *(s16 *)((u8 *)g_gpu_fog_move_settings + 2 + idx));
             gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
-                arg1, 0x13, g_gpu_fog_block_moves, *ptr,
+                arg1, 0x13, g_gpu_fog_block_moves, *span_limit_entry,
                 *(s16 *)((u8 *)g_gpu_fog_move_settings + 2 + idx));
         }
     }

@@ -260,8 +260,8 @@ void fighter_RelocateAndStartEventMove(Unk80101EC8Record *fighter_record) {
 }
 
 void fighter_DispatchBoneHitSoundEvent(
-    s32 a0, Unk80101EC8Record *ptr, s32 hit_record_index, Tbl8008E194 *a3,
-    s32 *hit_point, s32 stack_v1) {
+    s32 a0, Unk80101EC8Record *fighter_record, s32 hit_record_index,
+    Tbl8008E194 *a3, s32 *hit_point, s32 stack_v1) {
     Unk80101EC8Record *other_record;
 
     if (a0 == 1) {
@@ -270,11 +270,11 @@ void fighter_DispatchBoneHitSoundEvent(
 
     if (stack_v1 != 0) {
         fight_RecordReplayEventAndDispatchSoundOrEffect(
-            ptr->other->index, 0x2B, hit_point, (s16 *)0);
+            fighter_record->other->index, 0x2B, hit_point, (s16 *)0);
         return;
     }
 
-    other_record = ptr->other;
+    other_record = fighter_record->other;
     {
         s16 current_variant = other_record->variant_index;
         s16 f8E = other_record->nibble5_variant_index;
@@ -297,18 +297,18 @@ void fighter_DispatchBoneHitSoundEvent(
 
     if (hit_record_index == 0) {
         fight_RecordReplayEventAndDispatchSoundOrEffect(
-            ptr->other->index, 0x22, hit_point, (s16 *)0);
+            fighter_record->other->index, 0x22, hit_point, (s16 *)0);
         return;
     }
 
     if (hit_record_index < 6) {
         fight_RecordReplayEventAndDispatchSoundOrEffect(
-            ptr->other->index, 0x23, hit_point, (s16 *)0);
+            fighter_record->other->index, 0x23, hit_point, (s16 *)0);
         return;
     }
 
     fight_RecordReplayEventAndDispatchSoundOrEffect(
-        ptr->other->index, 0x24, hit_point, (s16 *)0);
+        fighter_record->other->index, 0x24, hit_point, (s16 *)0);
 }
 
 s32 fighter_TestMoveFrameWindowOrMoveKindWithObjectVariant(
@@ -1073,10 +1073,10 @@ typedef struct {
 } PosRec;
 
 void fight_ClearPositionRecordUsage(void) {
-    PosRec *ptr = (PosRec *)fight_GetPositionRecordList();
-    while (ptr->type != 0) {
-        ptr->used = 0;
-        ptr++;
+    PosRec *position_record = (PosRec *)fight_GetPositionRecordList();
+    while (position_record->type != 0) {
+        position_record->used = 0;
+        position_record++;
     }
 }
 
@@ -2336,9 +2336,9 @@ void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
 
     for (i = 0; i < 2; i++) {
         Unk80101EC8Record *e = &D_80101EC8[i];
-        Unk80101EC8Record *ptr = e->other;
-        s32 dx = ptr->base_pos.x - e->base_pos.x;
-        s32 dz = ptr->base_pos.z - e->base_pos.z;
+        Unk80101EC8Record *other_fighter = e->other;
+        s32 dx = other_fighter->base_pos.x - e->base_pos.x;
+        s32 dz = other_fighter->base_pos.z - e->base_pos.z;
         fighter_SetTurnDelta(e, ratan2(dx, dz));
     }
 
@@ -4847,11 +4847,11 @@ void fight_TriggerOpposingFighterEventFromNearBallisticRecords(void) {
 }
 
 void fighter_ReadFrameMetadata(Unk80101EC8Record *fighter_record) {
-    u8 *ptr;
+    u8 *metadata_cursor;
     u8 command;
     u8 command_frame;
 
-    ptr = fighter_record->motion_metadata + 4;
+    metadata_cursor = fighter_record->motion_metadata + 4;
     fighter_record->weapon_hit_start_frames[0] = 0xFF;
     fighter_record->weapon_hit_end_frames[0] = 0xFF;
     fighter_record->weapon_hit_start_frames[1] = 0xFF;
@@ -4864,13 +4864,13 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *fighter_record) {
     fighter_record->opponent_transition_start_frame = 0xFF;
     fighter_record->weapon_reload_frame = 0xFF;
 
-    while ((command = *ptr++) != 0) {
+    while ((command = *metadata_cursor++) != 0) {
         if (command == 0xFF) {
-            ptr += 6;
+            metadata_cursor += 6;
         } else if (command < 0x80) {
-            ptr++;
+            metadata_cursor++;
         } else {
-            command_frame = *ptr++;
+            command_frame = *metadata_cursor++;
             switch (command) {
             case 0x80:
                 fighter_record->weapon_hit_start_frames[0] = command_frame;

@@ -12,9 +12,9 @@ Unk80045878Obj *slot_GetObject(s32 slot_index) {
 }
 
 s32 slot_GetAssetIndex(s32 slot_index) {
-    Unk80045878Obj *ptr = g_slot_objects[slot_index];
-    if (ptr) {
-        return ptr->asset_index;
+    Unk80045878Obj *slot_object = g_slot_objects[slot_index];
+    if (slot_object) {
+        return slot_object->asset_index;
     }
     return -1;
 }
@@ -39,19 +39,20 @@ void slot_ReleaseObjectAndResources(s32 slot_index) {
 
 void slot_RequestTimGroupsAndMarkReloadOnChange(
     s32 slot_index, s32 tim_group_request) {
-    Unk80045878Obj *ptr = g_slot_objects[slot_index];
-    if (ptr) {
-        if (((ptr->load_flags.word >> 16) & 0x1F) != tim_group_request) {
-            ptr->load_status = -2;
+    Unk80045878Obj *slot_object = g_slot_objects[slot_index];
+    if (slot_object) {
+        if (((slot_object->load_flags.word >> 16) & 0x1F) !=
+            tim_group_request) {
+            slot_object->load_status = -2;
         }
     }
     g_slot_tim_group_requests[slot_index] = tim_group_request;
 }
 
 s32 slot_GetLastLoadTimGroupRequest(s32 slot_index) {
-    Unk80045878Obj *ptr = g_slot_objects[slot_index];
-    if (ptr) {
-        return (ptr->load_flags.word >> 16) & 0x1F;
+    Unk80045878Obj *slot_object = g_slot_objects[slot_index];
+    if (slot_object) {
+        return (slot_object->load_flags.word >> 16) & 0x1F;
     }
     return -1;
 }
@@ -311,7 +312,7 @@ void light_ApplyPointLight(s32 target0_addr, s32 target1_addr) {
     s32 dy;
     s32 dz;
     s32 angle;
-    s32 *ptr;
+    s32 *target_position;
 
     /* FAKE: var_0 holds g_light_setups for the loop and the first
      * calc_LightMatrix call; naming g_light_setups directly re-forms the
@@ -320,22 +321,22 @@ void light_ApplyPointLight(s32 target0_addr, s32 target1_addr) {
     for (var_1 = 0; var_1 < 2; var_1++) {
         tbl = var_0;
         if (var_1 == 0) {
-            ptr = (s32 *)target0_addr;
+            target_position = (s32 *)target0_addr;
         } else {
-            ptr = (s32 *)target1_addr;
+            target_position = (s32 *)target1_addr;
             tbl = &g_light_setups[1];
         }
 
-        if (ptr == 0) {
+        if (target_position == 0) {
             goto skip;
         }
         if (g_light_point_color[0] < 0) {
             goto skip;
         }
 
-        dx = ptr[0] - g_light_point_position.vx;
-        dy = ptr[1] - g_light_point_position.vy;
-        dz = ptr[2] - g_light_point_position.vz;
+        dx = target_position[0] - g_light_point_position.vx;
+        dy = target_position[1] - g_light_point_position.vy;
+        dz = target_position[2] - g_light_point_position.vz;
 
         if (dx < 0)
             goto neg_dx;

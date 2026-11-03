@@ -1507,7 +1507,7 @@ void gpu_TintVramRow(
     u16 *src;
     u16 *dst;
     s32 i;
-    u16 p;
+    u16 pixel;
     s32 r, g, b, a;
 
     DrawSync(0);
@@ -1520,15 +1520,15 @@ void gpu_TintVramRow(
     src = buf;
     dst = out;
     for (i = 0; i < w; i++) {
-        p = *src;
-        if (p == 0) {
+        pixel = *src;
+        if (pixel == 0) {
             *dst++ = *src++;
             continue;
         }
-        r = (p & 0x1F) << 3;
-        g = ((p >> 5) & 0x1F) << 3;
-        b = ((p >> 10) & 0x1F) << 3;
-        a = p & 0x8000;
+        r = (pixel & 0x1F) << 3;
+        g = ((pixel >> 5) & 0x1F) << 3;
+        b = ((pixel >> 10) & 0x1F) << 3;
+        a = pixel & 0x8000;
         src++;
         switch (mode) {
         case 0:
@@ -2252,11 +2252,11 @@ s32 snd_CopySelectedPackSectionsAndLoadVabPacks(s32 arg0, s32 output_addr) {
 void resource_InvalidateEntrySelectionCache(void) {
     s16 val = -1;
     s32 i = 0x39;
-    s16 *p = &g_resource_prev_entry_request_state[0x39];
+    s16 *request_state_cursor = &g_resource_prev_entry_request_state[0x39];
     do {
-        *p = val;
+        *request_state_cursor = val;
         i--;
-        p--;
+        request_state_cursor--;
     } while (i >= 0);
     g_resource_last_selection_index = -1;
 }

@@ -1636,7 +1636,7 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
     VECTOR *var_5;
     VECTOR *relative_position;
     SVECTOR *local_origin;
-    s32 *p;
+    s32 *depth_cue_out;
     POLY_FT4 **quads_end;
     POLY_FT4 *prim;
     u32 *quad_ot_write_cursor;
@@ -1651,7 +1651,7 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
     var_5 = &base->rotated_position;
     relative_position = &base->view_relative_position;
     local_origin = &base->billboard_zero_vector;
-    p = &base->billboard_depth_cue;
+    depth_cue_out = &base->billboard_depth_cue;
     quads_end = &base->billboard_quads_end;
     prim = g_eff_quad_cursor;
     gte_SetRotMatrix(g_eff_view_rotation_matrix);
@@ -1683,7 +1683,8 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
              * m->t (there is no whole MATRIX here). Spelled
              * (MATRIX *)((u8 *)base + 4): score 68. */
             SetTransMatrix((MATRIX *)((u8 *)var_5 - 0x14));
-            RotTransPers(local_origin, g_eff_screen_xy, p, g_eff_rtp_flag);
+            RotTransPers(
+                local_origin, g_eff_screen_xy, depth_cue_out, g_eff_rtp_flag);
             gte_stsz(g_eff_depth_work);
             g_eff_current_tex_rec =
                 &g_eff_jittered_billboard_tex_recs[*frame_index];
@@ -2644,7 +2645,7 @@ u8 eff_SpawnParticles(
     s16 angle_offset;
     u8 particle_count;
     s32 particle_index;
-    Unk800EFC78Record *p;
+    Unk800EFC78Record *particle;
 
     if (particle_mode < 4) {
         base = 0x41;
@@ -2708,18 +2709,18 @@ u8 eff_SpawnParticles(
         v.vx = emitter_vector.vx * (base + random_values[3]) / scale_mask;
         v.vy = emitter_vector.vy * (base + random_values[4]) / scale_mask;
         v.vz = emitter_vector.vz * (base + random_values[5]) / scale_mask;
-        p = &g_eff_particles[particle_row_index][particle_index];
-        p->group_position_index = particle_index / 16;
-        p->frame_age = 0;
-        p->offset_z = 0;
-        p->offset_y = 0;
-        p->offset_x = 0;
-        p->life_state = 1;
+        particle = &g_eff_particles[particle_row_index][particle_index];
+        particle->group_position_index = particle_index / 16;
+        particle->frame_age = 0;
+        particle->offset_z = 0;
+        particle->offset_y = 0;
+        particle->offset_x = 0;
+        particle->life_state = 1;
         RotMatrix(&rotation_angles, &m);
         gte_ApplyMatrix(&m, &v, &out);
-        p->velocity_x = out.vx;
-        p->velocity_y = out.vy;
-        p->velocity_z = out.vz;
+        particle->velocity_x = out.vx;
+        particle->velocity_y = out.vy;
+        particle->velocity_z = out.vz;
     }
     return 1;
 }

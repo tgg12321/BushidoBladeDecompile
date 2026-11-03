@@ -336,20 +336,20 @@ extern s16 g_snd_stage_reverb_types[][2];
 
 s32 snd_SetReverb(s32 reverb_index) {
     s32 result;
-    s16 *p;
+    s16 *reverb_type_row;
     s16 temp_a0;
     s16 *base;
     s32 var_4;
     func_800858D0(0);
     base = &g_snd_stage_reverb_types[0][0];
-    p = base + reverb_index * 2;
+    reverb_type_row = base + reverb_index * 2;
     var_4 = reverb_index << 1;
-    if (*p >= 0) {
+    if (*reverb_type_row >= 0) {
         SsUtReverbOff();
         SsUtSetReverbType(0);
         SsUtSetReverbDepth(0, 0);
-        result = SsUtSetReverbType(*p);
-        SpuClearReverbWorkArea(*p);
+        result = SsUtSetReverbType(*reverb_type_row);
+        SpuClearReverbWorkArea(*reverb_type_row);
         temp_a0 = var_4 + 1;
         SsUtSetReverbDepth(temp_a0, temp_a0);
         SsUtReverbOn();
@@ -566,23 +566,23 @@ void snd_FlushSoundQueue(void) {
     s16 voice_index;
     s16 next_voice_index;
     u16 vab_id;
-    u16 *p;
+    u16 *sound_vab_entry;
     u32 *key_on_entry;
 
     SpuGetAllKeysStatus(var_0);
     next_voice_index = 0;
     for (queue_index = 0; queue_index < 0x18; queue_index++) {
-        p = g_snd_queue[queue_index].req;
-        if (p != 0 && (s32)g_vab_rec_ptr[*p] < 0) {
+        sound_vab_entry = g_snd_queue[queue_index].req;
+        if (sound_vab_entry != 0 && (s32)g_vab_rec_ptr[*sound_vab_entry] < 0) {
             voice_index = next_voice_index;
             for (; voice_index < 0x18; voice_index++) {
                 if (SpuGetKeyStatus(1 << voice_index) != 1) {
-                    vab_id = *p;
+                    vab_id = *sound_vab_entry;
                     if (vab_id == 6 && g_vab_rec_ptr[6] == g_vab_rec_ptr[3]) {
                         vab_id = 3;
                     }
-                    key_on_entry =
-                        &((u32 *)g_vab_rec_ptr[vab_id]->key_on_table)[p[1]];
+                    key_on_entry = &((u32 *)g_vab_rec_ptr[vab_id]
+                                         ->key_on_table)[sound_vab_entry[1]];
                     SsUtKeyOnV((s16)voice_index, (s16)vab_id,
                                (s16)(*key_on_entry & 0x7F),
                                (s16)((*key_on_entry >> 7) & 0xF),

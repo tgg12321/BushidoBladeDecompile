@@ -160,7 +160,7 @@ s32 menu_HandleSelPhase0CursorInput(u32 pressed_buttons) {
 
 void menu_DrawSelRowTiles(
     Unk8006EACCRec *draw_context, s32 player_index, s32 arg2) {
-    TILE *p;
+    TILE *tile;
     Rec_8006C21C *t;
     s16 i;
     s16 j;
@@ -171,34 +171,34 @@ void menu_DrawSelRowTiles(
     if (arg2 != 0) {
         n = 8;
     }
-    p = draw_context->primitive_cursors.tile_prims;
+    tile = draw_context->primitive_cursors.tile_prims;
     for (i = 0; i < SELWORK->selected_match_count_index + 3; i++) {
         t = SELWORK->sel_resource_table->row_tile_rects;
         for (j = 0; j < n; j++) {
-            SetTile(p);
-            p->r0 = t->r;
-            p->g0 = t->g;
-            p->b0 = t->b;
-            p->w = t->w;
-            p->h = t->h;
-            SetSemiTrans(p, 0);
+            SetTile(tile);
+            tile->r0 = t->r;
+            tile->g0 = t->g;
+            tile->b0 = t->b;
+            tile->w = t->w;
+            tile->h = t->h;
+            SetSemiTrans(tile, 0);
             if (arg2 != 0) {
-                p->x0 = t->x + player_index * 240;
-                p->y0 = t->y + i * 34 + 0x2B;
+                tile->x0 = t->x + player_index * 240;
+                tile->y0 = t->y + i * 34 + 0x2B;
             } else {
-                p->x0 = t->x + player_index * 240;
-                p->y0 = t->y + i * 17 + 0x7C;
+                tile->x0 = t->x + player_index * 240;
+                tile->y0 = t->y + i * 17 + 0x7C;
             }
             ot_index = 0xB;
             if (player_index != 0) {
                 ot_index = 0x15;
             }
-            AddPrim(g_gpu_ot_ptr + ot_index, p);
-            p++;
+            AddPrim(g_gpu_ot_ptr + ot_index, tile);
+            tile++;
             t++;
         }
     }
-    draw_context->primitive_cursors.tile_prims = p;
+    draw_context->primitive_cursors.tile_prims = tile;
 }
 
 void menu_DrawSelPhaseSheet(
@@ -1352,24 +1352,24 @@ s32 menu_RunSelPhases(s32 pressed_buttons, Unk8006EACCRec *draw_context) {
 
 s32 menu_StepSelScreen(s32 arg0, s32 pressed_buttons) {
     Unk8006EACCRec s;
-    Unk8006E49CRec *p;
+    Unk8006E49CRec *prim_buffer;
     s32 temp_v1;
     SELWORK->frame_gpu_db = &g_gpu_db[g_gpu_presented_frame_count & 1];
     temp_v1 = SELWORK->prim_buffer_flip_count + 1;
     SELWORK->selection_pulse_frames = SELWORK->selection_pulse_frames + 1;
     SELWORK->prim_buffer_flip_count = temp_v1;
-    p = menu_GetSelPrimBuffer(temp_v1 & 1);
-    SELWORK->f2C = p;
+    prim_buffer = menu_GetSelPrimBuffer(temp_v1 & 1);
+    SELWORK->f2C = prim_buffer;
     s.resource_root.v80076FF8 = SELWORK->sel_resource_table;
-    s.primitive_cursors.textured_quad_prims = p->textured_quad_prims;
-    s.primitive_cursors.flat_quad_prims = p->flat_quad_prims;
-    s.primitive_cursors.gradient_quad_prims = p->gradient_quad_prims;
-    s.primitive_cursors.sprite_prims = p->sprite_prims;
-    s.primitive_cursors.tile_prims = p->tile_prims;
-    s.primitive_cursors.unk_14 = p->unk_14;
-    s.primitive_cursors.draw_area_prims = p->draw_area_prims;
-    s.primitive_cursors.draw_offset_prims = p->draw_offset_prims;
-    s.unk_24 = p->unk_20;
+    s.primitive_cursors.textured_quad_prims = prim_buffer->textured_quad_prims;
+    s.primitive_cursors.flat_quad_prims = prim_buffer->flat_quad_prims;
+    s.primitive_cursors.gradient_quad_prims = prim_buffer->gradient_quad_prims;
+    s.primitive_cursors.sprite_prims = prim_buffer->sprite_prims;
+    s.primitive_cursors.tile_prims = prim_buffer->tile_prims;
+    s.primitive_cursors.unk_14 = prim_buffer->unk_14;
+    s.primitive_cursors.draw_area_prims = prim_buffer->draw_area_prims;
+    s.primitive_cursors.draw_offset_prims = prim_buffer->draw_offset_prims;
+    s.unk_24 = prim_buffer->unk_20;
     return menu_RunSelPhases(pressed_buttons, &s);
 }
 

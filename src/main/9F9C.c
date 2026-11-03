@@ -1988,11 +1988,11 @@ void fight_Init(void) {
                 g_fight_step_row_tint_red, g_fight_step_row_tint_green,
                 g_fight_step_row_tint_blue);
         } else if (g_fight_mode_selector == 2) {
-            u8 *p = g_fight_group_tint_colors
+            u8 *tint_color = g_fight_group_tint_colors
                 [g_fighter_group_flags[D_80101EC8[0].character_data_index]];
             if (D_800A389A == 0) {
                 gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels(
-                    p[0], p[1], p[2]);
+                    tint_color[0], tint_color[1], tint_color[2]);
             }
         }
         fight_ResetGraphAndReloadResourcesOnCachedKeyChange();
@@ -2693,9 +2693,9 @@ s32 fighter_CalcHorizontalSeparation(void) {
         halving_count += 1;
     }
     {
-        s32 v0 = dx * dx;
-        s32 v1 = dy * dy;
-        s32 r = SquareRoot0(v0 + v1);
+        s32 dx_squared = dx * dx;
+        s32 dy_squared = dy * dy;
+        s32 r = SquareRoot0(dx_squared + dy_squared);
         return r << halving_count;
     }
 }

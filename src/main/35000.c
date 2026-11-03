@@ -605,7 +605,7 @@ void slot_StopAllVoicesCloseVabAndFreeObjectAndAssetBlocks(s32 slot_index) {
 extern s32 snd_VabFakeOpen(s32, s32);
 
 void slot_RebaseObjectOrAssetBlockAndFakeOpenVab(s32 a0, s32 byte_offset) {
-    Unk80045878Obj *ptr;
+    Unk80045878Obj *slot_object;
     s32 idx;
     if (a0 < 3) {
         slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers(
@@ -615,15 +615,15 @@ void slot_RebaseObjectOrAssetBlockAndFakeOpenVab(s32 a0, s32 byte_offset) {
     idx = a0 - 3;
     reloc_RebaseBlock(idx, byte_offset);
     reloc_RebaseBlock(a0, byte_offset);
-    ptr = (Unk80045878Obj *)arena_GetBlockAddr(idx);
-    if (ptr == 0)
+    slot_object = (Unk80045878Obj *)arena_GetBlockAddr(idx);
+    if (slot_object == 0)
         return;
-    ptr->asset_block = ptr->asset_block + byte_offset;
-    softbody_RebaseObject(ptr, byte_offset);
-    if ((ptr->load_flags.word >> 1) & 1) {
+    slot_object->asset_block = slot_object->asset_block + byte_offset;
+    softbody_RebaseObject(slot_object, byte_offset);
+    if ((slot_object->load_flags.word >> 1) & 1) {
         /* FAKE: idx (a0 - 3) is reused for the sound index; a fresh local swaps
          * the s0 / s1 seats (score 8) (Q129) */
-        idx = 3 * ptr->arena_id + 1;
+        idx = 3 * slot_object->arena_id + 1;
         snd_VabFakeOpen(byte_offset, idx);
     }
 }
@@ -637,7 +637,7 @@ void resource_LoadSelectedEntriesTexturesAndSound(
     s32 staging_addr) {
     s16 select_flags[120];
     s16 sp108[32];
-    s32 *p;
+    s32 *arena_block;
     s32 *block_base;
     s32 first_section_addr;
     s32 prev;
@@ -651,11 +651,11 @@ void resource_LoadSelectedEntriesTexturesAndSound(
     u16 t;
     s32 *dst;
 
-    p = arena_OpenBlock(6);
+    arena_block = arena_OpenBlock(6);
     if (staging_addr != 0) {
         block_base = (s32 *)staging_addr;
     } else {
-        block_base = p;
+        block_base = arena_block;
     }
     ndata_ReadIndexInRangeSelectedByFlag(
         entry_category, selection_index, (s32)block_base);
@@ -731,7 +731,7 @@ void resource_LoadSelectedEntriesTexturesAndSound(
     *q = -2;
 
     if (staging_addr != 0) {
-        dst = (s32 *)((s32)p + 4);
+        dst = (s32 *)((s32)arena_block + 4);
         end_addr =
             reloc_CopySelectedEntries(first_section_addr, dst, select_flags);
         reloc_RelocateBlock(dst, 6);
@@ -769,11 +769,11 @@ void resource_LoadSelectedEntriesTexturesAndSound(
     }
 
     if (prev != 0) {
-        *p = end_addr - (s32)p;
+        *arena_block = end_addr - (s32)arena_block;
         end_addr = snd_CopySelectedPackSectionsAndLoadVabPacks(prev, end_addr);
         arena_UpdatePeak(end_addr);
     } else {
-        *p = 0;
+        *arena_block = 0;
     }
     arena_SetBlockEnd(6, end_addr);
     arena_SetMoveCallback(

@@ -775,84 +775,84 @@ void gpu_OffsetTexPrimStream(s16 du, s16 dv, s16 dcx, s16 dcy) {
  * pages) by du, the tpage y field (256-px pages) and every vertex v by dv,
  * and the clut x (16-px units) / y fields by dcx / dcy.  Each packed u16
  * field is updated in place inside its bit range. */
-void gpu_OffsetTexPolyFT3(POLY_FT3 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
+void gpu_OffsetTexPolyFT3(POLY_FT3 *prim, s32 du, s32 dv, s32 dcx, s32 dcy) {
     u16 tpage, clut;
     s32 tx, ty, cx, cy;
 
-    tpage = p->tpage;
+    tpage = prim->tpage;
     tx = ((tpage & 0xF) + ((s16)du >> 6)) & 0xF;
     ty = (((tpage >> 4) & 1) + ((s16)dv >> 8)) & 1;
-    p->tpage = tx | ((tpage & 0xFFE0) | (ty << 4));
-    p->v0 += dv;
-    p->v1 += dv;
-    p->v2 += dv;
-    clut = p->clut;
+    prim->tpage = tx | ((tpage & 0xFFE0) | (ty << 4));
+    prim->v0 += dv;
+    prim->v1 += dv;
+    prim->v2 += dv;
+    clut = prim->clut;
     cx = (((s16)dcx >> 4) + (clut & 0x3F)) & 0x3F;
     cy = (dcy + ((clut >> 6) & 0x1FF)) & 0x1FF;
-    p->clut = cx | ((clut & 0x8000) | (cy << 6));
+    prim->clut = cx | ((clut & 0x8000) | (cy << 6));
 }
 
 /* Quad counterpart of gpu_OffsetTexPolyFT3: shift a textured quad's texture
  * source (tpage x/y by du/dv, all four vertex v by dv, clut x/y by dcx/dcy),
  * each packed u16 field updated in place inside its bit range. */
-void gpu_OffsetTexPolyFT4(POLY_FT4 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
+void gpu_OffsetTexPolyFT4(POLY_FT4 *prim, s32 du, s32 dv, s32 dcx, s32 dcy) {
     u16 tpage, clut;
     s32 tx, ty, cx, cy;
 
-    tpage = p->tpage;
+    tpage = prim->tpage;
     tx = ((tpage & 0xF) + ((s16)du >> 6)) & 0xF;
     ty = (((tpage >> 4) & 1) + ((s16)dv >> 8)) & 1;
-    p->tpage = tx | ((tpage & 0xFFE0) | (ty << 4));
-    p->v0 += dv;
-    p->v1 += dv;
-    p->v2 += dv;
-    p->v3 += dv;
-    clut = p->clut;
+    prim->tpage = tx | ((tpage & 0xFFE0) | (ty << 4));
+    prim->v0 += dv;
+    prim->v1 += dv;
+    prim->v2 += dv;
+    prim->v3 += dv;
+    clut = prim->clut;
     cx = (((s16)dcx >> 4) + (clut & 0x3F)) & 0x3F;
     cy = (dcy + ((clut >> 6) & 0x1FF)) & 0x1FF;
-    p->clut = cx | ((clut & 0x8000) | (cy << 6));
+    prim->clut = cx | ((clut & 0x8000) | (cy << 6));
 }
 
 /* Shift a gouraud-textured triangle's texture source: the tpage x field
  * (64-px pages) by du, the tpage y field (256-px pages) and every vertex v
  * by dv, and the clut x (16-px units) / y fields by dcx / dcy.  Same update
  * as gpu_OffsetTexPolyFT3 on a POLY_GT3. */
-void gpu_OffsetTexPolyGT3(POLY_GT3 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
+void gpu_OffsetTexPolyGT3(POLY_GT3 *prim, s32 du, s32 dv, s32 dcx, s32 dcy) {
     u16 tpage, clut;
     s32 tx, ty, cx, cy;
 
-    tpage = p->tpage;
+    tpage = prim->tpage;
     tx = ((tpage & 0xF) + ((s16)du >> 6)) & 0xF;
     ty = (((tpage >> 4) & 1) + ((s16)dv >> 8)) & 1;
-    p->tpage = tx | ((tpage & 0xFFE0) | (ty << 4));
-    p->v0 += dv;
-    p->v1 += dv;
-    p->v2 += dv;
-    clut = p->clut;
+    prim->tpage = tx | ((tpage & 0xFFE0) | (ty << 4));
+    prim->v0 += dv;
+    prim->v1 += dv;
+    prim->v2 += dv;
+    clut = prim->clut;
     cx = (((s16)dcx >> 4) + (clut & 0x3F)) & 0x3F;
     cy = (dcy + ((clut >> 6) & 0x1FF)) & 0x1FF;
-    p->clut = cx | ((clut & 0x8000) | (cy << 6));
+    prim->clut = cx | ((clut & 0x8000) | (cy << 6));
 }
 
 /* Quad counterpart of gpu_OffsetTexPolyGT3: shift a gouraud-textured quad's
  * texture source (tpage x/y by du/dv, all four vertex v by dv, clut x/y by
  * dcx/dcy), each packed u16 field updated in place inside its bit range. */
-void gpu_OffsetTexPolyGT4(POLY_GT4 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
+void gpu_OffsetTexPolyGT4(POLY_GT4 *prim, s32 du, s32 dv, s32 dcx, s32 dcy) {
     u16 tpage, clut;
     s32 tx, ty, cx, cy;
 
-    tpage = p->tpage;
+    tpage = prim->tpage;
     tx = ((tpage & 0xF) + ((s16)du >> 6)) & 0xF;
     ty = (((tpage >> 4) & 1) + ((s16)dv >> 8)) & 1;
-    p->tpage = tx | ((tpage & 0xFFE0) | (ty << 4));
-    p->v0 += dv;
-    p->v1 += dv;
-    p->v2 += dv;
-    p->v3 += dv;
-    clut = p->clut;
+    prim->tpage = tx | ((tpage & 0xFFE0) | (ty << 4));
+    prim->v0 += dv;
+    prim->v1 += dv;
+    prim->v2 += dv;
+    prim->v3 += dv;
+    clut = prim->clut;
     cx = (((s16)dcx >> 4) + (clut & 0x3F)) & 0x3F;
     cy = (dcy + ((clut >> 6) & 0x1FF)) & 0x1FF;
-    p->clut = cx | ((clut & 0x8000) | (cy << 6));
+    prim->clut = cx | ((clut & 0x8000) | (cy << 6));
 }
 
 void gpu_OffsetTPageClutAt0And4(s16 *prim, s16 du, s16 dv, s16 dcx, s16 dcy) {
@@ -942,14 +942,15 @@ void reloc_UnrelocateBlock(s16 block_id) {
 }
 
 void reloc_RebaseBlock(s32 block_id, s32 byte_offset) {
-    s32 *ptr = g_reloc_block_entry_tables[block_id];
+    s32 *slot_cursor = g_reloc_block_entry_tables[block_id];
     s32 count = g_reloc_block_slot_counts[block_id];
-    g_reloc_block_entry_tables[block_id] = (ptr = ptr + (byte_offset / 4));
+    g_reloc_block_entry_tables[block_id] =
+        (slot_cursor = slot_cursor + (byte_offset / 4));
     count--;
     if (count != -1) {
         do {
-            *ptr += byte_offset;
-            ptr++;
+            *slot_cursor += byte_offset;
+            slot_cursor++;
             count--;
         } while (count != -1);
     }

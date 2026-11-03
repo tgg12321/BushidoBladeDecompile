@@ -137,12 +137,12 @@ s32 memcard_RestoreSaveBlock(Unk800F34D8Save *arg0) {
 }
 
 void memcard_ClearBuffer(void) {
-    u8 *p = g_shared_buffer;
+    u8 *buffer_cursor = g_shared_buffer;
     s32 i = 0;
     do {
-        *p = 0;
+        *buffer_cursor = 0;
         i++;
-        p++;
+        buffer_cursor++;
     } while ((u32)i < 0x200);
 }
 
