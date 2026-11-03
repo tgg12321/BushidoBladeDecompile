@@ -1,0 +1,8 @@
+{
+  "description": "versus-cpu-clear-retail re-run unchanged with Unk80101EC8Record.unk_AF / unk_B4 watches (write and read 0x80101F77/1, 0x801023C3/1 = D_80101EC8[0] / [1].unk_AF; write and read 0x80101F7C/1, 0x801023C8/1 = .unk_B4; breakpoint fighter_StartMoveScript+0x260, the unk_AF store, with move_kind and matched_transition_command_byte): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-Unk80101EC8Record-unk_AF-versus-cpu-clear-retail-1/spec.json"
+  ],
+  "extends": "versus-cpu-clear-retail",
+  "refines": "versus-cpu-clear-retail"
+}
