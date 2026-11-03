@@ -1809,8 +1809,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     u16 *list;
     u8 *e;
     u8 *entry_cursor;
-    /* FAKE: second handle to var_32's value, see `q = var_32;` (read through
-     * var_32: score 58; e[4]/e[8..5]: 18, also with wrapper removed) */
+    /* FAKE: second handle to entry_cursor's value, see `q = entry_cursor;`
+     * (read through entry_cursor: score 58; e[4]/e[8..5]: 18, also with wrapper
+     * removed) */
     u8 *q;
     u16 off;
     s16 best_script_score;
@@ -2109,7 +2110,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
             tz = p->cpu_orbit_goal_z;
             goal_kind = p->cpu_orbit_goal_kind;
         }
-        /* FAKE: the trailing `&& var_38 == 1` repeats the first test
+        /* FAKE: the trailing `&& goal_kind == 1` repeats the first test
          * (redundant condition, no-new-park-categories entry 16; owner ruling
          * Q131). The target's $s2 re-test after the || chain is real (without
          * it the chain is two instructions shorter), but this C spelling is
@@ -2234,9 +2235,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                              * (contradictory condition, no-new-park-categories
                              * entry 16; owner ruling Q131). The target's two
                              * compares are real, and failing the inner compare
-                             * still reaches the var_8 call test, but this C
-                             * spelling is our reconstruction; without the
-                             * work2 == 5 arm: score 20 */
+                             * still reaches the route_script call test, but
+                             * this C spelling is our reconstruction; without
+                             * the work2 == 5 arm: score 20 */
                             if (work2 == 5 &&
                                 p->other->filtered_script_max_distances
                                         [p->other->variant_index] <
@@ -2660,8 +2661,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                          * the next write: case 2's pattern-word top bits
                          * (work1 >> 27); the offset
                          * ((0x1000 - var_6) * 625 >> 10) - 400; a copy of
-                         * var_18 for the var_18 < 5 and var_18 == 5 / 6 tests
-                         * (Q34) (Ruling 11, reused-local-necessity). */
+                         * script_entry_kind for the script_entry_kind < 5 and
+                         * script_entry_kind == 5 / 6 tests (Q34) (Ruling 11,
+                         * reused-local-necessity). */
                         s32 work5;
                         /* FAKE: opaque 1 (no-new-park-categories entry 2,
                          * loop-rotation-two-shift): with a
@@ -2676,16 +2678,16 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         entry_cursor += 4;
                         /* FAKE: pass-through pointer alias
                          * (pointer-alias-fake-exception; SOTN precedent
-                         * below): the target copies var_32's value into its
-                         * own register and reads the 0x40 character-mask header
-                         * through it while var_32 stays in $s6; read through
-                         * var_32 the allocation order shifts: score 58.
-                         * e[4]/e[8..5]: 18; same with wrapper removed;
-                         * e + 4 cursor initialization: 24 (e reads), 30
-                         * (var_32 reads); cursor = e + 9: 19 (e reads) /
-                         * 25 (var_32 reads); mask inline or in a u32
+                         * below): the target copies entry_cursor's value into
+                         * its own register and reads the 0x40 character-mask
+                         * header through it while entry_cursor stays in $s6;
+                         * read through entry_cursor the allocation order
+                         * shifts: score 58. e[4]/e[8..5]: 18; same with wrapper
+                         * removed; e + 4 cursor initialization: 24 (e reads),
+                         * 30 (entry_cursor reads); cursor = e + 9: 19 (e reads)
+                         * / 25 (entry_cursor reads); mask inline or in a u32
                          * local, wrapper also removed: 21 (e reads) / 61
-                         * (var_32 reads) */
+                         * (entry_cursor reads) */
                         /* SOTN: src/st/no0/e_stone_rose.c:611 @aa53500 */
                         q = entry_cursor;
                         if (g_cpu_profiles[p->cpu_profile].flags & 0xFF00) {
@@ -2769,14 +2771,15 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         }
                         work1 = e[1] * 40;
                         hi = e[2] * 40;
-                        /* FAKE: do-while(0): its loop depth weights var_18's
-                         * references so var_18 is allocated ahead of var_32
-                         * (var_18 $s5, var_32 $s6, as in the target);
-                         * unwrapped: score 10 (do-while-zero-exception);
-                         * before work1 = e[1] * 40 or as if subject: 10;
-                         * before 0x80 test: 20; loop-scope var_18, var_32,
-                         * e separately or together: 10; no-alias cluster
-                         * through e / var_32: 18 / 58 */
+                        /* FAKE: do-while(0): its loop depth weights
+                         * script_entry_kind's references so script_entry_kind
+                         * is allocated ahead of entry_cursor (script_entry_kind
+                         * $s5, entry_cursor $s6, as in the target); unwrapped:
+                         * score 10 (do-while-zero-exception); before work1 =
+                         * e[1] * 40 or as if subject: 10; before 0x80 test: 20;
+                         * loop-scope script_entry_kind, entry_cursor, e
+                         * separately or together: 10; no-alias cluster through
+                         * e / entry_cursor: 18 / 58 */
                         do {
                             script_entry_kind = e[0] & 7;
                         } while (0);
