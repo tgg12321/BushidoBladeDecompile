@@ -1,0 +1,39 @@
+# var-globals-hud-2 notes (cites at WT HEAD 2fe29e5e0, lane ln-naming-b; research tmp/codex/var-globals-hud-2-research.md (Opus, read-only, cited 2fe29e5e0); every access re-derived by the drafter by grep -w over src, include, asm, bb2.ld, tools, engine, symbol_addrs.txt, named_syms.txt, undefined_syms_auto.txt; verdicts left empty for the reviewer)
+Result: 19 rows proposed (all research rows), 0 rows dropped, names changed from research: none. Every research line citation re-checked at HEAD (defs, externs, readers, asm listing lines, registry lines, caller branches in 6CF8.c / 2B344.c / 9F9C.c, runtime poke directories): all still hold. All 19 proposed names have 0 hits in src, include, asm, registries, docs/naming (two only appear as suggestions in pending/var-globals-hud/notes.txt: g_gpu_comparison_unrecorded_match_cell_indices, g_gpu_red_tinted_line_segment_cells). dry.txt: data_wave dry run PASS (19 addresses, 19 identifiers, 8 files, 4 registry lines, exit 0, no refusals); git status shows only the new pending dir.
+Evidence added over the research: the research's evidence is carried verbatim (its ASM label normalised to 'ASM LISTINGS'); the drafter's own re-derivation added nothing that changes a row. Rows D_8009B1CC / D_8009B1EC have no asm operand (reached only through the D_8009B2AC pointer table), hence no ASM LISTINGS label.
+
+Weakest rows for the reviewer
+1. 0x8009B20C (help_text_cells): 'help' rests on one poked cell and its text; fallback g_gpu_mode_panel_toggle_footer_cells or NO_NAME.
+2. 0x8009B840 (red_tinted_line_segment_cells): no capture of the routine; 'line segment' rests on the 1-px height and the landed header name; [1] uses header [3] where the counter's texel uses [2]; fallback NO_NAME.
+3. 0x8009B4E4 (score_and_center_sheet_header): two cell roles under one header; fallback g_gpu_comparison_score_sheet_header or NO_NAME.
+4. 0x8009B1BC (rematch_cells): the 2B344.c series caller (g_fight_mode_selector == 5, fight_AdvanceMatch) is not captured; fallback NO_NAME.
+5. 0x8009B4B0 (unrecorded_match_sheet_header) and 0x800A3270 (..._cell_indices): inherit the 'unrecorded' name of the landed g_gpu_comparison_unrecorded_match_cells (rests on the 3 sentinel).
+6. 0x8009B6F0 (one_or_two_digit_value_sheet_headers): named after its sole reader, no capture; alternative g_gpu_digit_count_shifted_sprite_and_digit_sheet_headers.
+7. 0x8009B23C / 0x8009B29C / toggle headers: only 2 of 12 / cell [0] poked; name claims no label text and no on/off spelling.
+
+Interior aliases left (data_wave renames only own-address names; precedent pending/var-globals-hud/notes.txt): D_8009B14E (= D_8009B14C count byte), D_8009B16C (= g_gpu_mode_panel_corner_cells [0][1].x), D_8009B17C (= [1][1].x), D_8009B18C (= g_gpu_mode_panel_divider_end_cells [1].x), D_8009B6FC (= g_gpu_one_or_two_digit_value_sheet_headers [1]). They stay valid symbols in the unbuilt asm shadow listings and symbol_addrs.txt:1055-1058, :1081; their notes (data-wave 2026-10-08 'was g_text1b_addr_*') stay.
+
+NO_NAME (carried from the research; each rechecked by the research, no new evidence)
+- g_panel_frame_sizes: already named (symbol_addrs.txt:475), context only; lacks the g_gpu_ prefix but out of scope. Header alignment: g_gpu_mode_panel_sheet_headers pairs as [0]/[1] corners, [2] divider ends, [3] pause title, [4] continue, [5] rematch, [6] return to sub menu, [7] return to top menu, [8] help text; the landed header name needs no change.
+- eff_DrawAnimatedQuads TexRec family (D_8009B8C8, D_8009B8E0, D_8009B978 / B980, D_8009B988 / B990 / B9D8 / B9E0, D_8009B9E8 / B9F0): NO_NAME; no capture covers eff_DrawAnimatedQuads; var-globals-f notes.txt:90 objection (shared by several modes / picked by an unnamed counter phase) stands.
+- D_8009ADB4 / D_8009ADC0 / D_8009ADD8 / D_8009AFB8 / D_8009B0B4 / D_800A3264, and D_8009B58C, D_8009B7AC / D_800A328C: NO_NAME; round_grid_pick not shown to be a character index (var-globals-n notes.txt:26).
+- D_8009AFE0 / D_8009B024 / D_8009B048 / D_8009B0C0: NO_NAME; unk_00 unnamed, two readers share the record, no capture.
+- D_8009B2C8, D_8009B340, D_8009B358, D_8009B388: NO_NAME; header rows picked by g_local_ot_draw_mode; no capture.
+- D_8009B524 / B530 / B53C / B548, D_8009B554 / B56C / B57C (per-side banners): NO_NAME; g_working_record.unk14_15 still unnamed.
+- D_8009B5E8: NO_NAME; 4D0A8.c:1238-1243 drawn after each time digit group, 'separator' does not hold.
+- D_8009B610 / D_8009B634 / D_8009B63C / D_8009B660 (gpu_DrawSelectedStretchedSheetPair): NO_NAME; callers 2B344.c:991-994, 9F9C.c:2339-2342, 1581-1584, 1608-1611; D_800A37E1 unnamed, no capture of the banners (lead: a capture of the post-Rematch banner).
+- D_8009B770 / D_8009B7A0 / D_8009B7D0 / D_8009B7D8 / D_8009B800 / D_8009B820 (fixed-sprite routine apart from D_8009B840): NO_NAME; only mechanics shown; D_8009B794 interior-label hazard (symbol_addrs.txt:62).
+
+Comment / doc occurrences of the old spellings (comment pass if applied; data_wave rewrites code, asm operands and registry lines, not comments)
+- D_8009B14C / D_8009B158: src/main/4D0A8.c:1851-1852 (comment above D_8009AFE0), include/game.h:247 (Unk8009B0E0Record comment). Decls include/bb2.h:104-105 are code.
+- D_8009B164 / D_8009B184 / D_8009B29C / D_8009B2AC / D_8009B1AC / D_8009B1CC / D_8009B1EC: src/main/4D0A8.c:1931-1934 (comment above the cell tables). include/bb2.h:107-109 / :112-114 describe D_8009B164 / D_8009B184 without the D_ spelling (no edit needed; text could gain 'corner' / 'divider end').
+- D_8009B1AC: symbol_addrs.txt:786 note names its header only (data_wave rewrites the symbol).
+- D_8009B6F0 (and alias D_8009B6FC): include/game.h:480; 4D0A8.c:1447-1449 describes it without the spelling.
+- D_800A3270: symbol_addrs.txt:1012 note ('+4 from g_gpu_jittered_quad_pair_cycle') stays true.
+- D_8009B194, D_8009B1BC, D_8009B20C, D_8009B23C, D_8009B4B0, D_8009B4E4, D_8009B4F0, D_8009B840: no comment spelling in src or include.
+- History, leave: docs/naming/phase3/backlog.tsv, docs/foundation/backlog.tsv, pending/var-globals-{e,f,i,j,k,n,hud}/*, pending/file-names-1/notes.txt, pending/var-locals-16/local_manifest.csv, wave08 / wave09 / wave10 data_manifest.csv, docs/naming/remaining_data_classification.json, docs/naming/runtime/hud-*/** (evidence), memory/grind/** (layer-2 retarget is naming_wave's job).
+- Formatting: longer names re-wrap 4D0A8.c lines 74-111, 145-216, 226-240; run tools/format.py on 4D0A8.c, d_8BC50.c (token-preserving).
+
+Pre-apply (naming-reviewer, naming-b 2026-11-02): 17 PASS, 2 FAIL, FAIL rows dropped (NO_NAME this wave; leads for a successor):
+- 0x8009B20C D_8009B20C -> g_gpu_mode_panel_help_text_cells: FAIL. N4 / Q124: the word 'help' is unsupported by the code; only the single Ninja capture backs it. Reviewer lead (unjudged): g_gpu_mode_panel_footer_cells.
+- 0x8009B6F0 D_8009B6F0 -> g_gpu_one_or_two_digit_value_sheet_headers: FAIL. N1 / R2: at 4D0A8.c:1467 header [0] serves the shifted sprite, not the one-or-two-digit value. Reviewer lead (unjudged): g_gpu_digit_count_shifted_sprite_and_digit_sheet_headers.
