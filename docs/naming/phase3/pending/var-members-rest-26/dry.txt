@@ -1,0 +1,41 @@
+PASS Unk80102778Rec.unk_F=pending_force_weapon_inner_bone_hits
+decl Unk80102778Rec.unk_F -> pending_force_weapon_inner_bone_hits  include/game.h:2408
+  round 0: 6 member error line(s)
+    src/main/24BF0.c:19 unk_F x1
+    src/main/9F9C.c:1236 unk_F x1
+    src/main/menu_config.c:85 unk_F x1
+    src/main/menu_config.c:143 unk_F x1
+    src/main/menu_config.c:183 unk_F x1
+    src/main/menu_config.c:208 unk_F x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -2408 +2408 @@
+-    u8 unk_F;
++    u8 pending_force_weapon_inner_bone_hits;
+--- a/src/main/24BF0.c
++++ b/src/main/24BF0.c
+@@ -19 +19 @@
+-    s32 val_87 = (s8)g_fight_config.unk_F;
++    s32 val_87 = (s8)g_fight_config.pending_force_weapon_inner_bone_hits;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -1236 +1236 @@
+-    g_fight_config.unk_F = 0;
++    g_fight_config.pending_force_weapon_inner_bone_hits = 0;
+--- a/src/main/menu_config.c
++++ b/src/main/menu_config.c
+@@ -85 +85 @@
+-                (s8)g_fight_config.unk_F);
++                (s8)g_fight_config.pending_force_weapon_inner_bone_hits);
+@@ -143 +143 @@
+-                g_fight_config.unk_F--;
++                g_fight_config.pending_force_weapon_inner_bone_hits--;
+@@ -183 +183 @@
+-                g_fight_config.unk_F++;
++                g_fight_config.pending_force_weapon_inner_bone_hits++;
+@@ -208 +208 @@
+-    g_fight_config.unk_F &= 1;
++    g_fight_config.pending_force_weapon_inner_bone_hits &= 1;
+DRY RUN: 4 file(s) would change; nothing written
+OK: every member access renamed
