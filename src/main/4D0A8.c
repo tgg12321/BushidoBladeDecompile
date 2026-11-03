@@ -1858,10 +1858,11 @@ s16 D_8009AFB8[20] = {
  * bytes, kept as a seventh, empty cell), the digit sheet D_8009B0B4 (its one
  * cell is the .sdata D_800A3264), then D_8009B0C0 itself.
  * g_gpu_mode_panel_sheet_headers is
- * gpu_DrawModeSizedPanelWithSelectedCellOpaque's table of 9 headers; D_8009B14C
- * / D_8009B158 two more. These cells sit in the header's cells[0] tail (a GNU
- * extension; .size says 12) because only the header is ever named, unlike
- * D_8009ADC0. */
+ * gpu_DrawModeSizedPanelWithSelectedCellOpaque's table of 9 headers;
+ * g_gpu_mode_panel_toggle_row_label_sheet_header /
+ * g_gpu_mode_panel_toggle_state_sheet_header two more. These cells sit in the
+ * header's cells[0] tail (a GNU extension; .size says 12) because only the
+ * header is ever named, unlike D_8009ADC0. */
 Unk8009B0E0Record D_8009AFE0 = {
     0x1E,
     0x00,
@@ -1940,9 +1941,12 @@ Unk8009B0E0Record g_gpu_mode_panel_toggle_row_label_sheet_header = {
 Unk8009B0E0Record g_gpu_mode_panel_toggle_state_sheet_header = {
     0x1F, 0x00, 1, 0x00, 0x3C0, 0x1FF, 0x0, 0x0};
 
-/* gpu_DrawModeSizedPanelWithSelectedCellOpaque's cell tables D_8009B164 /
- * D_8009B184 .. D_8009B29C; D_8009B2AC, the cell-table pointers it picks by j
- * (D_8009B1AC twice, D_8009B1CC, D_8009B1EC; the last two have no other
+/* gpu_DrawModeSizedPanelWithSelectedCellOpaque's cell tables
+ * g_gpu_mode_panel_corner_cells / g_gpu_mode_panel_divider_end_cells ..
+ * g_gpu_mode_panel_toggle_state_cells; g_gpu_mode_panel_menu_item_cell_tables,
+ * the cell-table pointers it picks by j (g_gpu_mode_panel_continue_cells twice,
+ * g_gpu_mode_panel_return_to_sub_menu_cells,
+ * g_gpu_mode_panel_return_to_top_menu_cells; the last two have no other
  * reader); g_panel_frame_sizes, the frame sizes per mode. */
 Unk8009B400Record g_gpu_mode_panel_corner_cells[2][2] = {
     {{0, 0, 0x00, 0x00, 0x10, 0x06}, {0, 0, 0x10, 0x00, 0x10, 0x06}},

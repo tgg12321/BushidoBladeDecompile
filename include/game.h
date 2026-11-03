@@ -244,8 +244,8 @@ typedef struct {
  * menu_DrawSelGrid) ahead of one shared cell table, which then starts at the
  * last header's cells. 0x8009B0E0 is a table of 9 such headers
  * (0x8009B0E0..0x8009B14B) that gpu_DrawModeSizedPanelWithSelectedCellOpaque
- * reaches off one base; D_8009B14C and D_8009B158 are two more of the same
- * shape. */
+ * reaches off one base; g_gpu_mode_panel_toggle_row_label_sheet_header and
+ * g_gpu_mode_panel_toggle_state_sheet_header are two more of the same shape. */
 typedef struct {
     u8 tp0;
     u8 tp1;
