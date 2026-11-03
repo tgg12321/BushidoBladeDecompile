@@ -1,0 +1,2 @@
+D_8009B9E8=g_eff_two_animated_quads_early_tex_rec
+D_8009B9F0=g_eff_two_animated_quads_middle_tex_rec

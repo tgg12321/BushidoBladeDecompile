@@ -1,0 +1,29 @@
+# var-globals-eff-texrec notes (cites at WT HEAD 22e8fd596, lane ln-naming-b; research tmp/codex/var-globals-eff-texrec-research.md (Opus, read-only, cited 22e8fd596); every access re-derived by the drafter by grep -w over src, include, asm, bb2.ld, tools, engine, symbol_addrs.txt, named_syms.txt, undefined_syms_auto.txt; verdicts left empty for the reviewer)
+Result: 4 rows proposed (all research rows), 0 rows dropped, names changed from research: none. Every research line citation re-checked at HEAD (defs d_8BC50.c:193/194/207/208, externs bb2.h:612/613/620/621, readers 51268.c:2176/2178/2253/2255/2281/2283, counter seeds 51268.c:1806/1815, asm listing lines in eff_DrawAnimatedQuads.s): all still hold; the only non-asm, non-C hit is tools/trace/scenarios/hud-eff-ippon.json:2. No bb2.ld, symbol_addrs, named_syms or undefined_syms hit for any target. All 4 proposed names and the prefixes g_eff_two_animated_quads_ / g_eff_growing_quad_ have 0 hits (minus .git, tmp, build, .venv). dry.txt: data_wave dry run (python tools/data_wave.py --manifest-csv ...) PASS, 4 addresses, 4 identifiers, 4 files (eff_DrawAnimatedQuads.s 12, bb2.h 4, 51268.c 6, d_8BC50.c 4), 0 registry lines, exit 0, no refusals.
+data_wave does NOT rewrite tools/trace/scenarios/hud-eff-ippon.json (not in the dry-run file edits): hand-edit it in the comment pass (see below).
+
+Weakest rows for the reviewer
+1. (dropped at pre-apply, see below) 0x8009B980 (g_eff_growing_quad_early_tex_rec) and 0x8009B978 (..._late_tex_rec): code-only, no runtime; 'growing_quad' is the landed 3/4 wrapper family, but modes 8/9 are drawn by QuadPair wrappers and use different thresholds (0x96 / 0xC8); the pair must land or fall together. Fallback: NO_NAME for both.
+2. 0x8009B9F0 (g_eff_two_animated_quads_middle_tex_rec): the symbol is TexRec[2]; [1] (0x8009B9F8) is never read and has no symbol; singular 'tex_rec' names the record the code uses. Fallback g_eff_two_animated_quads_middle_tex_recs.
+3. 0x8009B9E8 (..._early_tex_rec): modes 13/15 not watched (only reached in training-practice-nodachi-trade-1, no read watch); same case as 12/14. 'early'/'middle' claim only the counter phase (0..4 / 5..7), no IPPON role word (Q132).
+
+NO_NAME (carried from the research; no new evidence)
+- 0x8009B8C8 D_8009B8C8: four unrelated mode families (0, 5, 12-15 last phase, 16/17); no covering role word; symbol_addrs.txt:794 note only.
+- 0x8009B8E0 D_8009B8E0: single pick, mode 5 when counter[4] > 0x800, possibly dead; dead code stays neutral.
+- 0x8009B988 D_8009B988, 0x8009B990 D_8009B990, 0x8009B9D8 D_8009B9D8, 0x8009B9E0 D_8009B9E0: view-setting x counter-phase picks shared by modes 6/7 and 10/11; no capture reads them; symbol_addrs.txt:795 note for B9D8.
+- D_8009B9F0[1] (0x8009B9F8): no own symbol, never read; no row.
+
+Comment / doc occurrences of the old spellings (comment pass if applied; data_wave rewrites code, asm operands and registry lines, not comments)
+- D_8009B9E8: src/main/d_8BC50.c:14 (top comment 'D_8009B8C8 .. D_8009B9E8'); re-spell the range end by the pair (keycheck allows only the pair substitution); the range already omits D_8009B9F0.
+- D_8009B9E8 / D_8009B9F0: tools/trace/scenarios/hud-eff-ippon.json:2 (scenario description string; hand-edit, substitute the two pairs only, leave 'D_8009B9F7' (address label) and D_8009B8C8).
+- D_8009B978 / D_8009B980: no comment spelling in src, include or tools.
+- include/bb2.h:594-595 and :126-131: no old spelling. symbol_addrs.txt:795 note 'sibling of D_8009B8C8': unaffected.
+
+History, leave: docs/naming/phase3/backlog.tsv:187, docs/foundation/backlog.tsv, docs/naming/phase3/pending/var-globals-{f,h,hud,hud-2,hud-3,i,j,top}/*, pending/func-second-pass-18 / -19 (notes.txt, rows.py), wave06/data_manifest.csv, wave110 / wave111 func_manifest.csv, docs/naming/runtime/hud-eff-ippon-1/** and docs/naming/runtime/evidence/*.tsv.
+
+Formatting: longer names may re-wrap 51268.c:2176-2178, :2253-2255, :2281-2283; run tools/format.py on 51268.c and d_8BC50.c (token-preserving).
+
+Pre-apply (naming-reviewer, naming-b 2026-11-03): 2 PASS, 2 FAIL; FAIL rows dropped (NO_NAME this wave; leads for a successor):
+- 0x8009B980 D_8009B980 -> g_eff_growing_quad_early_tex_rec: FAIL. N4/R4 (+N1 at 51268.c:2253): growing_quad reads as the PreseededGrowingQuad effect (modes 3/4), but the record also textures the QuadPair second quad (modes 8/9 via :2507); growing does not distinguish it (modes 12-15 and 6/7 quads grow too). Reviewer lead (unjudged): g_eff_growing_quad_and_quad_pair_early_tex_rec.
+- 0x8009B978 D_8009B978 -> g_eff_growing_quad_late_tex_rec: FAIL, same defect (51268.c:2255); lands or falls with 0x8009B980. Reviewer lead (unjudged): g_eff_growing_quad_and_quad_pair_late_tex_rec.
+Surviving wave: 2 RENAME (D_8009B9E8, D_8009B9F0); dry.txt re-run on the 2-row manifest. D_8009B978 / D_8009B980 have no comment spelling, so the comment-pass list above is unchanged for the survivors.
