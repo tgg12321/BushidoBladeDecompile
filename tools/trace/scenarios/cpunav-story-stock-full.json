@@ -1,0 +1,11 @@
+{
+  "description": "story-final-fight-stages re-run unchanged to its end (158000; no pokes): after the roster 0x1B fight the run's later opponents include roster 0x1D CPUs (cpu_profile 0x17, flags & 0x300) up to about 151200. trace-cpu-nav unit 6: does a flags & 0x300 CPU reach g_fight_stage_command_count >= 6 and the weapon_ammo read of fighter_UpdateCpuNavigationChooseScriptsAndHeldInput (4510C.c:2908), and which code stores weapon_ammo",
+  "covers": [
+    "mode:story"
+  ],
+  "evidence": [
+    "docs/naming/runtime/cpunav-story-stock-full-1/spec.json"
+  ],
+  "extends": "story-final-fight-stages",
+  "refines": "story-final-fight-stages"
+}
