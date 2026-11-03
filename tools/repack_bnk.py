@@ -8,7 +8,7 @@ rectangles it fills and rebuild it. Format in docs/formats/BNK.md.
     repack_bnk.py --roundtrip FILE.BNK|DIR
 
 A BNK is raw 16-bit VRAM data with no header. eff_LoadImagesAndSetup
-(src/main/51268.c) reads it and uploads it with two LoadImage calls:
+(src/main/eff.c) reads it and uploads it with two LoadImage calls:
 bytes 0..0x1DC00 to the rect (896, 0) 128 x 476 and the rest to
 (896, 476) 112 x 36. `unpack` writes each rect as a 16-bit TIM (no CLUT)
 carrying those coordinates:

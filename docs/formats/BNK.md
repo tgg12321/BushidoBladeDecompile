@@ -6,7 +6,7 @@ Files: `disc/TIM2D/GAME.BNK`, `GAMECHAN.BNK`, `GAMEDAN.BNK`, `GAMESTO.BNK`,
 Despite the name, a BNK is not a sound bank: it is raw 16-bit VRAM data with
 no header, uploaded as two rectangles in the VRAM column x = 896..1023.
 
-## Loader (`eff_LoadImagesAndSetup`, `src/main/51268.c`)
+## Loader (`eff_LoadImagesAndSetup`, `src/main/eff.c`)
 
 It reads one BNK into a buffer, picked by `g_working_record.menu_mode` (the row
 `menu_UpdateRowMenuStoreResult` stores from the main row menu), and uploads it with
@@ -30,8 +30,8 @@ It reads one BNK into a buffer, picked by `g_working_record.menu_mode` (the row
 
 The five files are identical for their first 0x10000 bytes (VRAM rows
 0..255) and differ after that. Rows 0..255 hold the effect textures: the
-effect code in `src/main/51268.c` draws with texture pages 0x2E and 0x2F
-(4-bit, x = 896 and 960, y = 0; e.g. `51268.c:772`, `:971`). Nothing in
+effect code in `src/main/eff.c` draws with texture pages 0x2E and 0x2F
+(4-bit, x = 896 and 960, y = 0; e.g. `eff.c:772`, `:971`). Nothing in
 that file uses a page at y = 256, so the per-file part (rows 256..475 and
 the 112 x 36 strip at (896, 476)) has no known consumer yet. The old reading of these files as SPU-ADPCM sample data was wrong:
 byte 1 of a 16-byte ADPCM block would be a flag value 0..7, and only
@@ -60,7 +60,7 @@ block statistics, which do not apply.
 
 ## Verified by
 
-* `eff_LoadImagesAndSetup` (`src/main/51268.c`): the five `cdrom_GetFileIndex`
+* `eff_LoadImagesAndSetup` (`src/main/eff.c`): the five `cdrom_GetFileIndex`
   reads and the two `LoadImage` rects; 128 x 476 x 2 + 112 x 36 x 2 =
   129,920, the file size.
 * The CD-table entries (`g_cd_file_table`, group base `g_cdrom_file_group_bases[2]` = 21)

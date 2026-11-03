@@ -1,9 +1,9 @@
 /* Data-only file: .data 0x8009B450..0x8009BC04 (ROM 0x8BC50), the sprite
- * sheets of 4D0A8.c's HUD and result screens, then 51268.c's effect texture
+ * sheets of 4D0A8.c's HUD and result screens, then eff.c's effect texture
  * records, command tables and vectors.
  * Owner ruling Q122 (data-only-no-sdata):
  * 1. One run: 4D0A8.c's g_gpu_decimal_digit_cells ends at 0x8009B450 and
- * 51268.o(.data) is empty, so 596CC.c's g_row_menu_row_state follows at
+ * eff.o(.data) is empty, so 596CC.c's g_row_menu_row_state follows at
  * 0x8009BC04. No uninitialized objects.
  * 2. Small objects in .data, each with its own readers:
  * g_gpu_time_and_counter_line_origins (two points,
@@ -13,13 +13,13 @@
  * D_8009B634, g_gpu_stage_card_map_cell (4D0A8.c), the one-record TexRec tables
  * D_8009B8C8 .. g_eff_two_animated_quads_early_tex_rec and the SVECTORs
  * D_8009BBE4
- * .. D_8009BBFC (51268.c). Under -G8 the original compiler puts them in .sdata,
+ * .. D_8009BBFC (eff.c). Under -G8 the original compiler puts them in .sdata,
  * so no -G8 file defined them.
- * 3. Neighbours in .data link order: 4D0A8.c and 51268.c, -G8 code modules
+ * 3. Neighbours in .data link order: 4D0A8.c and eff.c, -G8 code modules
  *    with their own .sdata / .sbss and gp accesses, whose .text is adjacent
  *    (0x8005C8A8 + 0x41C0 = 0x80060A68); so no code module owns them.
  * Readers: g_gpu_time_and_counter_line_origins .. g_gpu_packed_sprite_positions
- * (4D0A8.c), D_8009B890 .. D_8009BBFC (51268.c). */
+ * (4D0A8.c), D_8009B890 .. D_8009BBFC (eff.c). */
 #include "common.h"
 #include "bb2.h"
 #include <psxsdk/libgte.h>
@@ -157,7 +157,7 @@ u16 g_gpu_packed_sprite_positions[32] = {
     0x7750, 0x673C, 0x50D9, 0x4946, 0x488C, 0x2FEA, 0x2146, 0x133E,
     0xA499, 0x8394, 0x7A47, 0x695A, 0x47F4, 0x5AAB, 0x5834, 0xCC6};
 
-/* 51268.c's: the effect texture records (TexRec runs),
+/* eff.c's: the effect texture records (TexRec runs),
  * g_eff_command_handler_bases and the handler table g_eff_command_handlers
  * (eff_StartCommand / eff_StepCommand), g_eff_rotation_matrix_scale
  * (eff_SetRotMatrix), g_eff_rotated_quad_cluster_vertices

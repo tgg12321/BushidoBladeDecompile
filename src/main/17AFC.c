@@ -25,7 +25,7 @@ extern u8 D_800A38AA;
 extern u8 D_800A38AB;
 
 /* replay_RecordEvent (28708.c: u8, u8, s32 *, u16 *) and
- * eff_StartRecycledYawedParticlesWithTextureSelection (51268.c: s32 *, s32,
+ * eff_StartRecycledYawedParticlesWithTextureSelection (eff.c: s32 *, s32,
  * s32) are called without a prototype: the u8 prototype narrows
  * fight_RecordReplayEventAndDispatchSoundOrEffect's arguments, and
  * eff_StartRecycledYawedParticlesWithTextureSelection is called with two of its

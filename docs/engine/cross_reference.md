@@ -32,7 +32,7 @@ gives its `.text` start and its boundary evidence. Sony and SN code is in
 | `4510C.c` | 0x8005490C | 20 functions: motion-stream playback (`motion_UpdatePlayback`) and CPU navigation (`fighter_UpdateCpuNavigationChooseScriptsAndHeldInput`) ([motion.md](motion.md)) |
 | `4BC3C.c` | 0x8005B43C | 28 functions: the sound-bank layer `snd_*` / `snd_QueueSound` / `snd_FlushSoundQueue` ([sound.md](sound.md)) |
 | `4D0A8.c` | 0x8005C8A8 | 17 functions: UI draw chunks (`gpu_DrawModeSizedPanelWithSelectedCellOpaque` .. `gpu_DrawIndexedCellsDigitPairsAndGrowingBars`) |
-| `51268.c` | 0x80060A68 | 99 functions, among them `eff_LoadImagesAndSetup` and `eff_SelectQuadBuffer` |
+| `eff.c` | 0x80060A68 | 99 functions, among them `eff_LoadImagesAndSetup` and `eff_SelectQuadBuffer` |
 | `596CC.c` | 0x80068ECC | 48 functions: the row menu (`menu_LoadResourcesInitStateSelectFirstEnabledRow`, `menu_HandleOptionMenuChoices`) and `gpu_InitPrimBufferPair` ([menus.md](menus.md)) |
 | `5ED34.c` | 0x8006E534 | `InitDisplayStateLoadPackAndSetEntryFlags` .. `gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer` (`menu_UpdateEntryGridCursors`, [replay.md](replay.md)) |
 | `63D2C.c` | 0x8007352C | 5 functions: the sprite walkers `gpu_AddSpriteCells` / `gpu_AddScaledSpriteQuads` ([gpu_pipeline.md](gpu_pipeline.md)) |

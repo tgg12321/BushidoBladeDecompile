@@ -66,7 +66,7 @@ The stage load in `src/main/9F9C.c` calls `snd_ReloadListedVabsFromFileAndInstal
 with `a` and `b` read from `g_fight_character_vab_and_ground_quad_classes` for the two fighter slots. It
 reads group-2 file `stage + 9` (`cdrom_GetFileIndex(2, stage + 9)`) into
 `buf`, rebases header word 12 and passes it to `eff_SetBillboardList`
-(`src/main/51268.c`), then hands record 0, record `a + 1` and record `b + 1`
+(`src/main/eff.c`), then hands record 0, record `a + 1` and record `b + 1`
 (only two packs when `a == b`) to `snd_LoadVabPack` for the three VAB ids in
 `g_vab_id_list`, compacting the loaded packs to the start of `buf`.
 
@@ -111,7 +111,7 @@ records 1..5 are the per-fighter-slot banks picked by `a` / `b` above.
 has bit 0 set; the first entry with bit 0 clear ends the list. On disc the
 list ends with 12 zero bytes at end of file. 29 stages have no billboards
 (the terminator alone); the others hold 2 or 4 entries (24 or 48 bytes)
-before it. `eff_DrawBillboardList` (`src/main/51268.c`) decodes an entry as:
+before it. `eff_DrawBillboardList` (`src/main/eff.c`) decodes an entry as:
 
 ```
 word 0   bit 0 = present, x = word0 / 2

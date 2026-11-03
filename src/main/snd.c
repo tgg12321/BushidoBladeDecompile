@@ -11,7 +11,7 @@
 #include <psxsdk/libgte.h>
 
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
-/* Defined in 51268.c with an Unk800F1198Record *; the caller passes the
+/* Defined in eff.c with an Unk800F1198Record *; the caller passes the
  * relocated s32 offset, so it stays unprototyped here. */
 extern void eff_SetBillboardList();
 

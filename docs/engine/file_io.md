@@ -20,7 +20,7 @@ plus an offset. The groups that appear in calls:
   at `g_motion_common_buffer` (src/main/9F9C.c:3244), and the motion data `(1, 0)` /
   `(1, j + 2)` (9F9C.c:3298, :3352).
 - group 2: image and data files. Readers include `eff_LoadImagesAndSetup`,
-  `gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth`, and functions in 4BC3C.c, 4D0A8.c, 51268.c, 596CC.c and 5ED34.c.
+  `gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth`, and functions in 4BC3C.c, 4D0A8.c, eff.c, 596CC.c and 5ED34.c.
 - group 5: CD-audio tracks, started through `cdrom_StartAudio`. Callers are
   `cdrom_StartAudioEntry` and three functions in src/main/2B344.c:
   `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:500), `fight_InitScrollingSpriteDisplayAndAudio` (:623) and
@@ -132,7 +132,7 @@ are described in [replay.md](replay.md).
 
 ## Callers that load data
 
-- `eff_LoadImagesAndSetup(dest, prim_buf)` (51268.c) picks a group-2 file by
+- `eff_LoadImagesAndSetup(dest, prim_buf)` (eff.c) picks a group-2 file by
   `g_working_record.menu_mode` (0x3C, 0x2F, 0x30, 0x31 or 0). It reads the file to
   `dest` and uploads two VRAM rectangles from it: (0x380, 0, 0x80, 0x1DC),
   then (0x380, 0x1DC, 0x70, 0x24) from `dest + 0x1DC00`. It then splits

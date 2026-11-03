@@ -33,7 +33,7 @@ start-up code, in order:
    - picks the buffer `g_gpu_db[g_gpu_presented_frame_count & 1]`, clears its OT
      (`ClearOTagR(ot, 0x1008)`), sets `g_gpu_ot_ptr` and the primitive cursor
      `g_prim_buf_cursor = D_800A3770[idx]`;
-   - `eff_SelectQuadBuffer(idx)` (src/main/51268.c), `font_BeginFrame()`
+   - `eff_SelectQuadBuffer(idx)` (src/main/eff.c), `font_BeginFrame()`
      (src/main/2B344.c:1211), `pad_Update(skip)` (last frame's `g_main_present_skip_frames`),
      `cdrom_Update()`,
      `snd_FlushSoundQueue()` (src/main/4BC3C.c);

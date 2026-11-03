@@ -444,7 +444,7 @@
 /* g_pad_analog_state at 0x800F33D8 already named in batch 5; ALSO passed to camera_SetMatrix in code6cac_c_mid (shared state buffer) */
 
 /* === Per-id state arrays (2026-05-17) === */
-/* Init pattern (51268.c, eff_InitSpinningQuadWithDepthSelectedTextureFirstSlot..eff_InitRateSelectedCosineScaledQuad): 12-byte record + g_eff_command_phase slot set to 1 + 2-byte counter per id. */
+/* Init pattern (eff.c, eff_InitSpinningQuadWithDepthSelectedTextureFirstSlot..eff_InitRateSelectedCosineScaledQuad): 12-byte record + g_eff_command_phase slot set to 1 + 2-byte counter per id. */
 /* The per-id 12-byte state records and 2-byte counters are the arrays g_eff_animated_quad_positions[18] and g_eff_animated_quad_counters[18]
  * (include/game.h; merged 2026-09-30 with eff_DrawAnimatedQuads, which retired their per-word alias names). */
 /* 2026-10-16: D_800F10E0 retired -- elements of s32 g_eff_command_phase[] (include/bb2.h); no C names them. */
@@ -606,7 +606,7 @@
 /* g_entry_menu_exit_result is StepSlideBuildFrameRecordAndDispatchStateHandler's result. */
 
 /* === g_eff_command_block command-block cluster (2026-05-17) -- 4 highs === */
-/* From 51268.c eff_StartRecycledCommandWithOrangeLight etc.  Complements the command block */
+/* From eff.c eff_StartRecycledCommandWithOrangeLight etc.  Complements the command block */
 /* g_eff_command_block (unk0C = D_800F1178, unk10 = D_800F117C, */
 /* unk14 at 0x800F1180). D_800F1160 / D_800F1152 / D_800F1164 are status */
 /* bytes of g_eff_command_status[], tested and cleared in pairs before a command; */
@@ -939,7 +939,7 @@
 /* per-frame counters. */
 
 /* === D_800F1159 status bytes (2026-05-17) -- 1 high === */
-/* From 51268.c eff_StartRecycledCommandWithRoseLight: same pattern as D_800F1160 / D_800F1164 */
+/* From eff.c eff_StartRecycledCommandWithRoseLight: same pattern as D_800F1160 / D_800F1164 */
 /* -- status bytes for commands 0x210009 / 0x21000A. */
 
 /* === char-id tables indexed by g_fight_match_cursor (2026-05-17) -- 2 highs === */
@@ -962,7 +962,7 @@
 /* selects the player.  Lookup data lives at D_800FF6A0 (16-byte stride). */
 
 /* === eff_ResetCommands clears + per-command status bytes (2026-05-17) -- 7 highs === */
-/* From 51268.c eff_ResetCommands (:145-163): clears 28 entries each */
+/* From eff.c eff_ResetCommands (:145-163): clears 28 entries each */
 /* of g_eff_command_phase and g_eff_command_status, */
 /* plus 6 slot-allocator cells: g_eff_yawed_quad_slot_counters[2] (live-slot counts), */
 /* g_eff_yawed_quad_slot_masks[2] (in-use bitmasks), g_eff_yawed_quad_tex_selectors[2] (TexRec selectors). */

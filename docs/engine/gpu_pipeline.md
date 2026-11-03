@@ -3,7 +3,7 @@
 Sony's GPU code is PsyQ 4.0 LIBGPU in `src/main/psxsdk/libgpu/` (`sys.c`,
 `prim.c`, `ext.c`). The GTE library is in `src/main/psxsdk/libgte/`. The
 game's frame set-up is in `src/main/6CF8.c`. The game's primitive builders are
-spread over the game TUs (3AB48.c, 368E4.c, 4D0A8.c, 51268.c, 596CC.c, 63D2C.c, and others).
+spread over the game TUs (3AB48.c, 368E4.c, 4D0A8.c, eff.c, 596CC.c, 63D2C.c, and others).
 The frame loop itself is described in [main_loop.md](main_loop.md).
 
 ## Double buffer and ordering table

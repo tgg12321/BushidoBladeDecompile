@@ -592,7 +592,7 @@ extern u8 D_8008E908[][5];
 extern u8 g_snd_stage_sound_slot_specs[][8];
 extern s32 g_snd_stage_sound_slot_positions[2][4];
 extern u8 g_fight_step_row_object_ids[][5];
-/* 51268's sprite texture records (TexRec runs 0x8009B890..0x8009B9FF; sizes
+/* eff.c's sprite texture records (TexRec runs 0x8009B890..0x8009B9FF; sizes
  * from the data labels) */
 extern TexRec D_8009B890[4];
 extern TexRec D_8009B8B0[3];

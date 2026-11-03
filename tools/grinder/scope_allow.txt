@@ -36,7 +36,7 @@ memcard_BuildFileHeader include/game.h include/bb2.h undefined_syms_auto.txt
 SioSyncroRead volatile_extern_allowlist.txt
 # eff_StartRecycledCommandWithRoseLight: pipeline scope grant 2026-08-26 (judge ESCALATE integration-handoff,
 # integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
-eff_StartRecycledCommandWithRoseLight src/main/51268.c src/main/64FD8.c undefined_syms_auto.txt
+eff_StartRecycledCommandWithRoseLight src/main/eff.c src/main/64FD8.c undefined_syms_auto.txt
 # special_camera_get_rot_dir: owner ruling 2026-08-30 (decisions.md escalation-batch
 # entry, ruling 2): correct the stale 1-arg CdRead prototype at include/code6cac.h:510
 # at its canonical location (today include/psxsdk/libcd.h). Bytes proven (sandbox 0 at 72/72, SHA1 == oracle).

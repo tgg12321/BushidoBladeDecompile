@@ -3,9 +3,9 @@
  * menu_HandleOptionMenuChoices,
  * ..., gpu_InitPrimBufferPair). .text 0x80068ECC (ROM 0x596CC). Start boundary:
  * SEAM (owner ruling 2026-10-17; Codex seam #99): no direct call or static
- * crosses the cut; 51268.c's .sbss ends at D_800A34F4 and these functions own
+ * crosses the cut; eff.c's .sbss ends at D_800A34F4 and these functions own
  * g_menu_packed_cursors..g_menu_confirm_cursor; .rodata 0x80015988+0x28
- * (menu_HandleOptionMenuChoices's table, D_800159A0) follows 51268.o's. */
+ * (menu_HandleOptionMenuChoices's table, D_800159A0) follows eff.o's. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -2741,7 +2741,7 @@ u8 *g_sheet_pair_sprite_cursor;
 s32 g_row_menu_resource_root;
 s32 g_sheet_pair_selection_y_offset;
 
-/* .data 0x8009BC04..0x8009BC1C, this file's whole .data (51268.c's
+/* .data 0x8009BC04..0x8009BC1C, this file's whole .data (eff.c's
  * D_8009BBFC ends at 0x8009BC04, d_8C41C.c's g_entry_menu_handlers follows):
  * the list menu's state, rows 0-7 switched on, row mask 0xBF, then the eight
  * option rows {state, mode}. Defined after every function, so no body sees a

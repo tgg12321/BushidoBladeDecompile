@@ -979,7 +979,7 @@ typedef struct {
 } Unk800EFB78Entry;
 
 /* One 8-byte texture record: the CLUT position (PsyQ getClut(x, y) = (y << 6) |
- * ((x >> 4) & 0x3F)) and the texture u/v origin. 51268's g_eff_current_tex_rec
+ * ((x >> 4) & 0x3F)) and the texture u/v origin. eff.c's g_eff_current_tex_rec
  * / g_eff_clut_tex_rec point at one; the D_8009B890 .. D_8009BA58 tables are
  * runs of them. */
 typedef struct {
@@ -989,7 +989,7 @@ typedef struct {
     u16 v;
 } TexRec;
 
-/* The 0x2C-byte block g_eff_active_command_block points at (51268):
+/* The 0x2C-byte block g_eff_active_command_block points at (eff.c):
  * Unk1F800000Rec.default_command_block (eff_BindScratchpad's seed) or
  * g_eff_command_block, where eff_StartRotatedQuadClusterWithNearWhiteLight ..
  * eff_StartRecycledCommandWithMagentaLight point it before calling
@@ -1035,7 +1035,7 @@ typedef struct {
     s32 position_copy[3];
 } Unk1F800000Unk00;
 
-/* 20-byte record table at 0x800EFC78 (51268): 4 rows (particle_row_index)
+/* 20-byte record table at 0x800EFC78 (eff.c): 4 rows (particle_row_index)
  * of 48 records, filled by eff_SpawnParticles (which leaves +0xE
  * untouched). */
 typedef struct {
@@ -1051,7 +1051,7 @@ typedef struct {
     s16 frame_age;
 } Unk800EFC78Record;
 
-/* eff_DrawBillboardList's layout of the 51268 work area
+/* eff_DrawBillboardList's layout of the eff.c work area
  * (Unk1F8000B8Union.v800620B8). eff_SetRotMatrix, which eff_DrawBillboardList
  * calls before it touches the area, writes and consumes its SVECTOR at
  * +0x00..+0x07. SetTransMatrix is handed the address 0x14 below
@@ -1098,7 +1098,7 @@ typedef struct {
     u32 quad_ot_index_table[16];   /* per kept quad, its OT index */
 } Unk1F8000B8_800646E8;
 
-/* eff_DrawAnimatedQuads's layout of the 51268 work area
+/* eff_DrawAnimatedQuads's layout of the eff.c work area
  * (Unk1F8000B8Union.v80065800). Its gte_SetTransMatrix operand hands the GTE
  * the area's base as a MATRIX, whose t[] is unk14[0]. */
 typedef struct {
@@ -1167,7 +1167,7 @@ typedef struct {
     s32 random_accumulator;
 } Unk1F8000B8_800678A8;
 
-/* Unk1F800000Rec.effect_work_area, the 51268 work area g_eff_work_area points
+/* Unk1F800000Rec.effect_work_area, the eff.c work area g_eff_work_area points
  * at (0x1F8000B8 to the end of the scratchpad). Each user lays it out for one
  * call (or, for the eff_PrepareParticles trio, one wrapper call); raw sizes the
  * union. eff_SetRotMatrix's is one SVECTOR.
@@ -1184,9 +1184,9 @@ typedef union {
     Unk1F8000B8_800678A8 v800678A8;
 } Unk1F8000B8Union;
 
-/* 51268's view of the scratchpad from 0x1F800000 (SPAD51268).
+/* eff.c's view of the scratchpad from 0x1F800000 (SPAD51268).
  * 17AFC's view of the same memory, used at other times, is ScrPad.
- * eff_BindScratchpad points 51268's D_800A34xx globals at these members; apart
+ * eff_BindScratchpad points eff.c's D_800A34xx globals at these members; apart
  * from its own two stores to default_command_block.bound_rotation_src /
  * bound_position_src, the code reaches them only through those globals:
  * - default_command_block: the command block g_eff_active_command_block points

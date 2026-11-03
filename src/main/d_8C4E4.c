@@ -13,7 +13,7 @@
  *    .text, then Sony's LIBAPI; so no code module owns g_sel_sheet_code_pairs.
  * Readers: g_sel_entry_availability_and_claims / g_sel_grid_page_cells /
  * g_menu_mode_selector_and_extra_slot_counts (64FD8.c), g_sel_sheet_code_pairs
- * (63D2C.c, 64FD8.c), g_working_record (4D0A8.c, 51268.c, 64FD8.c). */
+ * (63D2C.c, 64FD8.c), g_working_record (4D0A8.c, eff.c, 64FD8.c). */
 #include "common.h"
 #include "bb2.h"
 

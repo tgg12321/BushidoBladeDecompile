@@ -130,7 +130,7 @@ void file_LoadOverlay(void) {
 }
 ```
 
-`eff_LoadImagesAndSetup(dest, staging)` (51268.c) reads the effect file into
+`eff_LoadImagesAndSetup(dest, staging)` (eff.c) reads the effect file into
 `dest`, uploads its two images to VRAM and carves the effect quad buffers from
 `staging`. With the size guard `0xA000 < size -> Panic` it handles a small
 effect blob (≤ 40 KB), not the full 122 KB MOVOVL.EXE.

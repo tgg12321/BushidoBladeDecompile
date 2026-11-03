@@ -13,7 +13,7 @@ then the offset of the billboard list), the six records back to back from
 0x34, and the billboard list after record 5. snd_ReloadListedVabsFromFileAndInstallBillboards
 (src/main/snd.c) loads record 0 and two of records 1..5 with
 snd_LoadVabPack and hands the list to eff_SetBillboardList
-(src/main/51268.c): 12-byte entries (three s32), ending at the first entry
+(src/main/eff.c): 12-byte entries (three s32), ending at the first entry
 whose word 0 has bit 0 clear; on disc that terminator is 12 zero bytes at
 the end of the file. `unpack` writes:
 

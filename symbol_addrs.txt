@@ -791,7 +791,7 @@ g_pad_direction_positive_masks = 0x800A32C8; /* u32[2] bit masks {0x2000, 0x4000
 g_entry_menu_vram_copy_source_rect = 0x800A32EC; /* RECT {0x90, 0x1FB, 0x30, 1}, MoveImage source in InitDisplayStateLoadPackAndSetEntryFlags */  /* data-wave 2026-10-08: was g_text1b_state_record_table_8x4_b */
 D_800A3638 = 0x800A3638; /* one word: _remove_ChgclrPAD's $ra save slot (libapi/chclrpad.c:7); 0x800A3648 / 0x800A3658 belong to other modules */  /* data-wave 2026-10-09: was g_text1b_misc_state_record_table_16x4 */
 g_gpu_stage_card_stage_strip_sheet_header = 0x8009B7A0; /* one 12-byte sprite-sheet header (Unk8009B0E0Record), cells g_gpu_stage_card_stage_strip_cells, in gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells */  /* data-wave 2026-10-08: was g_text1b_state_record_table_12x5_a */
-D_8009B8C8 = 0x8009B8C8; /* TexRec[1] selected for drawing (51268.c) */  /* data-wave 2026-10-08: was g_motion_ex_state_table_8x5 */
+D_8009B8C8 = 0x8009B8C8; /* TexRec[1] selected for drawing (eff.c) */  /* data-wave 2026-10-08: was g_motion_ex_state_table_8x5 */
 D_8009B9D8 = 0x8009B9D8; /* TexRec[1], sibling of D_8009B8C8 */  /* data-wave 2026-10-08: was g_motion_ex_state_table_8x4 */
 D_8008EA00 = 0x8008EA00; /* 16-byte rows; snd_UpdateStageSounds passes row 5 or 6 to snd_QueuePositionalSound as a 3-D sound-source position */  /* data-wave 2026-10-08: was g_type_descriptor_table_8008EA00 */
 g_cpu_profiles = 0x80099D88; /* 0x18-byte records (Unk80099D88Rec[32]) indexed by a fighter's cpu_profile; the u16 flags at +0 are bit-tested (e.g. & 0xBF00) */  /* data-wave 2026-10-08: was g_status_flag_record_table_80099D88 */
@@ -1246,7 +1246,7 @@ g_eff_quad_rate_selector = 0x800A3484; /* points to 0x1F8000AC */  // data-wave 
 g_eff_view_angles = 0x800A346C; /* -> 0x1F800018 */  // data-wave 2026-10-28: was g_scratchpad_ptr_18
 g_eff_view_origin = 0x800A3470; /* -> 0x1F800020 */  // data-wave 2026-10-27: was g_scratchpad_ptr_20
 g_eff_view_rotation_matrix = 0x800A3474; /* -> 0x1F800030 */  // data-wave 2026-10-27: was g_scratchpad_ptr_30
-g_eff_yawed_quad_tex_index = 0x800A3480; /* -> 0x1F8000A8, set by eff_BindScratchpad (51268.c:243) with g_eff_quad_rate_selector / g_eff_work_area */  // data-wave 2026-10-28: was g_scratchpad_ptr_a8
+g_eff_yawed_quad_tex_index = 0x800A3480; /* -> 0x1F8000A8, set by eff_BindScratchpad (eff.c:243) with g_eff_quad_rate_selector / g_eff_work_area */  // data-wave 2026-10-28: was g_scratchpad_ptr_a8
 g_str_bu_800109BC_fmt = 0x800109BC; /* 'bu%1d%1d:%s' */
 g_str_bu_800109C8_fmt = 0x800109C8; /* 'bu%1d%1d:' */
 g_str_multipul_model_80010D8C = 0x80010D8C; /* 'Multipul Model' */
@@ -1439,12 +1439,12 @@ g_menu_two_choice_prompt_cursor = 0x800A3318; /* current choice (0 / 1) of menu_
 g_memcard_prompt_choice = 0x800A3350; /* two-way choice cursor (0 / 1) of a memory-card message, gpu_DrawSheetPairPanelWithOptionalSelection's second argument */  /* data-wave 2026-10-08: was g_result_screen_state_c */
 g_menu_compacted_unlock_mask = 0x800A35E8; /* bit-packed from StoreCompactedBits's unlock_mask: bits0-9 + (bits12-21 >> 2) + (bit24 >> 4) + (bit26 >> 5); read as an argument of InitDisplayStateLoadPackAndSetEntryFlags / menu_InitSelScreen */  /* data-wave 2026-10-08: was g_text1b_packed_arg */
 g_menu_pending_entry_extra_slot_count = 0x800A35E0; /* s32 word = g_menu_mode_selector_and_extra_slot_counts[g_working_record.menu_mode][1] (ResetFlowAndFetchRowTablePair); InitDisplayStateLoadPackAndSetEntryFlags's second argument in InitWithCachedValueAndStoredBitsBlackBg */  /* data-wave 2026-10-08: was g_text1b_cached_byte */
-g_eff_current_tex_rec = 0x800A3488; /* seeded with 0x1F800050 (eff_BindScratchpad); the 51268.c draw code points it at main-RAM TexRec tables */  /* data-wave 2026-10-08: was g_scratchpad_ptr_50 */
+g_eff_current_tex_rec = 0x800A3488; /* seeded with 0x1F800050 (eff_BindScratchpad); the eff.c draw code points it at main-RAM TexRec tables */  /* data-wave 2026-10-08: was g_scratchpad_ptr_50 */
 g_eff_clut_tex_rec = 0x800A348C; /* seeded with 0x1F8000B0; eff_DrawBillboardList points it at a main-RAM TexRec and reads clut_x / clut_y */  /* data-wave 2026-10-08: was g_scratchpad_ptr_b0 */
 g_eff_current_ot_entry = 0x800A34E4; /* OT entry pointer: seeded with 0x1F8000A0 (never dereferenced), set to g_gpu_ot_ptr + z before each use */  /* data-wave 2026-10-08: was g_scratchpad_ptr_a0 */
 D_800A3400 = 0x800A3400; /* store-only: snd_Init clears it */  /* data-wave 2026-10-08: was g_replay_camera_init_flag */
 g_vab_pack_base_sbaddr = 0x800A340C; /* SPU address where the VABs after the common one start: snd_LoadCommonVab sets it (0x1010, then g_vab_sticky_sbaddr); base of snd_LoadVabPack's sbaddr arithmetic */  /* data-wave 2026-10-08: was g_buki_pre_hit_arg_alt */
-g_eff_first_quad_buffer = 0x800A3420; /* POLY_FT4 buffer base A (eff_LoadImagesAndSetup's arg1); selected as the cursor at 0x800A37D4 when arg0 == 0 (51268.c:202-211) */  /* data-wave 2026-10-08: was g_gnd_fog_value_a */
+g_eff_first_quad_buffer = 0x800A3420; /* POLY_FT4 buffer base A (eff_LoadImagesAndSetup's arg1); selected as the cursor at 0x800A37D4 when arg0 == 0 (eff.c:202-211) */  /* data-wave 2026-10-08: was g_gnd_fog_value_a */
 g_eff_second_quad_buffer = 0x800A3424; /* POLY_FT4 buffer base B (arg1 + 0x4650); selected as the cursor at 0x800A37D4 when arg0 != 0 */  /* data-wave 2026-10-08: was g_gnd_fog_value_b */
 g_memcard_retry_load_status8_latched = 0x800A333C; /* latch set with g_memcard_status_wait_countdown = 0x5A when the g_memcard_status8_retry_count retry count reaches 5 or on case 3; while set the function shows message 0xA and runs the g_memcard_status_wait_countdown countdown (28708.c:624-762) */  /* data-wave 2026-10-08: was g_result_timer_complete_flag */
 g_memcard_status8_retry_count = 0x800A331C; /* retry counter: +1 per status 8 from memcard_Update while g_memcard_validation_load_active != 0; at 5 it sets g_memcard_retry_load_status8_latched = 1 (28708.c:621, 705-709) */  /* data-wave 2026-10-08: was g_input_retry_counter_a */
@@ -2078,7 +2078,7 @@ D_800A9D00 = 0x800A9D00; /* a0 advanced past its first halfword; base of 12-byte
 D_800F6650 = 0x800F6650; /* set / clear / get flag */  /* data-wave 2026-10-08: was g_motion_table_flag */
 D_800EED18 = 0x800EED18; /* +8 of each g_arena_blocks block entry: the block's byte amount */  /* data-wave 2026-10-08: was g_snd_stream_slot_field_8 */
 g_gpu_flush_view_matrix = 0x800FF610; /* MATRIX: output of MulMatrix0 (0x8007E4DC); old 'vector template' claim refuted, sweep 2026-10-03 */  /* data-wave 2026-10-03: was g_gte_vector_template */
-g_eff_billboards = 0x800F1198; /* list of 12-byte packed records (packed_x bit 0 = present, packed_x / 2 = x; packed_y & 7 = type, packed_y / 8 = y; z_coord = z) ended by one with packed_x bit 0 clear; each is drawn as one POLY_FT4 (51268.c:893-964) */  /* data-wave 2026-10-08: was g_eff_vertex_buffer */
+g_eff_billboards = 0x800F1198; /* list of 12-byte packed records (packed_x bit 0 = present, packed_x / 2 = x; packed_y & 7 = type, packed_y / 8 = y; z_coord = z) ended by one with packed_x bit 0 clear; each is drawn as one POLY_FT4 (eff.c:893-964) */  /* data-wave 2026-10-08: was g_eff_vertex_buffer */
 g_motion_common_sections = 0x80102760; /* Unk801027B0Rec: the common file's section pointers */  /* data-wave 2026-10-08: was g_practice_halfword_table */
 g_fight_choice_menu_first_cursor = 0x800A3804; /* v < 1, set together with g_fight_choice_menu_cursor (9F9C.c:2184-2185); lower bound of the cursor's up/down wrap (9F9C.c:2223-2234) */  /* data-wave 2026-10-08: was g_input_idle_flag */
 D_800F115B = 0x800F115B; /* g_eff_command_status[11], status byte for commands 0x21000B / 0x29000B / 0x31000B; g_eff_command_block.status_dest = &D_800F115B */  /* data-wave 2026-10-08: was g_text1b_glyph_data_b1 */
