@@ -23,8 +23,27 @@ conversation is kept: `claude attach <id>` reopens it) and starts the next lane 
 dry. A session idle for 90 minutes with its lane still open is reported as needing attention and keeps
 its slot. A foundation lane whose session changed nothing is not restarted this run; naming
 waits until the naming backlog changes (a row's id, stage or note, or its workable set).
-For a no-progress, stalled or lost session the session's last message (usually its question) is
-saved under tmp/lanes-state/attention/ and listed by `status` until `ack`.
+Attention (the session's last message saved under tmp/lanes-state/attention/, listed by `status`
+until `ack`) is raised only for owner questions (an ended session whose last message asks one
+or cannot be read),
+failed lands (an ended session that left unlanded commits; a failed self-heal land) and stalls
+(idle 90 min with its lane open; low disk; a codex lane that stops restarting). Everything
+else (finished, no-progress and lost sessions without a question, stale tmp/ scratch) goes to
+the one-screen digest tmp/lanes-state/digest.md, rewritten every pass.
+
+Self-heal, every pass: (1) `lanes.py tidy` every 10 min retries what `close --remove` left for
+a closed lane (an empty ln-<lane> / lands/<lane> folder, a fully landed lanes/<lane> branch;
+a locked packed-refs just fails until the next try) and lists anything else for a look in the
+digest; (2) a registration whose Claude owner session is absent from 3 good listings and quiet
+30 min is closed (`reap_lane`: claims released, branch and worktree kept) unless the lane has
+an unacked attention item (its session may wait on the owner's answer; an owner no slot
+tracked whose last message asks something raises that once first); (3) a `blocked`
+naming row whose note gained an evidence line (` EVIDENCE [<capture>] (<lane> <date>`) since
+it was blocked is moved to `idea` by a detached `heal.py land`, started once per main head
+while any row is blocked: it scans first and opens its own lane `heal` only if a row moves
+(Lane-Replay commit, normal land). Lane name `heal` is reserved for it (`lanes.py open`
+refuses other sessions). No second run starts while one lives (one past 3 h is raised once);
+a failure is raised once per distinct (step, rc, rows) until a run succeeds.
 
 Picking work: every start names its row (`/naming-session <lane> --row <id>`), one the session
 can start now: no live lane holds `topic:row:<id>` or (foundation) overlaps the row's `claims`,
@@ -227,6 +246,7 @@ def sh(cmd: list, timeout: int = CMD_TIMEOUT, cwd=None, merge: bool = True) -> t
 
 def agents() -> dict | None:
     """Background sessions by short id; None if the listing failed (never read as "all gone")."""
+    _ALIVE["ok"] = False
     rc, out = sh([claude_exe(), "agents", "--json", "--all"], merge=False)
     if rc != 0:
         return None
@@ -241,6 +261,8 @@ def agents() -> dict | None:
         rows = None
     if rows is None:
         return None
+    _ALIVE.update(ok=True, sessions={a["sessionId"] for a in rows
+                                     if a.get("sessionId") and not is_ended(a)})
     return {a["id"]: a for a in rows if a.get("kind") == "background" and a.get("id")}
 
 
@@ -397,13 +419,8 @@ def check_housekeeping(st: dict, now: float) -> bool:
     """Stale-scratch report, then the disk guard. True when disk is too low to start sessions."""
     if now - float(st.get("tmp_scan_at", 0)) >= TMP_SCAN_SECS:
         st["tmp_scan_at"] = now
-        stale = stale_tmp_dirs(MAIN / "tmp", now)
-        if stale and stale != st.get("tmp_stale"):
-            note_attention("tmp-scratch", f"{len(stale)} tmp/ folder(s) untouched for "
-                           f"{TMP_STALE_DAYS}+ days",
-                           "Sessions must remove their own scratch before ending (CLAUDE.md). "
-                           "Abandoned folders:\n\n" + "\n".join(f"- tmp/{n}" for n in stale), now)
-        st["tmp_stale"] = stale
+        # listed in the digest only (not an attention item: no owner question, land or stall)
+        st["tmp_stale"] = stale_tmp_dirs(MAIN / "tmp", now)
     free = disk_free_gb()
     if free is not None and free < DISK_MIN_GB:
         first = not st.get("disk_low")
@@ -417,6 +434,223 @@ def check_housekeeping(st: dict, now: float) -> bool:
     if st.pop("disk_low", None):
         log(f"disk recovered ({free:.1f} GB free); starting sessions again")
     return False
+
+
+# ---------------------------------------------------------------- self-heal
+
+TIDY_SECS = 10 * 60          # how often leftover branches / empty lane folders are retried
+ZOMBIE_IDLE_SECS = 30 * 60   # an absent owner's transcript (or heartbeat) quiet this long = gone
+HEAL_LOG_MAX = 20
+ENDED_OWNERS_MAX = 64        # session ids whose end a tracked slot already handled
+DIGEST = STATE_DIR / "digest.md"
+HEAL_RESULT = STATE_DIR / "heal.json"
+HEAL_LANE = "heal"
+CLAUDE_SESSION = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+_ALIVE: dict = {"ok": False, "sessions": set()}  # every live session id (any kind), last listing
+
+
+def heal_note(st: dict, msg: str, now: float):
+    log(f"self-heal: {msg}")
+    st["heal_log"] = (st.get("heal_log", []) + [{"t": now, "msg": msg}])[-HEAL_LOG_MAX:]
+
+
+def lanes_ctx():
+    return lanes_mod.Ctx(MAIN, "orchestrator")
+
+
+def tidy_step(st: dict, now: float):
+    """Retry what `close --remove` left behind (a locked packed-refs, a folder Windows held):
+    quiet, recorded in the digest; `look` items need the owner and are listed there."""
+    if now - float(st.get("tidy_at", 0)) < TIDY_SECS:
+        return
+    st["tidy_at"] = now
+    got = lanes_mod.tidy_leftovers(lanes_ctx())
+    for status, what, detail in got:
+        if status == "done":
+            heal_note(st, f"removed leftover {what}", now)
+    st["leftovers"] = [f"{what}: {detail or status}" for status, what, detail in got
+                       if status in ("look", "failed")]
+
+
+def owner_quiet_secs(owner: str, e: dict, now: float) -> float:
+    """Seconds since the owner session last wrote its transcript (else since the lane's
+    registry heartbeat)."""
+    p = transcript_path(owner, None)
+    try:
+        last = p.stat().st_mtime if p else float(e.get("heartbeat", 0))
+    except OSError:
+        last = float(e.get("heartbeat", 0))
+    return now - last
+
+
+def zombie_candidates(reg: dict, alive: set[str], tracked: set[str]) -> dict[str, str]:
+    """lane -> owner for registrations owned by a Claude session no listing shows alive and no
+    tracked slot is running. Non-Claude owners (heal-<pid>, scripts) are never candidates."""
+    out = {}
+    for lane, e in reg.get("lanes", {}).items():
+        owner = e.get("owner")
+        if (isinstance(owner, str) and CLAUDE_SESSION.fullmatch(owner)
+                and owner not in alive and owner not in tracked):
+            out[lane] = owner
+    return out
+
+
+def reap_step(st: dict, reg: dict, now: float):
+    """Close registrations whose owner session is gone: absent from MISS_TICKS good listings
+    in a row and quiet ZOMBIE_IDLE_SECS. Their claims stop blocking other lanes at once
+    (instead of after stale_hours); branch and worktree stay for the next session. A lane with
+    an unacked attention item is held: its ended session may be waiting on the owner's answer
+    (`claude attach` resumes it), so nothing may take the lane over until `ack`."""
+    if not _ALIVE["ok"]:
+        return
+    tracked = {s.get("session") for s in st["sessions"].values() if s.get("session")}
+    cands = zombie_candidates(reg, _ALIVE["sessions"], tracked)
+    held = {i.get("lane") for i in load_attention()}
+    seen = st.get("zombie", {})
+    nxt = {}
+    for lane, owner in cands.items():
+        prev = seen.get(lane, {}) if seen.get(lane, {}).get("owner") == owner else {}
+        n = prev.get("n", 0) + 1
+        nxt[lane] = {"owner": owner, "n": n, **({"asked": True} if prev.get("asked") else {})}
+        e = reg["lanes"].get(lane) or {}
+        if (n < MISS_TICKS or lane in held
+                or owner_quiet_secs(owner, e, now) < ZOMBIE_IDLE_SECS):
+            continue
+        # an owner no slot tracks (started by hand, or before a restart) had no end handling:
+        # if its last message asks the owner something, raise that once and hold the lane
+        # until `ack` instead of freeing it under a pending question
+        if not prev.get("asked") and owner not in st.get("ended_owners", []):
+            nxt[lane]["asked"] = True
+            if asks_owner(last_assistant_text(transcript_path(owner, None))):
+                raise_attention(lane, owner[:8], owner, None,
+                                "untracked session ended asking the owner", now)
+                continue
+        if lanes_mod.reap_lane(lanes_ctx(), lane, owner, "owner session gone"):
+            claims = " ".join(e.get("claims") or []) or "no claims"
+            heal_note(st, f"closed {lane}: owner {owner[:8]} is gone ({claims} released; "
+                          f"branch and worktree kept)", now)
+            nxt.pop(lane, None)
+    st["zombie"] = nxt
+
+
+def lane_unlanded(lane: str) -> int | None:
+    """Unlanded commits on lanes/<lane> (0 if no branch); None if git failed."""
+    try:
+        ctx = lanes_ctx()
+        br = ctx.branch(lane)
+        if not lanes_mod.git_ok("rev-parse", "--verify", "-q", f"refs/heads/{br}", cwd=MAIN):
+            return 0
+        return len(lanes_mod.unlanded(ctx, lane, br))
+    except Exception:  # noqa: BLE001
+        return None
+
+
+HEAL_MAX_SECS = 3 * 3600  # a heal run still alive after this is reported (never killed)
+
+
+def heal_running(st: dict, now: float | None = None) -> bool:
+    """The detached `heal.py land` is still alive. No age cap: a run past HEAL_MAX_SECS (a long
+    gate queue, a hang, a reused pid) keeps blocking a second run in ln-heal; heal_finish raises
+    it once for the owner instead of starting another run over it."""
+    h = st.get("heal")
+    return bool(h) and pid_alive(int(h.get("pid", 0)))
+
+
+def heal_finish(st: dict, now: float):
+    """Read the result of a finished `heal.py land`; a failed land is an attention item, raised
+    once per distinct failure (step, rc, rows) until a run succeeds, so an acked failure that
+    repeats on every main move stays acked."""
+    h = st.get("heal")
+    if not h:
+        return
+    if heal_running(st, now):
+        if now - float(h.get("started", 0)) > HEAL_MAX_SECS and not h.get("warned"):
+            h["warned"] = True
+            note_attention("heal", "self-heal run still going after 3 h",
+                           f"`tools/lanes/heal.py land` (pid {h.get('pid')}) started "
+                           f"{_hm(float(h.get('started', 0)))} and is still alive; no other heal "
+                           f"run starts while it lives. Log: {HEAL_RESULT.parent / 'logs' / 'heal.log'}. "
+                           f"If it hangs, end that pid; the next tick reads its result.", now)
+        return
+    st.pop("heal")
+    res = read_json(HEAL_RESULT, {})
+    if not isinstance(res, dict) or float(res.get("ended") or 0) < float(h["started"]):
+        res = {"rc": None, "step": "died without a result", "log": ""}
+    if res.get("rc") == 0:
+        st.pop("heal_fail_key", None)
+        if res.get("step") == "landed":
+            heal_note(st, "unblocked " + ", ".join(res.get("rows") or []) + " (landed)", now)
+        return
+    st["heal_failed_head"] = h.get("head", "")
+    owner = ((read_json(REGISTRY, {"lanes": {}}).get("lanes") or {}).get(HEAL_LANE) or {}).get("owner")
+    if isinstance(owner, str) and owner.startswith("heal-"):  # it died holding the lane
+        lanes_mod.reap_lane(lanes_ctx(), HEAL_LANE, owner, "heal.py ended without closing it")
+    key = f"{res.get('step')}|{res.get('rc')}|{','.join(sorted(h.get('rows') or []))}"
+    if st.get("heal_fail_key") == key:
+        heal_note(st, f"self-heal land failed again at {res.get('step')} (rc {res.get('rc')}; "
+                      f"already raised)", now)
+        return
+    st["heal_fail_key"] = key
+    note_attention("heal", f"self-heal land failed at {res.get('step')} (rc {res.get('rc')})",
+                   f"`tools/lanes/heal.py land` tried to move {', '.join(h.get('rows') or [])} "
+                   f"from blocked to idea. Log: {res.get('log') or '(none)'}. It retries when "
+                   f"main moves; lane `{HEAL_LANE}` may hold the unlanded commit "
+                   f"(`lanes.py status`).", now)
+
+
+def unblock_step(st: dict, bl: dict, reg: dict, now: float):
+    """Blocked naming rows whose evidence has landed: start `heal.py land` (detached) once per
+    main head. It opens lane `heal`, commits the backlog flip with a Lane-Replay trailer, lands
+    and closes; heal_finish reads its result on a later tick."""
+    heal_finish(st, now)
+    if st.get("heal") or not any(r.get("stage") == "blocked" for r in bl.get("naming", [])):
+        return
+    if lane_owned(reg, HEAL_LANE, now):
+        return
+    head = (git_main("rev-parse", "main") or "").strip()
+    if not head or head in (st.get("unblock_head"), st.get("heal_failed_head")):
+        return
+    st["unblock_head"] = head
+    # the history scan (a git show per backlog version) runs in the detached process, which
+    # opens the heal lane only if a row moves; the tick never waits on it
+    rows = [r["id"] for r in bl.get("naming", []) if r.get("stage") == "blocked"]
+    flags = (subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW) if os.name == "nt" else 0
+    p = subprocess.Popen([sys.executable, str(Path(__file__).with_name("heal.py")), "land"],
+                         cwd=MAIN, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL, creationflags=flags)
+    st["heal"] = {"pid": p.pid, "started": now, "rows": rows, "head": head}
+    log(f"self-heal: checking blocked {', '.join(rows)} for landed evidence (pid {p.pid})")
+
+
+def self_heal(st: dict, bl: dict, reg: dict, now: float):
+    _guarded("tidying lane leftovers", tidy_step, st, now)
+    _guarded("closing zombie registrations", reap_step, st, reg, now)
+    _guarded("unblocking naming rows", unblock_step, st, bl, reg, now)
+
+
+# ---------------------------------------------------------------- attention policy
+
+QUESTION = re.compile(r"\?|\b(?:should I|do you want|if you want|can you|could you|please|"
+                      r"your (?:decision|call|ruling|answer|approval)|owner(?:'s)? (?:ruling|"
+                      r"decision|question|input|answer)|needs? (?:the owner|an owner|a ruling|"
+                      r"you)|ask(?:s|ing)? the owner|waits? (?:on|for) (?:the )?owner|"
+                      r"you answer|once you|let me know|tell me|decision needed|needs? a "
+                      r"decision|waiting (?:on|for) you|awaiting your|owner action|owner "
+                      r"sign-off|until the owner)\b", re.I)
+
+
+def asks_owner(text: str) -> bool:
+    """The session's last message asks the owner something: a question mark or owner-request
+    wording anywhere in it (sessions lead with the ask, then status; wide on purpose: a false
+    hit costs one `ack`, a miss hides a question)."""
+    text = text.strip()
+    return bool(text) and bool(QUESTION.search(text))
+
+
+def recent_end(st: dict, lane: str, sid: str, what: str, text: str, now: float):
+    summary = " ".join(text.split())[:140]
+    st["recent_ends"] = (st.get("recent_ends", []) + [
+        {"t": now, "lane": lane, "sid": sid, "what": what, "summary": summary}])[-8:]
 
 
 def raise_attention(lane: str, sid: str, session: str, cwd: str | None, reason: str,
@@ -877,6 +1111,8 @@ def update_slots(st: dict, ag: dict, reg: dict, bl: dict, now: float) -> list[tu
         phase = session_phase(slot, a, reg, now)
         if phase in ("finished", "lost"):
             del st["sessions"][sid]
+            if slot.get("session"):  # its end was handled here: reap_step won't re-ask
+                st["ended_owners"] = (st.get("ended_owners", []) + [slot["session"]])[-ENDED_OWNERS_MAX:]
             group = "naming" if slot["lane"].startswith("naming") else slot["lane"]
             if (phase == "finished" and not is_codex(slot)
                     and progress_key(bl, slot["lane"]) == slot.get("progress_at_start")):
@@ -1141,8 +1377,17 @@ def codex_ended(st: dict, sid: str, slot: dict, ev: str, a: dict, now: float):
     if block:
         reason += f"; not restarting: {block}"
     log(f"codex: {reason}")
-    raise_attention(CODEX_LANE, sid, slot.get("session") or a.get("sessionId", ""), a.get("cwd"),
-                    reason, now)
+    session = slot.get("session") or a.get("sessionId", "")
+    text = last_assistant_text(transcript_path(session, a.get("cwd")))
+    # attention only when it stops the lane, the git log is unreadable, it left unlanded
+    # commits (a failed land), or it asks the owner
+    left = lane_unlanded(CODEX_LANE)
+    if left:
+        reason += f"; {left} unlanded commit(s) on lanes/{CODEX_LANE} (land failed?)"
+    if block or commits is None or left or left is None or not text.strip() or asks_owner(text):
+        raise_attention(CODEX_LANE, sid, session, a.get("cwd"), reason, now)
+    else:
+        recent_end(st, CODEX_LANE, sid, reason, text, now)
 
 
 def maybe_start_codex(st: dict, args, paused: dict, away: bool, now: float):
@@ -1194,6 +1439,9 @@ def waiting_reason(st: dict, cands_now: list[str], cands_if_away: list[str],
                    f"({AWAY_SECS // 60} min without input)")
     if codex_cfg.get("enabled") and st.get("codex_usage_wait") and st.get("codex_blocked"):
         why.append(f"codex lane: {st['codex_blocked']}")
+    if st.get("heal"):
+        why.append("self-heal is checking " + ", ".join(st["heal"].get("rows") or [])
+                   + " (blocked -> idea once evidence landed)")
     return "; ".join(why) or None
 
 
@@ -1228,6 +1476,8 @@ def tick(args) -> bool:
         _guarded(f"handling {ev} of session {sid}", handle_event, st, ev, sid, slots[sid], ag,
                  now)
     disk_low = _guarded("housekeeping", check_housekeeping, st, now)
+    self_heal(st, bl, reg, now)
+    _TICK["ag"] = ag
     write_state(st)
     # live lane sessions, minus the ones this pass just found finished (still listed until gone)
     live = {lane for lane, sid in live_lanes(ag, reg).items() if sid not in slots or sid in st["sessions"]}
@@ -1304,6 +1554,74 @@ def tick(args) -> bool:
     return False
 
 
+def _hm(t) -> str:
+    return time.strftime("%H:%M", time.localtime(float(t or 0)))
+
+
+def digest_text(st: dict, ag: dict, reg: dict, att: list[dict], now: float) -> str:
+    """One screen: sessions, the gate queue, attention, self-heal actions, leftovers to look at,
+    recent session ends."""
+    out = [f"# lanes digest {time.strftime('%Y-%m-%d %H:%M', time.localtime(now))}", ""]
+    out.append(f"max {read_max()}, sessions {len(st['sessions'])}"
+               + (f"; waiting: {st['waiting']}" if st.get("waiting") else "")
+               + ("; DISK LOW: no new sessions" if st.get("disk_low") else ""))
+    for sid, s in sorted(st["sessions"].items(), key=lambda kv: kv[1]["lane"])[:12]:
+        phase = session_phase(s, ag.get(sid), reg, now)
+        pos = gate_queue_position(reg, s["lane"], now, s.get("session"))
+        if phase == "running" and pos is not None:
+            phase = f"queued to land #{pos}"
+        out.append(f"- {s['lane']} {sid} {phase}, {int((now - s['started']) / 60)} min"
+                   + (f", row {s['row']}" if s.get("row") else ""))
+    q = [t for t in reg.get("gate_queue") or [] if isinstance(t, dict)]
+    if q:
+        out.append("gate queue: " + ", ".join(f"{t.get('lane')} (since {_hm(t.get('enqueued'))})"
+                                              for t in q[:6]))
+    out += ["", f"## attention ({len(att)})" + ("; clear: orchestrate.py ack <lane|all>"
+                                               if att else ": none")]
+    out += [f"- {i.get('lane')} {_hm(i.get('time'))} {i.get('reason')}: {i.get('path')}"
+            for i in att[-8:]]
+    heal = st.get("heal_log", [])[-8:]
+    if heal or st.get("heal"):
+        out += ["", "## self-heal"]
+        if st.get("heal"):
+            out.append(f"- running: heal.py land, checking {', '.join(st['heal'].get('rows') or [])}")
+        out += [f"- {_hm(h['t'])} {h['msg']}" for h in heal]
+    look = (st.get("leftovers") or []) + [f"tmp/{n}: untouched {TMP_STALE_DAYS}+ days"
+                                          for n in st.get("tmp_stale") or []]
+    if look:
+        out += ["", "## left for a look"] + [f"- {x}" for x in look[:8]]
+        if len(look) > 8:
+            out.append(f"- ... {len(look) - 8} more")
+    ends = st.get("recent_ends", [])[-6:]
+    if ends:
+        out += ["", "## recent ends"] + [f"- {_hm(e['t'])} {e['lane']} {e['sid']} {e['what']}: "
+                                         f"{e['summary']}" for e in ends]
+    return "\n".join(out) + "\n"
+
+
+def write_digest(st: dict, ag: dict, reg: dict, now: float):
+    text = digest_text(st, ag, reg, load_attention(), now)
+    try:
+        if DIGEST.read_text(encoding="utf-8") == text:
+            return
+    except OSError:
+        pass
+    DIGEST.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=str(DIGEST.parent), prefix="digest.", suffix=".tmp")
+    with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+        f.write(text)
+    _replace(tmp, DIGEST)
+
+
+_TICK: dict = {"ag": None}  # the last good agents listing, for the digest
+
+
+def digest_after_tick():
+    if _TICK["ag"] is None:
+        return
+    write_digest(load_state(), _TICK["ag"], read_json(REGISTRY, {"lanes": {}}), time.time())
+
+
 _LAST_GOOD: dict = {"st": None, "bad": 0}
 CORRUPT_TICKS = 3
 
@@ -1344,11 +1662,30 @@ def handle_event(st: dict, ev: str, sid: str, slot: dict, ag: dict, now: float):
             f"look: claude attach {sid}")
     if is_codex(slot) and ev != "stalled":
         codex_ended(st, sid, slot, ev, a, now)
-    elif ev != "finished":
-        reason = {"no-progress": "finished without changing its backlog",
-                  "lost": "session ended without closing its lane",
-                  "stalled": f"idle {STALL_SECS // 60} min with its lane open"}[ev]
-        raise_attention(lane, sid, session, a.get("cwd"), reason, now)
+        return
+    if ev == "stalled":
+        raise_attention(lane, sid, session, a.get("cwd"),
+                        f"idle {STALL_SECS // 60} min with its lane open", now)
+        return
+    # An ended session needs the owner only if it asks something or left work unlanded (its
+    # land failed); anything else goes to the digest.
+    text = last_assistant_text(transcript_path(session, a.get("cwd")))
+    left = lane_unlanded(lane)
+    what = {"finished": "finished", "no-progress": "finished without changing its backlog",
+            "lost": "session ended without closing its lane"}[ev]
+    if left:
+        raise_attention(lane, sid, session, a.get("cwd"),
+                        f"{what}; {left} unlanded commit(s) on its lane (land failed?)", now)
+    elif left is None:
+        raise_attention(lane, sid, session, a.get("cwd"),
+                        f"{what}; could not read its lane branch (unlanded work?)", now)
+    elif not text.strip():
+        raise_attention(lane, sid, session, a.get("cwd"),
+                        f"{what}; its last message is unreadable (it may ask something)", now)
+    elif asks_owner(text):
+        raise_attention(lane, sid, session, a.get("cwd"), f"{what}; it asks the owner", now)
+    else:
+        recent_end(st, lane, sid, what, text, now)
 
 
 def cmd_run(args):
@@ -1376,7 +1713,9 @@ def cmd_run(args):
     try:
         while True:
             try:
-                if not tick(args):
+                more = tick(args)
+                _guarded("writing the digest", digest_after_tick)
+                if not more:
                     break
             except Exception as e:  # noqa: BLE001 - keep the loop alive; the next pass retries
                 log(f"error in this pass: {type(e).__name__}: {e}")
@@ -1441,6 +1780,12 @@ def cmd_status(_args):
               + ("" if not any(p.get("when_away") for p in paused.values()) else
                  f"   [owner idle {int(idle // 60)} min; away at {AWAY_SECS // 60}]" if idle is not None
                  else "   [owner idle time unknown: when-away lanes stay paused]"))
+    if st.get("heal"):
+        print(f"self-heal: checking {', '.join(st['heal'].get('rows') or [])} (blocked -> idea)")
+    for h in st.get("heal_log", [])[-3:]:
+        print(f"self-heal {time.strftime('%m-%d %H:%M', time.localtime(h['t']))}: {h['msg']}")
+    if DIGEST.is_file():
+        print(f"digest: {DIGEST}")
     att = load_attention()
     if att:
         print(f"attention ({len(att)}; clear with: orchestrate.py ack <lane|all>):")

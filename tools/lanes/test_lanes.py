@@ -1655,6 +1655,11 @@ class LaneTest(unittest.TestCase):
         self.assertEqual(self.L("s1", "close", "naming-a"), 0, self.last)
         self.assertEqual(self.L("s2", "open", "naming-a"), 0, self.last)
 
+    def test_open_heal_is_reserved_for_heal_sessions(self):
+        self.assertEqual(self.L("s1", "open", "heal"), 1)
+        self.assertIn("reserved for the orchestrator's self-heal", self.last)
+        self.assertEqual(self.L("heal-1-2", "open", "heal"), 0, self.last)
+
     def test_claims(self):
         self.L("s1", "open", "a"); self.L("s2", "open", "b")
         self.assertEqual(self.L("s1", "claim", "a", "path:src/*.c", "topic:row:r1"), 0, self.last)
@@ -2065,6 +2070,160 @@ class LaneTest(unittest.TestCase):
         self.assertEqual(self.L("s1", "open", "a"), 0, self.last)
         self.assertEqual(self.L("s1", "close", "a", "--remove", "--force"), 0, self.last)
         self.assertIn("kept branch lanes/a", self.last)
+
+    def test_tidy_removes_only_closed_lanes_leftovers(self):
+        ctx = lanes.Ctx(self.main, "orch")
+        # lane a: landed branch and an empty folder left behind after close
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n", "add b")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertEqual(self.L("s1", "close", "a"), 0, self.last)
+        sh("worktree", "remove", "--force", str(self.wt("a")), cwd=self.main)
+        (self.wt("a") / "build" / "x").mkdir(parents=True)  # empty dirs only
+        # lane b: closed with unlanded work, folder not empty: kept, reported
+        self.L("s2", "open", "b")
+        self.commit("b", "src/c.c", "int c;\n", "add c")
+        self.assertEqual(self.L("s2", "close", "b", "--force"), 0, self.last)
+        sh("worktree", "remove", "--force", str(self.wt("b")), cwd=self.main)
+        self.wt("b").mkdir()
+        (self.wt("b") / "keep.txt").write_text("x", newline="\n")
+        # lane c: still owned: untouched even with a landed branch
+        self.L("s3", "open", "c")
+        self.assertEqual(lanes.tidy_leftovers(ctx, dry_run=True),
+                         [("would", f"folder {self.wt('a')}", ""),
+                          ("would", "branch lanes/a", ""),
+                          ("look", f"folder {self.wt('b')}", "not a worktree and not empty; inspect it"),
+                          ("look", "branch lanes/b", "1 unlanded commit(s); kept")])
+        self.assertTrue(self.wt("a").exists())
+        got = lanes.tidy_leftovers(ctx)
+        self.assertEqual([g[0] for g in got], ["done", "done", "look", "look"])
+        self.assertFalse(self.wt("a").exists())
+        self.assertFalse(lanes.git_ok("rev-parse", "--verify", "-q", "refs/heads/lanes/a",
+                                      cwd=self.main))
+        self.assertTrue((self.wt("b") / "keep.txt").exists())
+        self.assertTrue(lanes.git_ok("rev-parse", "--verify", "-q", "refs/heads/lanes/b",
+                                     cwd=self.main))
+        self.assertTrue(self.wt("c").exists())
+        self.assertTrue(lanes.git_ok("rev-parse", "--verify", "-q", "refs/heads/lanes/c",
+                                     cwd=self.main))
+
+    def test_empty_tree_refuses_a_junctioned_or_linked_folder(self):
+        from unittest.mock import patch
+        d = self.tmp / "emptydir"
+        d.mkdir()
+        self.assertTrue(lanes.empty_tree(d))
+        with patch.object(lanes.os.path, "isjunction", return_value=True, create=True):
+            self.assertFalse(lanes.empty_tree(d))
+
+    def test_tidy_failure_is_reported_not_raised(self):
+        ctx = lanes.Ctx(self.main, "orch")
+        self.L("s1", "open", "a")
+        self.assertEqual(self.L("s1", "close", "a"), 0, self.last)
+        sh("worktree", "remove", "--force", str(self.wt("a")), cwd=self.main)
+        real = lanes.git
+
+        def locked(*a, **k):
+            if a[:2] == ("branch", "-D"):
+                raise RuntimeError("Unable to create '.git/packed-refs.lock': File exists")
+            return real(*a, **k)
+        from unittest.mock import patch
+        with patch.object(lanes, "git", side_effect=locked):
+            got = lanes.tidy_leftovers(ctx)
+        self.assertEqual([(g[0], g[1]) for g in got], [("failed", "branch lanes/a")])
+        self.assertEqual([g[0] for g in lanes.tidy_leftovers(ctx)], ["done"])  # retried later
+
+    def test_heal_land_flips_a_blocked_row_end_to_end(self):
+        import heal
+        stub = self.main / "tools" / "safe_remove_worktree.ps1"  # untracked stand-in
+        stub.write_text(f"param($p, [switch]$Force)\ngit -C '{self.main}' worktree remove --force $p\n"
+                        "exit $LASTEXITCODE\n", newline="\n")
+        p = self.main / heal.BACKLOG
+        p.parent.mkdir(parents=True)
+        head = "id\tkind\tstage\tdraft\tnote\n"
+        for text, msg in ((head + "r\tdata\tidea\t-\tn\n", "add"),
+                          (head + "r\tdata\tblocked\t-\tn\n", "block"),
+                          (head + "r\tdata\tblocked\t-\tn EVIDENCE cap-1 (trace-a 2026-11-03)\n", "evidence")):
+            p.write_text(text, newline="\n")
+            sh("add", "-A", cwd=self.main)
+            sh("commit", "-q", "-m", msg, cwd=self.main)
+        sh("push", "-q", "origin", "main", cwd=self.main)
+        self.assertEqual(heal.cmd_land(), 0, (self.main / "tmp" / "lanes-state" / "logs" /
+                                              "heal.log").read_text())
+        res = json.loads((self.main / "tmp" / "lanes-state" / "heal.json").read_text())
+        self.assertEqual((res["step"], res["rows"]), ("landed", ["r"]))
+        self.assertIn("r\tdata\tidea\t-\tUnblocked (heal.py)", self.main_file(heal.BACKLOG))
+        msg = sh("log", "-1", "--format=%B", "main", cwd=self.main)
+        self.assertIn("Lane-Replay: python3 tools/lanes/heal.py apply", msg)
+        e = lanes.Ctx(self.main, "x").load()["lanes"]["heal"]
+        self.assertIsNone(e["owner"])
+        self.assertFalse(self.wt("heal").exists())
+        # nothing left to move: the next run lands nothing
+        self.assertEqual(heal.cmd_land(), 0)
+        res = json.loads((self.main / "tmp" / "lanes-state" / "heal.json").read_text())
+        self.assertEqual(res["step"], "nothing")
+        self.assertFalse(self.wt("heal").exists())  # the scan alone opened nothing
+
+    def test_heal_land_failure_leaves_the_lane_clean_for_the_next_run(self):
+        import heal
+        from unittest.mock import patch
+        stub = self.main / "tools" / "safe_remove_worktree.ps1"
+        stub.write_text(f"param($p, [switch]$Force)\ngit -C '{self.main}' worktree remove --force $p\n"
+                        "exit $LASTEXITCODE\n", newline="\n")
+        p = self.main / heal.BACKLOG
+        p.parent.mkdir(parents=True)
+        head = "id\tkind\tstage\tdraft\tnote\n"
+        for text, msg in ((head + "r\tdata\tblocked\t-\tn\n", "block"),
+                          (head + "r\tdata\tblocked\t-\tn EVIDENCE c (trace-a 2026-11-03)\n", "ev")):
+            p.write_text(text, newline="\n")
+            sh("add", "-A", cwd=self.main)
+            sh("commit", "-q", "-m", msg, cwd=self.main)
+        sh("push", "-q", "origin", "main", cwd=self.main)
+        real_git = heal.git
+
+        def boom(*a, **k):
+            if a[:1] == ("add",):
+                raise RuntimeError("index.lock exists")
+            return real_git(*a, **k)
+        with patch.object(heal, "git", side_effect=boom):
+            self.assertEqual(heal.cmd_land(), 3)
+        self.assertEqual(sh("status", "--porcelain", "--untracked-files=no", cwd=self.wt("heal")), "")
+        self.assertIsNone(lanes.Ctx(self.main, "x").load()["lanes"]["heal"]["owner"])
+        self.assertEqual(heal.cmd_land(), 0, (self.main / "tmp" / "lanes-state" / "logs" /
+                                              "heal.log").read_text())
+        self.assertIn("r\tdata\tidea\t", self.main_file(heal.BACKLOG))
+
+    def test_heal_refuses_a_lane_path_that_is_not_its_own(self):
+        import heal
+        from unittest.mock import patch
+        from types import SimpleNamespace
+        fake = SimpleNamespace(returncode=0, stdout="\n")
+        with patch.object(heal.subprocess, "run", return_value=fake):
+            self.assertIsNone(heal.lane_dir(lambda s: None))
+        fake.stdout = str(self.main) + "\n"
+        with patch.object(heal.subprocess, "run", return_value=fake):
+            self.assertIsNone(heal.lane_dir(lambda s: None))
+        fake.stdout = str(self.tmp / "wts" / "ln-notheal") + "\n"  # ends in "heal", wrong lane
+        with patch.object(heal.subprocess, "run", return_value=fake):
+            self.assertIsNone(heal.lane_dir(lambda s: None))
+        fake.stdout = str(self.tmp / "wts" / "ln-heal") + "\n"
+        with patch.object(heal.subprocess, "run", return_value=fake):
+            self.assertEqual(heal.lane_dir(lambda s: None), self.tmp / "wts" / "ln-heal")
+
+    def test_reap_closes_only_an_unchanged_idle_owner(self):
+        ctx = lanes.Ctx(self.main, "orch")
+        self.L("s1", "open", "a")
+        self.L("s1", "claim", "a", "path:src/**")
+        self.assertFalse(lanes.reap_lane(ctx, "a", "someone-else", "gone"))
+        ctx.update(lambda reg: reg.setdefault("gate_queue", []).append({"lane": "a"}))
+        self.assertFalse(lanes.reap_lane(ctx, "a", "s1", "gone"))  # queued to land
+        ctx.update(lambda reg: reg.__setitem__("gate_queue", []))
+        self.assertTrue(lanes.reap_lane(ctx, "a", "s1", "gone"))
+        e = ctx.load()["lanes"]["a"]
+        self.assertIsNone(e["owner"])
+        self.assertEqual(e["claims"], [])
+        self.assertEqual(e["reaped"]["owner"], "s1")
+        self.assertTrue(self.wt("a").exists())  # worktree kept for the next session
+        self.assertEqual(self.L("s2", "open", "a"), 0, self.last)
 
     def test_mark_landed_failure_leaves_main_unmoved(self):
         # tenth review S1: the record is written before main moves

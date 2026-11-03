@@ -748,12 +748,17 @@ class Tick(unittest.TestCase):
                                                  "agents", "sh", "read_json", "PAUSED",
                                                  "CODEX_FILE", "ATTENTION_DIR", "CODEX_BRIEF",
                                                  "transcript_path", "bridge_status", "owner_away",
-                                                 "disk_free_gb", "stale_tmp_dirs")}
+                                                 "disk_free_gb", "stale_tmp_dirs",
+                                                 "self_heal", "lane_unlanded", "DIGEST")}
+        o.self_heal = lambda *a: None  # never tidy / reap / unblock the real repo
+        o.lane_unlanded = lambda lane: self.unlanded.get(lane, 0)
+        self.unlanded = {}
         o.disk_free_gb = lambda path=None: 50.0  # never the machine's real free space
         o.stale_tmp_dirs = lambda root, now, days=None: []  # never scan the real tmp/
         o.STATE, o.MAX_FILE = self.d / "state.json", self.d / "max"
         o.PAUSED, o.CODEX_FILE = self.d / "paused.json", self.d / "codex.json"
         o.ATTENTION_DIR, o.CODEX_BRIEF = self.d / "att", self.d / "brief.md"
+        o.DIGEST = self.d / "digest.md"
         o.CODEX_BRIEF.write_text("brief", encoding="utf-8")
         o.transcript_path = lambda session, cwd, root=None: None
         self.bridge = {"clear": True, "usage": {"primary": {"usedPercent": 10},
@@ -1009,18 +1014,58 @@ class Tick(unittest.TestCase):
         self.assertFalse(o.tick(self.args))
         self.assertEqual(self.started, [])
 
-    def test_no_progress_raises_attention(self):
+    def _end_pins(self, text="Session complete."):
         o.write_max(1)
         o.tick(self.args)
         sid = next(iter(o.load_state()["sessions"]))
         self.reg["lanes"]["pins"] = {"owner": None, "closed": time.time()}
         self.listing[sid]["state"] = "done"
-        o.tick(self.args)
+        with patch.object(o, "last_assistant_text", return_value=text):
+            o.tick(self.args)
+        return sid
+
+    def test_no_progress_question_raises_attention(self):
+        sid = self._end_pins("Row pins-x needs a ruling. Should I drop it or keep it?")
         att = o.load_attention()
         self.assertEqual([(i["lane"], i["sid"]) for i in att], [("pins", sid)])
+        self.assertIn("asks the owner", att[0]["reason"])
         self.assertTrue(Path(att[0]["path"]).is_file())
         o.main(["ack", "all"])
         self.assertEqual(o.load_attention(), [])
+
+    def test_no_progress_without_question_goes_to_digest(self):
+        sid = self._end_pins("Nothing to do: the row is claimed elsewhere. Session complete.")
+        self.assertEqual(o.load_attention(), [])
+        ends = o.load_state()["recent_ends"]
+        self.assertEqual([(e["lane"], e["sid"]) for e in ends], [("pins", sid)])
+        o.digest_after_tick()
+        self.assertIn("pins " + sid, o.DIGEST.read_text(encoding="utf-8"))
+
+    def test_codex_unlanded_commits_raise_attention_on_strike_one(self):
+        # review round 3: a failed codex land must not go to the digest only
+        o.main(["codex", "on"])
+        o.write_max(1)
+        o.tick(self.args)
+        self.unlanded["codex"] = 1
+        with patch.object(o, "last_assistant_text", return_value="Land failed at gate 4."):
+            self._finish_codex()
+        att = [i for i in o.load_attention() if i["lane"] == "codex"]
+        self.assertEqual(len(att), 1)
+        self.assertIn("1 unlanded commit(s)", att[0]["reason"])
+
+    def test_unreadable_last_message_raises_attention(self):
+        # review round 2: an empty / unreadable message may hide a question
+        sid = self._end_pins("")
+        att = o.load_attention()
+        self.assertEqual([(i["lane"], i["sid"]) for i in att], [("pins", sid)])
+        self.assertIn("unreadable", att[0]["reason"])
+
+    def test_unlanded_commits_at_end_raise_attention(self):
+        self.unlanded["pins"] = 2
+        sid = self._end_pins()
+        att = o.load_attention()
+        self.assertEqual([(i["lane"], i["sid"]) for i in att], [("pins", sid)])
+        self.assertIn("2 unlanded commit(s)", att[0]["reason"])
 
     def test_ack_never_touches_runner_state(self):
         o.update_attention(lambda items: items + [{"lane": "x", "sid": "1"}])
@@ -1221,13 +1266,16 @@ class Tick(unittest.TestCase):
         o.write_max(1)
         o.tick(self.args)
         self.assertEqual(self.started, ["/foundation-session pins --row f0", o.CODEX_PROMPT])
-        self._finish_codex()   # strike 1: restarted
-        self._finish_codex()   # strike 2: not restarted
+        with patch.object(o, "last_assistant_text", return_value="Landed nothing; done."):
+            self._finish_codex()   # strike 1: restarted
+            self._finish_codex()   # strike 2: not restarted
         st = o.load_state()
         self.assertEqual(len(st["codex_history"]), 2)
         self.assertFalse(any(v.get("kind") == "codex" for v in st["sessions"].values()))
         self.assertIn("landed nothing", st["codex_blocked"])
-        self.assertEqual(sum(1 for i in o.load_attention() if i["lane"] == "codex"), 2)
+        # strike 1 only goes to the digest; strike 2 stops the lane: attention
+        self.assertEqual(sum(1 for i in o.load_attention() if i["lane"] == "codex"), 1)
+        self.assertEqual([e["lane"] for e in st["recent_ends"]], ["codex"])
         self.assertEqual(self.started.count(o.CODEX_PROMPT), 2)
         o.main(["codex", "on"])  # re-arms without an off first
         o.tick(self.args)
@@ -1529,6 +1577,304 @@ class Transcript(unittest.TestCase):
         p = self.dir / "g.jsonl"
         p.write_bytes(b"\xff\xfe not json\n[1,2]\n")
         self.assertEqual(o.last_assistant_text(p), "")
+
+
+import heal  # noqa: E402
+
+HEAD = "id\tkind\tstage\tdraft\tnote"
+
+
+def rows(*specs):
+    return heal.parse_rows("\n".join([HEAD] + [f"{i}\tdata\t{s}\t-\t{n}" for i, s, n in specs]))
+
+
+class Heal(unittest.TestCase):
+    def test_unblocks_only_rows_with_evidence_since_blocking(self):
+        history = [  # newest first
+            ("c4", rows(("a", "blocked", "waits. EVIDENCE cap-1 (trace-a 2026-11-03, x) EVIDENCE cap-2 (trace-b 2026-11-03, y)"),
+                        ("b", "blocked", "waits. EVIDENCE old-1 (trace-a 2026-11-03, x)"),
+                        ("c", "idea", "EVIDENCE z"))),
+            ("c3", rows(("a", "blocked", "waits. EVIDENCE cap-1 (trace-a 2026-11-03, x)"),
+                        ("b", "blocked", "waits. EVIDENCE old-1 (trace-a 2026-11-03, x)"), ("c", "idea", ""))),
+            ("c2", rows(("a", "blocked", "waits."), ("b", "blocked", "waits. EVIDENCE old-1 (trace-a 2026-11-03, x)"),
+                        ("c", "idea", ""))),
+            ("c1", rows(("a", "idea", "waits."), ("b", "idea", "EVIDENCE old-1 (trace-a 2026-11-03, x)"),
+                        ("c", "idea", ""))),
+        ]
+        self.assertEqual(heal.unblockable(history), [("a", "c2", 2)])
+
+    def test_reblocked_row_counts_from_the_latest_block(self):
+        history = [("c3", rows(("a", "blocked", "EVIDENCE e1 (trace-a 2026-11-03, x)"))),
+                   ("c2", rows(("a", "idea", "EVIDENCE e1 (trace-a 2026-11-03, x)"))),
+                   ("c1", rows(("a", "blocked", "")))]
+        self.assertEqual(heal.unblockable(history), [])
+
+    def test_walk_stops_once_every_blocked_row_is_resolved(self):
+        read = []
+
+        def gen():
+            for sha, r in [("c3", rows(("a", "blocked", "EVIDENCE e (trace-a 2026-11-03, x)"))),
+                           ("c2", rows(("a", "blocked", ""))), ("c1", rows(("a", "idea", ""))),
+                           ("c0", None)]:
+                read.append(sha)
+                if r is None:
+                    raise AssertionError("read past the blocking commit")
+                yield sha, r
+        self.assertEqual(heal.unblockable(gen()), [("a", "c2", 1)])
+        self.assertEqual(read, ["c3", "c2", "c1"])
+        # nothing blocked: only the current version is read
+        read.clear()
+        self.assertEqual(heal.unblockable(iter([("c9", rows(("a", "idea", "")))])), [])
+
+    def test_lowercase_evidence_prose_does_not_count(self):
+        history = [("c2", rows(("a", "blocked", "new evidence captured; waits"))),
+                   ("c1", rows(("a", "idea", "")))]
+        self.assertEqual(heal.unblockable(history), [])
+
+    def test_evidence_prose_and_own_prefix_do_not_count(self):
+        # review round 1: a note edit that only talks about EVIDENCE lines is not a capture
+        history = [("c3", rows(("a", "blocked", "still blocked: the two EVIDENCE lines below "
+                                "(trace-a, landed earlier) are inconclusive. Unblocked "
+                                "(heal.py): 1 new evidence line(s) since c0 blocked it."))),
+                   ("c2", rows(("a", "blocked", ""))), ("c1", rows(("a", "idea", "")))]
+        self.assertEqual(heal.unblockable(history), [])
+
+    def test_real_evidence_line_forms_count(self):
+        for line in ("EVIDENCE hud-x-1 (trace-a 2026-11-02, poke-and-diff)",
+                     "EVIDENCE (trace-a 2026-11-03, row trace-hud-records): hud-eff-1",
+                     "EVIDENCE cpunav-padscript-{8ac,8b4}-1 (trace-b 2026-11-02, row r)",
+                     "EVIDENCE static stage map (trace-b 2026-11-02, row r)"):
+            self.assertEqual(heal.evidence_count("x. " + line), 1, line)
+
+    def test_rewrite_flips_stage_and_keeps_other_rows(self):
+        text = HEAD + "\na\tdata\tblocked\t-\tnote a\nb\tdata\tidea\t-\tnote b\n"
+        out = heal.rewrite(text, [("a", "c2abcdef0123", 1)])
+        self.assertEqual(out.splitlines()[1].split("\t")[2], "idea")
+        self.assertTrue(out.splitlines()[1].split("\t")[4].startswith(
+            "Unblocked (heal.py): 1 new evidence line(s) since c2abcdef0 blocked it. note a"))
+        self.assertEqual(out.splitlines()[2], "b\tdata\tidea\t-\tnote b")
+        self.assertTrue(out.endswith("\n"))
+
+    def test_apply_on_a_git_history(self):
+        import subprocess
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            bl_path = root / heal.BACKLOG
+            bl_path.parent.mkdir(parents=True)
+
+            def commit(text, msg):
+                bl_path.write_text(text, encoding="utf-8", newline="\n")
+                for c in (["add", "-A"], ["-c", "user.email=t@e", "-c", "user.name=t", "commit",
+                                          "-q", "-m", msg]):
+                    subprocess.run(["git", *c], cwd=root, check=True, capture_output=True)
+            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
+            commit(HEAD + "\na\tdata\tidea\t-\tx\n", "add")
+            commit(HEAD + "\na\tdata\tblocked\t-\tx\n", "block")
+            commit(HEAD + "\na\tdata\tblocked\t-\tx EVIDENCE cap-1 (trace-a 2026-11-03)\n", "evidence")
+            self.assertEqual([m[0] for m in heal.cmd_apply(root)], ["a"])
+            self.assertIn("\tidea\t", bl_path.read_text(encoding="utf-8"))
+            # the dirty tree is now the current version: nothing more to move
+            self.assertEqual(heal.unblockable(heal.load_history(root)), [])
+
+
+class SelfHeal(unittest.TestCase):
+    OWNER = "0123abcd-0000-4000-8000-000000000001"
+
+    def test_zombie_candidates(self):
+        r = reg(a={"owner": self.OWNER}, b={"owner": "heal-12-34"}, c={"owner": None},
+                d={"owner": "1111abcd-0000-4000-8000-000000000002"},
+                e={"owner": "2222abcd-0000-4000-8000-000000000003"})
+        alive = {"1111abcd-0000-4000-8000-000000000002"}
+        tracked = {"2222abcd-0000-4000-8000-000000000003"}
+        self.assertEqual(o.zombie_candidates(r, alive, tracked), {"a": self.OWNER})
+
+    def test_reap_needs_several_listings_and_a_quiet_owner(self):
+        r = reg(a={"owner": self.OWNER, "heartbeat": NOW - 7200, "claims": ["path:x/**"]})
+        state = st()
+        reaped = []
+        with patch.dict(o._ALIVE, ok=True, sessions=set()), \
+                patch.object(o, "owner_quiet_secs", return_value=o.ZOMBIE_IDLE_SECS), \
+                patch.object(o.lanes_mod, "reap_lane",
+                             side_effect=lambda ctx, lane, owner, why: reaped.append(lane) or True), \
+                patch.object(o, "lanes_ctx", return_value=None), \
+                patch.object(o, "load_attention", return_value=[]), redirect_stdout(io.StringIO()):
+            for _ in range(o.MISS_TICKS - 1):
+                o.reap_step(state, r, NOW)
+            self.assertEqual(reaped, [])
+            o.reap_step(state, r, NOW)
+        self.assertEqual(reaped, ["a"])
+        self.assertIn("closed a: owner 0123abcd is gone", state["heal_log"][-1]["msg"])
+        self.assertEqual(state["zombie"], {})
+
+    def test_reap_holds_a_lane_with_unacked_attention(self):
+        # review round 2: an ended session may wait on the owner's answer; keep its lane
+        r = reg(a={"owner": self.OWNER, "heartbeat": NOW - 7200})
+        state = st()
+        with patch.dict(o._ALIVE, ok=True, sessions=set()), \
+                patch.object(o, "owner_quiet_secs", return_value=o.ZOMBIE_IDLE_SECS), \
+                patch.object(o, "load_attention", return_value=[{"lane": "a", "sid": "x"}]), \
+                patch.object(o.lanes_mod, "reap_lane", side_effect=AssertionError("reaped")):
+            for _ in range(o.MISS_TICKS + 2):
+                o.reap_step(state, r, NOW)
+
+    def test_reap_waits_while_the_owner_still_writes(self):
+        r = reg(a={"owner": self.OWNER, "heartbeat": NOW})
+        state = st()
+        with patch.dict(o._ALIVE, ok=True, sessions=set()), \
+                patch.object(o, "owner_quiet_secs", return_value=60), \
+                patch.object(o.lanes_mod, "reap_lane", side_effect=AssertionError("reaped")):
+            for _ in range(o.MISS_TICKS + 2):
+                o.reap_step(state, r, NOW)
+        self.assertEqual(state["zombie"]["a"]["n"], o.MISS_TICKS + 2)
+
+    def test_reap_skips_a_failed_listing(self):
+        state = st()
+        with patch.dict(o._ALIVE, ok=False, sessions=set()):
+            o.reap_step(state, reg(a={"owner": self.OWNER}), NOW)
+        self.assertNotIn("zombie", state)
+
+    def test_asks_owner(self):
+        # review round 1: real attention items the first heuristic missed
+        self.assertTrue(o.asks_owner("Can you run that? I'll then land the three commits."))
+        self.assertTrue(o.asks_owner("If you want new Codex work, one of these needs your "
+                                     "decision:\n- a\n- b"))
+        self.assertTrue(o.asks_owner("The row needs an owner ruling on the two names."))
+        self.assertTrue(o.asks_owner("Decision needed: keep or drop row x."))
+        # review round 3: the ask leads, a long status list follows
+        self.assertTrue(o.asks_owner("The land needs you to run one command. Please run: x\n"
+                                     + "- status line\n" * 200))
+        self.assertTrue(o.asks_owner("Waiting on you to approve the drop."))
+        self.assertTrue(o.asks_owner("Done.\n\nShould I drop row x, or keep it?"))
+        self.assertTrue(o.asks_owner("The row needs an owner ruling: which name?\n"))
+        self.assertFalse(o.asks_owner("Unit landed (abc123). Session complete."))
+        self.assertFalse(o.asks_owner(""))
+
+    def test_unblock_starts_heal_once_per_head(self):
+        b = {"naming": [{"id": "a", "stage": "blocked", "note": ""}], "foundation": []}
+        state = st()
+        started = []
+
+        class P:
+            pid = 4242
+        with patch.object(o, "git_main", return_value="h1\n"), \
+                patch.object(heal, "load_history", return_value=iter([])), \
+                patch.object(heal, "unblockable", return_value=[("a", "c2", 1)]), \
+                patch.object(o.subprocess, "Popen", side_effect=lambda *a, **k: started.append(a) or P), \
+                patch.object(o, "pid_alive", return_value=True), redirect_stdout(io.StringIO()):
+            o.unblock_step(state, b, reg(), NOW)
+            o.unblock_step(state, b, reg(), NOW)  # still running: not started again
+        self.assertEqual(len(started), 1)
+        self.assertEqual(state["heal"]["rows"], ["a"])
+        self.assertIn("self-heal is checking a", o.waiting_reason(state, [], [], {}))
+
+    def test_heal_run_past_the_cap_is_reported_once_and_never_overlapped(self):
+        # review round 3: a run past 3 h must not be dropped while alive (a second run in ln-heal)
+        state = st()
+        state["heal"] = {"pid": 7, "started": NOW - o.HEAL_MAX_SECS - 1, "rows": ["a"], "head": "h0"}
+        b = {"naming": [{"id": "a", "stage": "blocked", "note": ""}], "foundation": []}
+        raised = []
+        with patch.object(o, "pid_alive", return_value=True), \
+                patch.object(o, "git_main", return_value="h1\n"), \
+                patch.object(o, "note_attention", side_effect=lambda *a: raised.append(a[1])), \
+                patch.object(o.subprocess, "Popen", side_effect=AssertionError("second run")), \
+                redirect_stdout(io.StringIO()):
+            self.assertTrue(o.heal_running(state, NOW))
+            o.unblock_step(state, b, reg(), NOW)
+            o.unblock_step(state, b, reg(), NOW)
+        self.assertEqual(raised, ["self-heal run still going after 3 h"])
+        self.assertEqual(state["heal"]["pid"], 7)
+
+    def test_heal_failure_repeating_after_ack_is_not_re_raised(self):
+        # review round 3: the same failure on every main move raises once; success re-arms it
+        import json
+        import tempfile
+        raised = []
+        with tempfile.TemporaryDirectory() as d, \
+                patch.object(o, "HEAL_RESULT", Path(d) / "heal.json"), \
+                patch.object(o, "REGISTRY", Path(d) / "registry.json"), \
+                patch.object(o, "pid_alive", return_value=False), \
+                patch.object(o, "note_attention", side_effect=lambda *a: raised.append(a[1])), \
+                redirect_stdout(io.StringIO()):
+            state = st()
+            for k, (rc, step) in enumerate(((14, "land"), (14, "land"), (0, "landed"), (14, "land"))):
+                o.HEAL_RESULT.write_text(json.dumps({"rc": rc, "step": step, "rows": ["a"],
+                                                     "ended": NOW + k + 0.5}), encoding="utf-8")
+                state["heal"] = {"pid": 1, "started": NOW + k, "rows": ["a"], "head": f"h{k}"}
+                o.heal_finish(state, NOW + k + 1)
+        self.assertEqual(len(raised), 2)
+        self.assertIn("already raised", state["heal_log"][0]["msg"])
+
+    def test_reap_raises_an_untracked_owners_question_once_then_reaps(self):
+        # review round 3: an untracked session got no end handling; its question holds the lane
+        r = reg(a={"owner": self.OWNER, "heartbeat": NOW - 7200})
+        state = st()
+        reaped, raised, att = [], [], []
+        with patch.dict(o._ALIVE, ok=True, sessions=set()), \
+                patch.object(o, "owner_quiet_secs", return_value=o.ZOMBIE_IDLE_SECS), \
+                patch.object(o, "last_assistant_text", return_value="Should I drop row x?"), \
+                patch.object(o, "transcript_path", return_value=None), \
+                patch.object(o, "raise_attention",
+                             side_effect=lambda lane, *a: raised.append(lane) or att.append({"lane": lane})), \
+                patch.object(o, "load_attention", side_effect=lambda: list(att)), \
+                patch.object(o, "lanes_ctx", return_value=None), \
+                patch.object(o.lanes_mod, "reap_lane", side_effect=lambda c, lane, *a: reaped.append(lane) or True), \
+                redirect_stdout(io.StringIO()):
+            for _ in range(o.MISS_TICKS + 2):
+                o.reap_step(state, r, NOW)
+            self.assertEqual((raised, reaped), (["a"], []))
+            att.clear()  # the owner acks
+            o.reap_step(state, r, NOW)
+        self.assertEqual((raised, reaped), (["a"], ["a"]))
+
+    def test_reap_does_not_re_ask_for_an_owner_whose_end_was_handled(self):
+        r = reg(a={"owner": self.OWNER, "heartbeat": NOW - 7200})
+        state = st()
+        state["ended_owners"] = [self.OWNER]
+        reaped = []
+        with patch.dict(o._ALIVE, ok=True, sessions=set()), \
+                patch.object(o, "owner_quiet_secs", return_value=o.ZOMBIE_IDLE_SECS), \
+                patch.object(o, "last_assistant_text", side_effect=AssertionError("re-read")), \
+                patch.object(o, "load_attention", return_value=[]), \
+                patch.object(o, "lanes_ctx", return_value=None), \
+                patch.object(o.lanes_mod, "reap_lane", side_effect=lambda c, lane, *a: reaped.append(lane) or True), \
+                redirect_stdout(io.StringIO()):
+            for _ in range(o.MISS_TICKS):
+                o.reap_step(state, r, NOW)
+        self.assertEqual(reaped, ["a"])
+
+    def test_heal_failure_raises_attention_and_waits_for_main(self):
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as d, \
+                patch.object(o, "ATTENTION_DIR", Path(d) / "att"), \
+                patch.object(o, "HEAL_RESULT", Path(d) / "heal.json"), \
+                patch.object(o, "REGISTRY", Path(d) / "registry.json"), \
+                patch.object(o, "pid_alive", return_value=False), \
+                redirect_stdout(io.StringIO()):
+            o.HEAL_RESULT.write_text(json.dumps({"rc": 14, "step": "land", "log": "L",
+                                                 "ended": NOW + 5}), encoding="utf-8")
+            state = st()
+            state["heal"] = {"pid": 1, "started": NOW, "rows": ["a"], "head": "h1"}
+            o.heal_finish(state, NOW + 10)
+            self.assertNotIn("heal", state)
+            self.assertEqual(state["heal_failed_head"], "h1")
+            att = o.load_attention()
+        self.assertEqual([i["lane"] for i in att], ["heal"])
+        self.assertIn("failed at land (rc 14)", att[0]["reason"])
+
+    def test_digest_is_one_screen(self):
+        state = st({f"s{i}": slot(f"lane{i}", started=NOW - 60 * i) for i in range(20)})
+        state["heal_log"] = [{"t": NOW, "msg": f"m{i}"} for i in range(20)]
+        state["leftovers"] = [f"folder f{i}: look" for i in range(20)]
+        state["recent_ends"] = [{"t": NOW, "lane": "x", "sid": "1", "what": "finished",
+                                 "summary": "s"}] * 10
+        with patch.object(o, "read_max", return_value=3):
+            text = o.digest_text(state, {}, reg(), [{"lane": "y", "time": NOW, "reason": "r",
+                                                     "path": "p"}] * 12, NOW)
+        self.assertLessEqual(len(text.splitlines()), 60)
+        self.assertIn("## attention (12)", text)
+        self.assertIn("... 12 more", text)
 
 
 if __name__ == "__main__":

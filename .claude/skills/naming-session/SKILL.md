@@ -94,7 +94,8 @@ workable, change nothing, close the lane and stop (report why).
   the session ended, every lane commit must be on main (`lanes.py status` shows `unlanded=0`; land
   or drop what is left), then run `lanes.py close <lane> --remove`. It removes the lane and landing
   worktrees through `tools/safe_remove_worktree.ps1` and deletes the branch (never use a raw
-  `git worktree remove`). Remove the scratch you and your subagents made under main's `tmp/`
+  `git worktree remove`). An empty folder or the branch it leaves behind (a locked file or
+  packed-refs) is not reported: the orchestrator retries it (`lanes.py tidy`). Remove the scratch you and your subagents made under main's `tmp/`
   (e.g. `tmp/p3w<N>`, review copies, unconsumed `*.done` / `*.tmp` markers in `tmp/<lane>-done/` and that folder;
   CLAUDE.md: verify, then delete: resolve the folder to an absolute path, list it, confirm it is your own scratch, then `rm -rf "<absolute path>"` (never chained after `cd`, never a bare glob or a possibly-empty variable; a folder holding a worktree or junction goes through `tools/safe_remove_worktree.ps1`); the research extracts in `tmp/codex/` stay). Report one line per unit, say plainly that the session is complete, and
   stop. Don't hand off and don't wait on anything. The next session starts from the backlog.

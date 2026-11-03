@@ -1272,10 +1272,16 @@ def ensure_worktree(ctx: Ctx, lane: str) -> Path:
     return d
 
 
+RESERVED_HEAL_LANE = "heal"  # opened only by heal.py's own heal-<pid>-<time> sessions
+
+
 def cmd_open(ctx: Ctx, a):
     lane = a.lane
     if not LANE_RE.match(lane):
         raise Refuse(f"bad lane name '{lane}' (lowercase letters, digits, dashes)")
+    if lane == RESERVED_HEAL_LANE and not ctx.session.startswith("heal-"):
+        raise Refuse(f"lane '{lane}' is reserved for the orchestrator's self-heal "
+                     f"(tools/lanes/heal.py); pick another lane name")
     kind = a.kind or ("naming" if lane.startswith("naming") else "foundation")
 
     def take(reg):
@@ -1445,6 +1451,135 @@ def cmd_close(ctx: Ctx, a):
                 git("branch", "-D", br, cwd=ctx.main)  # every commit is in main (unlanded())
                 print(f"lanes: deleted branch {br} (all of it is on main)")
     return 0
+
+
+def registered_worktrees(ctx: Ctx) -> tuple[set[str], set[str]]:
+    """(normalized paths, checked-out branch refs) of every worktree git knows."""
+    paths, refs = set(), set()
+    for ln in git("worktree", "list", "--porcelain", cwd=ctx.main).splitlines():
+        if ln.startswith("worktree "):
+            paths.add(norm(Path(ln[9:])))
+        elif ln.startswith("branch "):
+            refs.add(ln[7:].strip())
+    return paths, refs
+
+
+def empty_tree(d: Path) -> bool:
+    """True when d holds only (nested) empty directories: no file, link or junction anywhere
+    (d itself included: a junctioned folder is never emptied through its target)."""
+    if d.is_symlink() or (hasattr(os.path, "isjunction") and os.path.isjunction(d)):
+        return False
+    for root, dirs, files in os.walk(d, followlinks=False):
+        if files:
+            return False
+        for x in dirs:
+            p = Path(root) / x
+            if p.is_symlink() or (hasattr(os.path, "isjunction") and os.path.isjunction(p)):
+                return False
+    return True
+
+
+def rmdir_tree(d: Path):
+    """Remove an empty_tree() directory bottom-up with rmdir only (never deletes a file)."""
+    for root, dirs, _ in sorted(os.walk(d, followlinks=False), key=lambda t: -len(t[0])):
+        os.rmdir(root)
+
+
+def tidy_leftovers(ctx: Ctx, dry_run: bool = False) -> list[tuple[str, str, str]]:
+    """What a `close --remove` left behind for a closed lane (no owner): an empty ln-<lane> or
+    lands/<lane> folder git no longer lists as a worktree, and a lanes/<lane> branch (or its
+    -land branch) that no worktree has checked out and whose every commit is on main.
+    Returns (status, what, detail) with status done | failed | look | would. Each removal
+    re-reads the registry under its mutex, so a session opening the lane meanwhile wins."""
+    if not dry_run:
+        git("worktree", "prune", cwd=ctx.main, check=False)
+    out = []
+    lanes = set(ctx.load()["lanes"])
+    pfx, bpfx = ctx.cfg["dir_prefix"], ctx.cfg["branch_prefix"]
+    if ctx.wt_root.is_dir():
+        lanes |= {p.name[len(pfx):] for p in ctx.wt_root.iterdir() if p.name.startswith(pfx)}
+    if (ctx.wt_root / "lands").is_dir():
+        lanes |= {p.name for p in (ctx.wt_root / "lands").iterdir()}
+    heads = git("for-each-ref", "--format=%(refname:short)", f"refs/heads/{bpfx}", cwd=ctx.main)
+    for b in heads.split():
+        name = b[len(bpfx):]
+        lanes.add(name[:-5] if name.endswith("-land") else name)
+
+    for lane in sorted(x for x in lanes if LANE_RE.match(x)):
+        def act(what: str, fn):
+            def do(reg):
+                if (reg["lanes"].get(lane) or {}).get("owner"):
+                    return "skip"
+                if dry_run:
+                    return "would"
+                fn()
+                return "done"
+            try:
+                st = ctx.update(do)
+            except Exception as e:  # noqa: BLE001 - a locked ref or folder: retried next time
+                out.append(("failed", what, f"{type(e).__name__}: {str(e).strip()[:200]}"))
+                return
+            if st != "skip":
+                out.append((st, what, ""))
+
+        if (ctx.load()["lanes"].get(lane) or {}).get("owner"):
+            continue
+        paths, refs = registered_worktrees(ctx)
+        for d in (ctx.lane_dir(lane), ctx.land_dir(lane)):
+            if not d.is_dir() or norm(d) in paths:
+                continue
+            if empty_tree(d):
+                def drop_dir(d=d):
+                    if norm(d) in registered_worktrees(ctx)[0] or not empty_tree(d):
+                        raise Refuse(f"{d} changed while being checked; left for the next pass")
+                    rmdir_tree(d)
+                act(f"folder {d}", drop_dir)
+            else:
+                out.append(("look", f"folder {d}", "not a worktree and not empty; inspect it"))
+        for br in (ctx.branch(lane), ctx.land_branch(lane)):
+            if not git_ok("rev-parse", "--verify", "-q", f"refs/heads/{br}", cwd=ctx.main):
+                continue
+            if f"refs/heads/{br}" in refs:
+                continue
+            left = unlanded(ctx, lane, br)
+            if left:
+                out.append(("look", f"branch {br}", f"{len(left)} unlanded commit(s); kept"))
+                continue
+            def drop_branch(br=br):
+                # re-checked under the mutex: no worktree took it, nothing unlanded appeared
+                if f"refs/heads/{br}" in registered_worktrees(ctx)[1] or unlanded(ctx, lane, br):
+                    raise Refuse(f"{br} changed while being checked; left for the next pass")
+                git("branch", "-D", br, cwd=ctx.main)
+            act(f"branch {br}", drop_branch)
+    return out
+
+
+def cmd_tidy(ctx: Ctx, a):
+    got = tidy_leftovers(ctx, a.dry_run)
+    for status, what, detail in got:
+        print(f"lanes: tidy {status}: {what}" + (f" ({detail})" if detail else ""))
+    if not got:
+        print("lanes: tidy: nothing left behind")
+    return 0
+
+
+def reap_lane(ctx: Ctx, lane: str, owner: str, reason: str) -> bool:
+    """Close a registration whose owner session is gone (the orchestrator decides that). Only if
+    the owner is unchanged, no land of the lane runs and it holds no gate ticket. Branch and
+    worktree are kept: the next session on the lane takes them over. True if closed."""
+    if land_running(ctx, lane):
+        return False
+
+    def do(reg):
+        e = reg["lanes"].get(lane) or {}
+        if e.get("owner") != owner:
+            return False
+        if any(isinstance(t, dict) and t.get("lane") == lane for t in reg.get("gate_queue", [])):
+            return False
+        e.update(owner=None, claims=[], closed=time.time(),
+                 reaped={"owner": owner, "at": time.time(), "reason": reason})
+        return True
+    return ctx.update(do)
 
 
 def cmd_path(ctx: Ctx, a):
@@ -2424,16 +2559,18 @@ def main(argv=None) -> int:
     s.add_argument("--force", action="store_true")
     s = sub.add_parser("path"); s.add_argument("lane"); s.add_argument("--wsl", action="store_true")
     s = sub.add_parser("recover"); s.add_argument("lane")
+    s = sub.add_parser("tidy", help="remove empty folders / landed branches closed lanes left")
+    s.add_argument("--dry-run", action="store_true")
     sub.add_parser("push")
     s = sub.add_parser("gate-mirror"); s.add_argument("--reset", action="store_true")
     a = p.parse_args(argv)
     try:
-        if a.cmd not in ("status", "path", "gate-mirror") and not a.session:
+        if a.cmd not in ("status", "path", "gate-mirror", "tidy") and not a.session:
             raise Refuse("no session id: $CLAUDE_CODE_SESSION_ID is unset (pass --session)")
         ctx = Ctx(find_main(Path(__file__).resolve().parent), a.session)
         return {"status": cmd_status, "open": cmd_open, "fresh": cmd_fresh, "drop": cmd_drop, "claim": cmd_claim,
                 "unclaim": cmd_unclaim, "land": cmd_land, "close": cmd_close,
-                "path": cmd_path, "recover": cmd_recover, "push": cmd_push,
+                "path": cmd_path, "recover": cmd_recover, "push": cmd_push, "tidy": cmd_tidy,
                 "gate-mirror": cmd_gate_mirror}[a.cmd](ctx, a)
     except Refuse as e:
         print(f"lanes: REFUSED: {e}", file=sys.stderr)
