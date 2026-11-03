@@ -2529,8 +2529,8 @@ typedef struct {
  * 0x58; it keeps it in g_row_menu_work_block's word 9 (menu_resource_root), and
  * gpu_AdvanceBufferCounterAndBuildDrawContext copies that into word 1 of the
  * draw context. After the head:
- * - unk_14..cursor_row_sheets (+0x14..+0x40): the twelve lists
- * reloc_RelocateTwelveListsAndLoadVabPack
+ * - sheets_over_white_tile..cursor_row_sheets (+0x14..+0x40): the twelve
+ * lists reloc_RelocateTwelveListsAndLoadVabPack
  * relocates (reloc_RelocateOffsetList: entries up to a 0 word, -1 entries
  * skipped). Their entries are sprite sheets (sheet_pairs pairs each sheet with
  * a -1), except confirm_list, menu_DrawConfirmSheetsAndDigitPairs's list
