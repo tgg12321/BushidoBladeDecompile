@@ -1,0 +1,8 @@
+{
+  "description": "versus-cpu-clear-retail re-run unchanged with BoneHitRec.unk_0E / unk_12 watches (write watch g_fighter_bone_hit_records/880; read watches g_fighter_bone_hit_records+0xE/2, +0x12/2, +0x86/2, +0x8A/2, +0x1C6/2, +0x1CA/2, +0x23E/2, +0x242/2 (unk_0E / unk_12 of records 0 and 6 of [0] / [1]); breakpoint fighter_ScaleBoneHitRecords; value dump of the 880 bytes at every phase start): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-BoneHitRec-unk_0E-versus-cpu-clear-retail-1/spec.json"
+  ],
+  "extends": "versus-cpu-clear-retail",
+  "refines": "versus-cpu-clear-retail"
+}
