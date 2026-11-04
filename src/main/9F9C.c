@@ -2373,10 +2373,11 @@ void fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAnd
     void) {
     s8 idx = g_fight_followup_fighter_index;
     Unk80101EC8Record *entry = &D_80101EC8[idx];
-    u16 a1 = entry->move_kind;
+    u16 followup_move_kind = entry->move_kind;
 
-    if (a1 != 0xA && entry->airborne_until_landing == 0 && a1 != 0x17 &&
-        a1 != 0x18 && entry->is_defeated == 0) {
+    if (followup_move_kind != 0xA && entry->airborne_until_landing == 0 &&
+        followup_move_kind != 0x17 && followup_move_kind != 0x18 &&
+        entry->is_defeated == 0) {
         motion_ResetVariantIndex(g_fight_followup_fighter_index);
         {
             MoveScript *common_script =
@@ -3887,17 +3888,19 @@ s32 fight_FindNearestStartPair(Vec3i32 *position) {
 s32 motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue(
     Unk80101EC8Record *fighter_record) {
     u8 *preferred_pair;
-    s32 val;
+    s32 opponent_motion_data_id;
     s32 i;
     s32 j;
 
     preferred_pair =
         g_motion_preferred_variant_nibble_pairs[g_fight_step_row_column];
-    val = g_fighter_motion_data_ids[fighter_record->other->character_data_index]
-                                   [fighter_record->other->weapon_id];
+    opponent_motion_data_id =
+        g_fighter_motion_data_ids[fighter_record->other->character_data_index]
+                                 [fighter_record->other->weapon_id];
     for (j = 0; j < 2; j++) {
         for (i = 0; i < 3; i++) {
-            if (preferred_pair[j] == ((val >> (i * 4)) & 0xF)) {
+            if (preferred_pair[j] ==
+                ((opponent_motion_data_id >> (i * 4)) & 0xF)) {
                 return i;
             }
         }

@@ -417,18 +417,18 @@ extern s32 memcard_RestoreSaveBlock(Unk800F34D8Save *);
  * g_memcard_request_status. The still-pending paths share the fail_store end
  * label (the shared-end-label recipe, .claude/rules/shared-end-label.md). */
 void memcard_PollFileCompletion(void) {
-    s32 ret;
+    s32 sw_event_code;
     s32 in_progress_status;
 
     switch (g_memcard_request_state) {
     case 4:
-        ret = memcard_PollSwEvents();
-        if (ret == 0) {
+        sw_event_code = memcard_PollSwEvents();
+        if (sw_event_code == 0) {
             in_progress_status = 1;
             goto fail_store;
         }
         close(g_memcard_fd);
-        if (ret == 1) {
+        if (sw_event_code == 1) {
             g_memcard_request_status = 2;
         } else {
             g_memcard_request_status = 3;
@@ -436,13 +436,13 @@ void memcard_PollFileCompletion(void) {
         g_memcard_request_state = 0;
         return;
     case 6:
-        ret = memcard_PollSwEvents();
-        if (ret == 0) {
+        sw_event_code = memcard_PollSwEvents();
+        if (sw_event_code == 0) {
             in_progress_status = 4;
             goto fail_store;
         }
         close(g_memcard_fd);
-        if (ret == 1) {
+        if (sw_event_code == 1) {
             g_memcard_request_status = 5;
             if (memcard_RestoreSaveBlock(&D_800F34D8) == 0) {
                 g_memcard_request_status = 0xF;

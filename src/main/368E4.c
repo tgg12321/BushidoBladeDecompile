@@ -1048,10 +1048,10 @@ s32 wave_SampleStepTableBaseAtCachedIndex(void) {
     {
         s32 step = g_wave_last_row_steps[column_index];
         s32 remainder_parity = g_wave_cached_remainder_parity;
-        s32 val1 = step * remainder_parity;
+        s32 weighted_step = step * remainder_parity;
         s32 next_step = g_wave_last_row_steps[column_index + 1];
-        s32 val2 = next_step * (0x1000 - remainder_parity);
-        return (val1 + val2) >> 12;
+        s32 weighted_next_step = next_step * (0x1000 - remainder_parity);
+        return (weighted_step + weighted_next_step) >> 12;
     }
 }
 

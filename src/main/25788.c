@@ -35,7 +35,7 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
        movables emitted behind the two p-copies; literals: score 4. */
     s32 new_var;
     s32 new_var2;
-    s8 val;
+    s8 mode_selector;
     u8 tmp;
 
     p = GetWorkingRecord();
@@ -63,12 +63,12 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
     g_fight_config.pending_stage_index = p->stage_index;
     g_fight_config.pending_view_setting = p->view_setting;
     g_fight_tracked_fighter_index = 0;
-    val = g_fight_config.pending_mode_selector;
+    mode_selector = g_fight_config.pending_mode_selector;
 
-    if (val == 2) {
+    if (mode_selector == 2) {
         D_800A389A = p->unk14_17;
         g_fight_toggle_option_bits = p->unk14_18;
-    } else if (val == 5) {
+    } else if (mode_selector == 5) {
         s32 win_target;
 
         g_fight_match_count = p->match_count_index + 3;
