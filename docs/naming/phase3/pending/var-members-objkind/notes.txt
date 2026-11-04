@@ -1,0 +1,2 @@
+research: Opus (tmp/codex/var-members-objkind-research.md, kept in the lane worktree tmp/: the bg guard blocked writes to main tmp/).
+NO_NAME (unchanged): Tbl8008E194.unkD (0 gates the inner-sphere test at 17AFC.c:4648; 2 doubles the power_scale_tally bump at 17AFC.c:362 and picks amount 2 at 548; two independent effects, no single role), unk0 (spin axis 4112-4120, lying-pose lerp 4519, == 4 hit rule 544; three unrelated uses), unk2 (100 in all 30 records, never read).

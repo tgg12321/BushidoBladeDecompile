@@ -1,0 +1,21 @@
+PASS Tbl8008E194.unkC=early_attack_hit_reaction
+decl Tbl8008E194.unkC -> early_attack_hit_reaction  include/game.h:1889
+  round 0: 2 member error line(s)
+    src/main/17AFC.c:499 unkC x1
+    src/main/17AFC.c:508 unkC x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1889 +1889 @@
+-    u8 unkC;
++    u8 early_attack_hit_reaction;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -499 +499 @@
+-            if (var_0->unkC == 0) {
++            if (var_0->early_attack_hit_reaction == 0) {
+@@ -508 +508 @@
+-            if (var_0->unkC == 1) {
++            if (var_0->early_attack_hit_reaction == 1) {
+DRY RUN: 2 file(s) would change; nothing written
+OK: every member access renamed
