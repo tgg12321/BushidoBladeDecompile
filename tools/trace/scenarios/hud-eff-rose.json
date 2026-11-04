@@ -1,0 +1,13 @@
+{
+  "description": "versus-2p-kimigaura-rose-slot2-poke's run (versus-2p-kimigaura-effects cut at 11300: two code-3 rose-light starts, 9885 and 11144), with a phase mark mid at 9990 (between the first rose effect and the mode-5 effect versus-2p-kimigaura-effects shows from about 10060) and screenshots at 10070 / 10090 / 10110 / 10150 over that mode-5 effect; hud-eff-rose-1 adds versus-2p-kimigaura-rose-slot2-poke-1's instrument poke at t_load in every run (every rose start takes the second slot, command 0xA, mode 4), breaks on eff_DrawAnimatedQuads (mode_index in a0) under read watches on the TexRec records 0x8009B8C8..0x8009B8E7, 0x8009B978..0x8009B997 and 0x8009B9D8..0x8009B9F7, and its poked variants move one TexRec's u (D_8009B980, D_8009B978) when fight starts or set g_eff_animated_quad_counters[4] (0x800F0BB0) to 0x0900 when mid starts",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/hud-eff-rose-1/slot2/spec.json",
+    "docs/naming/runtime/hud-eff-rose-1/slot2-B980-u/spec.json",
+    "docs/naming/runtime/hud-eff-rose-1/slot2-B978-u/spec.json",
+    "docs/naming/runtime/hud-eff-rose-1/slot2-ctr4/spec.json"
+  ],
+  "extends": "versus-2p-kimigaura-rose-slot2-poke",
+  "phases": ["9990:mid"],
+  "shots": ["10070:mid.10070", "10090:mid.10090", "10110:mid.10110", "10150:mid.10150"]
+}

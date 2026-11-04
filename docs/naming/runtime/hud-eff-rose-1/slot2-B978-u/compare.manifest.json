@@ -1,0 +1,7 @@
+{
+  "kind": "compare",
+  "version": 1,
+  "base": "../slot2/capture.jsonl",
+  "other": "capture.jsonl",
+  "outputs": []
+}

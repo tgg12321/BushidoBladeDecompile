@@ -1,0 +1,11 @@
+{
+  "description": "story-ending-magenta-slot2-poke's run unchanged (story-ending-poke's fighter 0x1C opponent, P1 KANNUKI CROSS every 20 from 9800, cut at 12800; two magenta-light starts, 12650 and 12745, event 0x12), with its screenshots over both starts; hud-eff-magenta-1 breaks on eff_DrawAnimatedQuads (mode_index in a0) under read watches on the TexRec records 0x8009B8C8..0x8009B8E7, 0x8009B978..0x8009B997 and 0x8009B9D8..0x8009B9F7; slot2 runs add story-ending-magenta-slot2-poke-1's instrument poke at intro (every magenta start takes the second slot, command 0x13, mode 17; without it the first slot, command 0x12, mode 16), and the B8C8-u runs move D_8009B8C8's u (0x8009B8CC, 0x00 -> 0x80) when fight starts",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/hud-eff-magenta-1/baseline/spec.json",
+    "docs/naming/runtime/hud-eff-magenta-1/B8C8-u/spec.json",
+    "docs/naming/runtime/hud-eff-magenta-1/slot2/spec.json",
+    "docs/naming/runtime/hud-eff-magenta-1/slot2-B8C8-u/spec.json"
+  ],
+  "extends": "story-ending-magenta-slot2-poke"
+}

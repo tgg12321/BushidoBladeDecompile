@@ -1,0 +1,44 @@
+{
+  "kind": "compare",
+  "version": 1,
+  "base": "../slot2/capture.jsonl",
+  "other": "capture.jsonl",
+  "outputs": [
+    {
+      "path": "compare.mid.10110.diff.png",
+      "sha1": "794a2f1cc87a137d8008c7049d83a4deee1c58f9",
+      "size": 53468,
+      "stored": true
+    },
+    {
+      "path": "compare.mid.10150.diff.png",
+      "sha1": "e321049af0a4a1aea33b5651c90dc24b0d776653",
+      "size": 54267,
+      "stored": true
+    },
+    {
+      "path": "compare.fight.10230.diff.png",
+      "sha1": "270ef58953aa04e526e02b9e5195d1f99dcc2d09",
+      "size": 55191,
+      "stored": true
+    },
+    {
+      "path": "compare.fight.10330.diff.png",
+      "sha1": "920d5db5a4b5751cf51fc527548c1f5ca01fc0f0",
+      "size": 54437,
+      "stored": true
+    },
+    {
+      "path": "compare.fight.10430.diff.png",
+      "sha1": "c5ddb3692a9c3549f6e8594a707659f216fa42af",
+      "size": 53976,
+      "stored": true
+    },
+    {
+      "path": "compare.fight.10930.diff.png",
+      "sha1": "aee627757f28fc5ef1c0df9518252595913bc528",
+      "size": 43303,
+      "stored": true
+    }
+  ]
+}
