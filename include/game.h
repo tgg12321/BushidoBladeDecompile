@@ -1886,7 +1886,7 @@ typedef struct {
     s16 launch_vel_y;
     u16 spin_rate;
     s16 bounce_restitution;
-    u8 unkC;
+    u8 early_attack_hit_reaction;
     u8 unkD;
 } Tbl8008E194;
 

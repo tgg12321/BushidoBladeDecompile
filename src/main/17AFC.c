@@ -496,7 +496,7 @@ s32 fighter_ResolveBoneHit(
             return 0;
         }
         if (arg0 == 1) {
-            if (var_0->unkC == 0) {
+            if (var_0->early_attack_hit_reaction == 0) {
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
                     fighter_index, 2, hit_point, 0);
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -505,7 +505,7 @@ s32 fighter_ResolveBoneHit(
                 *out = arg0;
                 return 0;
             }
-            if (var_0->unkC == 1) {
+            if (var_0->early_attack_hit_reaction == 1) {
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
                     fighter_index, 2, hit_point, 0);
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
