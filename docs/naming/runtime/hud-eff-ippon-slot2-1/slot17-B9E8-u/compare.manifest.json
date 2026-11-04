@@ -1,0 +1,20 @@
+{
+  "kind": "compare",
+  "version": 1,
+  "base": "../slot17/capture.jsonl",
+  "other": "capture.jsonl",
+  "outputs": [
+    {
+      "path": "compare.bout1.10380.diff.png",
+      "sha1": "63ee0fbe6390924af9e02955b47fd4a1c176e090",
+      "size": 31556,
+      "stored": true
+    },
+    {
+      "path": "compare.bout1.10384.diff.png",
+      "sha1": "a15ae83fedd6162566183e479002112fe25708c1",
+      "size": 33206,
+      "stored": true
+    }
+  ]
+}

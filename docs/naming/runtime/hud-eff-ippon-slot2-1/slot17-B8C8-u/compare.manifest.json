@@ -1,0 +1,14 @@
+{
+  "kind": "compare",
+  "version": 1,
+  "base": "../slot17/capture.jsonl",
+  "other": "capture.jsonl",
+  "outputs": [
+    {
+      "path": "compare.bout1.10396.diff.png",
+      "sha1": "210e04bee59024cf4ad72ca925ab2e659d3d20a3",
+      "size": 31047,
+      "stored": true
+    }
+  ]
+}
