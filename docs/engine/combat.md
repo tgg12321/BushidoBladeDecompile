@@ -96,7 +96,7 @@ src/main/17AFC.c:2217 records both call shapes). Its branches, in order:
   comes from `g_fighter_power_difference_move_events[math_ClassifyAbsMagnitude(power_difference)][power_difference_negative][same]`, where `power_difference` is
   the difference of the two `power` values and `same` whether their `unk_AF`
   match; codes 0..2 play cue pairs (0x25 / 0x26 / 0x2D), and code 2 also runs
-  `fighter_TryDropQueuedHeadAtBone`. With `src == 1` the table record's `unkC` picks code 0
+  `fighter_TryDropQueuedHeadAtBone`. With `src == 1` the table record's `early_attack_hit_reaction` picks code 0
   or 1.
 - Otherwise `fighter_DispatchBoneHitSoundEvent` runs and the code is chosen by the target's state
   (6 / 9: codes 3, 4, 6 or 7), or is 0x1B when `src == 1`, `tbl->unk0 == 4`
