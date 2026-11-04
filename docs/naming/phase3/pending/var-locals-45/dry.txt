@@ -1,0 +1,26 @@
+var-locals-45 (naming-b 2026-11-03): 6 local bindings in 4 files: val1 / val2 / val / a1 / ret placeholders whose role the code states, freed by later global (g_fighter_motion_data_ids), function-name (wave118) and review (sw_event_code) results.
+Tree: ln-naming-b = main 2ee2b3972 (clean). Research: tmp/codex/var-locals-45-research.md (6 rows; every definition re-read at 2ee2b3972 and no line moved).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (naming_member_apply.py handles T.m=n only; naming_wave.py is function-name only; same tool result as var-locals-43 / -44). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(base = naming_keycheck.read_working_tree() of the lane worktree ln-naming-b, HEAD 2ee2b3972; NAMING_KEYCHECK_ROOT = the worktree; Windows Python scratch driver, removed after the run)
+accepted all 6 pairs (22 token substitutions: 9F9C.c 7, 28708.c 7, 368E4.c 4, 25788.c 4; no include/ file touched; no comment edit needed, see notes.txt R6 WATCH). Each pair was also run alone: all 6 accepted, none rejected (alone-counts sum to 22, equal to the together total, and every pair's alone line list equals the drafter's independent token scan, 6/6).
+Per-pair substitutions (function:old=new count (lines)):
+  wave_SampleStepTableBaseAtCachedIndex:val1=weighted_step 2 (1051,1054)
+  wave_SampleStepTableBaseAtCachedIndex:val2=weighted_next_step 2 (1053,1054)
+  motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue:val=opponent_motion_data_id 3 (3890,3896,3900)
+  fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase:a1=followup_move_kind 4 (2376,2378,2378,2379)
+  memcard_PollFileCompletion:ret=sw_event_code 7 (420,425,426,431,439,440,445)
+  ApplyWorkingRecordToPendingConfigAndInitializeMode:val=mode_selector 4 (38,66,68,71)
+
+Line widths after substitution (over 80; python tools/format.py reflows them in the naming commit; token-preserving):
+  9F9C.c 3896 (80->100); 9F9C.c 3900 (64->84); 9F9C.c 2378 (72->104). All other substituted lines stay within 80 (368E4.c 1051 52, 1053 73, 1054 58; 9F9C.c 2376 46, 2379 64; 25788.c 66 57, 68 29, 71 36).
+None of these three lines is a function-like macro call (3896 an array index, 3900 a compare, 2378 an && condition), so the var-locals-40 sentinel limit does not apply. 0 rows flagged.
+
+Raw driver output (HEAD, scoped_plan alone per pair with nonzero files only, token-scan lines, definition range, new-name hits in src/ and include/; then the set):
+HEAD 2ee2b3972
+ALONE wave_SampleStepTableBaseAtCachedIndex:val1=weighted_step -> {'368E4.c': 2} | token scan lines [1051, 1054] (def 1043-1056) | new-name hits in src/include: []
+ALONE wave_SampleStepTableBaseAtCachedIndex:val2=weighted_next_step -> {'368E4.c': 2} | token scan lines [1053, 1054] (def 1043-1056) | new-name hits in src/include: []
+ALONE motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue:val=opponent_motion_data_id -> {'9F9C.c': 3} | token scan lines [3890, 3896, 3900] (def 3887-3906) | new-name hits in src/include: []
+ALONE fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase:a1=followup_move_kind -> {'9F9C.c': 4} | token scan lines [2376, 2378, 2378, 2379] (def 2372-2396) | new-name hits in src/include: []
+ALONE memcard_PollFileCompletion:ret=sw_event_code -> {'28708.c': 7} | token scan lines [420, 425, 426, 431, 439, 440, 445] (def 419-460) | new-name hits in src/include: []
+ALONE ApplyWorkingRecordToPendingConfigAndInitializeMode:val=mode_selector -> {'25788.c': 4} | token scan lines [38, 66, 68, 71] (def 29-112) | new-name hits in src/include: []
+SET (all 6): ACCEPT 22 {'25788.c': 4, '28708.c': 7, '368E4.c': 4, '9F9C.c': 7}
