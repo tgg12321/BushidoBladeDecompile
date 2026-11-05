@@ -42,7 +42,14 @@ explains from the code across every use and a fresh `naming-reviewer` passes it
 (`.claude/rules/naming-bar.md`, which supersedes the evidence-class gate below; the classes now only
 settle conflicts). Waves live in `docs/naming/phase3/<wave>/` (census origin `sotn-review`, CORROBORATED).
 Functions researched and left neutral are in `docs/naming/phase3/no_name.tsv` (`tools/naming_noname.py`);
-waves skip them unless new evidence exists.
+waves skip them unless new evidence exists. Its `final` column marks the structurally neutral
+placeholders (Phase 5 close-out, backlog row `naming-close-final`): empty, dead or pure-forwarder
+functions, gap-filler and write-only globals, never-accessed members, FAKE constant-holder /
+two-role / copy locals, each passed by a fresh `naming-reviewer`. No evidence revives a final row
+(`free --revive` refuses it); every other placeholder is open. `python tools/naming_noname.py
+status` counts final vs open per kind from the tree; at the close-out: functions 23 final / 35 open
+(of which 5 Sony, 4 aggregate rows reopened by Q134), globals 35 / 300, members 40 / 150, locals
+and parameters 33 / 547.
 
 **Phase 1 — census (done).** Read-only with respect to the build: `function-names.csv`
 enumerates every function, attributes each name to a recorded evidence path, tiers it, and

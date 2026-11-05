@@ -195,7 +195,8 @@ def render(matrix, no_name, runtime=None):
     matrix = Path(matrix)
     runtime = Path(runtime) if runtime is not None else REPO_ROOT / "docs/naming/runtime"
     _, registry = read_table(no_name, ["address"])
-    registry = {r["address"].upper() for r in registry}
+    # function rows only (the ledger also holds final data / member / local rows)
+    registry = {r["address"].upper() for r in registry if r.get("kind", "func") == "func"}
     columns, coverage = read_table(matrix / "coverage.tsv",
                                   ["addr", "capture_name", "no_name", "captures_hit"])
     captures = columns[5:]

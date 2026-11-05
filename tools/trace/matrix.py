@@ -464,7 +464,10 @@ def render(paths, no_name=None, all_evidence=False, current=frozenset()):
         data = Path(no_name).read_bytes()
         registry_hash = hashlib.sha1(data).hexdigest()
         rows = table(data.decode("utf-8"), ["address"])
-        registry = {address(row[0]) for row in rows[1:]}
+        # function rows only: the ledger's data / member / local rows are not addresses
+        # of functions (members and locals are not addresses at all)
+        kind = rows[0].index("kind") if "kind" in rows[0] else None
+        registry = {address(row[0]) for row in rows[1:] if kind is None or row[kind] == "func"}
     # a stub or poked capture's hit map is validated but gives no coverage
     # column: it is a modified game (sources only, like any stub)
     mapped = [c for c in captures if c["mapped"] and c["kind"] != "stub"]
