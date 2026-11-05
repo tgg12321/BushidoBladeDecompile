@@ -1,7 +1,7 @@
 ---
 name: naming-bar
 paths: [".claude/rules/naming-bar.md", ".claude/agents/naming-reviewer.md", "docs/naming/**", "tools/naming_wave.py", "tools/data_wave.py", "tools/naming_keycheck.py"]
-description: "Owner ruling Q111 (2026-10-04, step 0 answers 2026-10-07): the Phase 3 naming bar, SOTN-equivalent. A name lands when it explains from the code across every use and a fresh naming-reviewer passes it; evidence classes settle conflicts, they do not gate. Neutral names beat guesses. Waves are tooled and identifier-only."
+description: "Owner ruling Q111: the Phase 3 naming bar, SOTN-equivalent. A name lands when every use explains it and a fresh naming-reviewer passes it; evidence settles conflicts, it does not gate. Neutral beats a guess. Waves are tooled and identifier-only."
 metadata:
   type: rule
   tier: hygiene
@@ -9,8 +9,7 @@ metadata:
 
 # The naming bar
 
-Applies to every name a naming wave lands or keeps; it never decides a function's
-completion state ([[completion-bar]] does).
+Applies to every name a wave lands or keeps; never to completion ([[completion-bar]]).
 
 ## N1 — the SOTN bar
 
@@ -55,6 +54,8 @@ A subsystem prefix (`camera_`, `model_`, `stage_`, `snd_`, `cd_`...) must itself
 **Q132:** an unknown identity is no ground for neutral: name what the code shows the function
 does (`menu_HandleCursorInput`), worded to tell it from its siblings, else neutral. An
 "identity unknown" NO_NAME objection doesn't block it.
+**Q134:** a multi-job body may be named for the one occasion every part serves, shown by
+its callers (`sys_ReinitAfterMovie`), never a list of jobs; else neutral.
 
 ## N5 — existing names
 
@@ -65,14 +66,14 @@ or renamed, not kept for history.
 
 An address-named game TU (`9F9C.c`) takes a subsystem name only when the admitted names and
 data of every function in it agree on that subsystem; a mixed file keeps its ROM-offset name.
-Moves use `tools/move_tu.py`; the top comment keeps its boundary evidence.
+Moves keep the top comment's boundary evidence.
 
 ## The wave
 
 1. **Manifest:** a miner writes one row per op: address, kind, old -> new, every use with its
    `file:line`, and the counter-evidence considered. Function rows go in
-   `docs/naming/phase3/<wave>/func_manifest.csv` with `evidence_class` `sotn-review` (census
-   origin `sotn-review`, tier CORROBORATED), `RESET` rows `reset-contradicted`, and an N5 KEEP
+   `docs/naming/phase3/<wave>/func_manifest.csv` with `evidence_class` `sotn-review` (tier
+   CORROBORATED), `RESET` rows `reset-contradicted`, and an N5 KEEP
    (an existing name that passes) as a `sotn-review` row with `proposed_name` = the current name.
    It upgrades the census tier and is not a pair. Data rows go in `data_manifest.csv` for
    `tools/data_wave.py`. Type, member and local rows go in `type_manifest.csv`,

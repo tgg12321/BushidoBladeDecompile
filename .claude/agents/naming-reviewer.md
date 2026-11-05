@@ -47,6 +47,9 @@ For each row:
   subsystem explained; a verb or noun that is a guess FAILs. Say which word is unsupported.
   Q132: a mechanical name (what the body does, no claimed identity) that tells the function from
   its siblings PASSes R4; an unknown screen/setting/asset identity is not a FAIL ground.
+  Q134: a multi-job body may be named for the one occasion every part serves, shown by its
+  callers; FAIL it if any part runs for a different occasion. Constants rows: apply
+  `.claude/rules/constants-bar.md` K1-K4 to every listed site.
 - **R5 — collisions.** No existing symbol, struct, typedef, macro or PsyQ/SDK name is shadowed
   or duplicated. No `_2` disambiguation. Library code keeps Sony spelling.
 - **R6 — the applied wave (the post-apply pass, required for every wave).** Given the applied

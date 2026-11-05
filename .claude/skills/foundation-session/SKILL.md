@@ -2,7 +2,7 @@
 name: foundation-session
 description: >-
   Run one bounded foundation session on BB2 in its own lane worktree: pins, bss, tables, data,
-  shift, hygiene, fake, assets or trace (docs/foundation/backlog.tsv). Opens the lane, does at
+  shift, hygiene, fake, assets, trace or const (docs/foundation/backlog.tsv). Opens the lane, does at
   most three units, lands each through tools/lanes/lanes.py (gated, fast-forward only), and stops.
   Use when asked to run a foundation lane, work the moddable-foundation backlog, remove linker
   pins, link BSS, type data, add the shift test, or continue any of those lanes. Argument: the lane.
@@ -112,6 +112,12 @@ live session owns, and say which one you took.
 - **assets / trace** (also trace-a, trace-b, trace-c: parallel trace lanes, each its own row; each
   agent runs its own headless emulators via the shared runner): tools and docs only, no build input. A capture unit adds an evidence line to the naming row it feeds, spelled ` EVIDENCE <capture id> (<lane> <date>, ...)` in the row's note (the id may be left out; the `(<lane> <date>` part is what counts); the orchestrator moves a `blocked` row with a new EVIDENCE line back to `idea` after it lands (`tools/lanes/heal.py`), so the unit need not. Each trace row claims its own `tools/trace/scenarios/<prefix>-*` glob, never the whole directory. `land` still runs the full gates when
   anything outside `docs/` or `memory/` changes (a `tools/` script can be a build input).
+
+- **const** (owner ruling Q135): magic numbers to named constants under
+  `.claude/rules/constants-bar.md`. No wave applies before `const-tooling` lands; every wave is
+  manifest -> fresh `naming-reviewer` -> `tools/const_wave.py` apply + check -> post-apply pass,
+  one `naming: const-<wave>` commit. Claim the header you add to (`path:include/psxsdk/libcd.h`)
+  and a `topic:const:<set>`; never freeze `include/game.h` for longer than the apply.
 
 ## Hard limits
 
