@@ -73,5 +73,5 @@ When the background run exits, read the tail of its output and report: lanes fin
   branches (`lanes.py tidy`), closes registrations whose owner session is gone (claims freed,
   branch and worktree kept; not while the lane has an unacked attention item, so `ack` after
   answering), and moves a `blocked` naming row to `idea` once an `EVIDENCE` line
-  for it lands or its `AFTER:` wave lands (`tools/lanes/heal.py`, its own lane `heal`: the name is reserved, never
+  for it lands or its `lands after kind:<kind>` wave lands (`tools/lanes/heal.py`, its own lane `heal`: the name is reserved, never
   open a lane called `heal`). Sessions need not report those.

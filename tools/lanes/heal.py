@@ -7,15 +7,19 @@
     python tools/lanes/heal.py land     the orchestrator's flow: open lane `heal`, apply, commit,
                                         `lanes.py land`, close; result in tmp/lanes-state/heal.json
 
-A naming row is `blocked` while it waits on a trace capture or on another wave. A capture unit
-adds an evidence line to the row's note (` EVIDENCE <capture id> (...)`); a session that blocks a
-row on a wave writes ` AFTER: <alt> [| <alt> ...]` in its note, each alternative a backlog row id
-(`var-globals-hud-6`, either backlog) or a naming kind (`kind:data`, `kind:member`, `kind:func`).
-A row moves back to `idea` when, against the commit that last made it `blocked`, its note at
-HEAD has more EVIDENCE lines, or one AFTER alternative has landed since: that row, or a naming
-row of that kind (not the row itself), is `landed` at HEAD and was not `landed` (or did not
-exist) at the blocking commit. A dropped row never meets it. The rule reads only this tree's
-history, so a replay onto a moved main gives the same rows.
+A naming row is `blocked` while it waits on a trace capture or on a wave no row names yet. A
+capture unit adds an evidence line to the row's note (` EVIDENCE <capture id> (...)`); a session
+that blocks a row on a wave states it in orchestrate.py's dependency spelling, ` Lands after
+<alt> [| <alt> ...]` (or `Order: after` / `depends on`), each alternative a naming kind
+(`kind:data`, `kind:member`, `kind:func`, ...) or a backlog row id (either backlog). A row moves
+back to `idea` when, against the commit that last made it `blocked`, its note at HEAD has more
+EVIDENCE lines, or every dependency it states is met and one became met since then: a kind
+alternative is met when a naming row of that kind other than the row itself is `landed` now and
+was not (or did not exist) at the blocking commit; a row id when that row is landed or dropped
+(as the dispatcher counts it). A phrase whose words name no row or kind is prose and is ignored;
+so is one already in the note before the row was blocked (notes accumulate: an old phrase must
+not release a later block). A row-id phrase reads only its first id, as the dispatcher does.
+The rule reads only this tree's history, so a replay onto a moved main gives the same rows.
 """
 from __future__ import annotations
 
@@ -25,6 +29,7 @@ import re
 import subprocess
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -36,19 +41,21 @@ BACKLOG = "docs/naming/phase3/backlog.tsv"
 # date there and does not count; neither does heal.py's own lowercase "evidence line(s)".
 EVIDENCE = re.compile(r"(?<![A-Za-z])EVIDENCE\b[^()\n]{0,120}?\(\s*[a-z][\w-]*\s+"
                       r"\d{4}-\d{2}-\d{2}")
-# a wave precondition: uppercase `AFTER:`, then alternatives joined by `|` (prose "after" never
-# counts, and heal.py's own "after-condition" prefix has no colon); an id may be in backticks
+# a wave dependency, in orchestrate.py's DEPENDS spelling: `lands after` / `Order: after` /
+# `depends on`, then alternatives joined by `|`, each `kind:<naming kind>` or a row id (in
+# backticks or not). heal.py's own note prefix never contains these phrases.
 _TOKEN = r"`?(?:kind:[a-z]+|[a-z][\w.-]*[a-z0-9])`?"
-AFTER = re.compile(rf"(?<![A-Za-z])AFTER:\s*({_TOKEN}(?:\s*\|\s*{_TOKEN})*)")
-# what `scan` warns about: an AFTER: that parses to nothing, or alternatives joined by , / or
-AFTER_ANY = re.compile(r"(?<![A-Za-z])AFTER:")
-AFTER_MORE = re.compile(r"\s*(?:,|\bor\b)\s*`?(?:kind:[a-z]+|[a-z][\w.]*-[\w.-]*[a-z0-9])\b")
+DEPENDS = re.compile(rf"(?i)\b(?:lands after|order: after|depends on)\s+"
+                     rf"({_TOKEN}(?:\s*\|\s*{_TOKEN})*)")
+# what `scan` warns about: kind alternatives joined by , / or instead of |
+DEPENDS_MORE = re.compile(r"(?i)\s*(?:,|/|\bor\b|\band\b)\s*`?kind:[a-z]+")
+DEP_DONE = {"landed", "dropped"}  # a row-id dependency is met as orchestrate.deps_met counts it
 FOUNDATION = "docs/foundation/backlog.tsv"
 # backlog commits walked back to find where a row was blocked; a row blocked longer ago is
-# compared with the oldest version read (for EVIDENCE and AFTER: alike)
+# compared with the oldest version read (for EVIDENCE and dependencies alike)
 HISTORY_LIMIT = 400
 LANE = "heal"
-SUBJECT = "docs: naming backlog -- {ids} blocked -> idea (evidence / AFTER landed)"
+SUBJECT = "docs: naming backlog -- {ids} blocked -> idea (evidence / dependency landed)"
 
 
 def git(*a, cwd: Path = ROOT, check: bool = True) -> str:
@@ -76,28 +83,71 @@ def evidence_count(note: str) -> int:
     return len(EVIDENCE.findall(note or ""))
 
 
-def after_tokens(note: str) -> list[str]:
-    """Every alternative of every `AFTER:` marker in a note, in order."""
-    return [t.strip().strip("`") for m in AFTER.findall(note or "") for t in m.split("|")]
+def _phrase(m: re.Match) -> str:
+    return " ".join(m.group(0).lower().split())
 
 
-def after_met(rid: str, note: str, cur: dict, then: dict, other_cur: dict,
-              other_then: dict) -> list[str]:
-    """`<token> (<rows>)` for each AFTER alternative of row `rid` that landed since the blocking
-    version: naming rows `cur` / `then` (now / at the blocking version), foundation rows
-    `other_cur` / `other_then` likewise. A token naming no row or kind is never met."""
-    def newly(now, then_, ids):
-        return [i for i in ids if i != rid and (now.get(i) or {}).get("stage") == "landed"
-                and (then_.get(i) or {}).get("stage") != "landed"]
+def _alternatives(m: re.Match) -> list[str]:
+    """A phrase's alternatives, as the dispatcher reads them: `kind:` alternatives joined by `|`
+    (the dispatcher reads `kind`, names no row and ignores them), or else the first row id alone
+    (orchestrate.DEPENDS captures only it)."""
+    alts = [t.strip().strip("`").lower() for t in m.group(1).split("|")]
+    if alts[0].startswith("kind:"):
+        return [a for a in alts if a.startswith("kind:")]
+    return alts[:1]
+
+
+def dependencies(note: str, before: str | None = None) -> list[list[str]]:
+    """The alternatives of every dependency phrase in a note, in order. With `before` (the note
+    just before the row was blocked), only phrases the blocking edit or a later one wrote: a
+    phrase counts as many times as it occurs now beyond its occurrences in `before`, so a stale
+    one left in an accumulated note never releases a later block."""
+    seen = Counter(_phrase(m) for m in DEPENDS.finditer(before or ""))
     out = []
-    for tok in after_tokens(note):
-        if tok.startswith("kind:"):
-            hit = newly(cur, then, [i for i, r in cur.items() if r.get("kind") == tok[5:]])
-        else:
-            hit = newly(cur, then, [tok]) + newly(other_cur, other_then, [tok])
-        if hit:
-            out.append(f"{tok} ({', '.join(hit)})")
+    for m in DEPENDS.finditer(note or ""):
+        if seen[_phrase(m)] > 0:
+            seen[_phrase(m)] -= 1
+            continue
+        out.append(_alternatives(m))
     return out
+
+
+def deps_newly_met(rid: str, deps: list[list[str]], cur: dict, then: dict, other_cur: dict,
+                   other_then: dict) -> list[str]:
+    """`<alt> (<why>)` for the dependency alternatives of row `rid` that became met since the
+    blocking version, or [] unless every recognized dependency is met now. Naming rows `cur` /
+    `then` (now / at the blocking version), foundation rows `other_cur` / `other_then` likewise.
+    An alternative naming no row or kind is ignored; a phrase with none recognized too."""
+    def stage(rows, i):
+        return (rows.get(i) or {}).get("stage")
+    newly: list[str] = []
+    known = 0
+    for alts in deps:
+        recognized = met = False
+        for a in alts:
+            if a.startswith("kind:"):
+                if not any(r.get("kind") == a[5:] for r in cur.values()):
+                    continue
+                recognized = True
+                hit = [i for i, r in cur.items() if i != rid and r.get("kind") == a[5:]
+                       and r.get("stage") == "landed" and stage(then, i) != "landed"]
+                if hit:
+                    met = True
+                    newly.append(f"{a} ({', '.join(hit)})")
+                continue
+            rows_now, rows_then = (cur, then) if a in cur else (other_cur, other_then)
+            if a == rid or a not in rows_now:
+                continue
+            recognized = True
+            if stage(rows_now, a) in DEP_DONE:
+                met = True
+                if stage(rows_then, a) not in DEP_DONE:
+                    newly.append(f"{a} ({stage(rows_now, a)})")
+        if recognized:
+            known += 1
+            if not met:
+                return []
+    return newly if known else []
 
 
 def unblockable(history, other=None) -> list[tuple[str, str, str]]:
@@ -109,8 +159,8 @@ def unblockable(history, other=None) -> list[tuple[str, str, str]]:
     now has found its blocking version, so with no blocked row it reads nothing more.
     other(sha) gives the foundation backlog's rows at one of those versions, other(None) its
     current rows (not the naming version's: a foundation row lands in commits that leave the
-    naming backlog alone); without `other`, AFTER: row ids are looked up in the naming backlog
-    only."""
+    naming backlog alone); without `other`, dependency row ids are looked up in the naming
+    backlog only."""
     it = iter(history)
     first = next(it, None)
     if first is None:
@@ -118,6 +168,7 @@ def unblockable(history, other=None) -> list[tuple[str, str, str]]:
     cur = first[1]
     pending = {rid for rid, r in cur.items() if r.get("stage") == "blocked"}
     found: dict[str, tuple[str, dict]] = {}
+    before: dict[str, str | None] = {}  # the row's note in the version just before its block
     prev = first
     while pending:
         nxt = next(it, None)
@@ -126,10 +177,12 @@ def unblockable(history, other=None) -> list[tuple[str, str, str]]:
         for rid in list(pending):
             if (nxt[1].get(rid) or {}).get("stage") != "blocked":
                 found[rid] = prev
+                before[rid] = (nxt[1].get(rid) or {}).get("note", "")
                 pending.discard(rid)
         prev = nxt
     for rid in pending:  # blocked as far back as the walk went
         found[rid] = prev
+        before[rid] = None
     cache: dict[str, dict] = {}
 
     def other_at(sha):
@@ -145,10 +198,11 @@ def unblockable(history, other=None) -> list[tuple[str, str, str]]:
         new = evidence_count(note) - evidence_count(rows[rid].get("note", ""))
         if new > 0:
             why.append(f"{new} new evidence line(s)")
-        if after_tokens(note):
-            met = after_met(rid, note, cur, rows, other_at(None), other_at(sha))
+        deps = dependencies(note, before[rid])
+        if deps:
+            met = deps_newly_met(rid, deps, cur, rows, other_at(None), other_at(sha))
             if met:
-                why.append("after-condition " + "; ".join(met) + " landed")
+                why.append("dependency met: " + "; ".join(met))
         if why:
             out.append((rid, sha, ", ".join(why)))
     return out
@@ -215,33 +269,35 @@ def rewrite(text: str, moves: list[tuple[str, str, str]]) -> str:
     return "\n".join(lines)
 
 
-def unknown_after(root: Path = ROOT) -> list[tuple[str, str]]:
-    """(row id, problem) for blocked rows whose AFTER: marker can never be met as written: an
-    alternative naming no row or naming kind, a row id that is dropped now, a marker that parses
-    to nothing, or alternatives joined by `,` / `or` instead of `|`."""
+def dep_warnings(root: Path = ROOT) -> list[tuple[str, str]]:
+    """(row id, problem) for dependencies the tools cannot honour as written: on a blocked row, a
+    `kind:<kind>` no other naming row has, kind alternatives joined by `,` / `/` / `or` / `and`
+    instead of `|`, or a phrase mixing a row id with kinds; on an open (not blocked) row, any
+    `kind:` dependency (the dispatcher ignores it and starts the row now)."""
     rows = parse_rows((root / BACKLOG).read_text(encoding="utf-8"))
-    other = other_history(root)("WORKTREE")
-    kinds = {r.get("kind") for r in rows.values()}
     out = []
     for rid, r in rows.items():
-        note = r.get("note", "")
-        if r.get("stage") != "blocked" or not AFTER_ANY.search(note):
+        note, stage = r.get("note", ""), r.get("stage")
+        if stage in ("landed", "dropped"):
             continue
-        found = list(AFTER.finditer(note))
-        if len(found) < len(AFTER_ANY.findall(note)):
-            out.append((rid, "an AFTER: marker names no row id or kind:<kind>"))
-        for m in found:
-            if AFTER_MORE.match(note, m.end()):
-                out.append((rid, f"AFTER: {m.group(1)} is followed by `,` / `or`: join "
+        for m in DEPENDS.finditer(note):
+            raw = [t.strip().strip("`").lower() for t in m.group(1).split("|")]
+            kinds = [a for a in raw if a.startswith("kind:")]
+            if not kinds:
+                continue
+            if stage != "blocked":
+                out.append((rid, f"`{m.group(0)}` on a `{stage}` row: the dispatcher ignores "
+                                 f"kind dependencies; stage it `blocked`"))
+                continue
+            if DEPENDS_MORE.match(note, m.end()):
+                out.append((rid, f"`{m.group(0)}` is followed by `,` / `/` / `or` / `and`: join "
                                  f"alternatives with `|`"))
-        for t in after_tokens(note):
-            if t.startswith("kind:"):
-                if t[5:] not in kinds:
-                    out.append((rid, f"AFTER: {t} names no naming kind (never met)"))
-            elif t not in rows and t not in other:
-                out.append((rid, f"AFTER: {t} names no backlog row (never met)"))
-            elif (rows.get(t) or other.get(t) or {}).get("stage") == "dropped":
-                out.append((rid, f"AFTER: {t} is dropped (never met)"))
+            if len(kinds) != len(raw):
+                out.append((rid, f"`{m.group(0)}` mixes row ids with kinds: state a row id in "
+                                 f"its own `Lands after`"))
+            for a in kinds:
+                if not any(i != rid and x.get("kind") == a[5:] for i, x in rows.items()):
+                    out.append((rid, f"{a} names no other naming row's kind (never met)"))
     return out
 
 
@@ -250,8 +306,8 @@ def cmd_scan(root: Path = ROOT) -> list[tuple[str, str, str]]:
     for rid, sha, why in moves:
         print(f"{rid}: blocked at {sha[:9]}, {why} since -> idea")
     if not moves:
-        print("no blocked naming row has new evidence or a met AFTER: condition")
-    for rid, problem in unknown_after(root):
+        print("no blocked naming row has new evidence or a newly met dependency")
+    for rid, problem in dep_warnings(root):
         print(f"warning: {rid}: {problem}")
     return moves
 
@@ -311,7 +367,7 @@ def cmd_land() -> int:
 
         # scan main first (here, not in the orchestrator's tick): open nothing if nothing moves
         try:
-            for rid, problem in unknown_after(main_root()):
+            for rid, problem in dep_warnings(main_root()):
                 log(f"warning: {rid}: {problem}")
             if not moves_in(main_root()):
                 log("nothing to unblock on main")
@@ -348,7 +404,7 @@ def cmd_land() -> int:
                              for rid, sha, why in moves)
             msg.write_text(f"{SUBJECT.format(ids=ids)}\n\nThe orchestrator's self-heal "
                            f"(tools/lanes/heal.py): a blocked row waits on a trace capture (an "
-                           f"EVIDENCE line in its note) or on a wave (its AFTER: marker), and "
+                           f"EVIDENCE line in its note) or on a wave (a `lands after` dependency), and "
                            f"that has landed.\n\n{body}\n\n"
                            f"Lane-Replay: python3 tools/lanes/heal.py apply\n",
                            encoding="utf-8", newline="\n")

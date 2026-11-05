@@ -1682,10 +1682,10 @@ class Heal(unittest.TestCase):
             # the dirty tree is now the current version: nothing more to move
             self.assertEqual(heal.unblockable(heal.load_history(root)), [])
 
-    # AFTER: <row id | kind:<kind>> [| ...]: a wave precondition (naming-session skill)
-    def test_after_kind_unblocks_once_a_wave_of_that_kind_lands_since_blocking(self):
+    # `Lands after kind:<kind> [| ...]` / row ids: a wave dependency (naming-session skill)
+    def test_kind_dependency_unblocks_once_a_wave_of_that_kind_lands_since_blocking(self):
         def v(g_stage, g2=None):
-            specs = [("loc", "local", "blocked", "waits. AFTER: kind:data | kind:member"),
+            specs = [("loc", "local", "blocked", "waits. Lands after kind:data | kind:member."),
                      ("g1", "data", g_stage, ""), ("m0", "member", "landed", "")]
             if g2:
                 specs.append(("g2", "data", g2, ""))
@@ -1694,77 +1694,115 @@ class Heal(unittest.TestCase):
                    ("c1", krows(("loc", "local", "idea", ""), ("g1", "data", "idea", ""),
                                 ("m0", "member", "landed", "")))]
         self.assertEqual(heal.unblockable(history),
-                         [("loc", "c2", "after-condition kind:data (g1) landed")])
+                         [("loc", "c2", "dependency met: kind:data (g1)")])
         # a row of that kind already landed when the row was blocked (m0) does not count
         self.assertEqual(heal.unblockable([("c3", v("idea")), ("c2", v("idea"))]), [])
         # a new row of that kind created and landed after the block counts
         self.assertEqual(heal.unblockable([("c3", v("idea", "landed")), ("c2", v("idea"))]),
-                         [("loc", "c2", "after-condition kind:data (g2) landed")])
-        # dropped is not landed
+                         [("loc", "c2", "dependency met: kind:data (g2)")])
+        # a dropped wave is not a landed one
         self.assertEqual(heal.unblockable([("c3", v("dropped")), ("c2", v("idea"))]), [])
 
-    def test_after_kind_never_counts_the_row_itself(self):
-        history = [("c3", krows(("a", "local", "landed", "AFTER: kind:local"),
-                                ("b", "local", "blocked", "x"))),
-                   ("c2", krows(("a", "local", "blocked", "AFTER: kind:local"),
-                                ("b", "local", "blocked", "x")))]
-        self.assertEqual(heal.unblockable(history), [])  # a is not blocked now; b has no marker
-        history = [("c3", krows(("a", "local", "blocked", "AFTER: kind:local"))),
-                   ("c2", krows(("a", "local", "landed", "AFTER: kind:local")))]
+    def test_kind_dependency_never_counts_the_row_itself(self):
+        history = [("c3", krows(("a", "local", "blocked", "lands after kind:local"))),
+                   ("c2", krows(("a", "local", "landed", "lands after kind:local")))]
         self.assertEqual(heal.unblockable(history), [])
 
-    def test_after_row_id_in_either_backlog(self):
-        cur = krows(("a", "data", "blocked", "AFTER: var-globals-x."), ("var-globals-x", "data",
-                                                                       "landed", ""))
-        then = krows(("a", "data", "blocked", "AFTER: var-globals-x."), ("var-globals-x", "data",
-                                                                        "reviewed", ""))
-        self.assertEqual(heal.unblockable([("c2", cur), ("c1", then)]),
-                         [("a", "c1", "after-condition var-globals-x (var-globals-x) landed")])
-        # a foundation row: looked up through `other`
-        n = krows(("a", "data", "blocked", "AFTER: trace-x"))
-        fnd = {None: {"trace-x": {"id": "trace-x", "stage": "landed"}},  # current
+    def test_row_dependency_in_either_backlog_as_the_dispatcher_counts_it(self):
+        def v(stage):
+            return krows(("a", "data", "blocked", "Order: after `var-globals-x`."),
+                         ("var-globals-x", "data", stage, ""))
+        self.assertEqual(heal.unblockable([("c2", v("landed")), ("c1", v("reviewed"))]),
+                         [("a", "c1", "dependency met: var-globals-x (landed)")])
+        self.assertEqual(heal.unblockable([("c2", v("dropped")), ("c1", v("reviewed"))]),
+                         [("a", "c1", "dependency met: var-globals-x (dropped)")])
+        # met already when blocked: nothing new, so an owner-ruling block is not released
+        self.assertEqual(heal.unblockable([("c2", v("landed")), ("c1", v("landed"))]), [])
+        # a foundation row: looked up through `other`, its current rows at other(None)
+        n = krows(("a", "data", "blocked", "depends on trace-x"))
+        fnd = {None: {"trace-x": {"id": "trace-x", "stage": "landed"}},
                "c1": {"trace-x": {"id": "trace-x", "stage": "active"}}}
         self.assertEqual(heal.unblockable([("c2", n), ("c1", n)], fnd.get),
-                         [("a", "c1", "after-condition trace-x (trace-x) landed")])
-        self.assertEqual(heal.unblockable([("c2", n), ("c1", n)]), [])  # no `other`: unknown
-        fnd["c1"]["trace-x"]["stage"] = "landed"  # already landed at the block
-        self.assertEqual(heal.unblockable([("c2", n), ("c1", n)], fnd.get), [])
+                         [("a", "c1", "dependency met: trace-x (landed)")])
+        self.assertEqual(heal.unblockable([("c2", n), ("c1", n)]), [])  # unknown without `other`
 
-    def test_after_marker_spelling(self):
-        self.assertEqual(heal.after_tokens("x AFTER: kind:data|kind:func; AFTER:var-a-1, y"),
-                         ["kind:data", "kind:func", "var-a-1"])
-        for prose in ("lands after var-a-1", "after: var-a-1", "Unblocked (heal.py): "
-                      "after-condition kind:data (g1) landed since c2 blocked it.",
-                      "DATAAFTER: kind:data"):
-            self.assertEqual(heal.after_tokens(prose), [], prose)
+    def test_every_recognized_dependency_must_hold(self):
+        def v(g, x):
+            return krows(("a", "local", "blocked", "Lands after kind:data. Lands after x-1."),
+                         ("g", "data", g, ""), ("x-1", "member", x, ""))
+        self.assertEqual(heal.unblockable([("c2", v("landed", "idea")), ("c1", v("idea", "idea"))]),
+                         [])
+        self.assertEqual(heal.unblockable([("c3", v("landed", "landed")),
+                                           ("c1", v("idea", "idea"))]),
+                         [("a", "c1", "dependency met: kind:data (g); x-1 (landed)")])
 
-    def test_after_backticks_and_scan_warnings(self):
-        self.assertEqual(heal.after_tokens("AFTER: `var-x-1` | `kind:data`"),
-                         ["var-x-1", "kind:data"])
+    def test_dependency_spelling_and_prose(self):
+        self.assertEqual(heal.dependencies("x Lands after kind:data|`kind:func`; depends on "
+                                           "var-a-1, ORDER: AFTER b-2"),
+                         [["kind:data", "kind:func"], ["var-a-1"], ["b-2"]])
+        # prose that names no row or kind is ignored: nothing to meet, nothing moves
+        history = [("c2", krows(("a", "local", "blocked", "depends on unnamed sources; lands "
+                                 "after a var-globals wave"), ("g", "data", "landed", ""))),
+                   ("c1", krows(("a", "local", "blocked", ""), ("g", "data", "idea", "")))]
+        self.assertEqual(heal.unblockable(history), [])
+        # heal's own prefix states no dependency
+        self.assertEqual(heal.dependencies("Unblocked (heal.py): dependency met: kind:data (g1) "
+                                           "since c2 blocked it."), [])
+
+    def test_scan_warnings(self):
         import tempfile
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
-            naming = HEAD + "\n" + "\n".join([
-                "a\tlocal\tblocked\t-\tAFTER: kind:data, kind:func",
-                "b\tlocal\tblocked\t-\tAFTER: var-d-1 or var-e-2",
-                "c\tlocal\tblocked\t-\tAFTER: Var-X (prose)",
-                "d\tlocal\tblocked\t-\tAFTER: var-d-1 | kind:nope | nope-1",
-                "e\tlocal\tidea\t-\tAFTER: nope-2",
-                "f\tlocal\tblocked\t-\tAFTER: kind:local, then re-run the census",
-                "var-d-1\tdata\tdropped\t-\tx",
-                "var-e-2\tdata\tidea\t-\tx"]) + "\n"
-            for rel, text in ((heal.BACKLOG, naming),
-                              (heal.FOUNDATION, "id\tlane\tstage\tclaims\tnote\n")):
-                (root / rel).parent.mkdir(parents=True, exist_ok=True)
-                (root / rel).write_text(text, encoding="utf-8", newline="\n")
-            got = heal.unknown_after(root)
-        self.assertEqual([r for r, _ in got], ["a", "b", "b", "c", "d", "d", "d"], got)
-        self.assertIn("`,` / `or`", got[0][1])
-        self.assertIn("names no row id", got[3][1])
-        self.assertEqual([p for r, p in got if r == "d"], [
-            "AFTER: var-d-1 is dropped (never met)",
-            "AFTER: kind:nope names no naming kind (never met)",
-            "AFTER: nope-1 names no backlog row (never met)"])
+            (root / heal.BACKLOG).parent.mkdir(parents=True)
+            (root / heal.BACKLOG).write_text(HEAD + "\n" + "\n".join([
+                "a\tlocal\tblocked\t-\tLands after kind:data, kind:func",
+                "b\tlocal\tblocked\t-\tlands after kind:nope",
+                "c\tlocal\tidea\t-\tlands after kind:nope",
+                "d\tlocal\tblocked\t-\tlands after kind:data | kind:member",
+                "e\tlocal\tblocked\t-\tlands after kind:data / kind:func. Depends on x-1 | "
+                "kind:data", "h\tlocal\tlanded\t-\tlands after kind:nope",
+                "g\tdata\tlanded\t-\t", "f\tfunc\tidea\t-\t"]) + "\n",
+                encoding="utf-8", newline="\n")
+            got = heal.dep_warnings(root)
+        self.assertEqual([r for r, _ in got], ["a", "b", "c", "d", "e", "e"], got)
+        self.assertIn("`|`", got[0][1])
+        self.assertEqual(got[1][1], "kind:nope names no other naming row's kind (never met)")
+        self.assertIn("on a `idea` row: the dispatcher ignores", got[2][1])
+        self.assertEqual(got[3][1], "kind:member names no other naming row's kind (never met)")
+        self.assertIn("`,` / `/`", got[4][1])
+        self.assertIn("mixes row ids with kinds", got[5][1])
+
+    # review round 2: an old phrase left in an accumulated note never releases a later block
+    def test_stale_phrases_do_not_release_a_later_block(self):
+        def v(stage, note, g="idea", x="idea"):
+            return krows(("r", "local", stage, note), ("g", "data", g, ""),
+                         ("var-x-1", "data", x, ""))
+        old = "Earlier: Unblocked (heal.py): ... Lands after kind:data. Idea: Lands after var-x-1."
+        history = [("c3", v("blocked", "Blocked (owner Q140). " + old, g="landed", x="landed")),
+                   ("c2", v("blocked", "Blocked (owner Q140). " + old)),
+                   ("c1", v("idea", old))]
+        self.assertEqual(heal.unblockable(history), [])
+        # the same phrase written again by the blocking edit counts (one more occurrence)
+        new = "Blocked: Lands after kind:data. " + old
+        history = [("c3", v("blocked", new, g="landed")), ("c2", v("blocked", new)),
+                   ("c1", v("idea", old))]
+        self.assertEqual(heal.unblockable(history), [("r", "c2", "dependency met: kind:data (g)")])
+        self.assertEqual(heal.dependencies(new, old), [["kind:data"]])
+
+    def test_row_id_phrase_reads_like_the_dispatcher(self):
+        # orchestrate.DEPENDS captures only the first row id: heal must not release on a later
+        # alternative the dispatcher would not honour
+        self.assertEqual(heal.dependencies("Lands after var-x-1 | kind:data"), [["var-x-1"]])
+        self.assertEqual(heal.dependencies("Lands after kind:data | var-x-1"), [["kind:data"]])
+        self.assertEqual(heal.dependencies("lands after KIND:DATA"), [["kind:data"]])
+        r = {"id": "a", "stage": "idea", "note": "Lands after var-x-1 | kind:data"}
+        idx = {"a": r, "var-x-1": {"id": "var-x-1", "stage": "idea"}}
+        self.assertFalse(o.deps_met(r, idx))
+        history = [("c2", krows(("a", "local", "blocked", r["note"]), ("var-x-1", "data", "idea", ""),
+                                ("g", "data", "landed", ""))),
+                   ("c1", krows(("a", "local", "idea", ""), ("var-x-1", "data", "idea", ""),
+                                ("g", "data", "idea", "")))]
+        self.assertEqual(heal.unblockable(history), [])
 
     def test_other_history_raises_on_git_failures_other_than_a_missing_file(self):
         import subprocess
@@ -1782,15 +1820,15 @@ class Heal(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 heal.other_history(Path(d))("HEAD")
 
-    def test_after_and_evidence_together(self):
-        history = [("c2", krows(("a", "data", "blocked", "AFTER: kind:func EVIDENCE c (trace-a "
-                                 "2026-11-03, x)"), ("f", "func", "landed", ""))),
-                   ("c1", krows(("a", "data", "blocked", "AFTER: kind:func"),
+    def test_dependency_and_evidence_together(self):
+        history = [("c2", krows(("a", "data", "blocked", "lands after kind:func EVIDENCE c "
+                                 "(trace-a 2026-11-03, x)"), ("f", "func", "landed", ""))),
+                   ("c1", krows(("a", "data", "blocked", "lands after kind:func"),
                                 ("f", "func", "idea", "")))]
         self.assertEqual(heal.unblockable(history), [
-            ("a", "c1", "1 new evidence line(s), after-condition kind:func (f) landed")])
+            ("a", "c1", "1 new evidence line(s), dependency met: kind:func (f)")])
 
-    def test_apply_after_on_a_git_history(self):
+    def test_apply_dependency_on_a_git_history(self):
         import subprocess
         import tempfile
         with tempfile.TemporaryDirectory() as d:
@@ -1807,17 +1845,15 @@ class Heal(unittest.TestCase):
                                           "-q", "-m", msg]):
                     subprocess.run(["git", *c], cwd=root, check=True, capture_output=True)
             subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
-            commit(HEAD + "\na\tlocal\tblocked\t-\tAFTER: tool-x | nope-1\n", "tool-x\tt\tidea\t-\t\n",
-                   "block")
+            naming = HEAD + "\na\tlocal\tblocked\t-\tLands after tool-x\n"
+            commit(naming, "tool-x\tt\tidea\t-\t\n", "block")
             self.assertEqual(heal.cmd_apply(root), [])
-            self.assertEqual(heal.unknown_after(root),
-                             [("a", "AFTER: nope-1 names no backlog row (never met)")])
-            commit(HEAD + "\na\tlocal\tblocked\t-\tAFTER: tool-x | nope-1\n",
-                   "tool-x\tt\tlanded\t-\t\n", "land tool-x")
+            # the foundation row lands in a commit that leaves the naming backlog alone
+            commit(naming, "tool-x\tt\tlanded\t-\t\n", "land tool-x")
             self.assertEqual([m[0] for m in heal.cmd_apply(root)], ["a"])
             line = paths["n"].read_text(encoding="utf-8").splitlines()[1]
             self.assertTrue(line.startswith("a\tlocal\tidea\t-\tUnblocked (heal.py): "
-                                            "after-condition tool-x (tool-x) landed since "), line)
+                                            "dependency met: tool-x (landed) since "), line)
             self.assertEqual(heal.unblockable(heal.load_history(root),
                                               heal.other_history(root)), [])
 
