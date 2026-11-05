@@ -32,23 +32,45 @@ This tool DETECTS any cheated completion that slipped past those gates (manual
 edit to the queue, a missed cheat pattern, etc.). Exit code 1 on any violation;
 run it manually, in CI, or from a hook.
 """
-# Run this under WSL: it reaches engine.score, which shells out to the
-# mipsel-linux-gnu cross-toolchain, so the Windows-side interpreter cannot
-# complete it regardless.
+# Runs under WSL: it reaches engine.score, which shells out to the
+# mipsel-linux-gnu cross-toolchain. Started as a script on Windows, it re-runs
+# itself in WSL (tools/format.py's _rerun_in_wsl) before importing the engine.
 #
 # The deferred-annotation import is still needed: PEP 604 (`str | None`)
 # annotations are used below, and the Windows Python on this machine is 3.9,
-# which evaluates them eagerly and raises TypeError at def time. Without this,
-# a Windows invocation dies with a confusing TypeError inside a type annotation
-# instead of reaching the honest "cross-toolchain not found" failure.
+# which evaluates them eagerly and raises TypeError at def time (an importer
+# such as engine/test_engine.py may still load this module on Windows).
 from __future__ import annotations
 
 import json
 import os
+import shlex
+import subprocess
 import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
+
+
+def _rerun_in_wsl(argv: list[str]) -> int:
+    drive, rest = os.path.splitdrive(str(REPO))
+    wsl_root = f"/mnt/{drive[0].lower()}{rest.replace(os.sep, '/')}"
+    args = " ".join(shlex.quote(a) for a in argv)
+    # the repo's .venv when this tree has one (a lane worktree may not)
+    cmd = (f"cd {shlex.quote(wsl_root)} && {{ [ -x .venv/bin/python3 ] && PY=.venv/bin/python3 "
+           f"|| PY=python3; }} && exec $PY tools/check_completion_integrity.py {args}")
+    try:
+        return subprocess.run(["wsl", "-e", "bash", "-c", cmd]).returncode
+    except FileNotFoundError:
+        print("check_completion_integrity: needs WSL (the mipsel cross-toolchain) and `wsl` "
+              f"is not available; run it there: cd {shlex.quote(wsl_root)} && python3 "
+              "tools/check_completion_integrity.py", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__" and os.name == "nt":
+    raise SystemExit(_rerun_in_wsl(sys.argv[1:]))
+
 sys.path.insert(0, str(REPO))
 # Engine modules use relative paths (regfix.txt, asmfix.txt, src/<stem>.c,
 # build/src/<stem>.o) keyed off the working directory — chdir to REPO so they
