@@ -36,6 +36,8 @@ class EventsTest(unittest.TestCase):
         self.root = scratch / ("events-test-" + uuid.uuid4().hex)
         self.root.mkdir()
         self.addCleanup(self.cleanup)
+        # `build` / `check` keep their incremental cache here, never in the user's cache dir
+        os.environ["BB2_EVENTS_CACHE"] = str(self.root / "cache" / "default.json")
         self.git("init", "-q")
         self.git("config", "core.autocrlf", "false")
         self.runtime = self.root / "docs/naming/runtime"
@@ -511,6 +513,92 @@ class EventsTest(unittest.TestCase):
         self.save()
         with self.assertRaisesRegex(ValueError, "tab/newline"):
             self.rows()
+
+    # incremental cache (`build` / `check` without --no-cache)
+    def cached(self):
+        self.snapshot()
+        with patch.dict(os.environ, clean_env(), clear=True):
+            return events.render(cache=self.root / "cache" / "events.json")
+
+    def second_capture(self):
+        other = self.runtime / "a-first"
+        shutil.copytree(self.capture, other)
+        self.tracked.append("docs/naming/runtime/a-first/capture.manifest.json")
+        return other
+
+    def test_cache_hit_renders_the_full_output_without_reading_captures(self):
+        self.second_capture()
+        full = self.render()
+        self.assertEqual(self.cached(), full)
+        self.assertTrue((self.root / "cache" / "events.json").is_file())
+        with patch.object(events, "capture_rows", side_effect=AssertionError("cache miss")):
+            self.assertEqual(self.cached(), full)
+
+    def test_changed_capture_inputs_miss_only_that_capture(self):
+        self.second_capture()
+        before = self.cached()
+        self.records[0]["access"]["value"] = 9
+        self.save()
+        rendered = []
+        real = events.capture_rows
+
+        def spy(manifest_path, *a):
+            rendered.append(manifest_path.parent.name)
+            return real(manifest_path, *a)
+        with patch.object(events, "capture_rows", side_effect=spy):
+            out = self.cached()
+        self.assertEqual(rendered, ["sample"])
+        self.assertEqual(out, self.render())
+        self.assertNotEqual(out, before)
+        # the coverage list is an input of every capture
+        matrix = self.runtime / "matrix"
+        matrix.mkdir()
+        (matrix / "coverage.tsv").write_bytes(b"addr\tcapture_name\n0x80030000\tfunc_80030000\n")
+        rendered.clear()
+        with patch.object(events, "capture_rows", side_effect=spy):
+            out = self.cached()
+        self.assertEqual(sorted(rendered), ["a-first", "sample"])
+        self.assertEqual(out, self.render())
+
+    def test_corrupt_or_malformed_cache_falls_back_to_a_full_render(self):
+        full = self.render()
+        path = self.root / "cache" / "events.json"
+        self.cached()
+        data = json.loads(path.read_text(encoding="utf-8"))
+        (key, entry), = data["entries"].items()
+        bad_entries = ([[["x"], ["y"]]], [[entry["rows"][0][0], entry["rows"][0][1][:-1]]],
+                       [[entry["rows"][0][0], [*entry["rows"][0][1][:8], "1", *entry["rows"][0][1][9:]]]],
+                       "rows")
+        for rows in bad_entries:
+            path.write_text(json.dumps({"version": events.CACHE_VERSION,
+                                        "entries": {key: {"t": 0, "rows": rows}}}),
+                            encoding="utf-8")
+            self.assertEqual(self.cached(), full, rows)
+        for text in ("not json", "[]", '{"version": 0, "entries": {}}', '{"version": 1}'):
+            path.write_text(text, encoding="utf-8")
+            self.assertEqual(self.cached(), full, text)
+        # an unwritable cache location still builds
+        path.unlink()
+        path.mkdir()
+        with contextlib.redirect_stderr(io.StringIO()) as error:
+            self.assertEqual(self.cached(), full)
+        self.assertIn("cache not saved", error.getvalue())
+
+    def test_failing_capture_still_fails_with_a_cache(self):
+        self.cached()
+        self.records[0]["kind"] = 9
+        self.save()
+        with self.assertRaisesRegex(ValueError, "invalid hit kind"):
+            self.cached()
+
+    def test_main_uses_the_cache_path_and_no_cache_skips_it(self):
+        path = self.root / "cache" / "main.json"
+        with patch.dict(os.environ, {"BB2_EVENTS_CACHE": str(path)}):
+            self.assertEqual(self.main(["build", "--no-cache"]), 0)
+            self.assertFalse(path.exists())
+            self.assertEqual(self.main(["build"]), 0)
+            self.assertTrue(path.is_file())
+            self.assertEqual(self.main(["check"]), 0)
 
 
 if __name__ == "__main__":

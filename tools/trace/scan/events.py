@@ -31,10 +31,12 @@ import csv
 import hashlib
 import io
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
 import sys
+import time
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT))
@@ -374,67 +376,185 @@ def capture_bytes(blobs, manifest_path, manifest):
     return store.resolve(path.parent, path.name, manifest, allow_local=False).read_bytes()
 
 
-def render(runtime=None):
+def capture_rows(manifest_path, relative, blobs, coverage, functions):
+    """[(sort key, TSV cells)] for one capture. Every group key starts with the capture, so a
+    capture's rows depend only on its own inputs and the coverage list."""
+    groups = {}
+    try:
+        manifest = json.loads(blobs[manifest_path])
+        if manifest.get("q124_complete") is not True:
+            return []
+        raw = capture_bytes(blobs, manifest_path, manifest)
+        digest = hashlib.sha1(raw).hexdigest()
+        events = []
+        for line, text in enumerate(raw.decode("utf-8").splitlines(), 1):
+            try:
+                event = json.loads(text)
+                if not isinstance(event, dict) or not isinstance(event.get("ev"), str):
+                    raise ValueError("expected event object with ev")
+                # Validate hits before interpreting report projections.
+                if event["ev"] == "hit":
+                    observation(event, {})
+                events.append(event)
+            except ValueError as ex:
+                raise ValueError(f"capture.jsonl:{line}: {ex}") from ex
+        starts = [e for e in events if e["ev"] == "start"]
+        if len(starts) != 1:
+            raise ValueError("expected exactly one start record")
+        spec = starts[0].get("spec", {})
+        if modified(relative, spec, events):
+            return []
+        declared = declarations(spec)
+        if not any(selected(e, declared) for e in events):
+            return []
+        resolved = report_sites(blobs.get(manifest_path.with_name("report.md")), events, digest, coverage)
+        resolve_ranges(events, resolved, functions)
+        ends = [e for e in events if e["ev"] == "end"]
+        if len(ends) > 1:
+            raise ValueError("multiple end records")
+        end = ends[0] if ends else None
+        capture = relative.as_posix() + "@" + digest[:12]
+        for event in events:
+            if not selected(event, declared):
+                continue
+            entry = declared[(normalized_target(event["at"]), event["kind"])]
+            key, value, reasons = observation(event, resolved, entry)
+            reasons.update(limits(spec, events, end,
+                                  declared[(normalized_target(event["at"]), event["kind"])],
+                                  event))
+            group = groups.setdefault((capture, *key), dict(count=0, values=set(),
+                                                 captures=set(), reasons=set()))
+            group["count"] += 1
+            group["values"].add(value)
+            group["captures"].add(capture)
+            group["reasons"].update(reasons)
+    except (OSError, ValueError, KeyError, TypeError) as ex:
+        raise ValueError(f"{manifest_path.parent}: {ex}") from ex
+    rows = []
+    unresolved = {(key[0], key[1], key[2], key[4]) for key in groups if key[3] == "?"}
+    for key, group in groups.items():
+        reasons = group["reasons"]
+        if (key[0], key[1], key[2], key[4]) in unresolved:
+            reasons.add("group_has_unresolved_site")
+        rows.append((key, [*key[1:], group["count"], *capped(group["values"]),
+                           ";".join(sorted(group["captures"])),
+                           int(bool(reasons - {"partial_store", "partial_read", "coverage_next_start_bound"})),
+                           ";".join(sorted(reasons))]))
+    return rows
+
+
+# Incremental cache. A capture's rows are a pure function of this file, the coverage list, its
+# runtime-relative path and its manifest, report and (indexed) capture.jsonl blobs: a store
+# capture's bytes are pinned by the manifest's outputs sha1 (store.resolve verifies it), so a
+# store file is read only on a miss (a hit does not prove the store is reachable: the store's
+# own checks do that). The cache lives outside the repository, so the gate
+# mirror's `git clean` keeps it: $BB2_EVENTS_CACHE, else <$XDG_CACHE_HOME or
+# ~/.cache>/bb2/events-cache.json. An unreadable or malformed cache or entry is a miss;
+# `--no-cache` renders every capture.
+CACHE_VERSION = 1
+CACHE_KEEP_SECS = 30 * 86400  # entries no build used for this long are pruned
+KEY_LEN = 9  # the capture, then observation()'s key
+CELL_TYPES = [str] * 8 + [int, str, int, str, int, str]
+
+
+def cache_path():
+    override = os.environ.get("BB2_EVENTS_CACHE")
+    if override:
+        return Path(override)
+    base = os.environ.get("XDG_CACHE_HOME")  # the XDG spec ignores a relative one
+    base = Path(base) if base and Path(base).is_absolute() else Path.home() / ".cache"
+    return base / "bb2" / "events-cache.json"
+
+
+def input_key(source, coverage_raw, relative, blobs, manifest_path):
+    digest = hashlib.sha1(b"events-cache\0%d\0" % CACHE_VERSION)
+    for part in (source, coverage_raw, relative.as_posix().encode("utf-8"), blobs[manifest_path],
+                 blobs.get(manifest_path.with_name("report.md")),
+                 blobs.get(manifest_path.with_name("capture.jsonl"))):
+        if part is None:
+            digest.update(b"-\0")
+        else:
+            digest.update(b"%d\0" % len(part))
+            digest.update(part)
+    return digest.hexdigest()
+
+
+def load_cache(path):
+    try:
+        data = json.loads(path.read_bytes())
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(data, dict) or data.get("version") != CACHE_VERSION or not isinstance(
+            data.get("entries"), dict):
+        return {}
+    return data["entries"]
+
+
+def cached_rows(entry):
+    """The entry's rows as capture_rows returns them, or None when it is not well-formed."""
+    rows = entry.get("rows") if isinstance(entry, dict) else None
+    if not isinstance(rows, list):
+        return None
+    out = []
+    for row in rows:
+        if not (isinstance(row, list) and len(row) == 2 and isinstance(row[0], list)
+                and isinstance(row[1], list) and len(row[0]) == KEY_LEN
+                and len(row[1]) == len(CELL_TYPES)
+                and all(type(k) is str for k in row[0])
+                and all(type(c) is t for c, t in zip(row[1], CELL_TYPES))):
+            return None
+        out.append((tuple(row[0]), row[1]))
+    return out
+
+
+def save_cache(path, old, used, now):
+    entries = {k: v for k, v in old.items() if k not in used and isinstance(v, dict)
+               and type(v.get("t")) in (int, float) and now - v["t"] < CACHE_KEEP_SECS}
+    entries.update({k: {"t": now, "rows": [[list(key), cells] for key, cells in rows]}
+                    for k, rows in used.items()})
+    tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp.write_text(json.dumps({"version": CACHE_VERSION, "entries": entries},
+                                  separators=(",", ":")), encoding="utf-8")
+        os.replace(tmp, path)
+    except OSError as ex:
+        print(f"events: cache not saved ({path}): {ex}", file=sys.stderr)
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
+
+
+def render(runtime=None, cache=None):
+    """The events.tsv text. cache: the cache file (None: render every capture, no cache)."""
     runtime = Path(runtime) if runtime is not None else REPO_ROOT / "docs/naming/runtime"
     blobs = index_inputs(runtime)
-    groups = {}
-    coverage = coverage_rows(blobs.get(runtime / "matrix/coverage.tsv"))
+    coverage_raw = blobs.get(runtime / "matrix/coverage.tsv")
+    coverage = coverage_rows(coverage_raw)
     functions = coverage_ranges(coverage)
-    for manifest_path in sorted(p for p in blobs if p.name == "capture.manifest.json"):
-        try:
-            relative = manifest_path.parent.relative_to(runtime)
-        except ValueError:
-            continue
-        try:
-            manifest = json.loads(blobs[manifest_path])
-            if manifest.get("q124_complete") is not True:
+    source = Path(__file__).read_bytes() if cache else b""
+    old = load_cache(cache) if cache else {}
+    used = {}
+    rows = []
+    try:
+        for manifest_path in sorted(p for p in blobs if p.name == "capture.manifest.json"):
+            try:
+                relative = manifest_path.parent.relative_to(runtime)
+            except ValueError:
                 continue
-            raw = capture_bytes(blobs, manifest_path, manifest)
-            digest = hashlib.sha1(raw).hexdigest()
-            events = []
-            for line, text in enumerate(raw.decode("utf-8").splitlines(), 1):
-                try:
-                    event = json.loads(text)
-                    if not isinstance(event, dict) or not isinstance(event.get("ev"), str):
-                        raise ValueError("expected event object with ev")
-                    # Validate hits before interpreting report projections.
-                    if event["ev"] == "hit":
-                        observation(event, {})
-                    events.append(event)
-                except ValueError as ex:
-                    raise ValueError(f"capture.jsonl:{line}: {ex}") from ex
-            starts = [e for e in events if e["ev"] == "start"]
-            if len(starts) != 1:
-                raise ValueError("expected exactly one start record")
-            spec = starts[0].get("spec", {})
-            if modified(relative, spec, events):
-                continue
-            declared = declarations(spec)
-            if not any(selected(e, declared) for e in events):
-                continue
-            resolved = report_sites(blobs.get(manifest_path.with_name("report.md")), events, digest, coverage)
-            resolve_ranges(events, resolved, functions)
-            ends = [e for e in events if e["ev"] == "end"]
-            if len(ends) > 1:
-                raise ValueError("multiple end records")
-            end = ends[0] if ends else None
-            capture = relative.as_posix() + "@" + digest[:12]
-            for event in events:
-                if not selected(event, declared):
-                    continue
-                entry = declared[(normalized_target(event["at"]), event["kind"])]
-                key, value, reasons = observation(event, resolved, entry)
-                reasons.update(limits(spec, events, end,
-                                      declared[(normalized_target(event["at"]), event["kind"])],
-                                      event))
-                group = groups.setdefault((capture, *key), dict(count=0, values=set(),
-                                                     captures=set(), reasons=set()))
-                group["count"] += 1
-                group["values"].add(value)
-                group["captures"].add(capture)
-                group["reasons"].update(reasons)
-        except (OSError, ValueError, KeyError, TypeError) as ex:
-            raise ValueError(f"{manifest_path.parent}: {ex}") from ex
+            got = None
+            if cache:
+                key = input_key(source, coverage_raw, relative, blobs, manifest_path)
+                got = cached_rows(old.get(key))
+            if got is None:
+                got = capture_rows(manifest_path, relative, blobs, coverage, functions)
+            if cache:
+                used[key] = got
+            rows.extend(got)
+    finally:  # a failing capture keeps the rows rendered before it for the next build
+        if cache:
+            save_cache(cache, old, used, time.time())
     out = io.StringIO(newline="\n")
     writer = csv.writer(out, delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_NONE,
                         quotechar=None)
@@ -443,15 +563,8 @@ def render(runtime=None):
             raise ValueError("tab/newline in TSV cell")
         writer.writerow(cells)
     write_row(HEADER)
-    unresolved = {(key[0], key[1], key[2], key[4]) for key in groups if key[3] == "?"}
-    for key, group in sorted(groups.items()):
-        reasons = group["reasons"]
-        if (key[0], key[1], key[2], key[4]) in unresolved:
-            reasons.add("group_has_unresolved_site")
-        write_row([*key[1:], group["count"], *capped(group["values"]),
-                         ";".join(sorted(group["captures"])),
-                         int(bool(reasons - {"partial_store", "partial_read", "coverage_next_start_bound"})),
-                         ";".join(sorted(reasons))])
+    for _, cells in sorted(rows, key=lambda row: row[0]):
+        write_row(cells)
     return out.getvalue()
 
 
@@ -460,9 +573,12 @@ def main(argv=None):
     parser.add_argument("command", choices=["build", "check"])
     parser.add_argument("--runtime", default="docs/naming/runtime")
     parser.add_argument("--out", default="docs/naming/runtime/evidence/events.tsv")
+    parser.add_argument("--no-cache", action="store_true",
+                        help="render every capture; neither read nor write the cache")
     args = parser.parse_args(argv)
     try:
-        content = render(REPO_ROOT / args.runtime).encode("utf-8")
+        content = render(REPO_ROOT / args.runtime,
+                         cache=None if args.no_cache else cache_path()).encode("utf-8")
         out = REPO_ROOT / args.out
         if args.command == "check":
             if not out.is_file() or out.read_bytes() != content:
