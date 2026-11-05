@@ -336,7 +336,7 @@ class EventsTest(unittest.TestCase):
 
     def test_kseg1_and_bios_normalization(self):
         self.assertEqual(events.canonical(0xA00A3910), events.canonical(0x800A3910))
-        self.assertEqual(events.normalized_target("D_A00A3910+0x2"), "g_fight_midpoint_effect_delay+0x2")
+        self.assertEqual(events.normalized_target("D_A00A3910+0x2"), "D_800A3910+0x2")
         self.assertEqual(events.normalized_target("0xA00A3910"), "0x800A3910")
         watch = self.watch()
         watch["ra"] = 0x80040008  # A watch must use access.pc, never this ra.
