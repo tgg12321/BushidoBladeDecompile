@@ -39,7 +39,8 @@ digest; (2) a registration whose Claude owner session is absent from 3 good list
 an unacked attention item (its session may wait on the owner's answer; an owner no slot
 tracked whose last message asks something raises that once first); (3) a `blocked`
 naming row whose note gained an evidence line (` EVIDENCE [<capture>] (<lane> <date>`) since
-it was blocked is moved to `idea` by a detached `heal.py land`, started once per main head
+it was blocked, or whose ` AFTER: <row id | kind:<kind>> [| ...]` marker names a row / a naming
+row of that kind landed since, is moved to `idea` by a detached `heal.py land`, started once per main head
 while any row is blocked: it scans first and opens its own lane `heal` only if a row moves
 (Lane-Replay commit, normal land). Lane name `heal` is reserved for it (`lanes.py open`
 refuses other sessions). No second run starts while one lives (one past 3 h is raised once);
@@ -599,9 +600,9 @@ def heal_finish(st: dict, now: float):
 
 
 def unblock_step(st: dict, bl: dict, reg: dict, now: float):
-    """Blocked naming rows whose evidence has landed: start `heal.py land` (detached) once per
-    main head. It opens lane `heal`, commits the backlog flip with a Lane-Replay trailer, lands
-    and closes; heal_finish reads its result on a later tick."""
+    """Blocked naming rows whose evidence / AFTER: wave has landed: start `heal.py land`
+    (detached) once per main head. It opens lane `heal`, commits the backlog flip with a
+    Lane-Replay trailer, lands and closes; heal_finish reads its result on a later tick."""
     heal_finish(st, now)
     if st.get("heal") or not any(r.get("stage") == "blocked" for r in bl.get("naming", [])):
         return
@@ -619,7 +620,7 @@ def unblock_step(st: dict, bl: dict, reg: dict, now: float):
                          cwd=MAIN, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                          stderr=subprocess.DEVNULL, creationflags=flags)
     st["heal"] = {"pid": p.pid, "started": now, "rows": rows, "head": head}
-    log(f"self-heal: checking blocked {', '.join(rows)} for landed evidence (pid {p.pid})")
+    log(f"self-heal: checking blocked {', '.join(rows)} for landed evidence / AFTER: (pid {p.pid})")
 
 
 def self_heal(st: dict, bl: dict, reg: dict, now: float):
