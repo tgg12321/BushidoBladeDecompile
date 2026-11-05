@@ -1761,6 +1761,10 @@ class Heal(unittest.TestCase):
                 "d\tlocal\tblocked\t-\tlands after kind:data | kind:member",
                 "e\tlocal\tblocked\t-\tlands after kind:data / kind:func. Depends on x-1 | "
                 "kind:data", "h\tlocal\tlanded\t-\tlands after kind:nope",
+                # heal's own release, and an older segment: history, not a request
+                "i\tlocal\tidea\t-\tUnblocked (heal.py): dependency met: kind:data (g) since c2 "
+                "blocked it. Lands after kind:data.",
+                "j\tlocal\tresearching\t-\tresearch: x. Earlier: Lands after kind:data.",
                 "g\tdata\tlanded\t-\t", "f\tfunc\tidea\t-\t"]) + "\n",
                 encoding="utf-8", newline="\n")
             got = heal.dep_warnings(root)

@@ -272,22 +272,31 @@ def rewrite(text: str, moves: list[tuple[str, str, str]]) -> str:
 def dep_warnings(root: Path = ROOT) -> list[tuple[str, str]]:
     """(row id, problem) for dependencies the tools cannot honour as written: on a blocked row, a
     `kind:<kind>` no other naming row has, kind alternatives joined by `,` / `/` / `or` / `and`
-    instead of `|`, or a phrase mixing a row id with kinds; on an open (not blocked) row, any
-    `kind:` dependency (the dispatcher ignores it and starts the row now)."""
+    instead of `|`, or a phrase mixing a row id with kinds; on an open (not blocked) row, a
+    `kind:` dependency in its newest text (the dispatcher ignores it and starts the row now).
+    The newest text ends at the first `Unblocked (heal.py):` or `Earlier:`: a row heal released
+    keeps its old phrase further on, and that one is history, not a request."""
     rows = parse_rows((root / BACKLOG).read_text(encoding="utf-8"))
     out = []
     for rid, r in rows.items():
         note, stage = r.get("note", ""), r.get("stage")
         if stage in ("landed", "dropped"):
             continue
+        newest = len(note)
+        for mark in ("Unblocked (heal.py):", "Earlier:"):
+            if mark in note:
+                newest = min(newest, note.index(mark))
         for m in DEPENDS.finditer(note):
             raw = [t.strip().strip("`").lower() for t in m.group(1).split("|")]
             kinds = [a for a in raw if a.startswith("kind:")]
             if not kinds:
                 continue
             if stage != "blocked":
-                out.append((rid, f"`{m.group(0)}` on a `{stage}` row: the dispatcher ignores "
-                                 f"kind dependencies; stage it `blocked`"))
+                if m.start() < newest:
+                    out.append((rid, f"`{m.group(0)}` on a `{stage}` row: the dispatcher ignores "
+                                     f"kind dependencies; set it `blocked` and restate the "
+                                     f"dependency in the new text (an unchanged phrase is "
+                                     f"ignored)"))
                 continue
             if DEPENDS_MORE.match(note, m.end()):
                 out.append((rid, f"`{m.group(0)}` is followed by `,` / `/` / `or` / `and`: join "
