@@ -172,6 +172,20 @@ pairs.txt, dry.txt). Stages:
 
 `idea` -> `researching` -> `researched` -> `reviewed` -> `landed` (or `dropped`, with the reason in `note`)
 
+A row whose precondition is unmet ("only after a var-globals / members / func wave lands", "skip
+until X") is filed **`blocked`, never `idea`**: an `idea` row starts a session that finds nothing
+and drops it (var-locals-46 -> 47 looped drop-and-recreate). The note states what it waits on as
+a marker the orchestrator's self-heal (`tools/lanes/heal.py`) reads; it moves the row to `idea`
+once the condition lands after the block, so no session polls it:
+- another wave: ` AFTER: <row id>` or ` AFTER: kind:<kind>`, alternatives joined by ` | ` (any
+  one suffices), for example `AFTER: kind:data | kind:member | kind:func` for locals that wait
+  on a newly named global, member or function. Met when that row (either backlog), or any naming
+  row of that kind, lands after the block, so name a row that has not landed yet; a dropped row
+  never releases it (`heal.py scan` warns). One marker per note: when you re-block a row, rewrite
+  the old one. (An `idea` row's `lands after <id>` only orders it behind another open row.)
+- a trace capture: the capture's ` EVIDENCE ...` line (foundation-session skill, trace lanes).
+- an owner ruling: no marker; the owner unblocks it.
+
 Commit a stage change with the files that justify it, for example `docs: naming backlog -- m09
 reviewed`.
 
@@ -246,7 +260,8 @@ every datum it defines agree on that subsystem; a mixed file keeps its ROM-offse
    - A name the reviewer only *suggests* may replace a failed one, but it is marked
      `suggested` in the manifest, and R6 must judge it fresh at every use.
    - If no row survives, the unit ends as `dropped`; if the track still has targets, add its
-     next `idea` row in the same commit.
+     next `idea` row in the same commit (`blocked` with an `AFTER:` marker if it can only start
+     after another wave, §Backlog).
 5. Set VERDICT CONFIRM with a verifier note, commit the draft dir and the backlog row as
    `reviewed` in the lane worktree, and `lanes.py land <lane>` (docs-only, so no build gates).
    That is the stopping point.
@@ -284,7 +299,8 @@ every datum it defines agree on that subsystem; a mixed file keeps its ROM-offse
    - If the track still has unnamed targets and an open-row slot (none open; function track:
      fewer than 3, in TUs disjoint from the open ones), add its next
      batch as an `idea` row in that same commit (`var-globals-c`, `var-members-rest-4`, ...): the
-     note says what is left and what this wave left neutral on purpose.
+     note says what is left and what this wave left neutral on purpose. A batch that can only
+     start after another wave is filed `blocked` with an `AFTER:` marker (§Backlog).
    - Run `python tools/lanes/lanes.py land <lane>`. It rebuilds, regenerates the census, runs
      `test_label_census.py` and the integrity check, fast-forwards main and pushes. That is the
      stopping point.
