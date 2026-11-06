@@ -1,0 +1,226 @@
+==============================================================================
+DATA WAVE — 53 addresses, 66 identifiers remapped
+  0x800a3198: D_800A3198, g_str_c4d_800A3198_fmt -> g_config_menu_left_cpu_controlled_fmt
+  0x800a3188: D_800A3188, g_str_pct_s5d_800A3188_fmt -> g_config_menu_left_roster_and_weapon_fmt
+  0x800109ec: D_800109EC -> g_memcard_icon_clut
+  0x80010a2c: D_80010A2C -> g_memcard_icon_image
+  0x800109bc: D_800109BC, g_str_bu_800109BC_fmt -> g_str_memcard_file_path_fmt
+  0x800109c8: D_800109C8, g_str_bu_800109C8_fmt -> g_str_memcard_device_fmt
+  0x80010aac: D_80010AAC -> g_str_memcard_save_file_name
+  0x800a3201: D_800A3201 -> g_memcard_title_plus_sign_sjis_trail_byte
+  0x800a3200: D_800A3200 -> g_memcard_title_plus_sign_sjis_lead_byte
+  0x800951d8: D_800951D8 -> g_gpu_table_color_textured_primitive_handlers
+  0x80095280: D_80095280 -> g_gpu_outline_primitive_handlers
+  0x8009b940: D_8009B940 -> g_eff_billboard_pair_first_tex_rec
+  0x8009b948: D_8009B948 -> g_eff_billboard_pair_second_early_tex_rec
+  0x8009b950: D_8009B950 -> g_eff_billboard_pair_second_late_tex_rec
+  0x8009b958: D_8009B958 -> g_eff_rotated_quad_cluster_first_early_tex_rec
+  0x8009b960: D_8009B960 -> g_eff_rotated_quad_cluster_other_early_tex_rec
+  0x8009b968: D_8009B968 -> g_eff_rotated_quad_cluster_first_late_tex_rec
+  0x8009b970: D_8009B970 -> g_eff_rotated_quad_cluster_other_late_tex_rec
+  0x80101ec8: D_80101EC8 -> g_fighter_records
+  0x800a31f8: D_800A31F8 -> g_memcard_polled_info_load_result
+  0x80010478: D_80010478 -> g_str_illegal_gun_motion_fmt
+  0x8001528c: D_8001528C, g_str_marionation_overflow_8001528C_fmt -> g_str_marionation_overflow_fmt
+  0x800158b4: D_800158B4, g_str_common_vab_start_800158B4_fmt -> g_str_common_vab_start_fmt
+  0x800158cc: D_800158CC, g_str_vab_id_mistake_800158CC_fmt -> g_str_vab_id_error_fmt
+  0x800158e0: D_800158E0, g_str_eff_prim_over_800158E0_fmt -> g_str_eff_prim_overflow_fmt
+  0x800159a0: D_800159A0, g_str_warning_800159A0 -> g_str_warning
+  0x80010d8c: D_80010D8C, g_str_multipul_model_80010D8C -> g_str_multiple_model_error
+  0x800100a4: D_800100A4 -> g_str_u16_triple_fmt
+  0x800100b4: D_800100B4 -> g_str_sound_id
+  0x80010494: D_80010494 -> g_str_empty
+  0x8001004c: D_8001004C -> g_str_date_time_stamp
+  0x800a316c: D_800A316C -> g_str_story
+  0x800a3164: D_800A3164 -> g_str_vscpu
+  0x800a3160: D_800A3160 -> g_str_vs
+  0x800a3158: D_800A3158 -> g_str_team
+  0x800a3150: D_800A3150 -> g_str_network
+  0x800a3114: D_800A3114, g_str_on_bbm_800A3114 -> g_str_motion_file_on
+  0x800a311c: D_800A311C, g_str_gs_bbm_800A311C -> g_str_motion_file_gs
+  0x800a3124: D_800A3124, g_str_gn_bbm_800A3124 -> g_str_motion_file_gn
+  0x8008ec08: D_8008EC08 -> g_fight_mode_names
+  0x8008d91c: D_8008D91C -> g_fighter_move_kind_names
+  0x8008da94: D_8008DA94 -> g_fighter_forward_jump_speeds
+  0x8008dad8: D_8008DAD8 -> g_fighter_vertical_jump_velocities
+  0x8008da50: D_8008DA50 -> g_fighter_forward_jump_vertical_velocities
+  0x8008eb0c: D_8008EB0C -> g_fight_followup_playback_red_light_effect_frame
+  0x8008eb10: D_8008EB10 -> g_fight_followup_playback_red_light_effect_offset_x
+  0x8008eb14: D_8008EB14 -> g_fight_followup_playback_red_light_effect_offset_y
+  0x8008eb18: D_8008EB18 -> g_fight_followup_playback_red_light_effect_offset_z
+  0x8008eb0a: D_8008EB0A -> g_fight_followup_playback_common_sound_frame
+  0x800a3798: D_800A3798 -> g_gpu_prim_buffer_span
+  0x800545f8: D_800545F8 -> g_color_immediate_patch_first_ori_template
+  0x800545fc: D_800545FC -> g_color_immediate_patch_second_lui_template
+  0x80054600: D_80054600 -> g_color_immediate_patch_second_ori_template
+
+-- file edits (104) --
+  asm/data/938FE.data.s  (12)
+  asm/data/93950.data.s  (15)
+  asm/data/93E18.data.s  (3)
+  asm/data/94000.bss.s  (2)
+  asm/funcs/PatchColorImmediatesAtListedCodeSites.s  (6)
+  asm/funcs/camera_UpdateReplayView.s  (2)
+  asm/funcs/eff_DrawAndAdvanceBillboardPairs.s  (6)
+  asm/funcs/eff_DrawAndAdvanceRotatedQuadClusters.s  (8)
+  asm/funcs/eff_UpdateCommands.s  (2)
+  asm/funcs/fight_AdvanceOpponentOrder.s  (2)
+  asm/funcs/fight_Init.s  (32)
+  asm/funcs/fight_InitImageAndPlaybackPresentation.s  (6)
+  asm/funcs/fight_InitNearestStartPairPlayback.s  (6)
+  asm/funcs/fight_InsertBestTime.s  (4)
+  asm/funcs/fight_PackTimeRecordsAndInitPresentation.s  (2)
+  asm/funcs/fight_QueuePositionalSoundWithRandomAlternate.s  (2)
+  asm/funcs/fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt.s  (2)
+  asm/funcs/fight_RequestBothFightersEntriesAndReloadOnChange.s  (8)
+  asm/funcs/fight_RequestOneFighterEntriesAndReloadOnChange.s  (10)
+  asm/funcs/fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields.s  (2)
+  asm/funcs/fight_RunCommandStream.s  (4)
+  asm/funcs/fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank.s  (4)
+  asm/funcs/fight_StartDescriptorPlaybackAndAudio.s  (6)
+  asm/funcs/fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11.s  (2)
+  asm/funcs/fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase.s  (2)
+  asm/funcs/fight_StartNextSecondFighter.s  (2)
+  asm/funcs/fight_TriggerOpposingFighterEventFromNearBallisticRecords.s  (2)
+  asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (4)
+  asm/funcs/fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange.s  (2)
+  asm/funcs/fight_UpdateFighterInteractionsAndPointCaches.s  (14)
+  asm/funcs/fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress.s  (2)
+  asm/funcs/fight_UpdateMatchTallyPresentation.s  (4)
+  asm/funcs/fight_UpdateModeDisplaysAndMatchProgress.s  (6)
+  asm/funcs/fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams.s  (12)
+  asm/funcs/fight_UpdatePairedInputTotalsEventsAndMidpointEffects.s  (12)
+  asm/funcs/fight_UpdatePairedMoves.s  (10)
+  asm/funcs/fight_UpdateScrollingSpriteDisplayAndMergeBitFlags.s  (4)
+  asm/funcs/fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents.s  (4)
+  asm/funcs/fight_UpdateSplitWipeImageAndPlaybackPresentation.s  (2)
+  asm/funcs/fighter_AssignMotionSlotAndScanDataIdNibbles.s  (2)
+  asm/funcs/fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint.s  (26)
+  asm/funcs/fighter_BuildCpuOrMappedPadState.s  (4)
+  asm/funcs/fighter_BuildCpuPad.s  (2)
+  asm/funcs/fighter_CalcSeparationErrorAndOpposedOffsets.s  (2)
+  asm/funcs/fighter_CastWeaponSegment.s  (2)
+  asm/funcs/fighter_ClearCpuTally.s  (2)
+  asm/funcs/fighter_ConfigureCpuControl.s  (2)
+  asm/funcs/fighter_HalveCpuTally.s  (2)
+  asm/funcs/fighter_Init.s  (2)
+  asm/funcs/fighter_InitCpuControl.s  (2)
+  asm/funcs/fighter_ProcessWeaponBodyHits.s  (2)
+  asm/funcs/fighter_ProcessWeaponContacts.s  (8)
+  asm/funcs/fighter_ResolveBodyOverlap.s  (24)
+  asm/funcs/fighter_SetBasePositionSeparationCorrectionsAndGetDistance.s  (2)
+  asm/funcs/fighter_StartMoveScript.s  (2)
+  asm/funcs/fighter_TriggerOpponentResponseOnMoveFrame.s  (2)
+  asm/funcs/fighter_Update.s  (12)
+  asm/funcs/font_PrintU16Triples.s  (2)
+  asm/funcs/func_800545F4.s  (3)
+  asm/funcs/gpu_AddSpriteCells.s  (2)
+  asm/funcs/gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift.s  (4)
+  asm/funcs/memcard_BuildFileHeader.s  (6)
+  asm/funcs/memcard_Format.s  (2)
+  asm/funcs/memcard_ReadFile.s  (2)
+  asm/funcs/memcard_StepRequest.s  (1)
+  asm/funcs/memcard_StepSaveOverwriteAndFormatPrompts.s  (1)
+  asm/funcs/memcard_Update.s  (1)
+  asm/funcs/memcard_WriteFile.s  (2)
+  asm/funcs/menu_PrintEditAndApplyConfigWithPerPadCursors.s  (4)
+  asm/funcs/motion_LoadFighterData.s  (4)
+  asm/funcs/motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id.s  (2)
+  asm/funcs/ndata_ReadChecked.s  (2)
+  asm/funcs/object_ResolveFighterHits.s  (2)
+  asm/funcs/replay_PlayFrame.s  (2)
+  asm/funcs/snd_LoadCommonVab.s  (2)
+  asm/funcs/snd_LoadVabPack.s  (2)
+  asm/funcs/snd_StartFightCdAudio.s  (2)
+  asm/funcs/softbody_CreateForNode.s  (2)
+  asm/funcs/sys_InitAtBoot.s  (1)
+  engine/test_engine.py  (3)
+  include/bb2.h  (17)
+  src/main/17AFC.c  (89)
+  src/main/28708.c  (24)
+  src/main/2B344.c  (50)
+  src/main/31548.c  (6)
+  src/main/32D04.c  (6)
+  src/main/35000.c  (2)
+  src/main/4510C.c  (4)
+  src/main/596CC.c  (1)
+  src/main/63D2C.c  (2)
+  src/main/6CF8.c  (5)
+  src/main/9F9C.c  (118)
+  src/main/d_15EC.c  (1)
+  src/main/d_7D920.c  (26)
+  src/main/d_8BC50.c  (7)
+  src/main/eff.c  (9)
+  src/main/fight_paired_input_totals.c  (19)
+  src/main/memcard.c  (3)
+  src/main/memcard_info_load.c  (1)
+  src/main/menu_config.c  (7)
+  src/main/snd.c  (4)
+  symbol_addrs.txt  (58)
+  tools/trace/movegraph.py  (3)
+  tools/trace/test_pokes.py  (20)
+
+-- registry lines --
+  symbol_addrs.txt:12 D_8001004C -> g_str_date_time_stamp
+  symbol_addrs.txt:13 D_800100B4 -> g_str_sound_id
+  symbol_addrs.txt:239 D_800545F8 -> g_color_immediate_patch_first_ori_template
+  symbol_addrs.txt:240 D_800545FC -> g_color_immediate_patch_second_lui_template
+  symbol_addrs.txt:241 D_80054600 -> g_color_immediate_patch_second_ori_template
+  symbol_addrs.txt:251 D_8008EB0A -> g_fight_followup_playback_common_sound_frame
+  symbol_addrs.txt:306 D_800A3188 -> g_config_menu_left_roster_and_weapon_fmt
+  symbol_addrs.txt:308 D_800A3198 -> g_config_menu_left_cpu_controlled_fmt
+  symbol_addrs.txt:378 D_800100A4 -> g_str_u16_triple_fmt
+  symbol_addrs.txt:379 D_800109C8 -> g_str_memcard_device_fmt
+  symbol_addrs.txt:417 D_800109BC -> g_str_memcard_file_path_fmt
+  symbol_addrs.txt:418 D_800109EC -> g_memcard_icon_clut
+  symbol_addrs.txt:419 D_8001528C -> g_str_marionation_overflow_fmt
+  symbol_addrs.txt:420 D_800158B4 -> g_str_common_vab_start_fmt
+  symbol_addrs.txt:421 D_800158E0 -> g_str_eff_prim_overflow_fmt
+  symbol_addrs.txt:460 D_800951D8 -> g_gpu_table_color_textured_primitive_handlers
+  symbol_addrs.txt:461 D_80095280 -> g_gpu_outline_primitive_handlers
+  symbol_addrs.txt:573 D_800A3798 -> g_gpu_prim_buffer_span
+  symbol_addrs.txt:618 D_8001004C -> g_str_date_time_stamp
+  symbol_addrs.txt:738 D_800A3150 -> g_str_network
+  symbol_addrs.txt:739 D_800A3158 -> g_str_team
+  symbol_addrs.txt:740 D_800A3160 -> g_str_vs
+  symbol_addrs.txt:741 D_800A3164 -> g_str_vscpu
+  symbol_addrs.txt:742 D_800A316C -> g_str_story
+  symbol_addrs.txt:756 D_800951D8 -> g_gpu_table_color_textured_primitive_handlers
+  symbol_addrs.txt:757 D_80095280 -> g_gpu_outline_primitive_handlers
+  symbol_addrs.txt:773 D_8008DA50 -> g_fighter_forward_jump_vertical_velocities
+  symbol_addrs.txt:782 D_8009B940 -> g_eff_billboard_pair_first_tex_rec
+  symbol_addrs.txt:847 D_800A3798 -> g_gpu_prim_buffer_span
+  symbol_addrs.txt:940 D_800A31F8 -> g_memcard_polled_info_load_result
+  symbol_addrs.txt:950 D_800545F8 -> g_color_immediate_patch_first_ori_template
+  symbol_addrs.txt:951 D_800545FC -> g_color_immediate_patch_second_lui_template
+  symbol_addrs.txt:952 D_80054600 -> g_color_immediate_patch_second_ori_template
+  symbol_addrs.txt:1008 D_800A3200 -> g_memcard_title_plus_sign_sjis_lead_byte
+  symbol_addrs.txt:1009 D_800A3201 -> g_memcard_title_plus_sign_sjis_trail_byte
+  symbol_addrs.txt:1116 D_800100A4 -> g_str_u16_triple_fmt
+  symbol_addrs.txt:1117 D_800109EC -> g_memcard_icon_clut
+  symbol_addrs.txt:1118 D_80010A2C -> g_memcard_icon_image
+  symbol_addrs.txt:1134 D_8008EB0A -> g_fight_followup_playback_common_sound_frame
+  symbol_addrs.txt:1135 D_8008EB0C -> g_fight_followup_playback_red_light_effect_frame
+  symbol_addrs.txt:1136 D_8008EB10 -> g_fight_followup_playback_red_light_effect_offset_x
+  symbol_addrs.txt:1137 D_8008EB14 -> g_fight_followup_playback_red_light_effect_offset_y
+  symbol_addrs.txt:1138 D_8008EB18 -> g_fight_followup_playback_red_light_effect_offset_z
+  symbol_addrs.txt:1206 g_str_on_bbm_800A3114 -> g_str_motion_file_on
+  symbol_addrs.txt:1207 g_str_gs_bbm_800A311C -> g_str_motion_file_gs
+  symbol_addrs.txt:1208 g_str_gn_bbm_800A3124 -> g_str_motion_file_gn
+  symbol_addrs.txt:1211 g_str_pct_s5d_800A3188_fmt -> g_config_menu_left_roster_and_weapon_fmt
+  symbol_addrs.txt:1213 g_str_c4d_800A3198_fmt -> g_config_menu_left_cpu_controlled_fmt
+  symbol_addrs.txt:1230 D_800100B4 -> g_str_sound_id
+  symbol_addrs.txt:1250 g_str_bu_800109BC_fmt -> g_str_memcard_file_path_fmt
+  symbol_addrs.txt:1251 g_str_bu_800109C8_fmt -> g_str_memcard_device_fmt
+  symbol_addrs.txt:1252 g_str_multipul_model_80010D8C -> g_str_multiple_model_error
+  symbol_addrs.txt:1254 g_str_marionation_overflow_8001528C_fmt -> g_str_marionation_overflow_fmt
+  symbol_addrs.txt:1256 g_str_common_vab_start_800158B4_fmt -> g_str_common_vab_start_fmt
+  symbol_addrs.txt:1257 g_str_vab_id_mistake_800158CC_fmt -> g_str_vab_id_error_fmt
+  symbol_addrs.txt:1258 g_str_eff_prim_over_800158E0_fmt -> g_str_eff_prim_overflow_fmt
+  symbol_addrs.txt:1259 g_str_warning_800159A0 -> g_str_warning
+  symbol_addrs.txt:1861 D_80101EC8 -> g_fighter_records
+
+-- python long strings NOT rewritten --
+  tools/trace/gdbtrace.py: L2: ['D_80101EC8'] in prose/docstring — NOT rewritten
+
+DRY RUN — nothing written. Re-run with --apply.
