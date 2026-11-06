@@ -6,6 +6,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
+#include "bb2_const.h"
 #include <psxsdk/libgte.h>
 #include <psxsdk/inline_c.h>
 #include <psxsdk/gtemac.h>
@@ -2213,7 +2214,8 @@ again:
         break;
     case 10:
     case 11:
-        if (g_working_record.view_setting && g_main_loop_handler_index != 5) {
+        if (g_working_record.view_setting &&
+            g_main_loop_handler_index != MAIN_LOOP_REPLAY_UPDATE) {
             g_eff_current_tex_rec =
                 g_eff_quad_pair_first_early_and_pair_first_shaped_quad_square_tex_rec;
         } else {
@@ -2235,15 +2237,15 @@ again:
     case 7:
         if (g_eff_animated_quad_counters[mode_index] < 0x96) {
             if (g_working_record.view_setting &&
-                g_main_loop_handler_index != 5) {
+                g_main_loop_handler_index != MAIN_LOOP_REPLAY_UPDATE) {
                 g_eff_current_tex_rec =
                     g_eff_quad_pair_first_early_and_pair_first_shaped_quad_square_tex_rec;
             } else {
                 g_eff_current_tex_rec =
                     g_eff_quad_pair_first_early_strip_tex_rec;
             }
-        } else if (
-            g_working_record.view_setting && g_main_loop_handler_index != 5) {
+        } else if (g_working_record.view_setting &&
+                   g_main_loop_handler_index != MAIN_LOOP_REPLAY_UPDATE) {
             g_eff_current_tex_rec = g_eff_quad_pair_first_late_square_tex_rec;
         } else {
             g_eff_current_tex_rec =
@@ -2253,7 +2255,8 @@ again:
         prim->g0 = ~g_eff_animated_quad_counters[mode_index];
         prim->b0 = 0xFF;
     size_sel:
-        if (g_working_record.view_setting && g_main_loop_handler_index != 5) {
+        if (g_working_record.view_setting &&
+            g_main_loop_handler_index != MAIN_LOOP_REPLAY_UPDATE) {
             *g_eff_base_width = 0x80;
             *g_eff_base_height = 0x80;
             *g_eff_tpage_word = 0x2F;
@@ -2471,12 +2474,14 @@ again:
         break;
     case 6:
     case 10:
-        if (g_working_record.view_setting && g_main_loop_handler_index != 5) {
+        if (g_working_record.view_setting &&
+            g_main_loop_handler_index != MAIN_LOOP_REPLAY_UPDATE) {
             *p_w = -*p_w;
         }
     case 7:
     case 11:
-        if (g_working_record.view_setting && g_main_loop_handler_index != 5) {
+        if (g_working_record.view_setting &&
+            g_main_loop_handler_index != MAIN_LOOP_REPLAY_UPDATE) {
             *p_w =
                 *p_w * rsin(g_eff_animated_quad_counters[mode_index] & 0xFFF) >>
                 11;
@@ -2492,7 +2497,8 @@ again:
                                255) >>
                    12;
         }
-        if (g_working_record.view_setting && g_main_loop_handler_index != 5) {
+        if (g_working_record.view_setting &&
+            g_main_loop_handler_index != MAIN_LOOP_REPLAY_UPDATE) {
             prim->x0 = *g_eff_screen_xy - *p_w;
             prim->y0 = (*g_eff_screen_xy >> 16) - *p_h / 2;
             prim->x1 = *p_w + *g_eff_screen_xy;

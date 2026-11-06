@@ -700,7 +700,8 @@ void camera_UpdatePadOffset(s32 *held_bits) {
     g_camera_view_offset.camera_angles_offset.vy = 0;
     g_camera_view_offset.camera_angles_offset.vz = 0;
     g_camera_view_offset.eye_distance_offset = 0;
-    if (g_fight_tracked_view_setting != 0 && g_main_loop_handler_index == 1) {
+    if (g_fight_tracked_view_setting != 0 &&
+        g_main_loop_handler_index == MAIN_LOOP_FIGHT_UPDATE) {
         if (*held_bits & PADL2) {
             g_camera_distance_chord_used = 1;
             if (*held_bits & PADR1) {
@@ -1464,7 +1465,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
         g_fight_reinit_reuses_assets = 1;
         g_fight_nearest_start_pair_index = fight_FindNearestStartPair(
             &g_fighter_records[g_fight_followup_fighter_index].world_pos);
-        g_main_loop_handler_index = 0;
+        g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
         goto end;
     case FIGHT_MODE_VS:
     case FIGHT_MODE_NETWORK: {
@@ -1484,7 +1485,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
     case FIGHT_MODE_TEAM:
         goto end;
     }
-    g_main_loop_handler_index = 4;
+    g_main_loop_handler_index = MAIN_LOOP_REPLAY_INIT;
 end:
     if (g_fight_first_fighter_win_count >= 100) {
         g_fight_first_fighter_win_count = 99;
@@ -1585,7 +1586,7 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
             } else if (g_fight_reinit_phase_timer == 0x82) {
                 g_fight_reinit_phase_timer = 0;
                 g_fight_reinit_reuses_assets = 1;
-                g_main_loop_handler_index = 0;
+                g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
             }
         } else if (g_fight_out_of_bounds_phase_timer != 0) {
             g_prim_buf_cursor += gpu_DrawSelectedStretchedSheetPair(
@@ -1599,7 +1600,7 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                     g_fight_mark_tally_phase_timer = 1;
                 } else {
                     g_fight_reinit_reuses_assets = 1;
-                    g_main_loop_handler_index = 0;
+                    g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
                 }
             }
         } else if (g_fight_mark_tally_phase_timer != 0) {
@@ -1611,7 +1612,7 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                     g_fight_point_award_phase_timer = 0x5A;
                 } else {
                     g_fight_reinit_reuses_assets = 1;
-                    g_main_loop_handler_index = 0;
+                    g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
                 }
             }
         } else if (g_fight_point_award_phase_timer != 0) {
@@ -1633,7 +1634,7 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                     g_fight_match_result_timer = 1;
                 } else {
                     g_fight_reinit_reuses_assets = 1;
-                    g_main_loop_handler_index = 0;
+                    g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
                 }
             }
         } else if (g_fight_sound_cue_countdown != 0) {
@@ -2093,7 +2094,7 @@ void fight_Init(void) {
     g_gpu_jitter_burst_enabled = 0;
     eff_Init();
     g_fight_reinit_reuses_assets = 0;
-    g_main_loop_handler_index = 1;
+    g_main_loop_handler_index = MAIN_LOOP_FIGHT_UPDATE;
     fight_QueuePositionalSoundWithRandomAlternate();
     snd_StartFightCdAudio();
     snd_ResetStageSoundState();
@@ -2150,7 +2151,7 @@ void camera_ApplyFightView(void) {
         view_record = &g_camera_default_view_record;
     }
 
-    if (g_main_loop_handler_index == 1) {
+    if (g_main_loop_handler_index == MAIN_LOOP_FIGHT_UPDATE) {
         local.focus_point.x = view_record->focus_point.x +
                               g_camera_view_offset.focus_point_offset.x;
         local.focus_point.y = view_record->focus_point.y +
@@ -2284,7 +2285,7 @@ void fight_InitFighterFocusViewAndThreeItemMenu(void) {
     g_fighter_records[0].pose_blend_requests = 0;
     g_handler_frame_counter = 0;
     g_fight_choice_confirm_delay = 0;
-    g_main_loop_handler_index = 0xD;
+    g_main_loop_handler_index = MAIN_LOOP_FOCUS_MENU_UPDATE;
     g_fight_choice_menu_first_cursor = v < 1;
     g_fight_choice_menu_cursor = v < 1;
 }
@@ -2373,20 +2374,20 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
         if (g_fighter_records[1].cpu_controlled != 0) {
             fighter_HalveCpuTally(1);
         }
-        g_main_loop_handler_index = 0;
+        g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
         return;
     }
     if (g_fight_choice_menu_cursor == 1) {
         cdrom_PauseAndWait();
         snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
         g_menu_mode_subflow_init_pending = 1;
-        g_main_loop_handler_index = 8;
+        g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
         return;
     }
     if (g_fight_choice_menu_cursor == 2) {
         cdrom_PauseAndWait();
         snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
-        g_main_loop_handler_index = 8;
+        g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
     }
 }
 
@@ -2414,7 +2415,7 @@ void fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAnd
 
     eff_StopCommands();
     g_handler_frame_counter = 0;
-    g_main_loop_handler_index = 0x11;
+    g_main_loop_handler_index = MAIN_LOOP_INTERPOLATED_VIEW_UPDATE;
 }
 
 void fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress(
@@ -2448,7 +2449,7 @@ void fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPr
     if (g_handler_frame_counter >= 0x69 || (g_pad_state.pressed & 0x400040)) {
         switch (g_fight_mode_selector) {
         case FIGHT_MODE_VS:
-            next_handler_index = 0xC;
+            next_handler_index = MAIN_LOOP_FOCUS_MENU_INIT;
             break;
         case FIGHT_MODE_VSCPU:
             if (g_fight_followup_fighter_index == 0) {
@@ -2457,14 +2458,14 @@ void fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPr
                 fight_AdvanceOpponentOrder();
                 return;
             }
-            next_handler_index = 0xC;
+            next_handler_index = MAIN_LOOP_FOCUS_MENU_INIT;
             break;
         case FIGHT_MODE_NETWORK:
-            next_handler_index = 0xC;
+            next_handler_index = MAIN_LOOP_FOCUS_MENU_INIT;
             break;
         default:
             snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
-            next_handler_index = 2;
+            next_handler_index = MAIN_LOOP_CONFIG_MENU_INIT;
             break;
         }
         g_main_loop_handler_index = next_handler_index;
@@ -5894,7 +5895,7 @@ skip_62:
         fighter_record->frame_flags |= 0x80;
     }
     if (fighter_record->is_defeated != 0) {
-        if (g_main_loop_handler_index != 0xD) {
+        if (g_main_loop_handler_index != MAIN_LOOP_FOCUS_MENU_UPDATE) {
             fighter_record->draw_move_set = 4;
         }
     } else {

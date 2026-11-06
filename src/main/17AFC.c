@@ -2543,10 +2543,10 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
 
     if (g_fighter_records[0].move_kind == 5) {
         g_fight_followup_fighter_index = 1;
-        g_main_loop_handler_index = 0x1C;
+        g_main_loop_handler_index = MAIN_LOOP_PAIR_PLAYBACK_INIT;
     } else if (g_fighter_records[1].move_kind == 5) {
         g_fight_followup_fighter_index = 0;
-        g_main_loop_handler_index = 0x1C;
+        g_main_loop_handler_index = MAIN_LOOP_PAIR_PLAYBACK_INIT;
     }
 
     for (i = 0; i < 3; i++) {
@@ -5755,7 +5755,7 @@ void snd_UpdateStageSounds(void) {
 void ResetGraphClearFrameCounterAndSetMainLoopHandler3(void) {
     gpu_ResetGraphMode1();
     g_handler_frame_counter = 0;
-    g_main_loop_handler_index = 3;
+    g_main_loop_handler_index = MAIN_LOOP_CONFIG_MENU_UPDATE;
 }
 
 void fight_BuildOpponentOrder(void) {
@@ -5893,9 +5893,9 @@ void fight_AdvanceOpponentOrder(void) {
             if (group_flag != 0)
                 val = 3;
             g_fight_presentation_index = val;
-            g_main_loop_handler_index = 0x12;
+            g_main_loop_handler_index = MAIN_LOOP_IMAGE_PLAYBACK_INIT;
         } else {
-            g_main_loop_handler_index = 0x20;
+            g_main_loop_handler_index = MAIN_LOOP_DECIMAL_PRESENTATION_INIT;
         }
     } else {
         u8 opponent_character_index;
@@ -5925,7 +5925,7 @@ void fight_AdvanceOpponentOrder(void) {
         g_fight_config.cpu_base_levels[1] = 0x800;
         {
             s16 v = (&g_fight_opponent_stage_indices)[opponent_character_index];
-            g_main_loop_handler_index = 0;
+            g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
             g_fight_stage_index = v;
         }
     }
@@ -6009,7 +6009,7 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
         }
 
         fight_InsertBestTime();
-        g_main_loop_handler_index = 4;
+        g_main_loop_handler_index = MAIN_LOOP_REPLAY_INIT;
         return 0;
     } else {
         u8 *table = g_fight_step_table[tableIndex];
@@ -6045,7 +6045,7 @@ void fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank(void) {
             presentation_index = 7;
         }
         g_fight_presentation_index = presentation_index;
-        g_main_loop_handler_index = 0x12;
+        g_main_loop_handler_index = MAIN_LOOP_IMAGE_PLAYBACK_INIT;
         return;
     }
     if (g_fight_no_restart_unlock_bit_newly_set != 0) {
@@ -6055,13 +6055,13 @@ void fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank(void) {
             presentation_index = 9;
         }
         g_fight_presentation_index = presentation_index;
-        g_main_loop_handler_index = 0x12;
+        g_main_loop_handler_index = MAIN_LOOP_IMAGE_PLAYBACK_INIT;
         return;
     }
     if (g_fight_best_time_rank < 3) {
-        g_main_loop_handler_index = 0x1A;
+        g_main_loop_handler_index = MAIN_LOOP_MEMCARD_SAVE_INIT;
     } else {
-        g_main_loop_handler_index = 8;
+        g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
     }
 }
 
@@ -6145,7 +6145,7 @@ void fight_AdvanceMatch(void) {
     if (g_fight_match_cursor == g_fight_match_count) {
         g_local_ot_draw_mode = LOCAL_OT_DRAW_NONE;
         g_gpu_jitter_burst_enabled = 0;
-        g_main_loop_handler_index = 0x14;
+        g_main_loop_handler_index = MAIN_LOOP_MATCH_TALLY_INIT;
     } else {
         s32 fighter_index;
         g_fight_time_limit_elapsed_frames = 0;
@@ -6169,7 +6169,7 @@ void fight_AdvanceMatch(void) {
         }
         gpu_HideResetAndClear();
         cdrom_PauseAndWait();
-        g_main_loop_handler_index = 0;
+        g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
     }
 }
 

@@ -47,7 +47,7 @@ void ApplyPendingConfigAndInitializeMode(void) {
     case FIGHT_MODE_NETWORK:
         g_fight_config.pending_view_setting = 1;
         g_local_ot_draw_mode = LOCAL_OT_DRAW_LOADING_SCREEN;
-        g_main_loop_handler_index = 0;
+        g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
         g_fight_tracked_fighter_index = (g_comb_local_side != 0);
         break;
     case FIGHT_MODE_STORY:
@@ -74,7 +74,7 @@ void ApplyPendingConfigAndInitializeMode(void) {
         g_fight_stage_index = 0x22;
         fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags();
         g_local_ot_draw_mode = LOCAL_OT_DRAW_LOADING_SCREEN;
-        g_main_loop_handler_index = 0;
+        g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
         break;
     case FIGHT_MODE_TEAM:
         g_fight_stage_index = (D_800A38E1 & 1) ? 0x21 : 0x20;
@@ -94,14 +94,14 @@ void ApplyPendingConfigAndInitializeMode(void) {
                     ? 0xE
                     : 0x1D;
         }
-        g_main_loop_handler_index = 0;
+        g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
         break;
     case FIGHT_MODE_VS:
         g_local_ot_draw_mode = LOCAL_OT_DRAW_LOADING_SCREEN;
-        g_main_loop_handler_index = 0;
+        g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
         break;
     default:
-        g_main_loop_handler_index = 0;
+        g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
         break;
     }
     if ((s8)g_fight_config.fighter_setup[5] != 0) {

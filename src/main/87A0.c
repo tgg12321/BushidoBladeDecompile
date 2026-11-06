@@ -675,7 +675,7 @@ void pad_Update(s32 arg0) {
     pad.held = held_bits;
     camera_UpdatePadOffset(&pad.held);
 
-    if (g_main_loop_handler_index == 1 && arg0 == 0) {
+    if (g_main_loop_handler_index == MAIN_LOOP_FIGHT_UPDATE && arg0 == 0) {
 
         switch (g_fight_mode_selector) {
         case FIGHT_MODE_VS:

@@ -1,0 +1,136 @@
+kind	where	literal	name	role	evidence
+enum	include/bb2_const.h	0	MainLoopHandler.MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index value 0: main calls g_main_loop_handlers[0] = fight_Init (d_7D870.c table)	sets 1; runtime: 0 at roster / t_fight / bout starts (group-battle-*, story-concede-1, versus-cpu-clear-retail-1 opp2..5); runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	1	MainLoopHandler.MAIN_LOOP_FIGHT_UPDATE	g_main_loop_handler_index value 1: main calls g_main_loop_handlers[1] = fight_Update (d_7D870.c table)	runtime: 1 in every fight phase (versus-2p-*, versus-cpu-*, story-*); runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	2	MainLoopHandler.MAIN_LOOP_CONFIG_MENU_INIT	g_main_loop_handler_index value 2: main calls g_main_loop_handlers[2] = ResetGraphClearFrameCounterAndSetMainLoopHandler3 (d_7D870.c table)	its only store is 3 (17AFC.c:5758), the config menu; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	3	MainLoopHandler.MAIN_LOOP_CONFIG_MENU_UPDATE	g_main_loop_handler_index value 3: main calls g_main_loop_handlers[3] = menu_PrintEditAndApplyConfigWithPerPadCursors (d_7D870.c table)	runtime: debug-config-menu-1 t_apply reads 3, then 0 after ApplyPendingConfigAndInitializeMode; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	4	MainLoopHandler.MAIN_LOOP_REPLAY_INIT	g_main_loop_handler_index value 4: main calls g_main_loop_handlers[4] = replay_Start (d_7D870.c table)	sets 5 (28708.c:1321); runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	5	MainLoopHandler.MAIN_LOOP_REPLAY_UPDATE	g_main_loop_handler_index value 5: main calls g_main_loop_handlers[5] = replay_PlayFrame (d_7D870.c table)	runtime: story-ending-poke-1 t_ko reads 5 (the KO replay); eff.c skips the tracked view while 5; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	6	MainLoopHandler.MAIN_LOOP_DESCRIPTOR_PLAYBACK_INIT	g_main_loop_handler_index value 6: main calls g_main_loop_handlers[6] = fight_StartDescriptorPlaybackAndAudio (d_7D870.c table)	sets 7; runtime: 6 at story-ending-poke-1 epilogue and story-substitute-concede-1 branch; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	7	MainLoopHandler.MAIN_LOOP_DESCRIPTOR_PLAYBACK_UPDATE	g_main_loop_handler_index value 7: main calls g_main_loop_handlers[7] = fight_HandleDescriptorPlaybackCompletion (d_7D870.c table)	sets 0 (2B344.c:599 / 621); runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	8	MainLoopHandler.MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index value 8: main calls g_main_loop_handlers[8] = menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu (d_7D870.c table)	sets 9 (25C38.c:52); runtime: versus-2p-rematch-1 top_menu_2 reads 8 then 9; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	9	MainLoopHandler.MAIN_LOOP_ROW_MENU_UPDATE	g_main_loop_handler_index value 9: main calls g_main_loop_handlers[9] = menu_UpdateRowMenuAndSubflows (d_7D870.c table)	runtime: 9 on every top / sub menu, char / weapon / stage select, story text, memory card screens; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0xA	MainLoopHandler.MAIN_LOOP_SCROLLING_SPRITE_INIT	g_main_loop_handler_index value 10: main calls g_main_loop_handlers[10] = fight_InitScrollingSpriteDisplayAndAudio (d_7D870.c table)	sets 0xB; runtime: story-ending-poke-1 t_credits reads 10; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0xB	MainLoopHandler.MAIN_LOOP_SCROLLING_SPRITE_UPDATE	g_main_loop_handler_index value 11: main calls g_main_loop_handlers[11] = fight_UpdateScrollingSpriteDisplayAndMergeBitFlags (d_7D870.c table)	runtime: story-ending-poke-1 credits reads 11; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0xC	MainLoopHandler.MAIN_LOOP_FOCUS_MENU_INIT	g_main_loop_handler_index value 12: main calls g_main_loop_handlers[12] = fight_InitFighterFocusViewAndThreeItemMenu (d_7D870.c table)	sets 0xD (9F9C.c:2287); runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0xD	MainLoopHandler.MAIN_LOOP_FOCUS_MENU_UPDATE	g_main_loop_handler_index value 13: main calls g_main_loop_handlers[13] = fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange (d_7D870.c table)	runtime: 13 on the post-KO rematch menu (story-pov-rematch-1, versus-2p-rematch-1); runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0xF	MainLoopHandler.MAIN_LOOP_MOVIE	g_main_loop_handler_index value 15: main calls g_main_loop_handlers[15] = ExecMovieOverlayAndReinitialize (d_7D870.c table)	the main loop's first handler (docs/engine/main_loop.md); runtime: 15 at boot t_menu and on the title / attract movie (title-attract-1, top-menu-back-1); runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x10	MainLoopHandler.MAIN_LOOP_INTERPOLATED_VIEW_INIT	g_main_loop_handler_index value 16: main calls g_main_loop_handlers[16] = fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase (d_7D870.c table)	sets 0x11 (9F9C.c:2417); no capture; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x11	MainLoopHandler.MAIN_LOOP_INTERPOLATED_VIEW_UPDATE	g_main_loop_handler_index value 17: main calls g_main_loop_handlers[17] = fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress (d_7D870.c table)	stores 0xC / 2 through next_handler_index; no capture; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x12	MainLoopHandler.MAIN_LOOP_IMAGE_PLAYBACK_INIT	g_main_loop_handler_index value 18: main calls g_main_loop_handlers[18] = fight_InitImageAndPlaybackPresentation (d_7D870.c table)	sets 0x13; runtime: story-ending-poke-1 dance reads 18; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x13	MainLoopHandler.MAIN_LOOP_IMAGE_PLAYBACK_UPDATE	g_main_loop_handler_index value 19: main calls g_main_loop_handlers[19] = fight_UpdateSplitWipeImageAndPlaybackPresentation (d_7D870.c table)	runtime: versus-cpu-ending-1 dance, group-battle-shainto-wins-1 victory read 19; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x14	MainLoopHandler.MAIN_LOOP_MATCH_TALLY_INIT	g_main_loop_handler_index value 20: main calls g_main_loop_handlers[20] = fight_TallyMatchResultsAndInitPresentation (d_7D870.c table)	sets 0x15; runtime: group-battle-* result reads 20; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x15	MainLoopHandler.MAIN_LOOP_MATCH_TALLY_UPDATE	g_main_loop_handler_index value 21: main calls g_main_loop_handlers[21] = fight_UpdateMatchTallyPresentation (d_7D870.c table)	the match-tally per-frame handler; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x16	MainLoopHandler.MAIN_LOOP_COMMAND_STREAM_IMAGE_INIT	g_main_loop_handler_index value 22: main calls g_main_loop_handlers[22] = fight_InitCommandStreamImageLoad (d_7D870.c table)	sets 0x17 (2B344.c:458); runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x17	MainLoopHandler.MAIN_LOOP_COMMAND_STREAM_IMAGE_UPDATE	g_main_loop_handler_index value 23: main calls g_main_loop_handlers[23] = fight_UpdateCommandStreamImageLoadAndResume (d_7D870.c table)	runtime: story-* stage_card / intro read 23; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x18	MainLoopHandler.MAIN_LOOP_ROTATING_MENU_INIT	g_main_loop_handler_index value 24: main calls g_main_loop_handlers[24] = fight_InitRotatingViewThreeOptionChoice (d_7D870.c table)	sets 0x19; runtime: group-battle-draw-1 rematch_menu reads 24; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x19	MainLoopHandler.MAIN_LOOP_ROTATING_MENU_UPDATE	g_main_loop_handler_index value 25: main calls g_main_loop_handlers[25] = fight_UpdateRotatingViewThreeOptionChoice (d_7D870.c table)	runtime: 25 on the post-concede / post-group rematch menus (versus-2p-concede-1, story-concede-1 after, group-battle-*); runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x1A	MainLoopHandler.MAIN_LOOP_MEMCARD_SAVE_INIT	g_main_loop_handler_index value 26: main calls g_main_loop_handlers[26] = menu_ReleaseResourcesCloseVabsAndInitRowMenu (d_7D870.c table)	sets 0x1B (25C38.c:408); runtime: story-ending-poke-1 save_prompt reads 26; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x1B	MainLoopHandler.MAIN_LOOP_MEMCARD_SAVE_UPDATE	g_main_loop_handler_index value 27: main calls g_main_loop_handlers[27] = DrawGradientAndStepMemcardSavePromptsThenSelectRowMenuInit (d_7D870.c table)	memcard_StepSaveOverwriteAndFormatPrompts; runtime: story-ending-poke-1 t_save reads 27; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x1C	MainLoopHandler.MAIN_LOOP_PAIR_PLAYBACK_INIT	g_main_loop_handler_index value 28: main calls g_main_loop_handlers[28] = fight_InitNearestStartPairPlayback (d_7D870.c table)	sets 0x1D (2B344.c:1123); runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x1D	MainLoopHandler.MAIN_LOOP_PAIR_PLAYBACK_UPDATE	g_main_loop_handler_index value 29: main calls g_main_loop_handlers[29] = fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams (d_7D870.c table)	runtime: 29 on the concede cutscene (story-concede-1 after, versus-2p-concede-1 cutscene, story-substitute-concede-1); runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x1E	MainLoopHandler.MAIN_LOOP_TIME_RECORD_INIT	g_main_loop_handler_index value 30: main calls g_main_loop_handlers[30] = fight_PackTimeRecordsAndInitPresentation (d_7D870.c table)	sets 0x1F (2B344.c:936); runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x1F	MainLoopHandler.MAIN_LOOP_TIME_RECORD_UPDATE	g_main_loop_handler_index value 31: main calls g_main_loop_handlers[31] = fight_UpdateTimeRecordPresentation (d_7D870.c table)	the time-record per-frame handler; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x20	MainLoopHandler.MAIN_LOOP_DECIMAL_PRESENTATION_INIT	g_main_loop_handler_index value 32: main calls g_main_loop_handlers[32] = fight_InitRotatingViewDecimalPresentation (d_7D870.c table)	sets 0x21; runtime: versus-cpu-clear-retail-1 clear reads 32; runtime matrix/values.tsv (D_800A3834 per phase)
+enum	include/bb2_const.h	0x21	MainLoopHandler.MAIN_LOOP_DECIMAL_PRESENTATION_UPDATE	g_main_loop_handler_index value 33: main calls g_main_loop_handlers[33] = fight_UpdateRotatingViewDecimalPresentation (d_7D870.c table)	runtime: versus-cpu-clear-1 clear reads 33; runtime matrix/values.tsv (D_800A3834 per phase)
+site	src/main/17AFC.c:2546	0x1C	MAIN_LOOP_PAIR_PLAYBACK_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/17AFC.c:2549	0x1C	MAIN_LOOP_PAIR_PLAYBACK_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/17AFC.c:5758	3	MAIN_LOOP_CONFIG_MENU_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/17AFC.c:5896	0x12	MAIN_LOOP_IMAGE_PLAYBACK_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/17AFC.c:5898	0x20	MAIN_LOOP_DECIMAL_PRESENTATION_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/17AFC.c:5928	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/17AFC.c:6012	4	MAIN_LOOP_REPLAY_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/17AFC.c:6048	0x12	MAIN_LOOP_IMAGE_PLAYBACK_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/17AFC.c:6058	0x12	MAIN_LOOP_IMAGE_PLAYBACK_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/17AFC.c:6062	0x1A	MAIN_LOOP_MEMCARD_SAVE_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/17AFC.c:6064	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/17AFC.c:6148	0x14	MAIN_LOOP_MATCH_TALLY_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/17AFC.c:6172	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/24BF0.c:50	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/24BF0.c:77	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/24BF0.c:97	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/24BF0.c:101	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/24BF0.c:104	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/25C38.c:52	9	MAIN_LOOP_ROW_MENU_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/25C38.c:155	9	MAIN_LOOP_ROW_MENU_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/25C38.c:249	0xF	MAIN_LOOP_MOVIE	g_main_loop_handler_index store	see the enum row
+site	src/main/25C38.c:278	0xF	MAIN_LOOP_MOVIE	g_main_loop_handler_index store	see the enum row
+site	src/main/25C38.c:383	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/25C38.c:389	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/25C38.c:394	9	MAIN_LOOP_ROW_MENU_UPDATE	g_main_loop_handler_index != test	see the enum row
+site	src/main/25C38.c:408	0x1B	MAIN_LOOP_MEMCARD_SAVE_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/25C38.c:416	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/28708.c:1321	5	MAIN_LOOP_REPLAY_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/28708.c:1586	0xC	MAIN_LOOP_FOCUS_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/28708.c:1601	0x1E	MAIN_LOOP_TIME_RECORD_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/28708.c:1603	0xC	MAIN_LOOP_FOCUS_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/28708.c:1609	0x10	MAIN_LOOP_INTERPOLATED_VIEW_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/28708.c:1611	0xC	MAIN_LOOP_FOCUS_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/28708.c:1681	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:332	6	MAIN_LOOP_DESCRIPTOR_PLAYBACK_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:340	6	MAIN_LOOP_DESCRIPTOR_PLAYBACK_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:399	22	MAIN_LOOP_COMMAND_STREAM_IMAGE_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:411	18	MAIN_LOOP_IMAGE_PLAYBACK_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:413	10	MAIN_LOOP_SCROLLING_SPRITE_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:419	6	MAIN_LOOP_DESCRIPTOR_PLAYBACK_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:434	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:459	0x17	MAIN_LOOP_COMMAND_STREAM_IMAGE_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:583	7	MAIN_LOOP_DESCRIPTOR_PLAYBACK_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:600	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:622	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:648	0xB	MAIN_LOOP_SCROLLING_SPRITE_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:685	0x1A	MAIN_LOOP_MEMCARD_SAVE_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:687	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:702	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:772	0x13	MAIN_LOOP_IMAGE_PLAYBACK_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:789	0x12	MAIN_LOOP_IMAGE_PLAYBACK_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:792	0x18	MAIN_LOOP_ROTATING_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:794	0x1A	MAIN_LOOP_MEMCARD_SAVE_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:796	0x1A	MAIN_LOOP_MEMCARD_SAVE_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:798	0xA	MAIN_LOOP_SCROLLING_SPRITE_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:800	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:804	0x13	MAIN_LOOP_IMAGE_PLAYBACK_UPDATE	g_main_loop_handler_index != test	see the enum row
+site	src/main/2B344.c:806	0x12	MAIN_LOOP_IMAGE_PLAYBACK_INIT	g_main_loop_handler_index != test	see the enum row
+site	src/main/2B344.c:841	0x15	MAIN_LOOP_MATCH_TALLY_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:872	0x18	MAIN_LOOP_ROTATING_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:881	0x12	MAIN_LOOP_IMAGE_PLAYBACK_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:937	0x1F	MAIN_LOOP_TIME_RECORD_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:958	0x19	MAIN_LOOP_ROTATING_MENU_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:1029	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:1035	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:1040	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:1048	0x21	MAIN_LOOP_DECIMAL_PRESENTATION_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:1074	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:1124	0x1D	MAIN_LOOP_PAIR_PLAYBACK_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/2B344.c:1217	0x18	MAIN_LOOP_ROTATING_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/6CF8.c:406	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/6CF8.c:409	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/6CF8.c:446	0xF	MAIN_LOOP_MOVIE	g_main_loop_handler_index store	see the enum row
+site	src/main/6CF8.c:468	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/6CF8.c:511	1	MAIN_LOOP_FIGHT_UPDATE	g_main_loop_handler_index != test	see the enum row
+site	src/main/87A0.c:678	1	MAIN_LOOP_FIGHT_UPDATE	g_main_loop_handler_index == test	see the enum row
+site	src/main/9F9C.c:703	1	MAIN_LOOP_FIGHT_UPDATE	g_main_loop_handler_index == test	see the enum row
+site	src/main/9F9C.c:1467	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/9F9C.c:1487	4	MAIN_LOOP_REPLAY_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/9F9C.c:1588	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/9F9C.c:1602	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/9F9C.c:1614	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/9F9C.c:1636	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/9F9C.c:2096	1	MAIN_LOOP_FIGHT_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/9F9C.c:2153	1	MAIN_LOOP_FIGHT_UPDATE	g_main_loop_handler_index == test	see the enum row
+site	src/main/9F9C.c:2287	0xD	MAIN_LOOP_FOCUS_MENU_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/9F9C.c:2376	0	MAIN_LOOP_FIGHT_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/9F9C.c:2383	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/9F9C.c:2389	8	MAIN_LOOP_ROW_MENU_INIT	g_main_loop_handler_index store	see the enum row
+site	src/main/9F9C.c:2417	0x11	MAIN_LOOP_INTERPOLATED_VIEW_UPDATE	g_main_loop_handler_index store	see the enum row
+site	src/main/9F9C.c:2451	0xC	MAIN_LOOP_FOCUS_MENU_INIT	next_handler_index store (copied to g_main_loop_handler_index 9F9C.c:2470)	see the enum row
+site	src/main/9F9C.c:2460	0xC	MAIN_LOOP_FOCUS_MENU_INIT	next_handler_index store (copied to g_main_loop_handler_index 9F9C.c:2470)	see the enum row
+site	src/main/9F9C.c:2463	0xC	MAIN_LOOP_FOCUS_MENU_INIT	next_handler_index store (copied to g_main_loop_handler_index 9F9C.c:2470)	see the enum row
+site	src/main/9F9C.c:2467	2	MAIN_LOOP_CONFIG_MENU_INIT	next_handler_index store (copied to g_main_loop_handler_index 9F9C.c:2470)	see the enum row
+site	src/main/9F9C.c:5897	0xD	MAIN_LOOP_FOCUS_MENU_UPDATE	g_main_loop_handler_index != test	see the enum row
+site	src/main/eff.c:2216	5	MAIN_LOOP_REPLAY_UPDATE	g_main_loop_handler_index != test	see the enum row
+site	src/main/eff.c:2238	5	MAIN_LOOP_REPLAY_UPDATE	g_main_loop_handler_index != test	see the enum row
+site	src/main/eff.c:2246	5	MAIN_LOOP_REPLAY_UPDATE	g_main_loop_handler_index != test	see the enum row
+site	src/main/eff.c:2256	5	MAIN_LOOP_REPLAY_UPDATE	g_main_loop_handler_index != test	see the enum row
+site	src/main/eff.c:2474	5	MAIN_LOOP_REPLAY_UPDATE	g_main_loop_handler_index != test	see the enum row
+site	src/main/eff.c:2479	5	MAIN_LOOP_REPLAY_UPDATE	g_main_loop_handler_index != test	see the enum row
+site	src/main/eff.c:2495	5	MAIN_LOOP_REPLAY_UPDATE	g_main_loop_handler_index != test	see the enum row

@@ -329,7 +329,7 @@ void fight_SetFixedFighterBytesAndLoadBothFighters(void) {
 
 void fight_QueueSubstitutionCommandDescriptorPlayback(s32 descriptor_index) {
     D_800A37B0 = descriptor_index;
-    g_main_loop_handler_index = 6;
+    g_main_loop_handler_index = MAIN_LOOP_DESCRIPTOR_PLAYBACK_INIT;
     g_fight_active_playback_descriptor =
         g_fight_first_fighter_substitution_command_operands +
         (descriptor_index * 4 + 1);
@@ -337,7 +337,7 @@ void fight_QueueSubstitutionCommandDescriptorPlayback(s32 descriptor_index) {
 
 void fight_QueueFixedFighterCommandDescriptorPlayback(s32 arg0) {
     D_800A390C = arg0;
-    g_main_loop_handler_index = 6;
+    g_main_loop_handler_index = MAIN_LOOP_DESCRIPTOR_PLAYBACK_INIT;
     g_fight_active_playback_descriptor = D_800A385C + (arg0 * 4 - 4);
 }
 
@@ -396,7 +396,7 @@ void fight_RunCommandStream(void) {
             g_fight_stage_command_count = counter + 1;
             g_fight_stage_index = byte;
             g_fight_stage_list_entries[counter] = byte;
-            g_main_loop_handler_index = 22;
+            g_main_loop_handler_index = MAIN_LOOP_COMMAND_STREAM_IMAGE_INIT;
             var_0 = 1;
             fighter_ResetBoneGroupHitState(g_fighter_records);
             g_fight_stage_start_count = 0;
@@ -408,15 +408,15 @@ void fight_RunCommandStream(void) {
                 g_fight_presentation_index =
                     (g_fighter_group_flags[g_fighter_records[0]
                                                .character_data_index] != 0);
-                g_main_loop_handler_index = 18;
+                g_main_loop_handler_index = MAIN_LOOP_IMAGE_PLAYBACK_INIT;
             } else {
-                g_main_loop_handler_index = 10;
+                g_main_loop_handler_index = MAIN_LOOP_SCROLLING_SPRITE_INIT;
             }
             var_0 = 1;
             break;
 
         case 19:
-            g_main_loop_handler_index = 6;
+            g_main_loop_handler_index = MAIN_LOOP_DESCRIPTOR_PLAYBACK_INIT;
             g_fight_active_playback_descriptor = g_fight_command_stream_cursor;
             g_fight_command_stream_cursor += 4;
             var_0 = 1;
@@ -431,7 +431,7 @@ void fight_RunCommandStream(void) {
             fight_ConfigureFighter1FromLookupAndOperandsAndLoad(
                 g_fight_first_fighter_substitution_command_operands + 1);
         case 18:
-            g_main_loop_handler_index = 0;
+            g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
             g_fight_stage_start_count++;
             var_0 = 1;
             break;
@@ -456,7 +456,7 @@ void fight_InitCommandStreamImageLoad(void) {
     gpu_HideResetAndClear();
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     g_handler_frame_counter = 0;
-    g_main_loop_handler_index = 0x17;
+    g_main_loop_handler_index = MAIN_LOOP_COMMAND_STREAM_IMAGE_UPDATE;
     gpu_SetDispMaskOn();
 }
 
@@ -580,7 +580,7 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
     cdrom_StartAudio(file_index, g_fight_active_playback_descriptor[2]);
     cdrom_WaitAudioStarted();
     g_handler_frame_counter = 0;
-    g_main_loop_handler_index = 7;
+    g_main_loop_handler_index = MAIN_LOOP_DESCRIPTOR_PLAYBACK_UPDATE;
     gpu_SetDispMaskOn();
 }
 
@@ -597,7 +597,7 @@ void fight_HandleDescriptorPlaybackCompletion(void) {
         return;
     }
     if (g_fight_first_fighter_substitution_command_operands != 0) {
-        g_main_loop_handler_index = 0;
+        g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
         switch (D_800A37B0) {
         case 1:
         case 2:
@@ -619,7 +619,7 @@ void fight_HandleDescriptorPlaybackCompletion(void) {
         s32 val = D_800A390C;
 
         if (val == 1) {
-            g_main_loop_handler_index = 0;
+            g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
             return;
         }
         if (val == 0 || val >= 4) {
@@ -645,7 +645,7 @@ void fight_InitScrollingSpriteDisplayAndAudio(void) {
         cdrom_StartAudio(file_index, 4);
     }
     cdrom_WaitAudioStarted();
-    g_main_loop_handler_index = 0xB;
+    g_main_loop_handler_index = MAIN_LOOP_SCROLLING_SPRITE_UPDATE;
     gpu_SetDispMaskOn();
 }
 
@@ -682,9 +682,9 @@ void fight_UpdateScrollingSpriteDisplayAndMergeBitFlags(void) {
             }
         }
         if (changed) {
-            g_main_loop_handler_index = 0x1A;
+            g_main_loop_handler_index = MAIN_LOOP_MEMCARD_SAVE_INIT;
         } else {
-            g_main_loop_handler_index = 8;
+            g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
         }
     }
 }
@@ -699,7 +699,7 @@ void ExecMovieOverlayAndReinitialize(void) {
     arena_base = (s32)arena_GetBase();
     sys_ExecMovieOverlay(arena_base, (s32)0x80118000, 1, 0xCF8, 0xB01);
     func_80046B44();
-    g_main_loop_handler_index = 8;
+    g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
 }
 
 extern void fight_RequestOneFighterEntriesAndReloadOnChange(s32);
@@ -769,7 +769,7 @@ void fight_InitImageAndPlaybackPresentation(void) {
         cdrom_WaitAudioStarted();
     }
     g_handler_frame_counter = 0;
-    g_main_loop_handler_index = 0x13;
+    g_main_loop_handler_index = MAIN_LOOP_IMAGE_PLAYBACK_UPDATE;
     gpu_SetDispMaskOn();
 }
 
@@ -786,24 +786,24 @@ void fight_UpdateSplitWipeImageAndPlaybackPresentation(void) {
                                           .character_data_index] != 0
                     ? 9
                     : 8;
-            g_main_loop_handler_index = 0x12;
+            g_main_loop_handler_index = MAIN_LOOP_IMAGE_PLAYBACK_INIT;
         } else {
             if ((u32)(g_fight_presentation_index - 4) < 2u) {
-                g_main_loop_handler_index = 0x18;
+                g_main_loop_handler_index = MAIN_LOOP_ROTATING_MENU_INIT;
             } else if ((u32)(g_fight_presentation_index - 6) < 2u) {
-                g_main_loop_handler_index = 0x1A;
+                g_main_loop_handler_index = MAIN_LOOP_MEMCARD_SAVE_INIT;
             } else if ((u32)(g_fight_presentation_index - 8) < 2u) {
-                g_main_loop_handler_index = 0x1A;
+                g_main_loop_handler_index = MAIN_LOOP_MEMCARD_SAVE_INIT;
             } else if (g_fight_presentation_index < 2u) {
-                g_main_loop_handler_index = 0xA;
+                g_main_loop_handler_index = MAIN_LOOP_SCROLLING_SPRITE_INIT;
             } else {
-                g_main_loop_handler_index = 8;
+                g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
             }
         }
     }
-    if (g_main_loop_handler_index != 0x13) {
+    if (g_main_loop_handler_index != MAIN_LOOP_IMAGE_PLAYBACK_UPDATE) {
         cdrom_PauseAndWait();
-        if (g_main_loop_handler_index != 0x12) {
+        if (g_main_loop_handler_index != MAIN_LOOP_IMAGE_PLAYBACK_INIT) {
             motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock();
         }
     }
@@ -838,7 +838,7 @@ void fight_TallyMatchResultsAndInitPresentation(void) {
     }
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     g_handler_frame_counter = 0;
-    g_main_loop_handler_index = 0x15;
+    g_main_loop_handler_index = MAIN_LOOP_MATCH_TALLY_UPDATE;
 }
 
 void fight_UpdateMatchTallyPresentation(void) {
@@ -869,7 +869,7 @@ void fight_UpdateMatchTallyPresentation(void) {
     if ((g_pad_state.pressed & 0x400040) != 0 ||
         g_handler_frame_counter >= 0xF1) {
         if (g_fight_tally_winner_index == 2) {
-            g_main_loop_handler_index = 0x18;
+            g_main_loop_handler_index = MAIN_LOOP_ROTATING_MENU_INIT;
         } else {
             cdrom_PauseAndWait();
             g_fight_presentation_index =
@@ -878,7 +878,7 @@ void fight_UpdateMatchTallyPresentation(void) {
                                  .character_data_index] != 0
                     ? 5
                     : 4;
-            g_main_loop_handler_index = 0x12;
+            g_main_loop_handler_index = MAIN_LOOP_IMAGE_PLAYBACK_INIT;
         }
     }
 }
@@ -934,7 +934,7 @@ void fight_PackTimeRecordsAndInitPresentation(void) {
         g_fighter_records[0].character_data_index;
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     g_handler_frame_counter = 0;
-    g_main_loop_handler_index = 0x1F;
+    g_main_loop_handler_index = MAIN_LOOP_TIME_RECORD_UPDATE;
     gpu_SetDispMaskOn();
 }
 
@@ -955,7 +955,7 @@ void fight_InitRotatingViewThreeOptionChoice(void) {
     g_fight_choice_menu_cursor = 0;
     g_fight_choice_confirm_delay = 0;
     g_handler_frame_counter = 0;
-    g_main_loop_handler_index = 0x19;
+    g_main_loop_handler_index = MAIN_LOOP_ROTATING_MENU_UPDATE;
     gpu_SetDispMaskOn();
 }
 
@@ -1026,18 +1026,18 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
         g_fight_menu_restart_count = g_fight_menu_restart_count + 1;
         g_fight_nearest_start_pair_index = fight_FindNearestStartPair(
             &g_fighter_records[g_fight_followup_fighter_index].world_pos);
-        g_main_loop_handler_index = 0;
+        g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
         return;
     }
     if (g_fight_choice_menu_cursor == 1) {
         snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
         g_menu_mode_subflow_init_pending = 1;
-        g_main_loop_handler_index = 8;
+        g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
         return;
     }
     if (g_fight_choice_menu_cursor == 2) {
         snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
-        g_main_loop_handler_index = 8;
+        g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
     }
 }
 
@@ -1045,7 +1045,7 @@ void fight_InitRotatingViewDecimalPresentation(void) {
     gpu_HideResetAndClear();
     eff_StopCommands();
     g_handler_frame_counter = 0;
-    g_main_loop_handler_index = 0x21;
+    g_main_loop_handler_index = MAIN_LOOP_DECIMAL_PRESENTATION_UPDATE;
     gpu_SetDispMaskOn();
 }
 
@@ -1071,7 +1071,7 @@ void fight_UpdateRotatingViewDecimalPresentation(void) {
         (g_pad_state.pressed & 0x400040) != 0) {
         cdrom_PauseAndWait();
         snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
-        g_main_loop_handler_index = 8;
+        g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
     }
 }
 
@@ -1121,7 +1121,7 @@ void fight_InitNearestStartPairPlayback(void) {
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     eff_StopCommands();
     g_handler_frame_counter = 0;
-    g_main_loop_handler_index = 0x1D;
+    g_main_loop_handler_index = MAIN_LOOP_PAIR_PLAYBACK_UPDATE;
     gpu_SetDispMaskOn();
 }
 
@@ -1214,7 +1214,7 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
             fight_RequestBothFightersEntriesAndReloadOnChange();
             fight_QueueSubstitutionCommandDescriptorPlayback(4);
         } else {
-            g_main_loop_handler_index = 0x18;
+            g_main_loop_handler_index = MAIN_LOOP_ROTATING_MENU_INIT;
         }
     }
     g_handler_frame_counter = g_handler_frame_counter + 1;

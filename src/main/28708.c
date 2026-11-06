@@ -1318,7 +1318,7 @@ void replay_Start(void) {
     camera_ResetViewsForReplay();
     eff_StopCommands();
     g_replay_playback_frame = 0;
-    g_main_loop_handler_index = 5;
+    g_main_loop_handler_index = MAIN_LOOP_REPLAY_UPDATE;
 }
 
 extern s32 collision_GetHitTag(void);
@@ -1583,7 +1583,7 @@ void replay_PlayFrame(void) {
             }
             g_fight_followup_fighter_index = 1;
             if (g_fight_saved_first_fighter_selection == 0xFF) {
-                g_main_loop_handler_index = 0xC;
+                g_main_loop_handler_index = MAIN_LOOP_FOCUS_MENU_INIT;
                 break;
             }
             snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
@@ -1598,17 +1598,17 @@ void replay_PlayFrame(void) {
             return;
         case FIGHT_MODE_CHANBARA:
             if (g_fighter_records[0].is_defeated == 0) {
-                g_main_loop_handler_index = 0x1E;
+                g_main_loop_handler_index = MAIN_LOOP_TIME_RECORD_INIT;
             } else {
-                g_main_loop_handler_index = 0xC;
+                g_main_loop_handler_index = MAIN_LOOP_FOCUS_MENU_INIT;
             }
             break;
         default:
             if (g_fighter_records[0].is_defeated == 0 ||
                 g_fighter_records[1].is_defeated == 0) {
-                g_main_loop_handler_index = 0x10;
+                g_main_loop_handler_index = MAIN_LOOP_INTERPOLATED_VIEW_INIT;
             } else {
-                g_main_loop_handler_index = 0xC;
+                g_main_loop_handler_index = MAIN_LOOP_FOCUS_MENU_INIT;
             }
             break;
         }
@@ -1678,7 +1678,7 @@ void comb_ResetClose(void) {
     _comb_control(2, 0, 0);
     _comb_control(1, 1, 0);
     comb_Close();
-    g_main_loop_handler_index = 8;
+    g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
 }
 
 void comb_Abort(void) {

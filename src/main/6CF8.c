@@ -403,10 +403,10 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
     if (var_2 != 0) {
         if (var_2 == 1) {
             g_menu_mode_subflow_init_pending = 1;
-            g_main_loop_handler_index = 8;
+            g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
             cdrom_PauseAndWait();
         } else if (var_2 == 2) {
-            g_main_loop_handler_index = 8;
+            g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
             cdrom_PauseAndWait();
         }
     }
@@ -443,7 +443,7 @@ void main(void) {
     gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth(
         (u8 *)0x80118800, var_1, idx);
 
-    g_main_loop_handler_index = 0xF;
+    g_main_loop_handler_index = MAIN_LOOP_MOVIE;
     g_main_present_skip_frames = 0;
     g_gpu_presented_frame_count = 0;
 
@@ -465,7 +465,7 @@ void main(void) {
             g_local_ot_draw_mode = LOCAL_OT_DRAW_NONE;
             g_comb_abort_request = 0;
             g_menu_mode_subflow_init_pending = 0;
-            g_main_loop_handler_index = 8;
+            g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
         }
 
         g_main_loop_handlers[g_main_loop_handler_index]();
@@ -508,7 +508,7 @@ void main(void) {
             g_gpu_presented_frame_count++;
         }
 
-        if (g_main_loop_handler_index != 1)
+        if (g_main_loop_handler_index != MAIN_LOOP_FIGHT_UPDATE)
             continue;
         if (present_skip_frames != 0)
             continue;

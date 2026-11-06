@@ -7,6 +7,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
+#include "bb2_const.h"
 
 /* Formerly separate files, merged as one original file (Q65). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
@@ -49,7 +50,7 @@ void menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu(void) {
     menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows();
     InitRowMenuBlackBgResetFlow((s32)0x80118800);
     g_handler_frame_counter = 0;
-    g_main_loop_handler_index = 9;
+    g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_UPDATE;
     gpu_SetDispMaskOn();
 }
 
@@ -152,7 +153,7 @@ void menu_InitSubflowForMode(s32 arg0) {
 
         if (handshake_result == -1) {
             snd_QueueSound(2, 0x7F, 0x7F);
-            g_main_loop_handler_index = 9;
+            g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_UPDATE;
             g_handler_frame_counter = 0;
             g_row_menu_subflow_state = 1;
         }
@@ -246,7 +247,7 @@ void menu_UpdateRowMenuAndSubflows(void) {
             g_handler_frame_counter = 1;
         }
         if (g_handler_frame_counter >= 0xCA9) {
-            g_main_loop_handler_index = 0xF;
+            g_main_loop_handler_index = MAIN_LOOP_MOVIE;
         }
         ret = menu_UpdateRowMenuStoreResult(
             g_pad_state.held, g_pad_state.pressed);
@@ -275,7 +276,7 @@ void menu_UpdateRowMenuAndSubflows(void) {
     case 12:
         if (--g_handler_frame_counter == 0) {
             cdrom_PauseAndWait();
-            g_main_loop_handler_index = 0xF;
+            g_main_loop_handler_index = MAIN_LOOP_MOVIE;
         }
         break;
     case 2:
@@ -380,18 +381,18 @@ void menu_UpdateRowMenuAndSubflows(void) {
         }
     reset_mode:
         cdrom_PauseAndWait();
-        g_main_loop_handler_index = 0;
+        g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
         ApplyWorkingRecordToPendingConfigAndInitializeMode();
         break;
     check_quit:
         if (ret == -1) {
             cdrom_PauseAndWait();
-            g_main_loop_handler_index = 8;
+            g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
             g_menu_release_closes_non_common_vabs = 0;
         }
         break;
     }
-    if (g_main_loop_handler_index != 9) {
+    if (g_main_loop_handler_index != MAIN_LOOP_ROW_MENU_UPDATE) {
         g_main_frame_period = 2;
     }
 }
@@ -405,7 +406,7 @@ void menu_ReleaseResourcesCloseVabsAndInitRowMenu(void) {
     eff_ClearInitFlag();
     snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb();
     InitRowMenuBlackBgResetFlow((s32)0x80118800);
-    g_main_loop_handler_index = 0x1B;
+    g_main_loop_handler_index = MAIN_LOOP_MEMCARD_SAVE_UPDATE;
     gpu_SetDispMaskOn();
 }
 
@@ -413,7 +414,7 @@ void DrawGradientAndStepMemcardSavePromptsThenSelectRowMenuInit(void) {
     g_main_frame_period = 1;
     gpu_AddScreenGradient();
     if (memcard_StepSaveOverwriteAndFormatPrompts() != 0) {
-        g_main_loop_handler_index = 8;
+        g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
         g_main_frame_period = 2;
     }
 }
