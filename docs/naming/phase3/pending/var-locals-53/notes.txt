@@ -1,0 +1,74 @@
+var-locals-53 (naming-b 2026-11-06): 16 research rows, 16 drafted, 0 dropped; 51 substitutions: 17AFC.c 7, 28708.c 2, 2B344.c 28, 9F9C.c 14.
+Class: m2c / address-style / stale locals and parameters (arg0, arg1, arg2, v, var_7, saved_44c, a3_arg, a0_arg, v_277C, v_376A, v_3836, v_36C8) in 11 functions, reached by the landed var-locals-52 (descriptor_index sibling, fight_SaveFighter0... names) and const-fight-mode (FightMode selector copies).
+Tree: ln-naming-b = main 5ecf34577 (clean). Research: tmp/codex/var-locals-53-research.md (its line numbers match HEAD; this draft uses HEAD numbers).
+Method (drafter, re-derived, not copied): every definition read at 5ecf34577; a regex tokenizer with brace matching (tmp/vl53/scan.py), separate from scoped_plan (comments and strings blanked, ./-> member tokens excluded), gives every use line of signature + body: all 16 lists equal the research and equal the scoped_plan alone lines (dry.txt). Whole-word grep of src/, include/, symbol_addrs.txt for every new name with a #define / enum / file-scope / global filter (no hits; fight_mode and fighter_index appear only as locals/params of other functions). Callers (C and asm) read for each parameter row.
+
+Specific checks:
+- fight_QueueFixedFighterCommandDescriptorPlayback:arg0=descriptor_index: 1-based index (`arg0 * 4 - 4`), callers 1 / 3 / 2, completion switch reads the latched value as 1..3; the name makes no 0-based claim. Kept.
+- fight_StartDescriptorPlaybackAndAudio:var_7=descriptor_flags: copy of descriptor byte 3, the flag byte (bits 0x10, 0x20 here). Kept.
+- :saved_44c=saved_second: restores g_fighter_records[1].weapon_entry_id; mirror of saved_first (kept). Kept.
+- :a3_arg=first_weapon_entry_id / :a0_arg=second_weapon_entry_id: values are the two fighters' weapon entry ids, the forced 0x32 or -1; read only as args 4 and 5 of motion_StartPlaybackAtIndexedBasePlusOffset whose parameters have these exact names (43500.c:777-778). Both tokens share line 564. Kept.
+- fight_Restore...:v_277C / v_376A / v_3836 / v_36C8: displaced_* are the values stored into the g_fight_displaced_* globals, saved_* the values restored from the g_fight_saved_* globals. Kept.
+- snd_ShouldUpdateStageSoundSlots:v=fight_mode and fight_UpdateSeparationAndPairedMoves:v=fight_mode (collision check asked for): whole-word `fight_mode` is absent from 9F9C.c entirely (no macro, member, global or label); the enum type is `enum FightMode` in bb2_const.h (different, capitalised token); no struct member `fight_mode` anywhere; the only repo hit is the 17AFC.c:121 local in fighter_AccumulateOrClearByBoneGroup, a different function in a different file. Both locals are only copies of g_fight_mode_selector. Kept.
+- motion_LoadFighterData:arg0 / arg2 (names verified): g_fight_config_id_data_rows[(s8)fighter_setup[N]] is stored verbatim as Unk80101EC8Record.character_data_index (9F9C.c:3973) and game.h:826-831 documents character_data_index as "0..26 as g_fight_config_id_data_rows holds"; the table row index of g_fighter_motion_data_ids ([27][8], d_7D920.c:283) is character_data_index at 9F9C.c:3935. The only caller passes exactly that expression. The frame-set use (j = arg0, file offset j * 7) is the same value, so the name holds at every use. Kept.
+- fight_RecordReplayEventAndDispatchSoundOrEffect:arg0=fighter_index (skeptic check, asm included): see the manifest row; all C callers and all ~70 asm callers pass a fighter/player index (0/1, record->index, owner_index). Kept.
+- replay_RecordEvent:arg0=fighter_index (skeptic check): the sole caller, in C and asm (one `jal replay_RecordEvent`, fight_RecordReplayEventAndDispatchSoundOrEffect.s:73), forwards that function's arg0; the stored byte is replayed into the same parameter. The evidence is the callers' values, not the caller's new name. Kept; a reviewer who rules that a name must stand on the function's own uses (a single store into unk_1) may drop this one row.
+- fighter_PassesPairedMoveEntryGates:arg1=require_group_6_9_intact (skeptic check): single use `if (arg1 != 0) return fighter_record->hit_record_group_6_9_intact != 0;`, so the flag adds exactly the one requirement; the name does not claim to gate the other conditions or the return value. Kept.
+
+Required comment edits (Q133: comments naming an old name are rewritten with the pair):
+1. src/main/9F9C.c:3310-3316 (motion_LoadFighterData header; arg0 at 3310 and 3314, arg2 at 3310 and 3315). Replace these 7 lines:
+/* For i = 0, 1 with v = arg0, then arg2 (when g_fight_mode_selector is 1, 4 or
+ * 6): when g_motion_frame_set_ids[i] differs from v, stores v there and calls
+ * cdrom_StartReadAt(cdrom_GetFileIndex(1, 0), g_motion_frame_buffers[i], v * 7,
+ * 7). Then sets g_fighter_records[0].motion_data_id to
+ * g_fighter_motion_data_ids[arg0][fighter0_weapon_id] | fighter0_weapon_id <<
+ * 12 and g_fighter_records[1].motion_data_id to the same of arg2 and
+ * fighter1_weapon_id (a copy of the first when g_fight_mode_selector is 3). It
+with these 8 lines (reflowed, all <= 80 columns; 3317 `then fills var_0[0..1] ...` stays):
+/* For i = 0, 1 with v = fighter0_character_data_index, then
+ * fighter1_character_data_index (when g_fight_mode_selector is 1, 4 or 6):
+ * when g_motion_frame_set_ids[i] differs from v, stores v there and calls
+ * cdrom_StartReadAt(cdrom_GetFileIndex(1, 0), g_motion_frame_buffers[i], v * 7,
+ * 7). Then sets g_fighter_records[0].motion_data_id to
+ * g_fighter_motion_data_ids[fighter0_character_data_index][fighter0_weapon_id]
+ * | fighter0_weapon_id << 12 and g_fighter_records[1].motion_data_id to the
+ * same of fighter1_character_data_index and fighter1_weapon_id (a copy of the
+ * first when g_fight_mode_selector is 3). It
+2. src/main/9F9C.c:3334-3336 (the FAKE comment above `s32 j;`; it keeps its FAKE label and content, only the two names change; reflowed to 4 lines). Replace these 3 lines:
+    /* FAKE: one local for loop 1's arg0 / arg2 and loop 2's
+     * g_motion_fighter_data_files index; separate locals seat the index in $a1,
+     * the target keeps both in $s0 (score 3) (Q129). */
+with these 4 lines:
+    /* FAKE: one local for loop 1's fighter0_character_data_index /
+     * fighter1_character_data_index and loop 2's g_motion_fighter_data_files
+     * index; separate locals seat the index in $a1, the target keeps both in
+     * $s0 (score 3) (Q129). */
+3. include/game.h:2090 (comment on Unk80101BF0Rec, `replay_RecordEvent's arg0 / kind`, spelling the parameter the replay_RecordEvent pair renames). Current line: ` * (g_replay_write_frame); unk_1 / event_kind: replay_RecordEvent's arg0 / kind;`. Proposed, reflowed to stay within 80 columns (the next original line ` * event_pos: ...` follows unchanged):
+ * (g_replay_write_frame); unk_1 / event_kind: replay_RecordEvent's
+ * fighter_index / kind;
+(the original continues `event_pos: the s16 x / y / z of src_position; event_vector:` on the following line; the apply step re-flows that paragraph, text unchanged apart from the one name.)
+No other comment in the 11 functions spells an old name: 2B344.c:255-345 / 505-585, 9F9C.c:1859-1869 / 2841-2864 / 2983-2993, 17AFC.c:5021-5179 (the 17AFC.c:27-33 comment names the function and "arguments", no arg0), 28708.c:1228-1258 and the bb2.h:812-815 comment (names the prototype types only) were checked.
+Width: the substituted lines listed in dry.txt exceed 80 columns; tools/format.py reflows them (token-preserving).
+
+DROPPED:
+- none. All 16 research rows re-derived true at every use and accepted by scoped_plan together and alone.
+
+Research notes copied below (NO_NAME with reasons, LEADS retitled for var-locals-54)
+## NO_NAME
+- fight_SearchRadialFlatSurfacePointOrUseStartPositionPair:arg0 (9F9C.c:3750): no use in the body (whole-word grep over 3749-3848 hits only the declaration); unused-param (the caller passes fighter_index, 9F9C.c:4051-4052, but no use bears a name out). Q136 `unused-param` candidate.
+- pad_Update:arg0 (87A0.c:624; one use 678 `g_main_loop_handler_index == 1 && arg0 == 0`): callers pass 1 (2B344.c:81), present_skip_frames (6CF8.c:459) and nothing (6CF8.c:346, unprototyped call); the single zero test does not show a role. Not proposed.
+- motion_LoadFighterData:var_0 / j, fighter_ResolveBoneHit:var_0 / var_1: FAKE-labelled (9F9C.c:3329-3336, 17AFC.c:378-381). Excluded.
+- fight_HandleDescriptorPlaybackCompletion:val (2B344.c:619): already a plain neutral name (copy of D_800A390C), not an m2c placeholder; see LEADS.
+- fight_StartDescriptorPlaybackAndAudio:saved_first (2B344.c:511): plain and true; kept (optional alternative in the saved_44c row).
+- Excluded per brief, not revisited: fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags:ranks/moves, menu_UpdateEntryGridCursors:var_6, menu_UpdateRowCursors:var_4, fighter_ProcessWeaponBodyHits:var_1, PatchColorImmediatesAtListedCodeSites:a1, replay_PlayFrame:var_19/temp, fight_RunCommandStream:var_0, gpu_DrawDisplayModeOnLocalOtAndSync:temp/temp2, main:var_1, ApplyWorkingRecordToPendingConfigAndInitializeMode:new_var/new_var2.
+
+## LEADS for var-locals-54
+- fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags:ranks / moves (17AFC.c:6015-6016): `object_ids` / `second_fighter_roster_indices` still look true; blocked on the apply tool's `T (*x)[N]` declarator support.
+- fight_HandleDescriptorPlaybackCompletion:val (2B344.c:619) -> descriptor_index, if a non-placeholder rename is wanted (same value as row 1's parameter, via D_800A390C).
+- Data (globals, not a locals wave): D_800A390C (fixed-fighter descriptor index latch, 1..3), D_800A385C (pointer to the three fixed-fighter descriptors in the command stream, set at 2B344.c:440), D_800A37B0 (substitution descriptor index latch), D_800A3712.
+- Not examined this wave, reached by const-fight-mode sites: fighter_ResolveBoneHit:arg0 / arg6 / var_12 (17AFC.c:375-639), fighter_ResolveBoneHitTail:arg0 (17AFC.c:360, tested `== 1` with var_0->unkD == 2), fighter_InitCpuControl:var_2 / var_5 / var_9 / var_15 / var_18 / temp (4510C.c:268-484), the 4510C.c CPU-navigation locals (~1720-3024: var_3, var_22, var_37, var_41, var_54-59), 17AFC.c:70-117 `a0` (`*(&g_fight_bone_group_tim_requests + a0)`).
+- replay_PlayFrame:var_19: still needs an explicit reviewer ruling on a past-tense name.
+
+## Pre-apply review (naming-reviewer, 2026-11-06): 14 PASS / 2 FAIL
+- DROPPED at review: fight_RecordReplayEventAndDispatchSoundOrEffect:arg0=fighter_index and replay_RecordEvent:arg0=fighter_index (N1/R1): fight_CreateBallisticRecordAndDispatchEvent (17AFC.c:4784-4785) passes src->collision_hit_class (lbu 0xB2 of a fighter record, a terrain-probe class), not a fighter index; the D_800A36F2 kind-compare callers (17AFC.c:4184-4188, 4308, 4468-4531, 4699, 4724-4728) are also unshown. arg0 is a 0/1 selector. The include/game.h:2090 comment edit (edit 3 above) is dropped with them; game.h is not touched.
+- Wave after review: 14 pairs; comment edits 1 and 2 (9F9C.c:3310-3316, FAKE comment 9F9C.c:3334-3336) stand. dry.txt counts above include the 2 dropped pairs (51 total); the 14-pair wave is 51 minus their alone counts.

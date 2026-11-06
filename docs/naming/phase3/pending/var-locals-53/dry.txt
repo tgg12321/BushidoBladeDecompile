@@ -1,0 +1,68 @@
+var-locals-53 (naming-b 2026-11-06): 16 local / parameter bindings in 11 functions across 4 files (2B344.c descriptor_index, descriptor_flags, saved_second, first_weapon_entry_id, second_weapon_entry_id, displaced_selection, displaced_bone_group_tim_requests, saved_selection, saved_bone_group_tim_requests; 9F9C.c fight_mode x2, fighter0_character_data_index, fighter1_character_data_index, require_group_6_9_intact; 17AFC.c and 28708.c fighter_index x2). 0 research rows dropped.
+Tree: ln-naming-b = main 5ecf34577 (clean). Run in WSL via a script file (tmp/vl53/dry.py + run.sh in the main repo; NAMING_KEYCHECK_ROOT = the worktree, venv active).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (same tool result as var-locals-43 .. -52). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree (base = naming_keycheck.read_working_tree()). All 16 pairs together were accepted (51 token substitutions: 17AFC.c 7, 28708.c 2, 2B344.c 28, 9F9C.c 14; no include/ file touched). Each pair was also run alone: all 16 accepted (alone counts sum to 51, equal to the together total) and every pair's alone line list equals the drafter's independent token scan (16/16; the scan, tmp/vl53/scan.py, was written separately from scoped_plan: comments and strings blanked, ./-> member tokens excluded, signature plus body of the function found by brace matching). The plan's token indices run over naming_keycheck.code_spans (comments dropped); lines were mapped from the working-tree text.
+Required comment edits: 9F9C.c:3310, 3314, 3315 and the FAKE comment 3334-3336 (motion_LoadFighterData arg0 / arg2), and include/game.h:2090 (replay_RecordEvent's arg0), see notes.txt. No other comment in the 11 functions spells an old name.
+Per-pair substitutions (function:old=new count (lines)):
+  fight_QueueFixedFighterCommandDescriptorPlayback:arg0=descriptor_index 3 (338,339,341)
+  fight_StartDescriptorPlaybackAndAudio:var_7=descriptor_flags 3 (535,536,539)
+  fight_StartDescriptorPlaybackAndAudio:saved_44c=saved_second 3 (512,538,545)
+  fight_StartDescriptorPlaybackAndAudio:a3_arg=first_weapon_entry_id 5 (513,549,551,558,564)
+  fight_StartDescriptorPlaybackAndAudio:a0_arg=second_weapon_entry_id 5 (514,553,555,560,564)
+  fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields:v_277C=displaced_selection 2 (272,277)
+  fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields:v_376A=displaced_bone_group_tim_requests 2 (273,278)
+  fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields:v_3836=saved_selection 2 (274,279)
+  fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields:v_36C8=saved_bone_group_tim_requests 3 (275,280,281)
+  snd_ShouldUpdateStageSoundSlots:v=fight_mode 3 (1861,1862,1865)
+  fight_UpdateSeparationAndPairedMoves:v=fight_mode 3 (2986,2989,2989)
+  motion_LoadFighterData:arg0=fighter0_character_data_index 3 (3328,3347,3363)
+  motion_LoadFighterData:arg2=fighter1_character_data_index 3 (3328,3349,3370)
+  fight_RecordReplayEventAndDispatchSoundOrEffect:arg0=fighter_index 7 (5022,5026,5032,5036,5041,5060,5063)
+  replay_RecordEvent:arg0=fighter_index 2 (1229,1245)
+  fighter_PassesPairedMoveEntryGates:arg1=require_group_6_9_intact 2 (2842,2860)
+
+Line widths after substitution (over 80; python tools/format.py reflows them in the naming commit; token-preserving). Set run (all pairs together; none is a function-like macro argument, so the var-locals-40 sentinel limit does not apply):
+  17AFC.c 5022 (75->84), 5041 (75->84)
+  2B344.c 278 (55->82), 281 (58->81), 341 (69->81)
+  9F9C.c 3328 (73->123, the signature line; reflows to several lines), 3363 (71->96), 3370 (71->96)
+0 rows flagged.
+
+Raw driver output (HEAD 5ecf34577, scoped_plan together then alone per pair; line numbers are working-tree lines):
+SET 16 pairs ACCEPT {'17AFC.c': 7, '28708.c': 2, '2B344.c': 28, '9F9C.c': 14} total 51
+  SETLINES 17AFC.c [5022, 5026, 5032, 5036, 5041, 5060, 5063]
+  SETLINES 28708.c [1229, 1245]
+  SETLINES 2B344.c [272, 273, 274, 275, 277, 278, 279, 280, 281, 338, 339, 341, 512, 513, 514, 535, 536, 538, 539, 545, 549, 551, 553, 555, 558, 560, 564]
+  SETLINES 9F9C.c [1861, 1862, 1865, 2842, 2860, 2986, 2989, 3328, 3347, 3349, 3363, 3370]
+  WIDTH 17AFC.c 5022 75 -> 84
+  WIDTH 17AFC.c 5041 75 -> 84
+  WIDTH 2B344.c 278 55 -> 82
+  WIDTH 2B344.c 281 58 -> 81
+  WIDTH 2B344.c 341 69 -> 81
+  WIDTH 9F9C.c 3328 73 -> 123
+  WIDTH 9F9C.c 3363 71 -> 96
+  WIDTH 9F9C.c 3370 71 -> 96
+ALONE fight_QueueFixedFighterCommandDescriptorPlayback:arg0=descriptor_index ACCEPT 3 2B344.c [338, 339, 341]
+    WIDTH 2B344.c 341 69 -> 81
+ALONE fight_StartDescriptorPlaybackAndAudio:var_7=descriptor_flags ACCEPT 3 2B344.c [535, 536, 539]
+ALONE fight_StartDescriptorPlaybackAndAudio:saved_44c=saved_second ACCEPT 3 2B344.c [512, 538, 545]
+ALONE fight_StartDescriptorPlaybackAndAudio:a3_arg=first_weapon_entry_id ACCEPT 5 2B344.c [513, 549, 551, 558, 564]
+ALONE fight_StartDescriptorPlaybackAndAudio:a0_arg=second_weapon_entry_id ACCEPT 5 2B344.c [514, 553, 555, 560, 564]
+ALONE fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields:v_277C=displaced_selection ACCEPT 2 2B344.c [272, 277]
+ALONE fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields:v_376A=displaced_bone_group_tim_requests ACCEPT 2 2B344.c [273, 278]
+    WIDTH 2B344.c 278 55 -> 82
+ALONE fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields:v_3836=saved_selection ACCEPT 2 2B344.c [274, 279]
+ALONE fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields:v_36C8=saved_bone_group_tim_requests ACCEPT 3 2B344.c [275, 280, 281]
+    WIDTH 2B344.c 281 58 -> 81
+ALONE snd_ShouldUpdateStageSoundSlots:v=fight_mode ACCEPT 3 9F9C.c [1861, 1862, 1865]
+ALONE fight_UpdateSeparationAndPairedMoves:v=fight_mode ACCEPT 3 9F9C.c [2986, 2989, 2989]
+ALONE motion_LoadFighterData:arg0=fighter0_character_data_index ACCEPT 3 9F9C.c [3328, 3347, 3363]
+    WIDTH 9F9C.c 3328 73 -> 98
+    WIDTH 9F9C.c 3363 71 -> 96
+ALONE motion_LoadFighterData:arg2=fighter1_character_data_index ACCEPT 3 9F9C.c [3328, 3349, 3370]
+    WIDTH 9F9C.c 3328 73 -> 98
+    WIDTH 9F9C.c 3370 71 -> 96
+ALONE fight_RecordReplayEventAndDispatchSoundOrEffect:arg0=fighter_index ACCEPT 7 17AFC.c [5022, 5026, 5032, 5036, 5041, 5060, 5063]
+    WIDTH 17AFC.c 5022 75 -> 84
+    WIDTH 17AFC.c 5041 75 -> 84
+ALONE replay_RecordEvent:arg0=fighter_index ACCEPT 2 28708.c [1229, 1245]
+ALONE fighter_PassesPairedMoveEntryGates:arg1=require_group_6_9_intact ACCEPT 2 9F9C.c [2842, 2860]
+ALONE SUM 51 SET 51
