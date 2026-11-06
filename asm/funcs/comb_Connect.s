@@ -8,9 +8,9 @@ glabel comb_Connect
     /* 2B4D0 8003ACD0 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
     /* 2B4D4 8003ACD4 B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
     /* 2B4D8 8003ACD8 E00780A3 */  sb         $zero, %gp_rel(g_comb_handshake_step)($gp)
-    /* 2B4DC 8003ACDC 040880AF */  sw         $zero, %gp_rel(D_800A38D0)($gp)
-    /* 2B4E0 8003ACE0 3C0880AF */  sw         $zero, %gp_rel(D_800A3908)($gp)
-    /* 2B4E4 8003ACE4 300880AF */  sw         $zero, %gp_rel(D_800A38FC)($gp)
+    /* 2B4DC 8003ACDC 040880AF */  sw         $zero, %gp_rel(g_comb_received_check_mismatch_count)($gp)
+    /* 2B4E0 8003ACE0 3C0880AF */  sw         $zero, %gp_rel(g_comb_sent_button_bit_count)($gp)
+    /* 2B4E4 8003ACE4 300880AF */  sw         $zero, %gp_rel(g_comb_received_button_bit_count)($gp)
     /* 2B4E8 8003ACE8 5DE8000C */  jal        comb_Init
     /* 2B4EC 8003ACEC 00000000 */   nop
   .L8003ACF0:

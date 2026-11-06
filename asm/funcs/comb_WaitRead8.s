@@ -72,10 +72,10 @@ glabel comb_WaitRead8
     /* 2AEA8 8003A6A8 FFFF8330 */  andi       $v1, $a0, 0xFFFF
     /* 2AEAC 8003A6AC 09006210 */  beq        $v1, $v0, .L8003A6D4
     /* 2AEB0 8003A6B0 21100000 */   addu      $v0, $zero, $zero
-    /* 2AEB4 8003A6B4 0408838F */  lw         $v1, %gp_rel(D_800A38D0)($gp)
+    /* 2AEB4 8003A6B4 0408838F */  lw         $v1, %gp_rel(g_comb_received_check_mismatch_count)($gp)
     /* 2AEB8 8003A6B8 00000000 */  nop
     /* 2AEBC 8003A6BC 01006324 */  addiu      $v1, $v1, 0x1
-    /* 2AEC0 8003A6C0 040883AF */  sw         $v1, %gp_rel(D_800A38D0)($gp)
+    /* 2AEC0 8003A6C0 040883AF */  sw         $v1, %gp_rel(g_comb_received_check_mismatch_count)($gp)
     /* 2AEC4 8003A6C4 B9E90008 */  j          .L8003A6E4
     /* 2AEC8 8003A6C8 00000000 */   nop
   .L8003A6CC:

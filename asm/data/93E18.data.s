@@ -256,11 +256,11 @@ dlabel D_800A36D2
     /* 93ED2 800A36D2 */ .short 0x0000
 enddlabel D_800A36D2
 
-nonmatching D_800A36D4
+nonmatching g_comb_prev_send_payload_check_word
 
-dlabel D_800A36D4
+dlabel g_comb_prev_send_payload_check_word
     /* 93ED4 800A36D4 00000000 */ .word 0x00000000
-enddlabel D_800A36D4
+enddlabel g_comb_prev_send_payload_check_word
 
 nonmatching g_fight_paired_move
 

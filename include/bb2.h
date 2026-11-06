@@ -349,7 +349,7 @@ extern u8 g_fight_time_limit_seconds;
  * reads 4, u16 h[2] 7, s16 h[2] with casts 4, aligned halves 4. Owner
  * ruling Q125: comb_ExchangePad only. */
 extern s16 D_800A36D2;
-extern s32 D_800A36D4;
+extern s32 g_comb_prev_send_payload_check_word;
 extern MoveScript *g_fight_paired_move;
 extern u8 g_fight_match_result_timer;
 extern u8 g_fight_timer_unlock_bit_newly_set;
@@ -650,10 +650,10 @@ extern u8 g_fight_step_row_column;
 extern s16 g_cd_fade_len;
 extern u8 *g_fight_first_fighter_substitution_command_operands;
 extern u32 *g_prim_buf_cursor; /* the draw-chunk builders' word cursor */
-extern s32 D_800A38D0;
+extern s32 g_comb_received_check_mismatch_count;
 extern u16 D_800A38D6;
-extern s32 D_800A38FC;
-extern s32 D_800A3908;
+extern s32 g_comb_received_button_bit_count;
+extern s32 g_comb_sent_button_bit_count;
 extern u8 g_comb_initial_pad_exchange_pending;
 extern u8 g_arena;
 extern s16 g_eff_jittered_billboard_ages[];

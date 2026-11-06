@@ -25,7 +25,7 @@ static s16 D_800A3510[2];
 static s32 g_row_menu_pulse_counter;
 static s32 g_menu_draw_buffer_counter;
 static Unk8006E49CRec *g_row_menu_prim_buffers;
-static Unk8006E49CRec *D_800A3520;
+static Unk8006E49CRec *g_row_menu_current_prim_buffer;
 static Unk8009BD24Block *g_row_menu_working_record_ptr;
 static s16 g_menu_stored_choice_cursor;
 static s32 g_menu_confirm_cursor;
@@ -2676,7 +2676,7 @@ void gpu_AdvanceBufferCounterAndBuildDrawContext(
     s0[6] = (s32)prim_buffer->tile_prims;
     s0[7] = (s32)prim_buffer->unk_14;
     s0[8] = (s32)prim_buffer->draw_area_prims;
-    D_800A3520 = prim_buffer;
+    g_row_menu_current_prim_buffer = prim_buffer;
     s0[9] = (s32)prim_buffer->draw_offset_prims;
 }
 

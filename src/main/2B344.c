@@ -73,9 +73,9 @@ s32 comb_Connect(void) {
     SetDispMask(0);
     g_handler_frame_counter = 0;
     g_comb_handshake_step = 0;
-    D_800A38D0 = 0;
-    D_800A3908 = 0;
-    D_800A38FC = 0;
+    g_comb_received_check_mismatch_count = 0;
+    g_comb_sent_button_bit_count = 0;
+    g_comb_received_button_bit_count = 0;
     comb_Init();
     do {
         pad_Update(1);
@@ -488,9 +488,9 @@ void fight_UpdateCommandStreamImageLoadAndResume(void) {
 u16 g_comb_send_payload;
 s32 g_comb_handshake_retry_count;
 u8 g_comb_handshake_step;
-s32 D_800A38D0;
-s32 D_800A38FC;
-s32 D_800A3908;
+s32 g_comb_received_check_mismatch_count;
+s32 g_comb_received_button_bit_count;
+s32 g_comb_sent_button_bit_count;
 u8 g_comb_initial_pad_exchange_pending;
 
 /* Merged section (Q65: one original file). */

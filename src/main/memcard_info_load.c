@@ -12,7 +12,7 @@ const char g_str_memcard_device_fmt[] = "bu%1d%1d:";
 
 extern s32 g_memcard_card_loaded;
 extern s32 g_memcard_info_load_state;
-extern s32 D_800A3890;
+extern s32 g_memcard_info_load_result;
 extern s32 g_memcard_info_load_pending_result;
 
 s32 memcard_StepCardInfoAndLoad(s32 port, s32 card) {
@@ -24,7 +24,7 @@ s32 memcard_StepCardInfoAndLoad(s32 port, s32 card) {
         _card_info(channel);
         g_memcard_info_load_state = 1;
         g_memcard_poll_count = 0;
-        D_800A3890 = 0;
+        g_memcard_info_load_result = 0;
         break;
     case 1:
         ev = memcard_PollSwEventsTimeout();
@@ -93,11 +93,11 @@ s32 memcard_StepCardInfoAndLoad(s32 port, s32 card) {
         }
         break;
     case 4:
-        D_800A3890 = g_memcard_info_load_pending_result;
+        g_memcard_info_load_result = g_memcard_info_load_pending_result;
         g_memcard_info_load_state = 0;
         break;
     }
-    return D_800A3890;
+    return g_memcard_info_load_result;
 }
 
 /* Q65: initialized small data (.sdata), in address order. */
@@ -105,5 +105,5 @@ s32 g_memcard_card_loaded = 0;
 s32 g_memcard_info_load_state = 0;
 /* Q65: tentative definitions (COMMON) of the small data reached gp-relative. */
 s32 g_memcard_info_load_pending_result;
-s32 D_800A3890;
+s32 g_memcard_info_load_result;
 s32 g_memcard_poll_count;

@@ -1793,7 +1793,7 @@ success:
     if ((received_payload_check_word & 0xFFFF) == v0) {
         goto match;
     }
-    D_800A38D0 += 1;
+    g_comb_received_check_mismatch_count += 1;
     return 0;
 ret0_tramp:
     return 0;
@@ -1865,7 +1865,8 @@ void comb_ExchangePad(PadState *pad_state) {
                     comb_Abort();
                     return;
                 }
-                D_800A3908 += math_Popcount32(buttons & 0xFFFF);
+                g_comb_sent_button_bit_count +=
+                    math_Popcount32(buttons & 0xFFFF);
                 comb_Read8();
             }
         } else {
@@ -1887,7 +1888,7 @@ void comb_ExchangePad(PadState *pad_state) {
                 comb_Abort();
                 return;
             }
-            D_800A3908 += math_Popcount32(buttons & 0xFFFF);
+            g_comb_sent_button_bit_count += math_Popcount32(buttons & 0xFFFF);
             comb_Read8();
             if (g_comb_local_side == 0) {
                 if (g_comb_close_request != var_7 ||
@@ -1905,7 +1906,8 @@ void comb_ExchangePad(PadState *pad_state) {
             u32 *var_8 = &pad_state->held;
             s16 *type = pad_state->type;
 
-            D_800A38FC += math_Popcount32((u16)g_comb_received_pad_word);
+            g_comb_received_button_bit_count +=
+                math_Popcount32((u16)g_comb_received_pad_word);
             c0lo = (u16)g_comb_received_pad_word;
             if (g_comb_local_side == 0) {
                 buttons = (u16)g_comb_send_buf;
@@ -1934,7 +1936,7 @@ void comb_ExchangePad(PadState *pad_state) {
         }
         g_comb_initial_pad_exchange_pending = 0;
         g_comb_prev_send_word = g_comb_send_buf;
-        D_800A36D4 = g_comb_send_buf_plus_0x4;
+        g_comb_prev_send_payload_check_word = g_comb_send_buf_plus_0x4;
     } else {
         g_comb_wait_state = 0;
     }
@@ -2051,7 +2053,7 @@ s16 g_memcard_request_retry_count;
 u8 g_comb_write_not_aborted;
 s32 g_comb_wait_state;
 u8 g_memcard_request_write_started;
-s32 D_800A38D0;
-s32 D_800A38FC;
-s32 D_800A3908;
+s32 g_comb_received_check_mismatch_count;
+s32 g_comb_received_button_bit_count;
+s32 g_comb_sent_button_bit_count;
 u8 g_comb_initial_pad_exchange_pending;

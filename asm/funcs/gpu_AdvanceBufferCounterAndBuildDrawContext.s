@@ -36,7 +36,7 @@ glabel gpu_AdvanceBufferCounterAndBuildDrawContext
     /* 5EC18 8006E418 00000000 */  nop
     /* 5EC1C 8006E41C 200003AE */  sw         $v1, 0x20($s0)
     /* 5EC20 8006E420 1C00438C */  lw         $v1, 0x1C($v0)
-    /* 5EC24 8006E424 540482AF */  sw         $v0, %gp_rel(D_800A3520)($gp)
+    /* 5EC24 8006E424 540482AF */  sw         $v0, %gp_rel(g_row_menu_current_prim_buffer)($gp)
     /* 5EC28 8006E428 240003AE */  sw         $v1, 0x24($s0)
     /* 5EC2C 8006E42C 1400BF8F */  lw         $ra, 0x14($sp)
     /* 5EC30 8006E430 1000B08F */  lw         $s0, 0x10($sp)

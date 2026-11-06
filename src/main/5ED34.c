@@ -58,7 +58,7 @@ static s16 g_entry_menu_row_cursor_y_slots[2];
 static s16 g_entry_menu_choice_grid_column;
 static s16 g_entry_menu_choice_grid_row;
 static s32 g_entry_menu_exit_result;
-static Unk8006E49CRec *D_800A35A4;
+static Unk8006E49CRec *g_entry_menu_current_prim_buffer;
 static Unk8006EA28Rec *g_entry_menu_resources;
 static Unk8006E49CRec *g_entry_menu_prim_buffers;
 static s32 g_entry_menu_init_extra_slot_count;
@@ -285,7 +285,7 @@ s32 StepSlideBuildFrameRecordAndDispatchStateHandler(
     draw_context.primitive_cursors.unk_14 = prim_buffer_record->unk_14;
     draw_context.primitive_cursors.draw_area_prims =
         prim_buffer_record->draw_area_prims;
-    D_800A35A4 = prim_buffer_record;
+    g_entry_menu_current_prim_buffer = prim_buffer_record;
     draw_context.primitive_cursors.draw_offset_prims =
         prim_buffer_record->draw_offset_prims;
     draw_context.unk_24 = prim_buffer_record->unk_20;

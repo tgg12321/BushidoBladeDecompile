@@ -52,10 +52,10 @@ glabel comb_ExchangePad
     /* 2AFEC 8003A7EC 00000000 */   nop
     /* 2AFF0 8003A7F0 BFE9000C */  jal        math_Popcount32
     /* 2AFF4 8003A7F4 21204002 */   addu      $a0, $s2, $zero
-    /* 2AFF8 8003A7F8 3C08838F */  lw         $v1, %gp_rel(D_800A3908)($gp)
+    /* 2AFF8 8003A7F8 3C08838F */  lw         $v1, %gp_rel(g_comb_sent_button_bit_count)($gp)
     /* 2AFFC 8003A7FC 00000000 */  nop
     /* 2B000 8003A800 21186200 */  addu       $v1, $v1, $v0
-    /* 2B004 8003A804 3C0883AF */  sw         $v1, %gp_rel(D_800A3908)($gp)
+    /* 2B004 8003A804 3C0883AF */  sw         $v1, %gp_rel(g_comb_sent_button_bit_count)($gp)
     /* 2B008 8003A808 5DE9000C */  jal        comb_Read8
     /* 2B00C 8003A80C 00000000 */   nop
     /* 2B010 8003A810 3DEA0008 */  j          .L8003A8F4
@@ -95,10 +95,10 @@ glabel comb_ExchangePad
   .L8003A88C:
     /* 2B08C 8003A88C BFE9000C */  jal        math_Popcount32
     /* 2B090 8003A890 FFFF0432 */   andi      $a0, $s0, 0xFFFF
-    /* 2B094 8003A894 3C08838F */  lw         $v1, %gp_rel(D_800A3908)($gp)
+    /* 2B094 8003A894 3C08838F */  lw         $v1, %gp_rel(g_comb_sent_button_bit_count)($gp)
     /* 2B098 8003A898 00000000 */  nop
     /* 2B09C 8003A89C 21186200 */  addu       $v1, $v1, $v0
-    /* 2B0A0 8003A8A0 3C0883AF */  sw         $v1, %gp_rel(D_800A3908)($gp)
+    /* 2B0A0 8003A8A0 3C0883AF */  sw         $v1, %gp_rel(g_comb_sent_button_bit_count)($gp)
     /* 2B0A4 8003A8A4 5DE9000C */  jal        comb_Read8
     /* 2B0A8 8003A8A8 00000000 */   nop
     /* 2B0AC 8003A8AC 0A80023C */  lui        $v0, %hi(g_comb_local_side)
@@ -128,12 +128,12 @@ glabel comb_ExchangePad
     /* 2B104 8003A904 F4058497 */  lhu        $a0, %gp_rel(g_comb_received_pad_word)($gp)
     /* 2B108 8003A908 BFE9000C */  jal        math_Popcount32
     /* 2B10C 8003A90C 00000000 */   nop
-    /* 2B110 8003A910 3008838F */  lw         $v1, %gp_rel(D_800A38FC)($gp)
+    /* 2B110 8003A910 3008838F */  lw         $v1, %gp_rel(g_comb_received_button_bit_count)($gp)
     /* 2B114 8003A914 00000000 */  nop
     /* 2B118 8003A918 21186200 */  addu       $v1, $v1, $v0
     /* 2B11C 8003A91C 0A80023C */  lui        $v0, %hi(g_comb_local_side)
     /* 2B120 8003A920 A038428C */  lw         $v0, %lo(g_comb_local_side)($v0)
-    /* 2B124 8003A924 300883AF */  sw         $v1, %gp_rel(D_800A38FC)($gp)
+    /* 2B124 8003A924 300883AF */  sw         $v1, %gp_rel(g_comb_received_button_bit_count)($gp)
     /* 2B128 8003A928 F4058397 */  lhu        $v1, %gp_rel(g_comb_received_pad_word)($gp)
     /* 2B12C 8003A92C 09004014 */  bnez       $v0, .L8003A954
     /* 2B130 8003A930 00140300 */   sll       $v0, $v1, 16
@@ -199,8 +199,8 @@ glabel comb_ExchangePad
     /* 2B20C 8003AA0C 9C36638C */  lw         $v1, %lo(g_comb_send_buf + 0x4)($v1)
     /* 2B210 8003AA10 4A0880A3 */  sb         $zero, %gp_rel(g_comb_initial_pad_exchange_pending)($gp)
     /* 2B214 8003AA14 040682AF */  sw         $v0, %gp_rel(g_comb_prev_send_word)($gp)
-    /* 2B218 8003AA18 0A80013C */  lui        $at, %hi(D_800A36D4)
-    /* 2B21C 8003AA1C D43623AC */  sw         $v1, %lo(D_800A36D4)($at)
+    /* 2B218 8003AA18 0A80013C */  lui        $at, %hi(g_comb_prev_send_payload_check_word)
+    /* 2B21C 8003AA1C D43623AC */  sw         $v1, %lo(g_comb_prev_send_payload_check_word)($at)
     /* 2B220 8003AA20 8BEA0008 */  j          .L8003AA2C
     /* 2B224 8003AA24 00000000 */   nop
   .L8003AA28:

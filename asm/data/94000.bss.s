@@ -207,11 +207,11 @@ dlabel D_800A388C
 enddlabel D_800A388C
 
 /* 800A3890 */
-dlabel D_800A3890
-dlabel g_memcard_op_completion_code
+dlabel g_memcard_info_load_result
+dlabel g_memcard_info_load_result
     .space 0x4
-enddlabel D_800A3890
-enddlabel g_memcard_op_completion_code
+enddlabel g_memcard_info_load_result
+enddlabel g_memcard_info_load_result
 
 /* 800A3894 */
 dlabel g_fight_first_fighter_substitution_command_operands
@@ -324,9 +324,9 @@ dlabel g_memcard_request_write_started
 enddlabel g_memcard_request_write_started
 
 /* 800A38D0 */
-dlabel D_800A38D0
+dlabel g_comb_received_check_mismatch_count
     .space 0x4
-enddlabel D_800A38D0
+enddlabel g_comb_received_check_mismatch_count
 
 /* 800A38D4 */
 dlabel D_800A38D4
@@ -419,9 +419,9 @@ dlabel g_fight_stage_list_draw_cursor
 enddlabel g_fight_stage_list_draw_cursor
 
 /* 800A38FC */
-dlabel D_800A38FC
+dlabel g_comb_received_button_bit_count
     .space 0x4
-enddlabel D_800A38FC
+enddlabel g_comb_received_button_bit_count
 
 /* 800A3900 */
 dlabel g_sheet_pair_selection_y_offset
@@ -444,9 +444,9 @@ dlabel g_fight_stage_start_count
 enddlabel g_fight_stage_start_count
 
 /* 800A3908 */
-dlabel D_800A3908
+dlabel g_comb_sent_button_bit_count
     .space 0x4
-enddlabel D_800A3908
+enddlabel g_comb_sent_button_bit_count
 
 /* 800A390C */
 dlabel D_800A390C
