@@ -16,10 +16,10 @@ fighter_Init's roster_index for fighter 1, 9F9C.c:1244-1250):
   op 17 (3): fight_ConfigureFighter1FromOperandsAndLoad, unk_4[1] = op0, unk_4[3] = op1,
         unk_A[1] = op2
   op 3  (2): unk_4[1] = op0, unk_4[3] = op1
-  op 2  (29): D_800A3894 = the operands, fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState (unk_4[0] = op0,
+  op 2  (29): g_fight_first_fighter_substitution_command_operands = the operands, fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState (unk_4[0] = op0,
         the old unk_4[0] kept in g_fight_saved_first_fighter_selection), fight_FillMissingConfigInitFighterAndLoadObject(0), fight_ConfigureFighter1FromLookupAndOperandsAndLoad(operands + 1)
         (0xE or 0x1D as op 16), then as op 18; after that fight
-        fight_ConfigureFighter1FromOperandsAndLoad(D_800A3894 + 6) (28708.c:1511, 9F9C.c:1300) sets
+        fight_ConfigureFighter1FromOperandsAndLoad(g_fight_first_fighter_substitution_command_operands + 6) (28708.c:1511, 9F9C.c:1300) sets
         unk_4[1] = operand 6, shown as "0x0E|0x1D then 0xNN"
   op 20 (12): D_800A385C = the operands, fight_SetFixedFighterBytesAndLoadBothFighters: unk_4[1] = 0x1F,
         fight_QueueFixedFighterCommandDescriptorPlayback(1): D_800A3834 = 6, ends the call

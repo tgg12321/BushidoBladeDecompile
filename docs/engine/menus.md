@@ -35,7 +35,7 @@ until an opcode ends the step. The opcodes and what they do:
   mode 10 when `g_fight_menu_restart_count` is set.
 - 1: one operand byte into `g_fight_stage_index` and the history `g_fight_stage_list_entries[]`;
   mode 22.
-- 2: keeps a 0x1D-byte block in `D_800A3894`, sets up fighter 0
+- 2: keeps a 0x1D-byte block in `g_fight_first_fighter_substitution_command_operands`, sets up fighter 0
   (`fight_FillMissingConfigInitFighterAndLoadObject(0)`), then as 18.
 - 3: two operand bytes into `g_fight_config.fighter_setup[1]` / `[3]`; sets up fighter 1
   (`fight_FillMissingConfigInitFighterAndLoadObject(1)`, `fight_RequestBothFightersEntriesAndReloadOnChange`).
@@ -53,7 +53,7 @@ Handlers that the script's modes reach:
   fighters its flag byte 3 selects), starts its CD audio track (`cdrom_GetFileIndex(5, g_fight_active_playback_descriptor[1])`) and sets mode 7.
 - `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:579, mode 7) counts `g_handler_frame_counter`; while
   `motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush()` is nonzero it waits for Cross. It then pauses the CD and,
-  depending on the pending `D_800A3894` / `D_800A385C` blocks, sets mode 0
+  depending on the pending `g_fight_first_fighter_substitution_command_operands` / `D_800A385C` blocks, sets mode 0
   or calls `fight_RunCommandStream` for the next script step.
 - `fight_InitScrollingSpriteDisplayAndAudio` (src/main/2B344.c:625, mode 10) resets the scene state
   (`motion_InvalidateMarkedNdataPackAndResetLoadCaches`, `slot_ReleaseObjectAndResources`, `eff_ClearInitFlag`, `snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb`,
