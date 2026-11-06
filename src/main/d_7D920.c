@@ -7,7 +7,9 @@
  *    this one is empty) and ends where cdrom.c's .data starts, 0x8008EC34.
  *    No uninitialized objects.
  * 2. Small objects in .data: D_8008D864 (u8[8]: one point count per
- *    D_8008D86C set), D_8008EB04 ..
+ *    D_8008D86C set), D_8008EB04, D_8008EB06,
+ * g_fight_followup_playback_other_fighter_sound_frame,
+ * g_fight_followup_playback_common_sound_frame,
  * g_fight_followup_playback_red_light_effect_frame (s16) and
  * g_fight_followup_playback_red_light_effect_offset_x ..
  *    g_fight_followup_playback_red_light_effect_offset_z (s32), each with its
@@ -613,7 +615,7 @@ s8 g_fight_presentation_cd_audio_entries[40][2] = {
     {1, 0},  {1, 1},  {1, 6},  {1, 12}, {-1, 0}, {1, 9},  {1, 11}, {1, 10},
     {1, 8},  {2, 2},  {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {0, 0}};
 
-/* per-stage s16 table, 34 entries
+/* per-character s16 table (indexed by character_data_index), 34 entries
  * (fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams) */
 s16 g_fight_followup_playback_own_character_sound_frames[34] = {
     130, 130, 130, 130, 130, 130, 130, 130, 130, 130, -1, -1,

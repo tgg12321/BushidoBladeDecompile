@@ -394,7 +394,7 @@ s32 fighter_ResolveBoneHit(
     s32 var_12;
     s32 code;
 
-    /* FAKE: g_fight_strike_reverse_direction_x / EA / EC are one s16 x,y,z
+    /* FAKE: g_fight_strike_reverse_direction_x / y / z are one s16 x,y,z
      * vector reached by the first's address, passed to
      * fighter_StoreBoneLocalVectorAndArmEventTrigger and read as vec[0..2]
      * (Q96); as s16[3] or {x,y,z}: score 2 */
@@ -4683,7 +4683,7 @@ void object_ResolveFighterHits(void) {
             diff = 0x1000 - diff;
         math_NegNormalize3D(
             (s32 *)&obj->vel,
-            /* FAKE: g_fight_strike_reverse_direction_x / EA / EC are one s16
+            /* FAKE: g_fight_strike_reverse_direction_x / y / z are one s16
              * x,y,z vector reached by the first's address, passed to
              * math_NegNormalize3D (Q96 / Q117; as s16[3] or {x,y,z},
              * fighter_ResolveBoneHit scores 2) */
@@ -4712,7 +4712,7 @@ void object_ResolveFighterHits(void) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 target_fighter_index ^ 1, 0xE,
                 &SPAD->spadA8[target_fighter_index][j].x,
-                /* FAKE: g_fight_strike_reverse_direction_x / EA / EC are one
+                /* FAKE: g_fight_strike_reverse_direction_x / y / z are one
                  * s16 x,y,z vector reached by the first's address, passed to
                  * fight_RecordReplayEventAndDispatchSoundOrEffect (Q96 / Q117;
                  * as s16[3] or {x,y,z}, fighter_ResolveBoneHit scores 2) */

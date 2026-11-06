@@ -83,7 +83,7 @@ target, with the opponent as the attacker:
 src/main/17AFC.c:2217 records both call shapes). Its branches, in order:
 
 - `rec->character_roster_index == 0x1C`: when the limb is not 1..3, or the dot product of
-  `bone_y_axis` with the vector `D_800A37E8` is under 0x400, it plays cue 0x12,
+  `bone_y_axis` with the vector `g_fight_strike_reverse_direction_x` is under 0x400, it plays cue 0x12,
   sets `pending_move_event = 0x1E` (and, with `src == 0`, the attacker's `pending_move_event` to 0xB
   or 0x19) and returns 0.
 - `rec->character_roster_index == 0xD` (outside state 0x2E): `fighter_RelocateAndStartEventMove`, see

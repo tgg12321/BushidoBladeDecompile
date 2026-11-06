@@ -77,9 +77,9 @@ one-object spelling matches.
   (`.cse` `use_related_value` and `.greg`/final `.s` addressing), with Q31 mechanism + search.
   Each per-word declaration is `/* FAKE */`-annotated; all other accesses use
   `g_fighter_records`.
-- **D_800A37E8 / EA / EC (Q96; Q117 2026-10-06):** fighter_ResolveBoneHit, fighter_ProcessWeaponBodyHits and object_ResolveFighterHits's two
+- **g_fight_strike_reverse_direction_x / y / z (D_800A37E8 / EA / EC; Q96; Q117 2026-10-06):** fighter_ResolveBoneHit, fighter_ProcessWeaponBodyHits and object_ResolveFighterHits's two
   call sites only (object_ResolveFighterHits: at each argument). Three `s16` scalars;
-  the vector's address handed to callees is `&D_800A37E8`, `/* FAKE */`-annotated at the
+  the vector's address handed to callees is `&g_fight_strike_reverse_direction_x`, `/* FAKE */`-annotated at the
   assignment. Basis: the `s16[3]` and `{x,y,z}` forms banked at 2 (cse rewrites the dot's [0]
   address to `vec`'s register; cc1psx identical),
   memory/grind/judge-decl-cleanup/followups/fighter_ResolveBoneHit.vec-investigation.md.
