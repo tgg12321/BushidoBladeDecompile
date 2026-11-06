@@ -11,6 +11,16 @@
 #include "include_asm.h"
 #include "bb2.h"
 
+enum EntryMenuHandler {
+    ENTRY_MENU_ENTRY_GRID = 0,
+    ENTRY_MENU_ROW = 1,
+    ENTRY_MENU_ROTATED_ROW_CHOICE_COUNTDOWN = 2,
+    ENTRY_MENU_ROTATED_ROW_CHOICES = 3,
+    ENTRY_MENU_CHOICE_GRID_PAGE1 = 4,
+    ENTRY_MENU_CHOICE_GRID_PAGE2 = 5,
+    ENTRY_MENU_CHOICE_GRID_PAGE3 = 6,
+};
+
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
 extern void AddPrim(void *, void *);
 
@@ -112,7 +122,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
     g_entry_menu_slide_displacement = 0;
     g_entry_menu_slide_phase = 0;
     D_800A357C = 0;
-    g_entry_menu_handler_index = 0;
+    g_entry_menu_handler_index = ENTRY_MENU_ENTRY_GRID;
     g_entry_menu_exit_result = 0;
     g_entry_menu_grid_column_cursors[0] = 0;
     g_entry_menu_grid_row_cursors[0] = 0;
@@ -481,7 +491,7 @@ void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
     }
 
     if (g_entry_menu_post_darken_frame_count >= 0x79) {
-        g_entry_menu_next_handler_index = 3;
+        g_entry_menu_next_handler_index = ENTRY_MENU_ROTATED_ROW_CHOICES;
     }
     s.scale_x = 0x100;
     s.scale_y = 0x100;
@@ -1133,7 +1143,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
         s.sprt_out = draw_context->primitive_cursors.sprite_prims;
         draw_context->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
     }
-    if (g_entry_menu_handler_index == 0 &&
+    if (g_entry_menu_handler_index == ENTRY_MENU_ENTRY_GRID &&
         g_entry_menu_slot_records.rec[0].grid_pick != 0xFF &&
         g_entry_menu_work_block->entry_countdowns[0] == 0) {
         if (g_entry_menu_mode == 2 &&
@@ -1151,7 +1161,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
                 g_entry_menu_slot_records.rec[1].row_pick = 0xFF;
                 g_entry_menu_row_phase_choice_cursors[1] = 2;
             }
-            g_entry_menu_next_handler_index = 1;
+            g_entry_menu_next_handler_index = ENTRY_MENU_ROW;
         }
     }
     snd_FlushSoundQueue();
@@ -1430,7 +1440,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                         g_entry_menu_slot_records.rec[1].row_pick = 0xFF;
                         g_entry_menu_slot_records.rec[0].row_pick = 0xFF;
                         g_entry_menu_slide_phase = 3;
-                        g_entry_menu_next_handler_index = 0;
+                        g_entry_menu_next_handler_index = ENTRY_MENU_ENTRY_GRID;
                         snd_QueueSound(6, 0x7F, 0x7F);
                         if (g_entry_menu_grid_phase_extra_slot_count == 1) {
                             g_entry_menu_slot_records.rec[1].grid_pick = 0xFF;
@@ -1539,7 +1549,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                 snd_QueueSound(2, 0x7F, 0x7F);
                 g_entry_menu_slide_phase = 3;
                 snd_QueueSound(6, 0x7F, 0x7F);
-                g_entry_menu_next_handler_index = 0;
+                g_entry_menu_next_handler_index = ENTRY_MENU_ENTRY_GRID;
                 g_entry_menu_slot_records.rec[1].row_pick = 0xFF;
                 g_entry_menu_slot_records.rec[0].row_pick = 0xFF;
                 if (g_entry_menu_row_phase_extra_slot_count == 1) {
@@ -1598,7 +1608,8 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                  0) &&
             flag != 1) {
             g_entry_menu_slide_phase = 0x101;
-            g_entry_menu_next_handler_index = 2;
+            g_entry_menu_next_handler_index =
+                ENTRY_MENU_ROTATED_ROW_CHOICE_COUNTDOWN;
             g_entry_menu_darken_level = 1;
             g_entry_menu_post_darken_frame_count = 0;
         }
@@ -1699,9 +1710,9 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
                 menu_SelectStageIndexFromFirstSlotEntryFlag();
             g_entry_menu_exit_result = 1;
         } else if (g_entry_menu_mode == 4) {
-            g_entry_menu_next_handler_index = 5;
+            g_entry_menu_next_handler_index = ENTRY_MENU_CHOICE_GRID_PAGE2;
         } else if (g_entry_menu_mode == 6) {
-            g_entry_menu_next_handler_index = 6;
+            g_entry_menu_next_handler_index = ENTRY_MENU_CHOICE_GRID_PAGE3;
             g_entry_menu_choice_grid_row = 1;
             g_entry_menu_choice_grid_column = 1;
         } else {
@@ -1991,12 +2002,12 @@ void menu_UpdateChoiceGrid(
                 var_11 = g_entry_menu_slot_records.rec[i].grid_pick;
                 g_entry_menu_slot_records.rec[i].row_pick = 0xFF;
                 if (var_11 == 5 || var_11 == 16) {
-                    g_entry_menu_handler_index = 0;
+                    g_entry_menu_handler_index = ENTRY_MENU_ENTRY_GRID;
                     g_entry_menu_slot_records.rec[i == 0 ? 1 : 0].row_pick =
                         0xFF;
                     g_entry_menu_slot_records.rec[i].grid_pick = 0xFF;
                 } else {
-                    g_entry_menu_handler_index = 1;
+                    g_entry_menu_handler_index = ENTRY_MENU_ROW;
                 }
                 g_entry_menu_selection_offset_countdowns[0] = 0xF;
                 g_entry_menu_selection_offset_countdowns[1] = 0x14;
