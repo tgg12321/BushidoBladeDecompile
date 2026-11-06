@@ -1,0 +1,114 @@
+var-locals-49 (naming-b 2026-11-06): 15 research rows, 15 drafted, 0 dropped (13 RENAME reached by the gate + 2 RENAME marked outside-gate (var-locals-48 LEADS) for the reviewer to rule on; 42 substitutions: 31548.c 14, 9F9C.c 14, 368E4.c 8, 2B344.c 3, 32D04.c 3).
+Class: m2c placeholders (tN, vN, aN, argN, var_N, new_var) in functions reached by the names landed since var-locals-48: c90adc694 (naming: var-globals-w, 53 globals) and eb3ba7e56 (Unk1F800000Rec.unk8C -> rtp_flag, reaches no local). Rows: the four patched instruction words (first/second lui/ori, resting on the g_color_immediate_patch_*_template names), followup_character_data_index, motion_slot_index x2, current_variant, default_variant, plus WEAKER rows first_site / second_site, weapon_id / tracked_weapon_id (any may be dropped without affecting another; weapon_id and tracked_weapon_id are a caller/callee pair), plus the two OUTSIDE-GATE rows below.
+OUTSIDE-GATE (var-locals-48 LEADS), for the reviewer to rule on: math_Rotate2D:a1=y_ptr and gpu_LoadTimGroupOffset:new_var=tim_addr. No name from c90adc694 / eb3ba7e56 reaches either binding, so they do not meet the var-locals-49 gate (a global / member / function named after var-locals-48 reaching the binding); both are marked 'outside-gate (var-locals-48 LEADS)' in local_manifest.csv (evidence and verifier_note). Each is shown by its own uses (y / rotation formula; one write and one gpu_LoadTim argument), not by the sibling names. If the reviewer rules LEADS outside the gate may not land, drop those two rows (pairs.txt lines 14-15); the other 13 are unaffected (no pair uses another's old or new name).
+Tree: ln-naming-b = main 4e529ff62 (clean). Research: tmp/codex/var-locals-49-research.md (15 RENAME, 37 NO_NAME judged, 29 of the row's 31 listed bindings dropped at the gate).
+Method (drafter, re-derived, not copied): every definition read at 4e529ff62; a regex tokenizer with brace matching, separate from scoped_plan (comments and strings blanked, ./-> member tokens excluded), gives every use line of signature + body: all 15 line lists equal the research and equal the scoped_plan alone lines (dry.txt); the asm of func_800545F4 read (lui, ori, lui, ori at 0x800545F4..0x80054600) for the template roles; FRESH by whole-word scan of src/ and include/ (and symbol_addrs.txt): first_site, second_site, first_lui_insn, first_ori_insn, second_lui_insn, second_ori_insn, followup_character_data_index, default_variant, tracked_weapon_id, y_ptr have no hit; current_variant (17AFC.c:279,339), motion_slot_index (9F9C.c:3496) and tim_addr (368E4.c:1092,1161,1210) hit only as locals of other functions; weapon_id hits only as the member (game.h:1601, member accesses) and in comments (bb2.h:187,205,208; 9F9C.c:3140), no local or parameter; none is a macro, enum constant or file-scope name, and none occurs inside its target definition. FAKE check: the FAKEs in these definitions are the pads pre_pad / pad2 (2B344.c:1131-1140) and pre_pad (368E4.c:1113-1116); none marks a renamed binding. Comment scan of each definition and the 15 lines above for the old tokens: no comment spells any of them.
+Verdict is left as the research proposal (blank); verifier_note says pending pre-apply review; the session fills both after the naming-reviewer pass.
+Result: 15 research rows, 15 drafted, 0 dropped.
+
+R6 WATCH note: no comment edits are required by these pairs (research and drafter comment scan agree). Prototypes include/bb2.h:582-583, 733-734, 878, 957 are unnamed; nothing to edit. Width: format.py reflows the lines listed in dry.txt.
+
+Research notes copied below (set check, NO_NAME with reasons, comments citing old tokens, LEADS for var-locals-50), line numbers as at 4e529ff62:
+### Set check (naming_keycheck.scoped_plan(base, pairs, {}), base = read_working_tree() of ln-naming-b @ 4e529ff62, run in WSL)
+
+Each pair alone: ACCEPT, with exactly the lines listed above (alone counts 2+2+2+2+3+3+3+3+2+3+2+5+4+3+3 = 42).
+All 15 together: ACCEPT 42 substitutions: 31548.c 14, 9F9C.c 14, 368E4.c 8, 2B344.c 3, 32D04.c 3. No include/ file
+is touched. The prototypes include/bb2.h:582-583, 733-734, 878 and 957 are unnamed.
+CHAIN: no new name is another pair's old name. motion_slot_index is used in two functions (separate scopes).
+Width over 80 after substitution (format.py reflows; none is a function-like macro call):
+31548.c:282 (85), 9F9C.c:3578 / 3585 (83), 3579 / 3586 (98), 3584 (81), 2224 (92), 368E4.c:1147 (81).
+
+### NO_NAME (37 judged; reason)
+
+- PatchColorImmediatesAtListedCodeSites:a1 (31548.c:276): (color >> 16) & 0xFF. The templates show it becomes the
+  low byte of each lui immediate (bits 16-23 of the rebuilt colour), but not which channel. Same reason as -32 / -33,
+  and c90adc694 gives no channel evidence.
+- PatchColorImmediatesAtListedCodeSites:t1 (31548.c:274): pass counter (four passes). No new name reaches it.
+- memcard_StepRequest:var_v1 (28708.c:284): two roles, g_memcard_request_state (290), then
+  g_memcard_polled_info_load_result (294; newly named in c90adc694) compared with -1 / -2 / 0..2. The new name reaches
+  only its second role. var_v0 (285): a status code, then memcard_Format's result (402), then a status (404-409).
+  Several roles.
+- memcard_StepSaveOverwriteAndFormatPrompts:v0: two roles (earlier verdict). The new global reaches no binding.
+- gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift:arg3 (32D04.c:489): `arg3[1] & 1` now
+  selects g_gpu_outline_primitive_handlers vs g_gpu_table_color_textured_primitive_handlers (505-510, c90adc694). That
+  names one bit of byte 1, not the pointed-to record, and the function has no C caller. arg0 / arg1 / t0: unchanged
+  (var-locals-48: forwarded only; t0 FAILed pre-apply as depth_shift).
+- fighter_CastWeaponSegment:var_11 (17AFC.c:1612): var-locals-audit reset hlen -> var_11 (N2). The new
+  g_str_illegal_gun_motion_fmt (printf at 1638) reads only `temp`. temp / temp2: two values (Ruling 11 comment
+  1609-1610; temp2 final two-role in no_name.tsv).
+- fight_RunCommandStream:var_1 (2B344.c:344): `&g_fight_config.fighter_setup[1]`. g_fighter_records is in the function
+  (399, 407) but does not reach var_1. Its blocker, fighter_setup, was named at 413c1295e, before var-locals-48, so
+  the row gate excludes it (see LEADS: it now has a true name). var_0: do-not list.
+- fight_StartDescriptorPlaybackAndAudio:var_7 (2B344.c:531): block copy of g_fight_active_playback_descriptor[3]; not
+  reached by a new name. Earlier verdict stands.
+- eff_DrawAndAdvanceRotatedQuadClusters:var_5 (FAKE 961-966 work-area staging) and var_9 (no_name.tsv final
+  two-role). The four new *_tex_rec globals are stored only to g_eff_current_tex_rec (1008-1014).
+- eff_DrawAndAdvanceBillboardPairs:var_2 (FAKE 1193-1195), var_6 (wave-19 FAIL). The tex_rec globals do not reach them
+  (1199-1205).
+- fight_QueuePositionalSoundWithRandomAlternate:s0 (9F9C.c:1329, = &g_fighter_records[0].character_data_index): FAKE.
+- fight_UpdatePairedInputTotalsEventsAndMidpointEffects:var_1 (fight_paired_input_totals.c:49, = g_fighter_records):
+  FAKE restoration, two roles (earlier verdict).
+- replay_PlayFrame:sp120 (FAKE), temp (two roles), var_19 (do-not list).
+- fighter_InitCpuControl:temp / var_2 / var_5 / var_9 / var_15 / var_18 (4510C.c): earlier NO_NAMEs (unnamed table
+  bytes, parallel arrays, the six-value temp). var_18 (291) is 0x7530, then scale_distance_offset + 100 + k * 40:
+  several values. g_fighter_records adds nothing.
+- fighter_BuildCpuPad:var_1 / var_2: this record, then the other record (two roles); temp / temp2 / temp3 (Ruling 11).
+- fighter_Init:arg3 (weapon_id member collision), arg4 (only `!= 0` tests at 9F9C.c:4015 / 4027, no new evidence),
+  var_2 ((g_fight_step_table_next_row - 1) / 10 + 1, a step-table tier: not reached by a new name).
+- fighter_Update:temp (9F9C.c:4719): at least four roles (turn clamp 5032, bearing difference 5077, turn step 5129,
+  held-direction sign 5405). The jump tables (5051-5068) store to members, not to temp.
+- camera_UpdateReplayView:var_8 (9F9C.c:930, = gap count >= 0xB): not reached by a new name.
+- fighter_BuildCpuOrMappedPadState:temp; motion_LoadFighterData arg0 / arg2 / var_0; fighter_StartMoveScript v0 / v1
+  (several roles): earlier verdicts, and g_fighter_records gives no new role evidence.
+- fighter_ProcessWeaponBodyHits:var_1 (17AFC.c:1754, = &D_800A37E8, an unnamed global with Q124 capture evidence only,
+  48a33a470), var_12 / var_32 (Ruling 11 selectors), var_25, temp1 / temp2 / temp3 (two values each).
+- fighter_ResolveBodyOverlap:var_1 (do-not), var_13 (17AFC.c:914: squared distance, then its root at 957, then
+  clamped to 1: two values).
+- fighter_SetBasePositionSeparationCorrectionsAndGetDistance / fighter_CalcSeparationErrorAndOpposedOffsets temp_a0
+  (gte_Lzc macro argument), temp_v0, sp_tmp; fight_TriggerOpposingFighterEventFromNearBallisticRecords:sp_tmp
+  (gte_Lzc out-slot): macro arguments / earlier verdicts.
+- ndata_ReadChecked:var_0 (35000.c): two roles. The new g_str_marionation_overflow_fmt is only a printf format.
+- node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable:arg2 (368E4.c:1627): `(frame_flags & 4) > 0` from
+  g_fighter_records (9F9C.c:2221-2224); queues the bone-19 node with reloc entry 0x15. What frame_flags bit 2 is
+  remains unshown. arg0: g_camera_alternate_view_record.turn_easing_angle (not a new name; the gate excludes it).
+
+Row bindings dropped at the gate (no name from c90adc694 / eb3ba7e56 reaches them; their functions spell none of the
+54): fight_ProcessPositionRecordsInQuad:temp; fighter_TestTriangleBoneHits:a1;
+fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_56; func_80017F98 arg0 / arg1 / arg2; func_8003F5A8
+a0 / a1 / a2; func_8004283C:a0; func_80044F30:a0; func_80044F80:a0; func_80046A80:a0; func_8006C1FC:a0;
+func_80077A60 arg0 / arg1; func_80077AC0 arg0 / arg1; gpu_AddBrownOrBlackPanelGridTile:arg0;
+gpu_QueueDepthSpacedMovesAndLinkTerminalPacket:var_1; gpu_ReplaceCellAttributesInNearest2x2Block a0 / s0;
+math_AlignUp4:a0; motion_DecodeFrame:var_9; motion_StartPlayback a4 / a5; motion_UpdateFrameStep:var_9;
+slot_BlendTwoPosesIntoNodeMatrices:var_9; fight_RunCommandStream:var_1 (above). That is 29 of the 31; the two
+node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable rows are judged above (arg2 NO_NAME). arg1 is RENAMEd.
+
+### Comments citing old tokens (comment pass, Q133)
+
+- None. The definitions, and the 15 lines above each, contain no comment spelling t1..t3 / v0 / v0b / v1 / a4
+  (31548.c:255-298), var_7 (2B344.c:1128-1212; the FAKE pads cite pre_pad / pad2 only), v0 / v1 (9F9C.c:3560-3587),
+  a1 (9F9C.c:2195-2226), arg1 (368E4.c:1600-1690), a1 (32D04.c:405-434) or new_var (368E4.c:1100-1150).
+- Prototypes: include/bb2.h:582-583, 733-734, 878, 957 and 32D04.c's math_Rotate2D are unnamed / the definition
+  itself; nothing to edit. symbol_addrs.txt / named_syms.txt: no line pairs a target function with its old token.
+- Not old tokens of these pairs: d_7D920.c:14, 614-621 (name the function and D_8008EAC0, not var_7).
+
+### LEADS for var-locals-50
+
+- fight_RunCommandStream:var_1 -> second_fighter_setup (2B344.c:344, 348, 377, 378): `&g_fight_config.fighter_setup[1]`.
+  Per game.h:2400-2413, [0] = P2 roster index and [2] = P2 weapon id (fighter_setup[2 * k + player]). The evidence
+  (413c1295e) predates var-locals-48, so it waits for a gate that admits it (coverage triage).
+- D_8008EAC0 (d_7D920.c:614-617) is commented "per-stage s16 table, 34 entries" but its only reader indexes it by
+  character_data_index (2B344.c:1150-1151): a comment / data-name audit lead (frame numbers 130..230 compared with
+  g_handler_frame_counter to queue sound 40 * fighter + 0x2D).
+- Naming D_800A37E8 (Q124 capture 48a33a470) would free fighter_ProcessWeaponBodyHits:var_1.
+- gpu_DrawPerMatrixSections...:arg3: a member / type name for the record whose byte 1 bit 0 selects
+  g_gpu_outline_primitive_handlers would free it.
+- A data name for the first word of func_800545F4 (the first lui template, 0x800545F4) would make first_lui_insn
+  rest on a name, not only on the asm.
+- PatchColorImmediatesAtListedCodeSites:a1: needs channel evidence for colour byte 2 (a caller passing a typed RGB:
+  31D3C.c:125 `b | ((r << 16) | (g << 8))` puts r in byte 2, which would make it the red byte. Check against
+  31D3C.c:120 and the patched primitive layout before proposing color_red).
+- Unchanged: motion_StartPlayback a4 / a5 (Unk800EFAE8Rec.unk48), slot_UpdateObjectFrame a1 / s2 / s3, the 12
+  standing scoped_plan refusals, the D_800A3894 family, fighter_ResolveBodyOverlap:var_1 and the var-locals-42
+  do-not list.
+
+PRE-APPLY (naming-reviewer 2026-11-06, 13 PASS / 2 FAIL): DROPPED math_Rotate2D:a1=y_ptr and gpu_LoadTimGroupOffset:new_var=tim_addr, outside the row gate (no name landed after var-locals-48 reaches them); the reviewer found both true on their code (32D04.c:427/432; 368E4.c:1142/1147) and suggests resubmitting them unchanged in var-locals-50. Wave is 13 pairs, 36 substitutions (31548.c 14, 9F9C.c 14, 368E4.c 5, 2B344.c 3); the counts above include the dropped rows' alone lines.

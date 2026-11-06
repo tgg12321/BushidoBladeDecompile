@@ -1,0 +1,42 @@
+var-locals-49 (naming-b 2026-11-06): 15 local / parameter bindings in 5 files (31548.c PatchColorImmediatesAtListedCodeSites; 2B344.c followup_character_data_index; 9F9C.c motion_Get*VariantScript and tracked_weapon_id; 368E4.c weapon_id and tim_addr; 32D04.c y_ptr).
+Tree: ln-naming-b = main 4e529ff62 (clean). Run in WSL via a script file (tools/naming_keycheck.py, NAMING_KEYCHECK_ROOT = the worktree).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (same tool result as var-locals-43 .. -48). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree (base = naming_keycheck.read_working_tree()) accepted all 15 pairs (42 token substitutions: 31548.c 14, 9F9C.c 14, 368E4.c 8, 2B344.c 3, 32D04.c 3; no include/ file touched; no comment edits needed, see notes.txt). Each pair was also run alone: all 15 accepted, none rejected (alone-counts sum to 42, equal to the together total, and every pair's alone line list equals the drafter's independent token scan, 15/15).
+Per-pair substitutions (function:old=new count (lines)):
+  PatchColorImmediatesAtListedCodeSites:t3=first_lui_insn 2 (279,289)
+  PatchColorImmediatesAtListedCodeSites:t2=first_ori_insn 2 (280,290)
+  PatchColorImmediatesAtListedCodeSites:v1=second_lui_insn 2 (282,293)
+  PatchColorImmediatesAtListedCodeSites:a4=second_ori_insn 2 (283,294)
+  PatchColorImmediatesAtListedCodeSites:v0=first_site 3 (286,289,290)
+  PatchColorImmediatesAtListedCodeSites:v0b=second_site 3 (292,293,294)
+  fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams:var_7=followup_character_data_index 3 (1146,1150,1151)
+  motion_GetCurrentVariantScript:v1=motion_slot_index 3 (3576,3578,3579)
+  motion_GetCurrentVariantScript:v0=current_variant 2 (3577,3579)
+  motion_GetDefaultVariantScript:v1=motion_slot_index 3 (3583,3585,3586)
+  motion_GetDefaultVariantScript:v0=default_variant 2 (3584,3586)
+  node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable:arg1=weapon_id 5 (1627,1641,1642,1677,1680)
+  fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt:a1=tracked_weapon_id 4 (2215,2217,2219,2224)
+  math_Rotate2D:a1=y_ptr 3 (420,427,432)
+  gpu_LoadTimGroupOffset:new_var=tim_addr 3 (1119,1142,1147)
+
+Line widths after substitution (over 80; python tools/format.py reflows them in the naming commit; token-preserving), each pair alone (lines shared by two pairs of one line, e.g. 9F9C.c 3579 / 3586, grow further when applied together): 31548.c 282 (72->85); 9F9C.c 3578 (68->83), 3579 (70->85 and 83), 3584 (68->81), 3585 (68->83), 3586 (70->85 and 83), 2224 (77->92); 368E4.c 1147 (80->81). None is a function-like macro call or continues one (declarations, a return-index expression, a call argument of gpu_LoadTim), so the var-locals-40 sentinel limit does not apply. 0 rows flagged.
+
+Raw driver output (HEAD, scoped_plan alone per pair with the drafter's token-scan lines and definition range (start,end), then the set; zero-count include/ and unrelated files elided):
+HEAD 4e529ff62
+ALONE PatchColorImmediatesAtListedCodeSites:t3=first_lui_insn {'31548.c': 2} ACCEPT | token scan [('31548.c', [279, 289], 272, 298)]
+ALONE PatchColorImmediatesAtListedCodeSites:t2=first_ori_insn {'31548.c': 2} ACCEPT | token scan [('31548.c', [280, 290], 272, 298)]
+ALONE PatchColorImmediatesAtListedCodeSites:v1=second_lui_insn {'31548.c': 2} ACCEPT | token scan [('31548.c', [282, 293], 272, 298)]
+ALONE PatchColorImmediatesAtListedCodeSites:a4=second_ori_insn {'31548.c': 2} ACCEPT | token scan [('31548.c', [283, 294], 272, 298)]
+ALONE PatchColorImmediatesAtListedCodeSites:v0=first_site {'31548.c': 3} ACCEPT | token scan [('31548.c', [286, 289, 290], 272, 298)]
+ALONE PatchColorImmediatesAtListedCodeSites:v0b=second_site {'31548.c': 3} ACCEPT | token scan [('31548.c', [292, 293, 294], 272, 298)]
+ALONE fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams:var_7=followup_character_data_index {'2B344.c': 3} ACCEPT | token scan [('2B344.c', [1146, 1150, 1151], 1130, 1212)]
+ALONE motion_GetCurrentVariantScript:v1=motion_slot_index {'9F9C.c': 3} ACCEPT | token scan [('9F9C.c', [3576, 3578, 3579], 3575, 3580)]
+ALONE motion_GetCurrentVariantScript:v0=current_variant {'9F9C.c': 2} ACCEPT | token scan [('9F9C.c', [3577, 3579], 3575, 3580)]
+ALONE motion_GetDefaultVariantScript:v1=motion_slot_index {'9F9C.c': 3} ACCEPT | token scan [('9F9C.c', [3583, 3585, 3586], 3582, 3587)]
+ALONE motion_GetDefaultVariantScript:v0=default_variant {'9F9C.c': 2} ACCEPT | token scan [('9F9C.c', [3584, 3586], 3582, 3587)]
+ALONE node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable:arg1=weapon_id {'368E4.c': 5} ACCEPT | token scan [('368E4.c', [1627, 1641, 1642, 1677, 1680], 1626, 1698)]
+ALONE fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt:a1=tracked_weapon_id {'9F9C.c': 4} ACCEPT | token scan [('9F9C.c', [2215, 2217, 2219, 2224], 2212, 2226)]
+ALONE math_Rotate2D:a1=y_ptr {'32D04.c': 3} ACCEPT | token scan [('32D04.c', [420, 427, 432], 420, 434)]
+ALONE gpu_LoadTimGroupOffset:new_var=tim_addr {'368E4.c': 3} ACCEPT | token scan [('368E4.c', [1119, 1142, 1147], 1111, 1151)]
+SET 15 pairs ACCEPT {'2B344.c': 3, '31548.c': 14, '32D04.c': 3, '368E4.c': 8, '9F9C.c': 14} total 42
+
+PRE-APPLY (naming-reviewer 2026-11-06, 13 PASS / 2 FAIL): DROPPED math_Rotate2D:a1=y_ptr and gpu_LoadTimGroupOffset:new_var=tim_addr, outside the row gate (no name landed after var-locals-48 reaches them); the reviewer found both true on their code (32D04.c:427/432; 368E4.c:1142/1147) and suggests resubmitting them unchanged in var-locals-50. Wave is 13 pairs, 36 substitutions (31548.c 14, 9F9C.c 14, 368E4.c 5, 2B344.c 3); the counts above include the dropped rows' alone lines.
