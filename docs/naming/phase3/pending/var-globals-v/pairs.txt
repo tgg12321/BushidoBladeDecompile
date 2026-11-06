@@ -1,0 +1,2 @@
+D_800A38A8=g_fight_mash_contest_start_requested
+D_800A3876=g_fight_mash_contest_preset_fighter_index

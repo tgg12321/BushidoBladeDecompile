@@ -1,0 +1,26 @@
+==============================================================================
+DATA WAVE — 2 addresses, 2 identifiers remapped
+  0x800a38a8: D_800A38A8 -> g_fight_mash_contest_start_requested
+  0x800a3876: D_800A3876 -> g_fight_mash_contest_preset_fighter_index
+
+-- file edits (12) --
+  asm/data/94000.bss.s  (4)
+  asm/funcs/fight_UpdateFighterInteractionsAndPointCaches.s  (2)
+  asm/funcs/fight_UpdatePairedInputTotalsEventsAndMidpointEffects.s  (2)
+  asm/funcs/fight_UpdateSeparationAndPairedMoves.s  (2)
+  asm/funcs/fighter_ProcessWeaponBodyHits.s  (4)
+  asm/funcs/fighter_ResolveBodyOverlap.s  (8)
+  asm/funcs/fighter_ResolveWeaponContact.s  (4)
+  include/bb2.h  (2)
+  src/main/17AFC.c  (9)
+  src/main/9F9C.c  (1)
+  src/main/fight_paired_input_totals.c  (1)
+  symbol_addrs.txt  (4)
+
+-- registry lines --
+  symbol_addrs.txt:1512 D_800A3876 -> g_fight_mash_contest_preset_fighter_index
+  symbol_addrs.txt:1523 D_800A38A8 -> g_fight_mash_contest_start_requested
+  symbol_addrs.txt:2044 D_800A38A8 -> g_fight_mash_contest_start_requested
+  symbol_addrs.txt:2121 D_800A3876 -> g_fight_mash_contest_preset_fighter_index
+
+DRY RUN — nothing written. Re-run with --apply.
