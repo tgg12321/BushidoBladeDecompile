@@ -1470,7 +1470,7 @@ void gpu_SetDrawMoveArray(RECT *src_rect, s32 move_count, DR_MOVE (*a2)[2]) {
 extern void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
     s32, s32, DR_MOVE (*)[2], s32, s32);
 
-void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
+void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 selector, s32 arg1) {
     s16 *rec;
     s32 *span_limit_entry;
     s32 dist;
@@ -1480,7 +1480,7 @@ void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
     /* FAKE: the pair read through a pointer local; a direct
        `g_gpu_fog_move_settings[arg0][0]` read is scheduled above the
        g_gpu_last_fog_ot_index store: score 9 (Q129) */
-    rec = g_gpu_fog_move_settings[arg0];
+    rec = g_gpu_fog_move_settings[selector];
     if (rec[0] != 0) {
         {
             s32 var_4 = gpu_GetTrackedFighterViewFlag();
@@ -1512,13 +1512,13 @@ void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
         }
         g_gpu_fog_latch_last_grid_and_fog_control =
             (u16)g_gpu_grid_and_fog_control;
-        span_limit_entry = &g_gpu_fog_depth_span_limits[arg0];
+        span_limit_entry = &g_gpu_fog_depth_span_limits[selector];
         {
             /* FAKE: g_gpu_fog_move_settings[arg0][1] read as a byte offset off
                the array base; element reads are scheduled past the
                g_gpu_fog_latch_last_grid_and_fog_control store above, ahead of
                the `sh`: score 8 */
-            s32 idx = arg0 * 4;
+            s32 idx = selector * 4;
             gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
                 arg1, 0x1F, g_gpu_fog_row_moves, *span_limit_entry,
                 *(s16 *)((u8 *)g_gpu_fog_move_settings + 2 + idx));

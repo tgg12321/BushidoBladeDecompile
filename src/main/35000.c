@@ -14,7 +14,7 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
     Unk800A9CF8Entry *rec;
     Unk800A9CF8Entry *ent;
     s32 i;
-    s32 var_5;
+    s32 progress;
     s32 angle;
     s16 *frame_cursor;
     s16 cos_val;
@@ -24,21 +24,21 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
     s32 cx;
     s32 sx;
     s32 last;
-    s32 var_15;
+    s32 next_fade_scale;
     void **list;
 
     rec = (Unk800A9CF8Entry *)g_node_frame_animation_context.frame_entries;
     for (i = 0; i < g_node_frame_animation_context.frame_entry_count; rec++,
         i++) {
-        var_5 = rec->anim_progress;
-        if (var_5 < 0)
+        progress = rec->anim_progress;
+        if (progress < 0)
             continue;
-        if (var_5 < g_node_frame_animation_context.anim_frame_count) {
+        if (progress < g_node_frame_animation_context.anim_frame_count) {
             var_0.vx = 0;
             angle = rec->anim_yaw;
             var_0.vz = 0;
-            frame_cursor =
-                (s16 *)(g_node_frame_animation_context.frame_data + var_5 * 12);
+            frame_cursor = (s16 *)(g_node_frame_animation_context.frame_data +
+                                   progress * 12);
             var_0.vy = angle;
             math_RotMatrixZYX(&var_0, &mat);
             var_0.vx = *frame_cursor++;
@@ -59,11 +59,11 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
             rec->node.xf.mat.t[0] += (sz + cx) >> 12;
             rec->node.xf.mat.t[1] += var_0.vy;
             rec->node.xf.mat.t[2] += (cz - sx) >> 12;
-            var_5++;
-            if (var_5 >= g_node_frame_animation_context.anim_frame_count) {
+            progress++;
+            if (progress >= g_node_frame_animation_context.anim_frame_count) {
                 rec->fade_scale = 0x1000;
             }
-            rec->anim_progress = var_5;
+            rec->anim_progress = progress;
             if (g_node_frame_animation_context.resource_selector == 0x12) {
                 /* FAKE: rec is reused (restored from ent below) for the paired
                  * gpu_GetGridNodeRecordTable entry, an Unk800A6690Rec reached
@@ -77,7 +77,7 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
                 last = g_node_frame_animation_context.anim_frame_count - 1;
                 frame_cursor =
                     (s16 *)(g_node_frame_animation_context.frame_data +
-                            (var_5 + last) * 12);
+                            (progress + last) * 12);
                 var_0.vx = *frame_cursor++;
                 var_0.vy = *frame_cursor++;
                 var_0.vz = *frame_cursor++;
@@ -92,15 +92,15 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
                 rec = ent;
             }
         } else {
-            var_15 = rec->fade_scale - 0x40;
-            if (var_15 < 0) {
-                var_15 = 0;
+            next_fade_scale = rec->fade_scale - 0x40;
+            if (next_fade_scale < 0) {
+                next_fade_scale = 0;
             }
-            if (var_15 == 0 &&
+            if (next_fade_scale == 0 &&
                 g_node_frame_animation_context.resource_selector != 4) {
                 rec->anim_progress = -2;
             }
-            rec->fade_scale = var_15;
+            rec->fade_scale = next_fade_scale;
         }
         list = g_draw_queue_cursor;
         g_draw_queue_cursor = list + 1;

@@ -8,8 +8,9 @@
 extern s32 g_node_pose_rotation_indices[];
 
 void slot_UpdateObjectFrame(
-    s32 slot_index, s32 a1, s32 *position, s16 *rotation, s16 *arg4, s32 arg5) {
-    Unk80045878Obj *s4;
+    s32 slot_index, s32 a1, s32 *position, s16 *rotation,
+    s16 *decoded_motion_frame, s32 ground_y) {
+    Unk80045878Obj *slot_object;
     Unk80045878Node *s5;
     Unk80045878Node *s3;
     Unk80045878Node *s2;
@@ -19,21 +20,21 @@ void slot_UpdateObjectFrame(
     if (g_slot_objects[slot_index] == 0) {
         return;
     }
-    s4 = g_slot_objects[slot_index];
+    slot_object = g_slot_objects[slot_index];
 
-    s4->transform_nodes[0].node.xf.rot.vx = rotation[0];
-    s4->transform_nodes[0].node.xf.rot.vy = rotation[1];
-    s4->transform_nodes[0].node.xf.rot.vz = rotation[2];
+    slot_object->transform_nodes[0].node.xf.rot.vx = rotation[0];
+    slot_object->transform_nodes[0].node.xf.rot.vy = rotation[1];
+    slot_object->transform_nodes[0].node.xf.rot.vz = rotation[2];
 
-    s4->transform_nodes[0].node.work.t[0] = position[0];
+    slot_object->transform_nodes[0].node.work.t[0] = position[0];
     /* FAKE: s5 holds s4 + 0x2C here and the linked record pointer in the copy
      * loop below; a fresh loop local scores 35, dropping this first role 46. */
-    s5 = s4->transform_nodes;
-    s4->transform_nodes[0].node.work.t[1] = position[1];
-    s3 = &s4->transform_nodes[1];
-    s4->transform_nodes[0].node.work.t[2] = position[2];
+    s5 = slot_object->transform_nodes;
+    slot_object->transform_nodes[0].node.work.t[1] = position[1];
+    s3 = &slot_object->transform_nodes[1];
+    slot_object->transform_nodes[0].node.work.t[2] = position[2];
 
-    s2 = &s4->transform_nodes[19];
+    s2 = &slot_object->transform_nodes[19];
 
     switch (a1) {
     case 0: {
@@ -45,7 +46,7 @@ void slot_UpdateObjectFrame(
         s0 = 1;
         tbl = g_node_pose_rotation_indices;
         /* FAKE: s1 copies the parameter arg4; using arg4 directly scores 78. */
-        s1 = arg4;
+        s1 = decoded_motion_frame;
 
         s3->node.work.t[0] = 0;
         s3->node.work.t[1] = 0;
@@ -115,7 +116,8 @@ void slot_UpdateObjectFrame(
         Unk80045878Node *s1p;
         s0 = 0;
         s1p = s3;
-        s3->node.work.t[1] = (s3->node.work.t[1] * s4->position_scale) >> 12;
+        s3->node.work.t[1] =
+            (s3->node.work.t[1] * slot_object->position_scale) >> 12;
         s5->node.matrix_state = 0;
         do {
             node_UpdateWorldMatrix(&s1p->node);
@@ -130,7 +132,7 @@ void slot_UpdateObjectFrame(
        below the g_draw_queue_cursor load (score 5). */
     {
         s32 *p58 = &s3->unk58;
-        *p58 = (s32)s4->unk_18F4;
+        *p58 = (s32)slot_object->unk_18F4;
     }
     {
         void **list;
@@ -155,7 +157,7 @@ void slot_UpdateObjectFrame(
 
     {
         Unk80045878Node *a2p;
-        a2p = s4->duplicate_nodes;
+        a2p = slot_object->duplicate_nodes;
         for (;;) {
             void **list3;
             s5 = (Unk80045878Node *)a2p->unk58;
@@ -169,8 +171,8 @@ void slot_UpdateObjectFrame(
             a2p++;
         }
 
-        a2p = s4->projected_nodes;
-        if (s4->projected_nodes[0].node.reloc_entry_index != -1) {
+        a2p = slot_object->projected_nodes;
+        if (slot_object->projected_nodes[0].node.reloc_entry_index != -1) {
             do {
                 void **list4;
                 list4 = g_draw_queue_cursor;
@@ -181,10 +183,10 @@ void slot_UpdateObjectFrame(
         }
     }
 
-    node_SetWordOnAllListedNodes(s4->projected_nodes, arg5);
-    s4->object_ground_y = arg5;
-    softbody_SetObjectGround(s4, arg5);
-    softbody_UpdateObject(s4);
+    node_SetWordOnAllListedNodes(slot_object->projected_nodes, ground_y);
+    slot_object->object_ground_y = ground_y;
+    softbody_SetObjectGround(slot_object, ground_y);
+    softbody_UpdateObject(slot_object);
     light_SetPointLightTarget(slot_index, (s32)s3->node.xf.mat.t);
 }
 

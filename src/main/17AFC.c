@@ -1795,7 +1795,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
          * push weight (Ruling 11) */
         s32 work;
         s32 flag;
-        s32 var_31;
+        s32 inner_hit;
 
         if (mode == 1 && g_fight_paired_move_initiator == i) {
             continue;
@@ -2209,19 +2209,19 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             }
         }
         if (g_fight_force_weapon_inner_bone_hits == 0) {
-            var_31 = inner_hit_mask & (1 << idx);
+            inner_hit = inner_hit_mask & (1 << idx);
         } else {
-            var_31 = 1;
+            inner_hit = 1;
         }
         if (mask_b & (1 << idx) & ~mask_c) {
-            var_31 = 0;
+            inner_hit = 0;
         }
         /* fighter_ResolveBoneHit's sixth argument is a record pointer on the
          * calls from object_ResolveFighterHits (first argument 1) and, on this
          * call (first argument 0), the 0/1 alternate-blade flag the target
          * passes in that slot: its `tbl == NULL ? 0xB : 0x19` picks the same
          * reaction fighter_ProcessWeaponContacts picks from +0x8C. */
-        fighter_ResolveBoneHit(0, fighter_record, idx, ang, var_31,
+        fighter_ResolveBoneHit(0, fighter_record, idx, ang, inner_hit,
                                (Tbl8008E194 *)var_12, flag, 0);
         other_record->attack_hit_armed = 0;
     }
@@ -3896,48 +3896,48 @@ s32 fighter_IsBoneTriangleCrossYPositive(Unk80101EC8Record *fighter_record) {
  * (node_GetSlotMatrixPointerArray()'s table, inverted by math_InvertMatrix3x3)
  * times the rot[] rotation (X, Y, Z), and pos is taken into the bone's frame:
  * less the bone translation, rotated by that inverse, then halved. */
-void object_AttachToOpponentBone(Obj80106A78 *arg0, s16 bone_index) {
+void object_AttachToOpponentBone(Obj80106A78 *obj, s16 bone_index) {
     MATRIX mat_local;
     MATRIX **mat_tbl;
     MATRIX *bone_matrix;
     MATRIX *rot_mat;
 
-    arg0->is_attached = 1;
-    arg0->attached_bone = bone_index;
-    mat_tbl = node_GetSlotMatrixPointerArray(arg0->owner < 1);
-    rot_mat = &arg0->mtx;
-    bone_matrix = mat_tbl[arg0->attached_bone];
+    obj->is_attached = 1;
+    obj->attached_bone = bone_index;
+    mat_tbl = node_GetSlotMatrixPointerArray(obj->owner < 1);
+    rot_mat = &obj->mtx;
+    bone_matrix = mat_tbl[obj->attached_bone];
 
     /* 3x3 identity rotation in the record's matrix. */
-    arg0->mtx.m[0][0] = 0x1000;
-    arg0->mtx.m[0][1] = 0;
-    arg0->mtx.m[0][2] = 0;
-    arg0->mtx.m[1][0] = 0;
-    arg0->mtx.m[1][1] = 0x1000;
-    arg0->mtx.m[1][2] = 0;
-    arg0->mtx.m[2][0] = 0;
-    arg0->mtx.m[2][1] = 0;
-    arg0->mtx.m[2][2] = 0x1000;
-    RotMatrixX(arg0->rot[0], rot_mat);
-    RotMatrixY(arg0->rot[1], rot_mat);
-    RotMatrixZ(arg0->rot[2], rot_mat);
+    obj->mtx.m[0][0] = 0x1000;
+    obj->mtx.m[0][1] = 0;
+    obj->mtx.m[0][2] = 0;
+    obj->mtx.m[1][0] = 0;
+    obj->mtx.m[1][1] = 0x1000;
+    obj->mtx.m[1][2] = 0;
+    obj->mtx.m[2][0] = 0;
+    obj->mtx.m[2][1] = 0;
+    obj->mtx.m[2][2] = 0x1000;
+    RotMatrixX(obj->rot[0], rot_mat);
+    RotMatrixY(obj->rot[1], rot_mat);
+    RotMatrixZ(obj->rot[2], rot_mat);
     math_InvertMatrix3x3(bone_matrix, &mat_local);
     MulMatrix0(&mat_local, rot_mat, rot_mat);
 
     /* Subtract mat_tbl[arg0->attached_bone]'s translation from the position. */
-    arg0->pos.x -= bone_matrix->t[0];
-    arg0->pos.y -= bone_matrix->t[1];
-    arg0->pos.z -= bone_matrix->t[2];
+    obj->pos.x -= bone_matrix->t[0];
+    obj->pos.y -= bone_matrix->t[1];
+    obj->pos.z -= bone_matrix->t[2];
 
     gte_SetRotMatrix(&mat_local);
-    gte_ldlv0(&arg0->pos);
+    gte_ldlv0(&obj->pos);
     gte_rtv0();
-    gte_stlvnl(&arg0->pos);
+    gte_stlvnl(&obj->pos);
 
     /* Halve x, y, z (signed arithmetic shift). */
-    arg0->pos.x >>= 1;
-    arg0->pos.y >>= 1;
-    arg0->pos.z >>= 1;
+    obj->pos.x >>= 1;
+    obj->pos.y >>= 1;
+    obj->pos.z >>= 1;
 }
 
 /* Rotates the object's local vector (pos) by bone attached_bone's matrix of
@@ -3946,7 +3946,7 @@ void object_AttachToOpponentBone(Obj80106A78 *arg0, s16 bone_index) {
  * math_MatrixToAngles reads from that matrix to
  * node_QueueEntryNodesFromTransformOrUpdatedSlotNode / replay_RecordModelDraw.
  */
-void object_SubmitAttachedTransform(Obj80106A78 *arg0) {
+void object_SubmitAttachedTransform(Obj80106A78 *obj) {
     s32 mac[3];
     s16 angles[4];
     MATRIX mtx;
@@ -3954,11 +3954,11 @@ void object_SubmitAttachedTransform(Obj80106A78 *arg0) {
     MATRIX *mat;
     s32 lookup;
 
-    mat_tbl = node_GetSlotMatrixPointerArray(arg0->owner < 1);
-    mat = mat_tbl[arg0->attached_bone];
+    mat_tbl = node_GetSlotMatrixPointerArray(obj->owner < 1);
+    mat = mat_tbl[obj->attached_bone];
 
     gte_SetRotMatrix(mat);
-    gte_ldlv0(&arg0->pos);
+    gte_ldlv0(&obj->pos);
     gte_rtv0();
     gte_stlvnl(mac);
 
@@ -3967,12 +3967,12 @@ void object_SubmitAttachedTransform(Obj80106A78 *arg0) {
     mac[1] += mat->t[1];
     mac[2] += mat->t[2];
 
-    MulMatrix0(mat, &arg0->mtx, &mtx);
+    MulMatrix0(mat, &obj->mtx, &mtx);
     math_MatrixToAngles(&mtx, angles);
 
-    lookup = g_resource_kind_entry_ids[arg0->kind];
+    lookup = g_resource_kind_entry_ids[obj->kind];
     node_QueueEntryNodesFromTransformOrUpdatedSlotNode(lookup, 1, mac, angles);
-    replay_RecordModelDraw(arg0->slot, lookup, mac, angles);
+    replay_RecordModelDraw(obj->slot, lookup, mac, angles);
 }
 
 void object_SubmitPoolTransforms(void) {

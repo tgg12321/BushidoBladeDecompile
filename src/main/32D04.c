@@ -276,8 +276,8 @@ void math_RotMatrixYXZ(u16 *angles, MATRIX *matrix) {
     s32 cosA_sinB, cosA_sinC, cosA_cosC, cosA_cosB;
     s32 sinAxcosB;
     s32 sinAxcosB_12;
-    s32 var_19, neg_sinB_cosC;
-    s32 var_21;
+    s32 sinAxcosB_12_sinC, neg_sinB_cosC;
+    s32 sinAxcosB_12_cosC;
     s32 sinB_sinC;
     s32 cosA;
     u16 rawA;
@@ -317,10 +317,10 @@ void math_RotMatrixYXZ(u16 *angles, MATRIX *matrix) {
 
     sinAxcosB_12 = sinAxcosB >> 12;
 
-    var_19 = sinAxcosB_12 * sinC;
+    sinAxcosB_12_sinC = sinAxcosB_12 * sinC;
     neg_sinB_cosC = -sinB * cosC;
 
-    var_21 = sinAxcosB_12 * cosC;
+    sinAxcosB_12_cosC = sinAxcosB_12 * cosC;
 
     cosA_cosB = cosA * cosB;
 
@@ -330,10 +330,10 @@ void math_RotMatrixYXZ(u16 *angles, MATRIX *matrix) {
     matrix->m[2][2] = cosA_cosB >> 12;
     matrix->m[0][0] = (prod_sinC + cosB_cosC) >> 12;
     matrix->m[0][1] = (prod_cosC + cosB_negsinC) >> 12;
-    matrix->m[2][0] = (var_19 + neg_sinB_cosC) >> 12;
+    matrix->m[2][0] = (sinAxcosB_12_sinC + neg_sinB_cosC) >> 12;
 
     sinB_sinC = sinB * sinC;
-    matrix->m[2][1] = (var_21 + sinB_sinC) >> 12;
+    matrix->m[2][1] = (sinAxcosB_12_cosC + sinB_sinC) >> 12;
 }
 
 void math_RotMatrixXYZ(u16 *angles, MATRIX *matrix) {
@@ -341,15 +341,15 @@ void math_RotMatrixXYZ(u16 *angles, MATRIX *matrix) {
     s16 sinA, sinB, sinC, cosA;
     s32 cosB, cosC;
     s32 cosB_cosC, cosB_negsinC;
-    s32 var_11, var_12;
-    s32 var_13, var_14;
+    s32 sinA_sinB, sinA_sinB_12;
+    s32 sinA_sinB_12_cosC, sinA_sinB_12_negsinC;
     s32 cosA_sinC, cosA_cosC;
     s32 cosA_negsinB;
     s32 negsinA_cosB;
-    s32 var_19, var_20;
+    s32 cosA_negsinB_12, cosA_negsinB_12_cosC;
     s32 cosA_sinB;
     s32 sinA_sinC;
-    s32 var_23;
+    s32 cosA_sinB_12_sinC;
     s32 cosA_cosB;
     s32 sinA_cosC;
 
@@ -366,20 +366,20 @@ void math_RotMatrixXYZ(u16 *angles, MATRIX *matrix) {
 
     cosB_cosC = cosB * cosC;
     matrix->m[0][2] = sinB;
-    var_11 = sinA * sinB;
+    sinA_sinB = sinA * sinB;
     cosB_negsinC = cosB * -sinC;
-    var_12 = var_11 >> 12;
-    var_13 = var_12 * cosC;
+    sinA_sinB_12 = sinA_sinB >> 12;
+    sinA_sinB_12_cosC = sinA_sinB_12 * cosC;
     cosA_sinC = cosA * sinC;
-    var_14 = var_12 * -sinC;
+    sinA_sinB_12_negsinC = sinA_sinB_12 * -sinC;
     cosA_cosC = cosA * cosC;
     cosA_negsinB = cosA * -sinB;
     negsinA_cosB = -sinA * cosB;
-    var_19 = cosA_negsinB >> 12;
-    var_20 = var_19 * cosC;
+    cosA_negsinB_12 = cosA_negsinB >> 12;
+    cosA_negsinB_12_cosC = cosA_negsinB_12 * cosC;
     cosA_sinB = cosA * sinB;
     sinA_sinC = sinA * sinC;
-    var_23 = (cosA_sinB >> 12) * sinC;
+    cosA_sinB_12_sinC = (cosA_sinB >> 12) * sinC;
     cosA_cosB = cosA * cosB;
 
     matrix->m[0][0] = cosB_cosC >> 12;
@@ -387,10 +387,10 @@ void math_RotMatrixXYZ(u16 *angles, MATRIX *matrix) {
     matrix->m[1][2] = negsinA_cosB >> 12;
     sinA_cosC = sinA * cosC;
     matrix->m[2][2] = cosA_cosB >> 12;
-    matrix->m[1][0] = (var_13 + cosA_sinC) >> 12;
-    matrix->m[1][1] = (var_14 + cosA_cosC) >> 12;
-    matrix->m[2][0] = (var_20 + sinA_sinC) >> 12;
-    matrix->m[2][1] = (var_23 + sinA_cosC) >> 12;
+    matrix->m[1][0] = (sinA_sinB_12_cosC + cosA_sinC) >> 12;
+    matrix->m[1][1] = (sinA_sinB_12_negsinC + cosA_cosC) >> 12;
+    matrix->m[2][0] = (cosA_negsinB_12_cosC + sinA_sinC) >> 12;
+    matrix->m[2][1] = (cosA_sinB_12_sinC + sinA_cosC) >> 12;
 }
 
 extern void math_RotMatrixXYZ();
@@ -417,12 +417,12 @@ void math_TransposeMatrixInPlace(MATRIX *matrix) {
     matrix->m[1][2] = temp;
 }
 
-void math_Rotate2D(s32 *a0, s32 *a1, s32 angle) {
+void math_Rotate2D(s32 *x_ptr, s32 *a1, s32 angle) {
     s16 cosine, sine;
     s32 x, y;
     s32 x_cosine, x_sine, y_cosine, y_sine;
     cosine = Judge[(angle + 0x400) & 0xFFF];
-    x = *a0;
+    x = *x_ptr;
     sine = Judge[angle & 0xFFF];
     y = *a1;
     x_cosine = cosine * x;
@@ -430,7 +430,7 @@ void math_Rotate2D(s32 *a0, s32 *a1, s32 angle) {
     y_cosine = cosine * y;
     y_sine = sine * y;
     *a1 = (x_sine + y_cosine) >> 12;
-    *a0 = (x_cosine - y_sine) >> 12;
+    *x_ptr = (x_cosine - y_sine) >> 12;
 }
 
 void math_MatrixToAnglesYXZ(MATRIX *matrix, SVECTOR *angles) {
