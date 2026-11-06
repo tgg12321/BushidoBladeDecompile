@@ -278,7 +278,7 @@ extern u32 g_gpu_prim_buffer_span;
 extern u8 D_800A3744;
 extern u8 D_800A3745;
 extern u8 D_800A3746;
-extern u8 D_800A36B0;
+extern u8 g_fight_pause_menu_opened;
 
 void sys_InitAtBoot(void) {
     printf(g_str_limit, 0x8010DB00);
@@ -301,7 +301,7 @@ void sys_InitAtBoot(void) {
     func_80046B44();
     g_main_frame_period = 2;
     g_motion_fighter_loaded_data_ids[1] = 0;
-    D_800A36B0 = 0;
+    g_fight_pause_menu_opened = 0;
     g_comb_abort_request = 0;
 }
 
@@ -332,7 +332,7 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
         limit = 6;
     }
 
-    D_800A36B0 = 1;
+    g_fight_pause_menu_opened = 1;
     snd_QueueSound(3, 0x7F, 0x7F);
     prim_buffer_addr = D_800A3770[g_gpu_presented_frame_count & 1];
 
@@ -413,7 +413,7 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
 
     DrawSync(0);
     ResetRCnt(0xF2000001);
-    D_800A36B0 = 1;
+    g_fight_pause_menu_opened = 1;
 }
 
 void rng_SetSeed(s32 seed) { g_rng_state = seed; }
@@ -830,7 +830,7 @@ u8 g_softbody_slot_high_water = 0;
 u8 g_fight_view_option;
 u8 g_gpu_jitter_burst_enabled;
 s32 g_gpu_presented_frame_count;
-u8 D_800A36B0;
+u8 g_fight_pause_menu_opened;
 u8 g_main_frame_period;
 u8 g_config_menu_m_option;
 s16 g_camera_distance_offset;

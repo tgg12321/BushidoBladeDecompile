@@ -2241,7 +2241,8 @@ void fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt(void) {
 void fight_Update(void) {
     PadState pad_state;
 
-    D_800A3778 = camera_GetViewMatrixWithHalvedMiddleRow();
+    g_camera_halved_row_view_matrix_ptr =
+        camera_GetViewMatrixWithHalvedMiddleRow();
     camera_UpdateTwoFighterView(&g_fighter_records[0].camera_fighter_point,
                                 &g_fighter_records[1].camera_fighter_point,
                                 &g_fighter_records[0], &g_fighter_records[1]);
@@ -2296,7 +2297,8 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
     Unk8001CD68Rec time_fields;
 
     g_handler_frame_counter += 1;
-    D_800A3778 = camera_GetViewMatrixWithHalvedMiddleRow();
+    g_camera_halved_row_view_matrix_ptr =
+        camera_GetViewMatrixWithHalvedMiddleRow();
     camera_SetFighterFocusView(
         &g_fighter_records[g_fight_followup_fighter_index == 0],
         g_handler_frame_counter << 3);
@@ -2424,7 +2426,8 @@ void fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPr
     s16 next_handler_index;
 
     g_handler_frame_counter += 1;
-    D_800A3778 = camera_GetViewMatrixWithHalvedMiddleRow();
+    g_camera_halved_row_view_matrix_ptr =
+        camera_GetViewMatrixWithHalvedMiddleRow();
     camera_SetInterpolatedFighterView(
         &g_fighter_records[g_fight_followup_fighter_index],
         (g_handler_frame_counter << 12) / 105);

@@ -43,7 +43,7 @@ glabel sys_InitAtBoot
     /* 761C 80016E1C 250682A3 */  sb         $v0, %gp_rel(g_main_frame_period)($gp)
     /* 7620 80016E20 0A80013C */  lui        $at, %hi(g_motion_fighter_loaded_data_ids + 0x2)
     /* 7624 80016E24 C63820A4 */  sh         $zero, %lo(g_motion_fighter_loaded_data_ids + 0x2)($at)
-    /* 7628 80016E28 E40580A3 */  sb         $zero, %gp_rel(D_800A36B0)($gp)
+    /* 7628 80016E28 E40580A3 */  sb         $zero, %gp_rel(g_fight_pause_menu_opened)($gp)
     /* 762C 80016E2C 5C0880A3 */  sb         $zero, %gp_rel(g_comb_abort_request)($gp)
     /* 7630 80016E30 1000BF8F */  lw         $ra, 0x10($sp)
     /* 7634 80016E34 1800BD27 */  addiu      $sp, $sp, 0x18

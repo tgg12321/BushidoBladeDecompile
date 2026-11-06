@@ -8,8 +8,8 @@ glabel fight_Update
     /* F090 8001E890 4C048524 */  addiu      $a1, $a0, 0x44C
     /* F094 8001E894 98FE9024 */  addiu      $s0, $a0, -0x168
     /* F098 8001E898 21300002 */  addu       $a2, $s0, $zero
-    /* F09C 8001E89C 0A80013C */  lui        $at, %hi(D_800A3778)
-    /* F0A0 8001E8A0 783722AC */  sw         $v0, %lo(D_800A3778)($at)
+    /* F09C 8001E89C 0A80013C */  lui        $at, %hi(g_camera_halved_row_view_matrix_ptr)
+    /* F0A0 8001E8A0 783722AC */  sw         $v0, %lo(g_camera_halved_row_view_matrix_ptr)($at)
     /* F0A4 8001E8A4 086A000C */  jal        camera_UpdateTwoFighterView
     /* F0A8 8001E8A8 E4028724 */   addiu     $a3, $a0, 0x2E4
     /* F0AC 8001E8AC 0A80023C */  lui        $v0, %hi(g_fight_tracked_view_setting)

@@ -10,11 +10,11 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26048 80035848 01000224 */  addiu      $v0, $zero, 0x1
     /* 2604C 8003584C 07006214 */  bne        $v1, $v0, .L8003586C
     /* 26050 80035850 00000000 */   nop
-    /* 26054 80035854 0D018293 */  lbu        $v0, %gp_rel(D_800A31D9)($gp)
+    /* 26054 80035854 0D018293 */  lbu        $v0, %gp_rel(g_row_menu_boot_memcard_load_pending)($gp)
     /* 26058 80035858 00000000 */  nop
     /* 2605C 8003585C 03004010 */  beqz       $v0, .L8003586C
     /* 26060 80035860 07000224 */   addiu     $v0, $zero, 0x7
-    /* 26064 80035864 0D0180A3 */  sb         $zero, %gp_rel(D_800A31D9)($gp)
+    /* 26064 80035864 0D0180A3 */  sb         $zero, %gp_rel(g_row_menu_boot_memcard_load_pending)($gp)
     /* 26068 80035868 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
   .L8003586C:
     /* 2606C 8003586C 0E018293 */  lbu        $v0, %gp_rel(g_menu_mode_subflow_init_pending)($gp)

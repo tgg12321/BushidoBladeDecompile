@@ -387,7 +387,7 @@ extern u8 g_fight_bone_group_tim_requests;
 extern u8 D_800A376B;
 extern u8 g_fight_playback_file_base_index;
 extern s16 g_fight_paired_move_start_pending;
-extern MATRIX *D_800A3778;
+extern MATRIX *g_camera_halved_row_view_matrix_ptr;
 /* match-result table: 0/1/2 per match, indexed by g_fight_match_cursor */
 extern u8 g_fight_match_results[];
 

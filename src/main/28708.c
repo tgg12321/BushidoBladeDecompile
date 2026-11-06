@@ -1399,7 +1399,8 @@ void replay_PlayFrame(void) {
         frame_index = g_replay_playback_frame;
         playback_fraction = (frame_index << 12) / g_replay_write_frame;
     }
-    D_800A3778 = camera_GetViewMatrixWithHalvedMiddleRow();
+    g_camera_halved_row_view_matrix_ptr =
+        camera_GetViewMatrixWithHalvedMiddleRow();
     /* The frame record's address is written out at each argument (F3
      * compound-address duplication, no-new-park-categories); a `rec` local:
      * score 20. */

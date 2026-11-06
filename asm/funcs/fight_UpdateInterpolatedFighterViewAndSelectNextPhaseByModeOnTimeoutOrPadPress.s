@@ -14,8 +14,8 @@ glabel fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPad
     /* F7D0 8001EFD0 9DC06334 */  ori        $v1, $v1, (0x9C09C09D & 0xFFFF)
     /* F7D4 8001EFD4 00330600 */  sll        $a2, $a2, 12
     /* F7D8 8001EFD8 1800C300 */  mult       $a2, $v1
-    /* F7DC 8001EFDC 0A80013C */  lui        $at, %hi(D_800A3778)
-    /* F7E0 8001EFE0 783722AC */  sw         $v0, %lo(D_800A3778)($at)
+    /* F7DC 8001EFDC 0A80013C */  lui        $at, %hi(g_camera_halved_row_view_matrix_ptr)
+    /* F7E0 8001EFE0 783722AC */  sw         $v0, %lo(g_camera_halved_row_view_matrix_ptr)($at)
     /* F7E4 8001EFE4 0A80033C */  lui        $v1, %hi(g_fight_followup_fighter_index)
     /* F7E8 8001EFE8 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
     /* F7EC 8001EFEC 1080023C */  lui        $v0, %hi(g_fighter_records)

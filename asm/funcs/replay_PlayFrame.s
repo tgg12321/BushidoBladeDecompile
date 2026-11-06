@@ -56,8 +56,8 @@ glabel replay_PlayFrame
   .L80039A08:
     /* 2A208 80039A08 AC1C010C */  jal        camera_GetViewMatrixWithHalvedMiddleRow
     /* 2A20C 80039A0C 00000000 */   nop
-    /* 2A210 80039A10 0A80013C */  lui        $at, %hi(D_800A3778)
-    /* 2A214 80039A14 783722AC */  sw         $v0, %lo(D_800A3778)($at)
+    /* 2A210 80039A10 0A80013C */  lui        $at, %hi(g_camera_halved_row_view_matrix_ptr)
+    /* 2A214 80039A14 783722AC */  sw         $v0, %lo(g_camera_halved_row_view_matrix_ptr)($at)
     /* 2A218 80039A18 C0101700 */  sll        $v0, $s7, 3
     /* 2A21C 80039A1C 23105700 */  subu       $v0, $v0, $s7
     /* 2A220 80039A20 C0880200 */  sll        $s1, $v0, 3

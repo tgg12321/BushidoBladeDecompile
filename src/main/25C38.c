@@ -205,7 +205,7 @@ void menu_InitSubflowForMode(s32 arg0) {
 }
 
 /* Merged section (Q65: one original file). */
-extern u8 D_800A31D9;
+extern u8 g_row_menu_boot_memcard_load_pending;
 extern void menu_InitSubflowForMode(s32);
 extern void gpu_AddScreenGradient(void);
 extern void menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows(void);
@@ -217,8 +217,8 @@ void menu_UpdateRowMenuAndSubflows(void) {
     g_main_frame_period = 1;
     rand();
     if (g_row_menu_subflow_state == ROW_MENU_SUBFLOW_TOP_MENU &&
-        D_800A31D9 != 0) {
-        D_800A31D9 = 0;
+        g_row_menu_boot_memcard_load_pending != 0) {
+        g_row_menu_boot_memcard_load_pending = 0;
         g_row_menu_subflow_state = ROW_MENU_SUBFLOW_BOOT_MEMCARD_CHECK;
     }
     if (g_menu_mode_subflow_init_pending != 0) {
@@ -476,7 +476,7 @@ s32 bits_DepositMask3F83F8(s32 packed_bits) {
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
 u8 g_menu_release_closes_non_common_vabs = 1;
-u8 D_800A31D9 = 1;
+u8 g_row_menu_boot_memcard_load_pending = 1;
 u8 g_menu_mode_subflow_init_pending = 0;
 /* Q65: tentative definitions (COMMON) of small data reached gp-relative. */
 u8 g_row_menu_subflow_state;

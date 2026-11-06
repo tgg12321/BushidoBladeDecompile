@@ -13,8 +13,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F2B0 8001EAB0 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
     /* F2B4 8001EAB4 1080043C */  lui        $a0, %hi(g_fighter_records)
     /* F2B8 8001EAB8 C81E8424 */  addiu      $a0, $a0, %lo(g_fighter_records)
-    /* F2BC 8001EABC 0A80013C */  lui        $at, %hi(D_800A3778)
-    /* F2C0 8001EAC0 783722AC */  sw         $v0, %lo(D_800A3778)($at)
+    /* F2BC 8001EABC 0A80013C */  lui        $at, %hi(g_camera_halved_row_view_matrix_ptr)
+    /* F2C0 8001EAC0 783722AC */  sw         $v0, %lo(g_camera_halved_row_view_matrix_ptr)($at)
     /* F2C4 8001EAC4 02006014 */  bnez       $v1, .L8001EAD0
     /* F2C8 8001EAC8 00000000 */   nop
     /* F2CC 8001EACC 4C048424 */  addiu      $a0, $a0, 0x44C

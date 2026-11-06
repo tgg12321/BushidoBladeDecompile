@@ -358,7 +358,7 @@ g_fight_missing_support_fighter_index = 0x800A3758;  // data-wave 2026-10-28: wa
 g_cd_result = 0x800A3760; /* data-wave 2026-09-24: was D_800A3760 */
 g_fight_playback_file_base_index = 0x800A376C;  // data-wave 2026-10-28: was D_800A376C
 D_800A3770 = 0x800A3770;
-D_800A3778 = 0x800A3778;
+g_camera_halved_row_view_matrix_ptr = 0x800A3778;  // data-wave 2026-11-06: was D_800A3778
 g_fight_packed_match_scores = 0x800A3784;  // data-wave 2026-10-28: was D_800A3784
 g_fight_toggle_option_bits = 0x800A3788;  // data-wave 2026-10-28: was D_800A3788
 g_gpu_ot_offset_ptr = 0x800A378C;  // data-wave 2026-10-27: was D_800A378C
@@ -561,7 +561,7 @@ _spu_rev_startaddr = 0x800A2D44; /* data-wave 2026-09-07: was D_800A2D44 */
 D_800A3044 = 0x800A3044;
 g_gpu_cd_file_image_rect = 0x800A30D4;  // data-wave 2026-10-28: was D_800A30D4
 g_sel_screen_work = 0x800A36A0;  // data-wave 2026-10-27: was D_800A36A0
-D_800A36B0 = 0x800A36B0;
+g_fight_pause_menu_opened = 0x800A36B0;  // data-wave 2026-11-06: was D_800A36B0
 g_comb_received_pad_word = 0x800A36C0;  // data-wave 2026-10-28: was D_800A36C0
 g_comb_prev_send_word = 0x800A36D0;  // data-wave 2026-10-28: was D_800A36D0
 g_row_menu_resource_root = 0x800A372C;  // data-wave 2026-10-29: was D_800A372C
@@ -845,7 +845,7 @@ D_800A2668 = 0x800A2668; /* boolean: 0 = not init, then set to 1 */  /* data-wav
 g_vsync_gpu_stat_reg = 0x800A1510; /* libetc VSync static: .word 0x1F801814 (GPUSTAT pointer; SOTN vsync.c leaves it unnamed) */  /* data-wave 2026-10-03: was g_ings2_vsync_block_ptr */
 D_800A3770 = 0x800A3770; /* u32[2] primitive-buffer bases 0x801D8800 / 0x801EBC00 (sys_InitAtBoot); also a CD-read destination via motion_StartPlayback */  /* data-wave 2026-10-08: was g_video_fb_a */
 g_gpu_prim_buffer_span = 0x800A3798; /* = 0x13400 (D_800A3770[1] - D_800A3770[0]), one store in sys_InitAtBoot; never read */  /* data-wave 2026-10-08: was g_video_fb_size */
-D_800A36B0 = 0x800A36B0; /* store-only: 0 in sys_InitAtBoot, 1 in menu_RunPauseMenu before and after its menu loop */  /* data-wave 2026-10-08: was g_intro_render_active */
+g_fight_pause_menu_opened = 0x800A36B0; /* store-only: 0 in sys_InitAtBoot, 1 in menu_RunPauseMenu before and after its menu loop */  /* data-wave 2026-10-08: was g_intro_render_active */
 D_8009BF6C = 0x8009BF6C; /* first argument of the last executed queue call, printed by get_alarm (sys.c:1027, :1168) */  /* data-wave 2026-10-09: was g_gpu_packet_pending_arg1 */
 D_8009BF80 = 0x8009BF80; /* the mask SetIntrMask(0) returns, saved and restored by _addque2 (sys.c:1018, :1029) */  /* data-wave 2026-10-09: was g_gpu_motion_save_a */
 D_8009BF88 = 0x8009BF88; /* the mask SetIntrMask(0) returns, saved around the GPU reset in _reset and get_alarm (sys.c:1097, :1117, :1169-1177) */  /* data-wave 2026-10-09: was g_gpu_motion_save_b */
@@ -901,7 +901,7 @@ g_fight_operand_tint_red = 0x800A37B4; /* operands[2] passthrough (fight_Configu
 g_fight_operand_tint_green = 0x800A37B5; /* data-wave 2026-10-08: was g_lesson_extra_arg_c */
 g_fight_operand_tint_blue = 0x800A37B6; /* data-wave 2026-10-08: was g_lesson_extra_arg_d */
 g_fight_loaded_second_fighter_vab_and_ground_quad_class = 0x800A30FD; /* caches g_fight_character_vab_and_ground_quad_classes[(s8)g_fight_config.fighter_setup[1]] for fight_ResetGraphAndReloadResourcesOnCachedKeyChange's reload test (pair of g_fight_loaded_first_fighter_vab_and_ground_quad_class at -1) */  /* data-wave 2026-10-08: was g_char_pose_id_p2 */
-D_800A3778 = 0x800A3778; /* stores camera_GetViewMatrixWithHalvedMiddleRow()'s return (&g_camera_halved_row_view_matrix); no reader */  /* data-wave 2026-10-07: was g_cam_bone_data_cached */
+g_camera_halved_row_view_matrix_ptr = 0x800A3778; /* stores camera_GetViewMatrixWithHalvedMiddleRow()'s return (&g_camera_halved_row_view_matrix); no reader */  /* data-wave 2026-10-07: was g_cam_bone_data_cached */
 g_fighter_dpad_angle_offsets = 0x8008EB40; /* s16 2D table, both indices from bits 12-15 of the fighter's unk_24.held; the value is added to opponent_bearing (9F9C.c:4247, :4340) */  /* data-wave 2026-10-08: was g_attack_angle_offset_table */
 g_gpu_asset_draw_move_masks = 0x80094B48; /* byte mask indexed by the object's asset_index (`mask &= D[asset_index]`); each set bit i calls gpu_AddDrawMove(slot_index, 4 - i) */  /* data-wave 2026-10-08: was g_sprite_class_mask_table */
 g_gpu_asset_tim_group_load_masks = 0x80094D40; /* bit-mask table indexed by asset_index in gpu_LoadRequestedMaskedTimGroupsForSlot */  /* data-wave 2026-10-08: was g_sprite_anim_table */

@@ -170,14 +170,14 @@ dlabel g_gpu_presented_frame_count
     /* 93EAC 800A36AC 00000000 */ .word 0x00000000
 enddlabel g_gpu_presented_frame_count
 
-nonmatching D_800A36B0
+nonmatching g_fight_pause_menu_opened
 
-dlabel D_800A36B0
+dlabel g_fight_pause_menu_opened
     /* 93EB0 800A36B0 */ .byte 0x00
     /* 93EB1 800A36B1 */ .byte 0x00
     /* 93EB2 800A36B2 */ .byte 0x00
     /* 93EB3 800A36B3 */ .byte 0x00
-enddlabel D_800A36B0
+enddlabel g_fight_pause_menu_opened
 
 nonmatching g_listener_cam
 
@@ -599,14 +599,14 @@ dlabel D_800A3770
     /* 93F74 800A3774 00000000 */ .word 0x00000000
 enddlabel D_800A3770
 
-nonmatching D_800A3778
+nonmatching g_camera_halved_row_view_matrix_ptr
 
-dlabel D_800A3778
+dlabel g_camera_halved_row_view_matrix_ptr
     /* 93F78 800A3778 */ .byte 0x00
     /* 93F79 800A3779 */ .byte 0x00
     /* 93F7A 800A377A */ .byte 0x00
     /* 93F7B 800A377B */ .byte 0x00
-enddlabel D_800A3778
+enddlabel g_camera_halved_row_view_matrix_ptr
 
 nonmatching g_fight_match_results
 
