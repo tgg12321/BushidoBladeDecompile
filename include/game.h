@@ -845,7 +845,7 @@ typedef struct {
     u16 common_move_script_index_by_character[27];
     u16 variant_move_script_index[3];
     u16 next_variant_move_script_index[3][3];
-    u16 f66[11][3];
+    u16 variant_move_script_index_by_move_id[11][3];
 } Tbl800A3860Entry;
 
 /* Five section pointers into a loaded file. g_motion_fighter_sections[i] for

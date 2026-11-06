@@ -3489,7 +3489,8 @@ void *motion_ResolveMoveData(
     if ((u32)(id - 0x7FF5) < 11) {
         return &g_motion_fighter_sections[rec->motion_slot]
                     .move_scripts[g_motion_fighter_buffers[rec->motion_slot]
-                                      ->f66[id - 0x7FF5][rec->variant_index]];
+                                      ->variant_move_script_index_by_move_id
+                                          [id - 0x7FF5][rec->variant_index]];
     }
     switch (id) {
     case 0x7FF0:
