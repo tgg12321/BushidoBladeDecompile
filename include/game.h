@@ -2217,9 +2217,9 @@ typedef struct {
  * accessed. Not the Unk800A6690Rec layout: that table's +0x58 is a byte. */
 typedef struct {
     Unk80101DF0Record node; /* +0x00 */
-    s32 unk58;              /* +0x58 */
+    s32 anim_progress;      /* +0x58 */
     s32 anim_yaw;           /* +0x5C */
-    s16 unk60;              /* +0x60 */
+    s16 fade_scale;         /* +0x60 */
     s8 pad62[6];            /* +0x62 */
 } Unk800A9CF8Entry;         /* 0x68 */
 

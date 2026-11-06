@@ -30,7 +30,7 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
     rec = (Unk800A9CF8Entry *)g_node_frame_animation_context.frame_entries;
     for (i = 0; i < g_node_frame_animation_context.frame_entry_count; rec++,
         i++) {
-        var_5 = rec->unk58;
+        var_5 = rec->anim_progress;
         if (var_5 < 0)
             continue;
         if (var_5 < g_node_frame_animation_context.anim_frame_count) {
@@ -61,9 +61,9 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
             rec->node.xf.mat.t[2] += (cz - sx) >> 12;
             var_5++;
             if (var_5 >= g_node_frame_animation_context.anim_frame_count) {
-                rec->unk60 = 0x1000;
+                rec->fade_scale = 0x1000;
             }
-            rec->unk58 = var_5;
+            rec->anim_progress = var_5;
             if (g_node_frame_animation_context.resource_selector == 0x12) {
                 /* FAKE: rec is reused (restored from ent below) for the paired
                  * gpu_GetGridNodeRecordTable entry, an Unk800A6690Rec reached
@@ -92,15 +92,15 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
                 rec = ent;
             }
         } else {
-            var_15 = rec->unk60 - 0x40;
+            var_15 = rec->fade_scale - 0x40;
             if (var_15 < 0) {
                 var_15 = 0;
             }
             if (var_15 == 0 &&
                 g_node_frame_animation_context.resource_selector != 4) {
-                rec->unk58 = -2;
+                rec->anim_progress = -2;
             }
-            rec->unk60 = var_15;
+            rec->fade_scale = var_15;
         }
         list = g_draw_queue_cursor;
         g_draw_queue_cursor = list + 1;
@@ -116,7 +116,7 @@ void node_StartFrameAnimatedEntryAndInitPairedNode(s32 entry_index, s32 yaw) {
 
     p = (Unk800A9CF8Entry *)g_node_frame_animation_context.frame_entries +
         entry_index;
-    if (p->unk58 != -1)
+    if (p->anim_progress != -1)
         return;
 
     switch (g_node_frame_animation_context.resource_selector) {
@@ -133,7 +133,7 @@ void node_StartFrameAnimatedEntryAndInitPairedNode(s32 entry_index, s32 yaw) {
         break;
     }
     p->anim_yaw = yaw;
-    p->unk58 = 0;
+    p->anim_progress = 0;
     /* FAKE: p is reused for the paired gpu_GetGridNodeRecordTable entry, an
      * Unk800A6690Rec reached only through its node member (both records start
      * with the node); a separate Unk80101DF0Record * local scores 4. */

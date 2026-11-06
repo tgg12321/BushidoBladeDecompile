@@ -1219,7 +1219,7 @@ void node_InitFrameEntriesFromWorldTranslations(void) {
         dst->node.work.t[1] = src->node.xf.mat.t[1];
         dst->node.work.t[2] = src->node.xf.mat.t[2];
         dst->node.matrix_state = 0;
-        dst->unk58 = -1;
+        dst->anim_progress = -1;
     }
 }
 
