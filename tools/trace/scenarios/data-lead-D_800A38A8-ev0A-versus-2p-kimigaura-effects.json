@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-kimigaura-effects re-run unchanged with breakpoints at fighter_Update+0x2DC (the pending_move_event dispatch: v0 = cur_move's event table, v1 = &table[pending_move_event], a1 = the move id; record +0x0C/4, +0x40, +0x6A, +0x286 and the table's first 0x20 bytes dumped), fighter_Update+0x2F4 (after fighter_StartMoveScript: new cur_move +0x50 and move_kind +0x6A) and fight_UpdatePairedInputTotalsEventsAndMidpointEffects entry (both records' roster / weapon, power, pressed, move_frame, move_kind, pending_move_event, mash_contest_score; the tally count, D_800A3876, D_800A38A8): trace-data-leads runtime evidence (unit 15, D_800A38A8: which move and move_kind event 0xA starts per character, and whether the 0x2B mash contest resolves)",
+  "evidence": [
+    "docs/naming/runtime/data-lead-D_800A38A8-ev0A-versus-2p-kimigaura-effects-1/spec.json"
+  ],
+  "extends": "versus-2p-kimigaura-effects",
+  "refines": "versus-2p-kimigaura-effects"
+}
