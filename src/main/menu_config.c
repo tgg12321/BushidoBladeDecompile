@@ -101,21 +101,21 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 g_fight_view_option);
 
     for (i = 0; i < 2; i++) {
-        if (g_pad_state.pressed & (0x1000 << (i * 16))) {
+        if (g_pad_state.pressed & (PADLup << (i * 16))) {
             snd_QueueSound(0, 0x7F, 0x7F);
             if (g_config_menu_cursors[i] > 0) {
                 g_config_menu_cursors[i]--;
             } else {
                 g_config_menu_cursors[i] = (i != 0) ? 3 : 11;
             }
-        } else if (g_pad_state.pressed & (0x4000 << (i * 16))) {
+        } else if (g_pad_state.pressed & (PADLdown << (i * 16))) {
             snd_QueueSound(0, 0x7F, 0x7F);
             if (g_config_menu_cursors[i] < ((i != 0) ? 3 : 11)) {
                 g_config_menu_cursors[i]++;
             } else {
                 g_config_menu_cursors[i] = 0;
             }
-        } else if (g_pad_state.pressed & (0x8000 << (i * 16))) {
+        } else if (g_pad_state.pressed & (PADLleft << (i * 16))) {
             snd_QueueSound(4, 0x3F, 0x3F);
             switch (g_config_menu_cursors[i]) {
             case 0:
@@ -155,7 +155,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 g_fight_view_option--;
                 break;
             }
-        } else if (g_pad_state.pressed & (0x2000 << (i * 16))) {
+        } else if (g_pad_state.pressed & (PADLright << (i * 16))) {
             snd_QueueSound(4, 0x3F, 0x3F);
             switch (g_config_menu_cursors[i]) {
             case 0:

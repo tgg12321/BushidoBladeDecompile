@@ -510,7 +510,7 @@ void menu_HandleSelOpposedChoice(s32 pressed_buttons, s32 player_index) {
     }
     work = SELWORK;
     work->f3C[player_index] = work->selected_grid_page[player_index];
-    if (pressed_buttons & (0x40 << (player_index * 16))) {
+    if (pressed_buttons & (PADRdown << (player_index * 16))) {
         for (i = 0; i < 2; i++) {
             work->pending_selection_cursor[i] = 0;
             work->panel_slide_state.half[i] = 1;
@@ -521,7 +521,7 @@ void menu_HandleSelOpposedChoice(s32 pressed_buttons, s32 player_index) {
         snd_QueueSound(1, 0x7F, 0x7F);
         return;
     }
-    if (pressed_buttons & (0x10 << (player_index * 16))) {
+    if (pressed_buttons & (PADRup << (player_index * 16))) {
         if (work->selection_phase.half[(player_index != 0) ? 0 : 1] == 1) {
             for (i = 0; i < 2; i++) {
                 work->pending_selection_cursor[i] = 0;
@@ -733,7 +733,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *draw_context, s32 grid_page,
  * the player's current pick slot, sound 4 if the pad bit 0x40 is set */
 static inline void selgrid_StorePlaceholder(s32 pad, s16 *picks, s32 player) {
     picks[SELWORK->f3C[player]] = 0x14;
-    if (pad & (0x40 << (player * 16))) {
+    if (pad & (PADRdown << (player * 16))) {
         snd_QueueSound(4, 0x7F, 0x7F);
     }
 }
@@ -756,7 +756,7 @@ void menu_UpdateSelGridPicks(
         return;
     }
 
-    if (pressed_buttons & (0x10 << (player_index * 16))) {
+    if (pressed_buttons & (PADRup << (player_index * 16))) {
         snd_QueueSound(2, 0x7F, 0x7F);
         if (SELWORK->f3C[player_index] != 0) {
             pick_slots[SELWORK->f3C[player_index]] = -1;
@@ -834,7 +834,7 @@ void menu_UpdateSelGridPicks(
                 u16 count;
 
                 pick_slots[SELWORK->f3C[player_index]] = entry;
-                if (pressed_buttons & (0x40 << (player_index * 16))) {
+                if (pressed_buttons & (PADRdown << (player_index * 16))) {
                     snd_QueueSound(1, 0x7F, 0x7F);
                     *flag |= bit;
                     count = SELWORK->f3C[player_index];
@@ -1019,7 +1019,7 @@ void menu_UpdateSelListPicks(
         break;
     }
 
-    if (pressed_buttons & (0x40 << (player_index * 16))) {
+    if (pressed_buttons & (PADRdown << (player_index * 16))) {
         if (SELWORK->f3C[player_index] <
             SELWORK->selected_match_count_index + 3) {
             snd_QueueSound(1, 0x7F, 0x7F);
@@ -1042,7 +1042,7 @@ void menu_UpdateSelListPicks(
             SELWORK->remaining_list_cursor[player_index] = 0;
             SELWORK->f3C[player_index]++;
         }
-    } else if (pressed_buttons & (0x10 << (player_index * 16))) {
+    } else if (pressed_buttons & (PADRup << (player_index * 16))) {
         snd_QueueSound(2, 0x7F, 0x7F);
         if (SELWORK->f3C[player_index] == 0) {
             SELWORK->panel_slide_state.half[player_index] = 3;
@@ -1332,7 +1332,7 @@ s32 menu_RunSelPhases(s32 pressed_buttons, Unk8006EACCRec *draw_context) {
             menu_DrawSelListPicks(draw_context, SELWORK->selected_grid_page[i],
                                   SELWORK->grid_pick_slots[i], i);
             menu_DrawSelPanel(draw_context, i);
-            if (pressed_buttons & (0x10 << (i * 16))) {
+            if (pressed_buttons & (PADRup << (i * 16))) {
                 snd_QueueSound(2, 0x7F, 0x7F);
                 SELWORK->selection_phase.half[i] = 3;
             }
@@ -1804,7 +1804,7 @@ s32 StepTimedSpriteSequenceWithSkip(s32 pressed_buttons) {
         prim_buffer->draw_area_prims;
     draw_context.primitive_cursors.draw_offset_prims =
         prim_buffer->draw_offset_prims;
-    if (g_gpu_timed_sprite_elapsed_frames > 0 && (pressed_buttons & 0x40)) {
+    if (g_gpu_timed_sprite_elapsed_frames > 0 && (pressed_buttons & PADRdown)) {
         return 1;
     }
     gpu_DrawAndAdvanceTimedSpriteSequence(&draw_context);

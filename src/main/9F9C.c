@@ -701,12 +701,12 @@ void camera_UpdatePadOffset(s32 *held_bits) {
     g_camera_view_offset.camera_angles_offset.vz = 0;
     g_camera_view_offset.eye_distance_offset = 0;
     if (g_fight_tracked_view_setting != 0 && g_main_loop_handler_index == 1) {
-        if (*held_bits & 1) {
+        if (*held_bits & PADL2) {
             D_800A37E0 = 1;
-            if (*held_bits & 8) {
+            if (*held_bits & PADR1) {
                 g_camera_distance_offset = g_camera_distance_offset + 0x4CC;
             }
-            if (*held_bits & 2) {
+            if (*held_bits & PADR2) {
                 g_camera_distance_offset = g_camera_distance_offset - 0x4CC;
             }
             if (g_camera_distance_offset < -0x1C00) {
@@ -1125,28 +1125,28 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
             mapped_buttons = pad_words[i] & ~0xF0;
             {
                 u8 r = g_pad_remote_button_mapping_20;
-                if ((r & 1) && (pad_words[i] & 0x20) ||
-                    (r & 2) && (pad_words[i] & 0x10) ||
-                    (r & 4) && (pad_words[i] & 0x40) ||
-                    (r & 8) && (pad_words[i] & 0x80)) {
+                if ((r & 1) && (pad_words[i] & PADRright) ||
+                    (r & 2) && (pad_words[i] & PADRup) ||
+                    (r & 4) && (pad_words[i] & PADRdown) ||
+                    (r & 8) && (pad_words[i] & PADRleft)) {
                     mapped_buttons |= 0x20;
                 }
             }
             {
                 u8 g = g_pad_remote_button_mapping_40;
-                if ((g & 1) && (pad_words[i] & 0x20) ||
-                    (g & 2) && (pad_words[i] & 0x10) ||
-                    (g & 4) && (pad_words[i] & 0x40) ||
-                    (g & 8) && (pad_words[i] & 0x80)) {
+                if ((g & 1) && (pad_words[i] & PADRright) ||
+                    (g & 2) && (pad_words[i] & PADRup) ||
+                    (g & 4) && (pad_words[i] & PADRdown) ||
+                    (g & 8) && (pad_words[i] & PADRleft)) {
                     mapped_buttons |= 0x40;
                 }
             }
             {
                 u8 b = g_pad_remote_button_mapping_80;
-                if ((b & 1) && (pad_words[i] & 0x20) ||
-                    (b & 2) && (pad_words[i] & 0x10) ||
-                    (b & 4) && (pad_words[i] & 0x40) ||
-                    (b & 8) && (pad_words[i] & 0x80)) {
+                if ((b & 1) && (pad_words[i] & PADRright) ||
+                    (b & 2) && (pad_words[i] & PADRup) ||
+                    (b & 4) && (pad_words[i] & PADRdown) ||
+                    (b & 8) && (pad_words[i] & PADRleft)) {
                     mapped_buttons |= 0x80;
                 }
             }
@@ -1154,37 +1154,37 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
             mapped_buttons = pad_words[i] & ~0xF0;
             {
                 u8 r = g_saved_record.frec20[0] >> temp;
-                if ((r & 1) && (pad_words[i] & 0x20) ||
-                    (r & 2) && (pad_words[i] & 0x10) ||
-                    (r & 4) && (pad_words[i] & 0x40) ||
-                    (r & 8) && (pad_words[i] & 0x80)) {
+                if ((r & 1) && (pad_words[i] & PADRright) ||
+                    (r & 2) && (pad_words[i] & PADRup) ||
+                    (r & 4) && (pad_words[i] & PADRdown) ||
+                    (r & 8) && (pad_words[i] & PADRleft)) {
                     mapped_buttons |= 0x20;
                 }
             }
             {
                 u8 g = g_saved_record.frec20[1] >> temp;
-                if ((g & 1) && (pad_words[i] & 0x20) ||
-                    (g & 2) && (pad_words[i] & 0x10) ||
-                    (g & 4) && (pad_words[i] & 0x40) ||
-                    (g & 8) && (pad_words[i] & 0x80)) {
+                if ((g & 1) && (pad_words[i] & PADRright) ||
+                    (g & 2) && (pad_words[i] & PADRup) ||
+                    (g & 4) && (pad_words[i] & PADRdown) ||
+                    (g & 8) && (pad_words[i] & PADRleft)) {
                     mapped_buttons |= 0x40;
                 }
             }
             {
                 u8 b = g_saved_record.frec20[2] >> temp;
-                if ((b & 1) && (pad_words[i] & 0x20) ||
-                    (b & 2) && (pad_words[i] & 0x10) ||
-                    (b & 4) && (pad_words[i] & 0x40) ||
-                    (b & 8) && (pad_words[i] & 0x80)) {
+                if ((b & 1) && (pad_words[i] & PADRright) ||
+                    (b & 2) && (pad_words[i] & PADRup) ||
+                    (b & 4) && (pad_words[i] & PADRdown) ||
+                    (b & 8) && (pad_words[i] & PADRleft)) {
                     mapped_buttons |= 0x80;
                 }
             }
         }
-        if (mapped_buttons & 0x200) {
-            mapped_buttons = (mapped_buttons & ~0x200) | 0x8;
+        if (mapped_buttons & PADi) {
+            mapped_buttons = (mapped_buttons & ~PADi) | 0x8;
         }
-        if (mapped_buttons & 0x400) {
-            mapped_buttons = (mapped_buttons & ~0x400) | 0x20;
+        if (mapped_buttons & PADj) {
+            mapped_buttons = (mapped_buttons & ~PADj) | 0x20;
         }
         pad_words[i] = mapped_buttons;
     }
@@ -1202,24 +1202,25 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
     }
     if (fighter_index == 1 && g_fight_mode_selector != 6) {
         pad_out->held =
-            (pad_out->held & 0xFFF) | ((pad_out->held & 0x8000) >> 2) |
-            ((pad_out->held & 0x2000) << 2) | ((pad_out->held & 0x4000) >> 2) |
-            ((pad_out->held & 0x1000) << 2);
+            (pad_out->held & 0xFFF) | ((pad_out->held & PADLleft) >> 2) |
+            ((pad_out->held & PADLright) << 2) |
+            ((pad_out->held & PADLdown) >> 2) | ((pad_out->held & PADLup) << 2);
         pad_out->pressed =
-            (pad_out->pressed & 0xFFF) | ((pad_out->pressed & 0x8000) >> 2) |
-            ((pad_out->pressed & 0x2000) << 2) |
-            ((pad_out->pressed & 0x4000) >> 2) |
-            ((pad_out->pressed & 0x1000) << 2);
+            (pad_out->pressed & 0xFFF) | ((pad_out->pressed & PADLleft) >> 2) |
+            ((pad_out->pressed & PADLright) << 2) |
+            ((pad_out->pressed & PADLdown) >> 2) |
+            ((pad_out->pressed & PADLup) << 2);
         pad_out->released =
-            (pad_out->released & 0xFFF) | ((pad_out->released & 0x8000) >> 2) |
-            ((pad_out->released & 0x2000) << 2) |
-            ((pad_out->released & 0x4000) >> 2) |
-            ((pad_out->released & 0x1000) << 2);
+            (pad_out->released & 0xFFF) |
+            ((pad_out->released & PADLleft) >> 2) |
+            ((pad_out->released & PADLright) << 2) |
+            ((pad_out->released & PADLdown) >> 2) |
+            ((pad_out->released & PADLup) << 2);
         pad_out->unheld =
-            (pad_out->unheld & 0xFFF) | ((pad_out->unheld & 0x8000) >> 2) |
-            ((pad_out->unheld & 0x2000) << 2) |
-            ((pad_out->unheld & 0x4000) >> 2) |
-            ((pad_out->unheld & 0x1000) << 2);
+            (pad_out->unheld & 0xFFF) | ((pad_out->unheld & PADLleft) >> 2) |
+            ((pad_out->unheld & PADLright) << 2) |
+            ((pad_out->unheld & PADLdown) >> 2) |
+            ((pad_out->unheld & PADLup) << 2);
     }
 }
 

@@ -30,7 +30,7 @@ s32 comb_HandshakeStep(void) {
         }
         break;
     case 2:
-        if (g_pad_state.pressed & 0x10) {
+        if (g_pad_state.pressed & PADRup) {
             comb_ResetClose();
             return -1;
         }
@@ -652,7 +652,7 @@ void fight_UpdateScrollingSpriteDisplayAndMergeBitFlags(void) {
     s32 bit;
 
     go = StepScrollingSpriteDisplay() != 0;
-    if (g_pad_state.pressed & 0x40) {
+    if (g_pad_state.pressed & PADRdown) {
         go = 1;
     }
     if (go) {

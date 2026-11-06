@@ -945,7 +945,7 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
 
     if (g_cpu_profiles[rec->cpu_profile].flags & 0x8000) {
         rec->cpu_state_flags &= ~0x78;
-        if (rec->move_kind != 0x25 && (g_pad_state.held & 0x100)) {
+        if (rec->move_kind != 0x25 && (g_pad_state.held & PADselect)) {
             rec->cpu_state_flags |= 0x40000;
             rec->cpu_script_rotation_counter = 0;
         }

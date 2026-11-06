@@ -962,7 +962,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
         var_6 = slot_index - var_7;
         if (g_entry_menu_slot_records.rec[slot_index].grid_pick == 0xFF) {
             g_entry_menu_work_block->entry_countdowns[slot_index] = 0x1E;
-            if (g_entry_menu_pressed_buttons & (0x4000 << (var_6 * 16))) {
+            if (g_entry_menu_pressed_buttons & (PADLdown << (var_6 * 16))) {
                 snd_QueueSound(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
@@ -978,7 +978,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
                 } while (*flags & 4);
                 *flags |= 4;
             } else if (
-                g_entry_menu_pressed_buttons & (0x1000 << (var_6 * 16))) {
+                g_entry_menu_pressed_buttons & (PADLup << (var_6 * 16))) {
                 snd_QueueSound(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
@@ -994,7 +994,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
                 } while (*flags & 4);
                 *flags |= 4;
             }
-            if (g_entry_menu_pressed_buttons & (0x2000 << (var_6 * 16))) {
+            if (g_entry_menu_pressed_buttons & (PADLright << (var_6 * 16))) {
                 snd_QueueSound(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
@@ -1010,7 +1010,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
                 } while ((!(*flags & 1) && *col >= 4) || (*flags & 4));
                 *flags |= 4;
             } else if (
-                g_entry_menu_pressed_buttons & (0x8000 << (var_6 * 16))) {
+                g_entry_menu_pressed_buttons & (PADLleft << (var_6 * 16))) {
                 snd_QueueSound(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
@@ -1047,7 +1047,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
             draw_context->primitive_cursors.sprite_prims =
                 gpu_AddSpriteCells(&s);
         }
-        if ((g_entry_menu_pressed_buttons & (0x40 << (var_6 * 16))) &&
+        if ((g_entry_menu_pressed_buttons & (PADRdown << (var_6 * 16))) &&
             g_entry_menu_slot_records.rec[slot_index].grid_pick == 0xFF) {
             if (*flags & 1) {
                 g_entry_menu_slot_records.rec[slot_index].row_pick = 0xFF;
@@ -1086,7 +1086,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
             } else {
                 snd_QueueSound(0xA, 0x7F, 0x7F);
             }
-        } else if (g_entry_menu_pressed_buttons & (0x10 << (var_6 * 16))) {
+        } else if (g_entry_menu_pressed_buttons & (PADRup << (var_6 * 16))) {
             if (g_entry_menu_slide_phase == 0) {
                 snd_QueueSound(2, 0x7F, 0x7F);
                 if (g_entry_menu_slot_records.rec[slot_index].grid_pick ==
@@ -1350,13 +1350,14 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                 g_entry_menu_row_pulse_shifts[i] = 7;
                 g_entry_menu_row_cursor_cell_counts[i] = 0;
                 g_entry_menu_work_block->row_countdowns[i] = 0x1E;
-                if ((g_entry_menu_pressed_buttons & (0x2000 << (var_4 * 16))) &&
+                if ((g_entry_menu_pressed_buttons &
+                     (PADLright << (var_4 * 16))) &&
                     g_entry_menu_row_phase_choice_cursors[i] < max) {
                     snd_QueueSound(0, 0x7F, 0x7F);
                     g_entry_menu_row_phase_choice_cursors[i]++;
-                } else if (
-                    (g_entry_menu_pressed_buttons & (0x8000 << (var_4 * 16))) &&
-                    min < g_entry_menu_row_phase_choice_cursors[i]) {
+                } else if ((g_entry_menu_pressed_buttons &
+                            (PADLleft << (var_4 * 16))) &&
+                           min < g_entry_menu_row_phase_choice_cursors[i]) {
                     snd_QueueSound(0, 0x7F, 0x7F);
                     g_entry_menu_row_phase_choice_cursors[i]--;
                 }
@@ -1388,7 +1389,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                     LoadImage(&var_6[id], (u32 *)*tim);
                     DrawSync(0);
                 } else if (
-                    g_entry_menu_pressed_buttons & (0x40 << (var_4 * 16))) {
+                    g_entry_menu_pressed_buttons & (PADRdown << (var_4 * 16))) {
                     s32 sel;
                     s32 id;
                     /* FAKE: image pointer address, mechanism and score at the
@@ -1420,7 +1421,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                     LoadImage(&var_6[id], (u32 *)*tim);
                     DrawSync(0);
                 } else if (
-                    g_entry_menu_pressed_buttons & (0x10 << (var_4 * 16))) {
+                    g_entry_menu_pressed_buttons & (PADRup << (var_4 * 16))) {
                     snd_QueueSound(2, 0x7F, 0x7F);
                     if (g_entry_menu_row_phase_extra_slot_count == 1) {
                         g_entry_menu_row_phase_extra_slot_count = 0;
@@ -1440,7 +1441,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                     }
                 }
             } else {
-                if ((g_entry_menu_pressed_buttons & (0x10 << (var_4 * 16))) &&
+                if ((g_entry_menu_pressed_buttons & (PADRup << (var_4 * 16))) &&
                     g_entry_menu_slide_phase == 0 && g_entry_menu_mode != 3) {
                     snd_QueueSound(2, 0x7F, 0x7F);
                     g_entry_menu_selection_offset_countdowns[0] = 0xF;
@@ -1534,7 +1535,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                     DrawSync(0);
                 }
             }
-            if (g_entry_menu_pressed_buttons & (0x10 << (i * 16))) {
+            if (g_entry_menu_pressed_buttons & (PADRup << (i * 16))) {
                 snd_QueueSound(2, 0x7F, 0x7F);
                 g_entry_menu_slide_phase = 3;
                 snd_QueueSound(6, 0x7F, 0x7F);
@@ -1983,7 +1984,7 @@ void menu_UpdateChoiceGrid(
 
     if (g_entry_menu_slide_phase == 0) {
         for (i = 0; i < g_entry_menu_init_extra_slot_count + 1; i++) {
-            if (g_entry_menu_pressed_buttons & (0x10 << (i * 16))) {
+            if (g_entry_menu_pressed_buttons & (PADRup << (i * 16))) {
                 s32 var_11;
 
                 snd_QueueSound(2, 0x7F, 0x7F);

@@ -376,7 +376,7 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
         var_0, g_row_menu_row_state.opt[g_menu_packed_cursors & 0xF].mode);
     menu_DrawModeBit0Sheets(
         var_0, g_row_menu_row_state.opt[g_menu_packed_cursors & 0xF].mode);
-    if (arg1 & 0x40) {
+    if (arg1 & PADRdown) {
         switch (g_row_menu_row_state.opt[g_menu_packed_cursors & 0xF].state) {
         case 4:
         case 5:
@@ -2028,13 +2028,13 @@ void menu_SetExclusiveRowBit(s32 player_index, s32 pressed_buttons) {
     s16 bit_row_index;
     s32 mask;
 
-    if (pressed_buttons & (0x10 << (player_index * 16))) {
+    if (pressed_buttons & (PADRup << (player_index * 16))) {
         code = 1;
-    } else if (pressed_buttons & (0x40 << (player_index * 16))) {
+    } else if (pressed_buttons & (PADRdown << (player_index * 16))) {
         code = 2;
-    } else if (pressed_buttons & (0x80 << (player_index * 16))) {
+    } else if (pressed_buttons & (PADRleft << (player_index * 16))) {
         code = 3;
-    } else if (pressed_buttons & (0x20 << (player_index * 16))) {
+    } else if (pressed_buttons & (PADRright << (player_index * 16))) {
         code = 0;
     }
 
@@ -2079,7 +2079,7 @@ s32 menu_HandleRowBitInput(
     for (; player_index < 2; shift += 0x10, player_index++) {
         lim = ((empty_row_sides >> player_index) & 1) ? 4 : 5;
 
-        if (*pressed_buttons & (0x1000 << shift)) {
+        if (*pressed_buttons & (PADLup << shift)) {
             snd_QueueSound(0, 0x7F, 0x7F);
             if (g_row_menu_work_block->row_bit_cursors.half[player_index] <=
                 0) {
@@ -2089,7 +2089,7 @@ s32 menu_HandleRowBitInput(
                     g_row_menu_work_block->row_bit_cursors.half[player_index] -
                     1;
             }
-        } else if (*pressed_buttons & (0x4000 << shift)) {
+        } else if (*pressed_buttons & (PADLdown << shift)) {
             snd_QueueSound(0, 0x7F, 0x7F);
             if (g_row_menu_work_block->row_bit_cursors.half[player_index] >=
                 lim) {
@@ -2113,7 +2113,7 @@ s32 menu_HandleRowBitInput(
             }
             break;
         case 3:
-            if (*pressed_buttons & (0x40 << shift)) {
+            if (*pressed_buttons & (PADRdown << shift)) {
                 snd_QueueSound(1, 0x7F, 0x7F);
                 for (bit_row_index = 0; bit_row_index < 3; bit_row_index++) {
                     rec = (u8 *)g_row_menu_working_record_ptr + bit_row_index;
@@ -2126,7 +2126,7 @@ s32 menu_HandleRowBitInput(
             }
             break;
         case 4:
-            if (*pressed_buttons & (0x40 << shift)) {
+            if (*pressed_buttons & (PADRdown << shift)) {
                 snd_QueueSound(1, 0x7F, 0x7F);
                 for (bit_row_index = 0; bit_row_index < 3; bit_row_index++) {
                     rec = (u8 *)g_row_menu_working_record_ptr + bit_row_index;
@@ -2729,8 +2729,8 @@ s32 gpu_InitPrimBufferPair(s32 prim_storage, Unk8006E49CRec *prim_buffer_pair) {
 /* copied whole into a local 8-byte buffer */
 u8 g_row_menu_vram_copy_source_rect[8] = {
     0x70, 0x00, 0xE1, 0x01, 0x30, 0x00, 0x01, 0x00};
-u32 g_pad_direction_positive_masks[2] = {0x2000, 0x4000};
-u32 g_pad_direction_negative_masks[2] = {0x8000, 0x1000};
+u32 g_pad_direction_positive_masks[2] = {PADLright, PADLdown};
+u32 g_pad_direction_negative_masks[2] = {PADLleft, PADLup};
 RECT g_gpu_fullscreen_image_rect = {0, 0, 640, 240};
 RECT g_gpu_fullscreen_image_end_clear_rect = {0, 0, 640, 480};
 
