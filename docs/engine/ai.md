@@ -70,7 +70,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
    clears the cursor `g_fight_opponent_order_cursor`.
 
 `fight_AdvanceOpponentOrder` (src/main/17AFC.c:5858) steps the cursor: it sets
-`g_fight_config.fighter_setup[1] = D_8008D55C[g_fight_opponent_order[cursor]]`, or, once the cursor
+`g_fight_config.fighter_setup[1] = g_fight_roster_indices_by_character_data_index[g_fight_opponent_order[cursor]]`, or, once the cursor
 reaches the count, sets the mode `g_main_loop_handler_index` to 0x12 (count 20) or 0x20.
 The 27 IDs match the row count of the per-character tables (`g_fighter_initial_carried_object_kinds`,
 `g_fighter_base_move_frame_steps`, include/bb2.h:181-193), which is consistent with the list being

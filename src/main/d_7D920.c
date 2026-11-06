@@ -557,8 +557,10 @@ u8 g_fight_step_table[100][4] = {
     {3, 112, 112, 32}, {3, 80, 32, 175},  {3, 48, 48, 255},  {3, 255, 255, 48},
     {3, 48, 255, 48},  {2, 144, 48, 144}, {2, 255, 48, 48},  {4, 0, 0, 0}};
 
-/* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags's move rows (with
- * g_fight_step_row_object_ids's rank rows). */
+/* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags's second fighter
+ * (g_fight_config.fighter_setup[1]) roster index,
+ * [row][g_fight_step_row_column] (row as for g_fight_step_row_object_ids's rank
+ * rows). */
 u8 g_fight_step_row_second_fighter_roster_indices[2][5] = {
     {7, 2, 10, 0, 32}, {7, 2, 10, 0, 30}};
 
