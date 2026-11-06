@@ -1,0 +1,18 @@
+{
+  "description": "story-gengoro-stage-0e to 85300 (stage_0d, where P1 fights as roster 24 = character_data_index 18, whose carried kind is 0xE, d_7D920.c:438) with P1 R2 held 4 frames, 3 frames before the run's own CIRCLE press, every 120 frames from 79037 to 85037 (51 presses; the versus-2p-kimigaura-throw R2 + face-button throw input); same instrument as noname-lead-Obj80106A78-story-gengoro-stage-0e: trace-noname-leads runtime evidence (unk_05 of a thrown kind 0xE object)",
+  "evidence": [
+    "docs/naming/runtime/noname-lead-Obj80106A78-story-gengoro-0d-throw-1/spec.json"
+  ],
+  "extends": "story-gengoro-stage-0e",
+  "end_frame": 85300,
+  "repeat": [
+    {
+      "from": 79037,
+      "every": 120,
+      "count": 51,
+      "steps": [
+        "+0:R2/4"
+      ]
+    }
+  ]
+}

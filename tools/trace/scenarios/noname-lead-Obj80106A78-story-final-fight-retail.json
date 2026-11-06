@@ -1,0 +1,8 @@
+{
+  "description": "story-final-fight-retail re-run unchanged with breakpoints object_SpawnFromFighter (a0, a1 = kind, ra) and fighter_Init (a0..a3, ra), and at every load / store of Obj80106A78.unk_05 (+5) in object_SpawnFromFighter (0x800307BC, 17AFC.c:4150), object_SubmitPoolTransforms (0x800302AC, :4015) and object_UpdatePool (0x80030E58 :4380, 0x800314F4 :4485, 0x8003158C :4491, 0x800315C0 :4500, 0x800315D0 :4501 (the j whose delay slot stores 3), 0x80031664 :4513, 0x80031690 :4523, 0x80031740 :4529), each dumping the object's first 10 bytes (moving_ticks, kind, can_hit_fighter, unk_05, owner, drop_state, is_attached, attached_bone; the value before the store at store sites), credited at most 300 times per phase (2000 at the spawn and the 2 / 3 stores): trace-noname-leads runtime evidence (the value of Obj80106A78.unk_05 at each read, per object kind)",
+  "evidence": [
+    "docs/naming/runtime/noname-lead-Obj80106A78-story-final-fight-retail-1/spec.json"
+  ],
+  "extends": "story-final-fight-retail",
+  "refines": "story-final-fight-retail"
+}

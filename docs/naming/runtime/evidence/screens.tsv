@@ -24965,6 +24965,27 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80022580	fighter_Init	lib-versus-2p-kimigaura-effects-1@19e872f6ca37	t_load	7485	7485	1	t_load.mid@7900#35444b75f27e	hitmap:first 1 hits per phase only	0	
 0x80022580	fighter_Init	lib-versus-2p-kimigaura-kick-2p-1@fd688595c842	t_load	7485	7485	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
 0x80022580	fighter_Init	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	t_load	7485	7485	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	after_katze	129521	151598	33	s.129600@129600#0c97f1fe9f95;s.141700@141700#465f2f0709be;s.151400@151400#faf94ad1586e	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	boot_intro	8247	8714	4	s.8899@8899#86d5daef52e3	recorded hits only; capture limits apply	0	
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	final_fight	153828	157924	8	s.153900@153900#729c7c873193;s.154400@154400#5a01b4b272fb;s.156400@156400#87b96380fdf7;s.157650@157650#9dfceab12149;s.157950@157950#93bfa0e6de7d	recorded hits only; capture limits apply	0	
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	katze	127805	127805	1	s.127900@127900#f3de50fc58bd	recorded hits only; capture limits apply	0	
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	story	9280	122151	118	s.126599@126599#19334832b963	recorded hits only; capture limits apply	0	
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	strat	128290	128290	2	s.128700@128700#8bed85b46a95	recorded hits only; capture limits apply	0	
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_01	70682	77696	14	stage_01.71500@71500#7eb9aa174d70	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_02	8533	23441	15	stage_02.10000@10000#48c3b16161da	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_0d	78857	85219	15	stage_0d.80000@80000#5036e95cf3ed;stage_0d.85000@85000#9ab4848712b4	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_11	54464	69660	47	stage_11.55000@55000#5a01b4b272fb	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_15	34753	53200	24	stage_15.35500@35500#741091031bda	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_16	26687	34235	12	stage_16.27500@27500#daf47b74fd5b	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	t_stage	8247	8247	1		recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_01	70682	77696	14	stage_01.71500@71500#7eb9aa174d70	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_02	8533	23441	15	stage_02.10000@10000#48c3b16161da	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_0d	78857	85054	13	stage_0d.80000@80000#5036e95cf3ed;stage_0d.85000@85000#37a414b27b5a	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_0e	85436	90804	9	stage_0e.86000@86000#80f979c1c34c;stage_0e.86500@86500#e53139ec3b01;stage_0e.87500@87500#70f7297c0a71;stage_0e.90000@90000#0ed089395005;stage_0e.last@90999#e3e091b015ff	recorded hits only; capture limits apply	0	
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_11	54464	69660	47	stage_11.55000@55000#5a01b4b272fb	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_15	34753	53200	24	stage_15.35500@35500#741091031bda	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_16	26687	34235	12	stage_16.27500@27500#daf47b74fd5b	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	t_stage	8247	8247	1		recorded hits only; capture limits apply	1	no_later_screenshot
 0x80022580	fighter_Init	story-concede-1@40003b32c8bd	stage_card	8546	8546	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x80022580	fighter_Init	story-concede-1@40003b32c8bd	t_stage	8247	8247	1	stage_card.first@8360#bdb8c6a866f4	hitmap:first 1 hits per phase only	0	
 0x80022580	fighter_Init	story-final-fight-retail-1@fbff35093e8e	after_katze	129521	151598	33	s.129600@129600#0c97f1fe9f95;s.141700@141700#465f2f0709be;s.151400@151400#faf94ad1586e	recorded hits only; capture limits apply	1	no_later_screenshot
@@ -34113,6 +34134,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80030208	object_SubmitPoolTransforms	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8400	8400	1	opp1.8600@8600#d88f72a357c4	hitmap:first 1 hits per phase only	0	
 0x80030208	object_SubmitPoolTransforms	versus-cpu-tatsumi-1@016e75c2a56c	opp2	9340	9340	1	opp2.10000@10000#345997568672	hitmap:first 1 hits per phase only	0	
 0x80030208	object_SubmitPoolTransforms	versus-cpu-tatsumi-1@016e75c2a56c	opp3	11013	11013	1	opp3.11200@11200#599ec9aae5e9	hitmap:first 1 hits per phase only	0	
+0x800302AC	0x800302AC	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_0d	80038	80404	184	stage_0d.85000@85000#9ab4848712b4	breakpoint:first 300 hits per phase only	0	
 0x8003043C	object_ResetPool	group-battle-draw-1@2004f4b160e6	t_bout1_again	24239	24239	1	t_bout1_again.mid@24538#aa713a6468ff	hitmap:first 1 hits per phase only	0	
 0x8003043C	object_ResetPool	group-battle-draw-1@2004f4b160e6	t_bout2	13530	13530	1	t_bout2.mid@13720#8dab36e468fa	hitmap:first 1 hits per phase only	0	
 0x8003043C	object_ResetPool	group-battle-draw-1@2004f4b160e6	t_bout3	18720	18720	1	t_bout3.mid@18951#21edff9c0cf6	hitmap:first 1 hits per phase only	0	
@@ -34433,6 +34455,24 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80030580	object_SpawnFromFighter	lib-story-final-fight-retail-1@2c1def7be909	katze	127281	127281	1	s.127900@127900#f3de50fc58bd	hitmap:first 1 hits per phase only	0	
 0x80030580	object_SpawnFromFighter	lib-story-final-fight-retail-1@2c1def7be909	story	9159	9159	1	s.126599@126599#19334832b963	hitmap:first 1 hits per phase only	0	
 0x80030580	object_SpawnFromFighter	lib-story-final-fight-retail-1@2c1def7be909	strat	129004	129004	1	s.129100@129100#5ed29a416fbf	hitmap:first 1 hits per phase only	0	
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	after_katze	131904	153296	17	s.141700@141700#465f2f0709be;s.151400@151400#faf94ad1586e	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	final_fight	155252	157775	3	s.156400@156400#87b96380fdf7;s.157650@157650#9dfceab12149;s.157950@157950#93bfa0e6de7d	recorded hits only; capture limits apply	0	
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	katze	127281	127281	1	s.127900@127900#f3de50fc58bd	recorded hits only; capture limits apply	0	
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	story	9159	121815	64	s.126599@126599#19334832b963	recorded hits only; capture limits apply	0	
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	strat	129004	129004	1	s.129100@129100#5ed29a416fbf	recorded hits only; capture limits apply	0	
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_01	72018	78263	7		recorded hits only; capture limits apply	1	no_later_screenshot
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_02	13185	26189	9		recorded hits only; capture limits apply	1	no_later_screenshot
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_0d	80036	84798	7	stage_0d.85000@85000#9ab4848712b4	recorded hits only; capture limits apply	0	
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_11	55471	70140	23		recorded hits only; capture limits apply	1	no_later_screenshot
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_15	35519	53950	12		recorded hits only; capture limits apply	1	no_later_screenshot
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_16	28026	33949	6		recorded hits only; capture limits apply	1	no_later_screenshot
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_01	72018	78263	7		recorded hits only; capture limits apply	1	no_later_screenshot
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_02	13185	26189	9		recorded hits only; capture limits apply	1	no_later_screenshot
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_0d	80462	84741	6	stage_0d.85000@85000#37a414b27b5a	recorded hits only; capture limits apply	0	
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_0e	86139	90631	5	stage_0e.86500@86500#e53139ec3b01;stage_0e.87500@87500#70f7297c0a71;stage_0e.90000@90000#0ed089395005;stage_0e.last@90999#e3e091b015ff	recorded hits only; capture limits apply	0	
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_11	55471	70140	23		recorded hits only; capture limits apply	1	no_later_screenshot
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_15	35519	53950	12		recorded hits only; capture limits apply	1	no_later_screenshot
+0x80030580	object_SpawnFromFighter	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_16	28026	33949	6		recorded hits only; capture limits apply	1	no_later_screenshot
 0x80030580	object_SpawnFromFighter	story-final-fight-stages-1@58ffaa0e84cf	after_katze	131904	131904	1	s.141700@141700#465f2f0709be	hitmap:first 1 hits per phase only	0	
 0x80030580	object_SpawnFromFighter	story-final-fight-stages-1@58ffaa0e84cf	final_fight	155252	155252	1	s.156400@156400#87b96380fdf7	hitmap:first 1 hits per phase only	0	
 0x80030580	object_SpawnFromFighter	story-final-fight-stages-1@58ffaa0e84cf	katze	127281	127281	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
@@ -34467,6 +34507,24 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80030580	object_SpawnFromFighter	versus-cpu-clear-retail-1@d1b76e2e5d49	opp5	22474	22474	1	opp5.22500@22500#dc36ca57c1fb	hitmap:first 1 hits per phase only	0	
 0x80030580	object_SpawnFromFighter	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8686	8686	1	opp1.last@8850#cbd475543ab8	hitmap:first 1 hits per phase only	0	
 0x80030580	object_SpawnFromFighter	versus-cpu-tatsumi-1@016e75c2a56c	opp2	10335	10335	1	opp2.last@10540#fbea24a640a6	hitmap:first 1 hits per phase only	0	
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	after_katze	131904	153296	17	s.141700@141700#465f2f0709be;s.151400@151400#faf94ad1586e	breakpoint:first 2000 hits per phase only	1	no_later_screenshot
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	final_fight	155252	157775	3	s.156400@156400#87b96380fdf7;s.157650@157650#9dfceab12149;s.157950@157950#93bfa0e6de7d	breakpoint:first 2000 hits per phase only	0	
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	katze	127281	127281	1	s.127900@127900#f3de50fc58bd	breakpoint:first 2000 hits per phase only	0	
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	story	9159	121815	64	s.126599@126599#19334832b963	breakpoint:first 2000 hits per phase only	0	
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	strat	129004	129004	1	s.129100@129100#5ed29a416fbf	breakpoint:first 2000 hits per phase only	0	
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_01	72018	78263	7		breakpoint:first 2000 hits per phase only	1	no_later_screenshot
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_02	13185	26189	9		breakpoint:first 2000 hits per phase only	1	no_later_screenshot
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_0d	80036	84798	7	stage_0d.85000@85000#9ab4848712b4	breakpoint:first 2000 hits per phase only	0	
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_11	55471	70140	23		breakpoint:first 2000 hits per phase only	1	no_later_screenshot
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_15	35519	53950	12		breakpoint:first 2000 hits per phase only	1	no_later_screenshot
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_16	28026	33949	6		breakpoint:first 2000 hits per phase only	1	no_later_screenshot
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_01	72018	78263	7		breakpoint:first 2000 hits per phase only	1	no_later_screenshot
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_02	13185	26189	9		breakpoint:first 2000 hits per phase only	1	no_later_screenshot
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_0d	80462	84741	6	stage_0d.85000@85000#37a414b27b5a	breakpoint:first 2000 hits per phase only	0	
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_0e	86139	90631	5	stage_0e.86500@86500#e53139ec3b01;stage_0e.87500@87500#70f7297c0a71;stage_0e.90000@90000#0ed089395005;stage_0e.last@90999#e3e091b015ff	breakpoint:first 2000 hits per phase only	0	
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_11	55471	70140	23		breakpoint:first 2000 hits per phase only	1	no_later_screenshot
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_15	35519	53950	12		breakpoint:first 2000 hits per phase only	1	no_later_screenshot
+0x800307BC	0x800307BC	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_16	28026	33949	6		breakpoint:first 2000 hits per phase only	1	no_later_screenshot
 0x800307D0	object_ThrowQueuedKind	eff-slot-versus-2p-kimigaura-mirror-throw-1@f88cf559b0b3	throws	8467	8469	2	throws.8470@8470#8b37289f4e1d	recorded hits only; capture limits apply	0	
 0x800307D0	object_ThrowQueuedKind	versus-2p-kimigaura-mirror-throw-1@f61ecdac02c9	throws	8467	8467	1	throws.8470@8470#8b37289f4e1d	hitmap:first 1 hits per phase only	0	
 0x80030900	object_DropQueuedHeadAt	versus-2p-tatsumi-drop-1@23ee9986923d	fight	9274	9274	1	fight.9280@9280#54b254f127b6	hitmap:first 1 hits per phase only	0	
@@ -35080,6 +35138,45 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80030D7C	object_UpdatePool	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8400	8400	1	opp1.8600@8600#d88f72a357c4	hitmap:first 1 hits per phase only	0	
 0x80030D7C	object_UpdatePool	versus-cpu-tatsumi-1@016e75c2a56c	opp2	9340	9340	1	opp2.10000@10000#345997568672	hitmap:first 1 hits per phase only	0	
 0x80030D7C	object_UpdatePool	versus-cpu-tatsumi-1@016e75c2a56c	opp3	11013	11013	1	opp3.11200@11200#599ec9aae5e9	hitmap:first 1 hits per phase only	0	
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	after_katze	131973	143415	300	s.141700@141700#465f2f0709be;s.151400@151400#faf94ad1586e	breakpoint:first 300 hits per phase only	0	
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	final_fight	155314	157903	164	s.156400@156400#87b96380fdf7;s.157650@157650#9dfceab12149;s.157950@157950#93bfa0e6de7d	breakpoint:first 300 hits per phase only	0	
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	katze	127342	127410	13	s.127900@127900#f3de50fc58bd	breakpoint:first 300 hits per phase only	0	
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	story	9211	26962	300	s.126599@126599#19334832b963	breakpoint:first 300 hits per phase only	0	
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	strat	129055	129130	26	s.129100@129100#5ed29a416fbf;s.129200@129200#5a01b4b272fb	breakpoint:first 300 hits per phase only	0	
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_01	72053	78344	300		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_02	13238	21345	300		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_0d	80076	83912	125	stage_0d.85000@85000#9ab4848712b4	breakpoint:first 300 hits per phase only	0	
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_11	55525	57439	300		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_15	35563	48287	300		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_16	28082	34070	146		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_01	72053	78344	300		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_02	13238	21345	300		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_0d	81082	81142	6	stage_0d.85000@85000#37a414b27b5a	breakpoint:first 300 hits per phase only	0	
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_0e	86191	90802	123	stage_0e.86500@86500#e53139ec3b01;stage_0e.87500@87500#70f7297c0a71;stage_0e.90000@90000#0ed089395005;stage_0e.last@90999#e3e091b015ff	breakpoint:first 300 hits per phase only	0	
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_11	55525	57439	300		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_15	35563	48287	300		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x800315C0	0x800315C0	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_16	28082	34070	146		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x800315D0	0x800315D0	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_0d	80202	80202	1	stage_0d.85000@85000#9ab4848712b4	breakpoint:first 2000 hits per phase only	0	
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	after_katze	132031	149815	300	s.141700@141700#465f2f0709be;s.151400@151400#faf94ad1586e	breakpoint:first 300 hits per phase only	0	
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	final_fight	155356	157336	153	s.156400@156400#87b96380fdf7;s.157650@157650#9dfceab12149	breakpoint:first 300 hits per phase only	0	
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	katze	127394	127410	9	s.127900@127900#f3de50fc58bd	breakpoint:first 300 hits per phase only	0	
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	story	9263	27032	300	s.126599@126599#19334832b963	breakpoint:first 300 hits per phase only	0	
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-final-fight-retail-1@1b7c613d0713	strat	129086	129130	23	s.129100@129100#5ed29a416fbf;s.129200@129200#5a01b4b272fb	breakpoint:first 300 hits per phase only	0	
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_01	72083	78402	280		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_02	13290	23313	300		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_0d	80090	83912	114	stage_0d.85000@85000#9ab4848712b4	breakpoint:first 300 hits per phase only	0	
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_11	55585	57467	300		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_15	35601	51602	300		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_16	28140	34070	127		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_01	72083	78402	280		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_02	13290	23313	300		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_0d	81138	81142	3	stage_0d.85000@85000#37a414b27b5a	breakpoint:first 300 hits per phase only	0	
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_0e	86243	90802	105	stage_0e.86500@86500#e53139ec3b01;stage_0e.90000@90000#0ed089395005;stage_0e.last@90999#e3e091b015ff	breakpoint:first 300 hits per phase only	0	
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_11	55585	57467	300		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_15	35601	51602	300		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x80031664	0x80031664	noname-lead-Obj80106A78-story-gengoro-stage-0e-1@7540bb0c367e	stage_16	28140	34070	127		breakpoint:first 300 hits per phase only	1	no_later_screenshot
+0x80031690	0x80031690	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_0d	80036	80406	186	stage_0d.85000@85000#9ab4848712b4	breakpoint:first 300 hits per phase only	0	
+0x80031740	0x80031740	noname-lead-Obj80106A78-story-gengoro-0d-throw-1@8f60e2198ce1	stage_0d	80156	80284	2	stage_0d.85000@85000#9ab4848712b4	breakpoint:first 2000 hits per phase only	0	
 0x80031890	object_DeflectFromFighterHit	versus-2p-kimigaura-mirror-throw-1@f61ecdac02c9	throws	8473	8473	1	throws.8475@8475#c295acf25b56	hitmap:first 1 hits per phase only	0	
 0x80031B24	object_ResolveFighterHits	data-lead-BoneHitRec-unk_0E-versus-2p-kimigaura-throw-1@41355f62ad4a	in_00_r2_circle_3	8469	8483	15	in_00_r2_circle_3.60@8490#6f69d59603a2	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80031B24	object_ResolveFighterHits	data-lead-BoneHitRec-unk_0E-versus-2p-kimigaura-throw-1@41355f62ad4a	in_07_r2_circle_3b	9309	9315	7	in_07_r2_circle_3b.60@9330#ea2c82ae148d	recorded hits only; capture limits apply	1	coverage_next_start_bound
