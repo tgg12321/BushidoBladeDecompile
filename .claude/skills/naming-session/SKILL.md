@@ -241,6 +241,9 @@ every datum it defines agree on that subsystem; a mixed file keeps its ROM-offse
    global, member or type it touches, named since; or a newer Q124 capture or only-X row covering
    it. Cite `file:line`. Local or parameter names are never revive evidence (naming-bar N3); a
    landed name only points at code to re-read. `--revive <addr>=<evidence>`. Put the printed `# revive` lines in the prompt and the row note.
+   A ledger row with a `final` class (any kind: function, global, member, local) is structurally
+   neutral: never a target, never revived (`--revive` refuses it) without an owner ruling. Globals,
+   members and locals in the ledger are final rows only; research skips them too.
 2. `researched` with `research: Opus` or `research: Codex <run id>`: the file is main's
    `tmp/codex/<id>-research.md` (it is untracked: if it is missing, extract it from the Codex run
    or redo step 1); go to step 3. A Codex row with no research file yet (`researching`, or
