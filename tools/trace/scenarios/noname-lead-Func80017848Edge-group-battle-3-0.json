@@ -1,0 +1,8 @@
+{
+  "description": "group-battle-3-0 re-run unchanged with breakpoints softbody_Create (the Func80017A44Input at a0: count, field_2, points, groups, matrix, buf), softbody_AddSpring (a1 = the value stored to the edge's field_C, 6CF8.c:670) and softbody_Free, read watches on a44out_08 (+8) of all eight g_softbody_slots: trace-noname-leads runtime evidence (values and readers of Func80017848Edge.field_C / Func80017A44Input.field_2)",
+  "evidence": [
+    "docs/naming/runtime/noname-lead-Func80017848Edge-group-battle-3-0-1/spec.json"
+  ],
+  "extends": "group-battle-3-0",
+  "refines": "group-battle-3-0"
+}

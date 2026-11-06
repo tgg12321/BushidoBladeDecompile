@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-bamboo re-run unchanged with breakpoints softbody_Create (the Func80017A44Input at a0: count, field_2, points, groups, matrix, buf), softbody_AddSpring (a1 = the value stored to the edge's field_C, 6CF8.c:670) and softbody_Free, read watches on a44out_08 (+8) of all eight g_softbody_slots, and read and write watches on field_C of edges 0 / 5 / 11 / 17 / 23 of both bodies built at t_load (edge tables 0x800B3AE0 and 0x800B3EE8, taken from a draft run of the same script): trace-noname-leads runtime evidence (values and readers of Func80017848Edge.field_C / Func80017A44Input.field_2)",
+  "evidence": [
+    "docs/naming/runtime/noname-lead-Func80017848Edge-versus-2p-bamboo-1/spec.json"
+  ],
+  "extends": "versus-2p-bamboo",
+  "refines": "versus-2p-bamboo"
+}

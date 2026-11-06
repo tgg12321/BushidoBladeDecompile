@@ -5819,6 +5819,13 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80017848	softbody_AddSpring	lib-versus-2p-kimigaura-effects-1@19e872f6ca37	t_load	7559	7559	1	t_load.mid@7900#35444b75f27e	hitmap:first 1 hits per phase only	0	
 0x80017848	softbody_AddSpring	lib-versus-2p-kimigaura-kick-2p-1@fd688595c842	t_load	7559	7559	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
 0x80017848	softbody_AddSpring	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	t_load	7559	7559	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
+0x80017848	softbody_AddSpring	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	roster	8739	9325	96	roster.mid@9000#aa713a6468ff	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80017848	softbody_AddSpring	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	roster_2	22009	22336	102	roster_2.last@22300#397b9a8605e0	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80017848	softbody_AddSpring	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	roster_3	26377	26377	42	roster_3.26500@26500#16301b66b424	recorded hits only; capture limits apply	0	
+0x80017848	softbody_AddSpring	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	t_bout2	15641	15641	102	bout2.first@15700#6666cd90aa29	recorded hits only; capture limits apply	0	
+0x80017848	softbody_AddSpring	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	t_result1	15327	15327	102	roster_1.first@15400#490bc4fe9567	recorded hits only; capture limits apply	0	
+0x80017848	softbody_AddSpring	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	t_result2	21939	21939	42	roster_2.first@22000#397b9a8605e0	recorded hits only; capture limits apply	0	
+0x80017848	softbody_AddSpring	noname-lead-Func80017848Edge-versus-2p-bamboo-1@a3946b5f72ae	t_load	7609	8310	108	t_load.last@8349#d31546a4e459;t_load.mid@7900#992afaea6c20	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80017848	softbody_AddSpring	story-concede-1@40003b32c8bd	concede	9268	9268	1	concede.9300@9300#06a509990c62	hitmap:first 1 hits per phase only	0	
 0x80017848	softbody_AddSpring	story-concede-1@40003b32c8bd	stage_card	8714	8714	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x80017848	softbody_AddSpring	story-concede-1@40003b32c8bd	t_fight	8866	8866	1	fight.first@8900#d3e996a99ed9	hitmap:first 1 hits per phase only	0	
@@ -6179,6 +6186,13 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80017D84	softbody_Create	lib-versus-2p-kimigaura-effects-1@19e872f6ca37	t_load	7559	7559	1	t_load.mid@7900#35444b75f27e	hitmap:first 1 hits per phase only	0	
 0x80017D84	softbody_Create	lib-versus-2p-kimigaura-kick-2p-1@fd688595c842	t_load	7559	7559	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
 0x80017D84	softbody_Create	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	t_load	7559	7559	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
+0x80017D84	softbody_Create	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	roster	8739	9325	4	roster.mid@9000#aa713a6468ff	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80017D84	softbody_Create	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	roster_2	22009	22336	3	roster_2.last@22300#397b9a8605e0	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80017D84	softbody_Create	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	roster_3	26377	26377	1	roster_3.26500@26500#16301b66b424	recorded hits only; capture limits apply	0	
+0x80017D84	softbody_Create	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	t_bout2	15641	15641	3	bout2.first@15700#6666cd90aa29	recorded hits only; capture limits apply	0	
+0x80017D84	softbody_Create	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	t_result1	15327	15327	3	roster_1.first@15400#490bc4fe9567	recorded hits only; capture limits apply	0	
+0x80017D84	softbody_Create	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	t_result2	21939	21939	1	roster_2.first@22000#397b9a8605e0	recorded hits only; capture limits apply	0	
+0x80017D84	softbody_Create	noname-lead-Func80017848Edge-versus-2p-bamboo-1@a3946b5f72ae	t_load	7609	8310	4	t_load.last@8349#d31546a4e459;t_load.mid@7900#992afaea6c20	recorded hits only; capture limits apply	0	
 0x80017D84	softbody_Create	story-concede-1@40003b32c8bd	concede	9268	9268	1	concede.9300@9300#06a509990c62	hitmap:first 1 hits per phase only	0	
 0x80017D84	softbody_Create	story-concede-1@40003b32c8bd	stage_card	8714	8714	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x80017D84	softbody_Create	story-concede-1@40003b32c8bd	t_fight	8866	8866	1	fight.first@8900#d3e996a99ed9	hitmap:first 1 hits per phase only	0	
@@ -6358,6 +6372,13 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80017E8C	softbody_Free	lib-versus-2p-kimigaura-effects-1@19e872f6ca37	t_load	8220	8220	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
 0x80017E8C	softbody_Free	lib-versus-2p-kimigaura-kick-2p-1@fd688595c842	t_load	8220	8220	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
 0x80017E8C	softbody_Free	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	t_load	8220	8220	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
+0x80017E8C	softbody_Free	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	bout2	21871	21871	3		recorded hits only; capture limits apply	1	no_later_screenshot
+0x80017E8C	softbody_Free	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	roster	9325	9325	2		recorded hits only; capture limits apply	1	no_later_screenshot
+0x80017E8C	softbody_Free	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	roster_2	22336	22336	2		recorded hits only; capture limits apply	1	no_later_screenshot
+0x80017E8C	softbody_Free	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	roster_3	26377	26377	1	roster_3.26500@26500#16301b66b424	recorded hits only; capture limits apply	0	
+0x80017E8C	softbody_Free	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	t_bout2	15641	15641	3	bout2.first@15700#6666cd90aa29	recorded hits only; capture limits apply	0	
+0x80017E8C	softbody_Free	noname-lead-Func80017848Edge-group-battle-3-0-1@b420c962bf18	t_result1	15258	15258	2	roster_1.first@15400#490bc4fe9567	recorded hits only; capture limits apply	0	
+0x80017E8C	softbody_Free	noname-lead-Func80017848Edge-versus-2p-bamboo-1@a3946b5f72ae	t_load	8310	8310	2	t_load.last@8349#d31546a4e459	recorded hits only; capture limits apply	0	
 0x80017E8C	softbody_Free	story-concede-1@40003b32c8bd	concede	9268	9268	1	concede.9300@9300#06a509990c62	hitmap:first 1 hits per phase only	0	
 0x80017E8C	softbody_Free	story-concede-1@40003b32c8bd	stage_card	8714	8714	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x80017E8C	softbody_Free	story-concede-1@40003b32c8bd	t_fight	8866	8866	1	fight.first@8900#d3e996a99ed9	hitmap:first 1 hits per phase only	0	
@@ -159752,6 +159773,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 ?	?	noname-lead-D_8009B634-versus-2p-rematch-1@8993ef965e8c	boot_intro	256	256	2	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	noname-lead-D_800A37E1-group-battle-3-0-1@4eacd3de547f	boot_intro	258	462	8	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	noname-lead-D_800A37E1-versus-2p-blade-contact-1@92e1a166a778	boot_intro	258	462	8	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
+?	?	noname-lead-Func80017848Edge-versus-2p-bamboo-1@a3946b5f72ae	boot_intro	260	5487	5746	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	pov-view-story-pov-rematch-1@95982af2cca4	boot_intro	258	464	5	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	resource-section-read-versus-2p-bamboo-2@34b646096418	boot_intro	258	462	2	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	resource-section-read-versus-2p-castle-2@2a410c183a12	boot_intro	258	462	2	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
