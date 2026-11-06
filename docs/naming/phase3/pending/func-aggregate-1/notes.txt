@@ -1,0 +1,48 @@
+wave124 (func-aggregate-1, Q134 revival): 4 RENAME kept; 0 dropped. Verdicts are PENDING: the naming-reviewer sets them.
+Wave id: wave124 (lane naming-b). Drafted 2026-11-05 at HEAD 9531ed19e.
+Research input tmp/codex/func-aggregate-1-research.md (untrusted); every claim below re-derived at HEAD in the lane worktree. Research tag for the NO_NAME record at land: w124.
+Kept rows (all four were NO_NAME for 'aggregate / no covering verb'; Q134 revives them):
+ 0x80016D78 func_80016D78 -> sys_InitGameAtBoot
+ 0x8001C51C func_8001C51C -> fight_StartNextSecondFighter
+ 0x80040D48 func_80040D48 -> slot_FinishObjectFrame
+ 0x80046B44 func_80046B44 -> sys_InitSceneState
+Fresh check: none of the four names occurs in src include asm symbol_addrs.txt named_syms.txt function-names.csv (git grep -w, excluding the no_name.tsv history) and build.py's fresh() passes.
+
+CORRECTIONS to the research file
+ - 0x80046B44 research says "Every callee is called only from here": NOT re-derived and not used; the row claims only that each part works on scene/render state.
+ - 0x80046B44: the research cites 6CF8.c:301 as the first init "before the boot movie"; confirmed (main sets handler 0xF at :446, d_7D870.c:45 is ExecMovieOverlayAndReinitialize, whose call to func_80046B44 is 2B344.c:691). So boot runs the body twice (once in func_80016D78, once after the boot movie).
+ - 0x80016D78: the research says sys_Exec "redoes sys_Init, snd_InitAndLoadCommonVab and func_80046B44"; sys_Exec (cdrom.c:235-236) does the first two only, func_80046B44 comes from ExecMovieOverlayAndReinitialize (2B344.c:691). Row text uses the corrected split.
+ - Line numbers: 6CF8.c:441, 9F9C.c:1390/1430, 5476, 28708.c:1446, 4510C.c:174, 368E4.c:429 all match HEAD. Census lines function-names.csv:24, :80, :437, :569 are splat-auto KEEP rows.
+ - Alias lines: none of the four has an alias in symbol_addrs.txt; func_80046B44 has a registry line (symbol_addrs.txt:711) that the dry run deletes.
+
+### 0x80016D78 -> sys_InitGameAtBoot
+- HOMES: def 6CF8.c:283; call :441; glabel; include/bb2.h:389 comment; many registry comments (named_syms.txt:194,571,1052,1053,1308,1315,1325; symbol_addrs.txt:179,711,846-848,926,929,1945) - comment text only.
+- USES: one call, main (6CF8.c:441, main.s:17). Not on the movie return path.
+- BODY: boot-only defaults (saved record, motion buffers, prim buffers, snd/eff flags, pad, font, fight settings, option bytes, func_80046B44, frame period, comb abort).
+- Weak spot: 'Game' is a summary noun; fallback sys_InitAtBoot (occasion only). sys_Init also runs at boot, so the occasion alone does not separate the two; 'Game' (state, not devices) does.
+
+### 0x8001C51C -> fight_StartNextSecondFighter
+- HOMES: def 9F9C.c:1251; calls :1390 and :1430; two jal in fight_UpdateDefeatDelayAndModeProgress.s (:115, :209); glabel; named_syms.txt:1317 comment.
+- USES: both inside fight_UpdateDefeatDelayAndModeProgress with fighter 0 not defeated, past the 0x3D defeat delay; mode 0 (defeats-left still nonzero) and mode 3 (step table advanced).
+- Weak spot: 'Next' may be the same character in mode 0; 'Start' vs the fight_Init sibling (both-fighters round start). Research claim "eleven effects" counts 11 statements; verified.
+
+### 0x80040D48 -> slot_FinishObjectFrame
+- HOMES: def 31548.c:10; calls 9F9C.c:5476, 28708.c:1446, 4510C.c:174 (jal fighter_Update.s:2048, replay_PlayFrame.s:156, motion_UpdatePlayback.s:349); include/bb2.h:873, include/m2c_context.h, game.h:2281, 31548.c:332, 4510C.c:41 (comments/decls); named_syms.txt:1521, symbol_addrs.txt:1329.
+- USES: three per-frame sites, each straight after the pose is made; weapon-node queues follow in callers.
+- Weak spot: 'Finish' implies last; weaker alternative slot_UpdateObjectFrame (flagged).
+
+### 0x80046B44 -> sys_InitSceneState
+- HOMES: def 368E4.c:429; calls 6CF8.c:301, 2B344.c:691; include/bb2.h:1114; registry symbol_addrs.txt:711 (deleted by the dry run) and comments (symbol_addrs.txt:143,145,149; named_syms.txt:1368,1374,1382,1397,1398).
+- USES: two program (re)entries (boot, return from movie), each on a fresh arena.
+- Weakest row: 'Scene' is a summary noun used by no existing BB2 name; sys_ReinitAfterMovie is false for the boot caller. If rejected, NO_NAME stays (do not substitute sys_ReinitAfterMovie).
+
+DRY RUN: see dry.txt (rc=0, 4 RENAME, 19 file edits, 4 .s renames, 6 ledger dir renames, 1 registry line deletion symbol_addrs.txt:711, FATAL/REJECT none). dry.sh stages a CONFIRM copy under phase3/zz-wave124-dry (removed) and restores function-names.csv; the generated docs/naming/phase3/wave124/ stays (build.py regenerates it); git status shows only this draft dir and wave124/. tmp/p3w124 is scratch (created by dry.sh).
+LAND steps: the lander copies the latest tmp/p3w*/gates.sh into tmp/p3w124 before gates.ps1; record the NO_NAME revival at land with naming_noname.py (tag w124) for any row the reviewer fails, and clear the NO_NAME entries of passing rows.
+HAZARD (old names in recorded data, must stay): docs/naming/runtime/**, function-names.csv evidence text, older wave manifests, docs/naming/phase3/backlog.tsv and no_name.tsv history.
+
+PRE-APPLY (naming-reviewer, round 1, 2026-11-05, naming-b; JSON in the reviewed commit body)
+ - 0x8001C51C fight_StartNextSecondFighter: PASS.
+ - 0x80016D78 sys_InitGameAtBoot: FAIL ('Game' unsupported: snd_Init runs SsInit/SsStart). Replaced by the reviewer's SUGGESTED sys_InitAtBoot (R6 judges fresh).
+ - 0x80040D48 slot_FinishObjectFrame: FAIL ('Finish' false: callers queue the slot's nodes/draw moves after it). Replaced by SUGGESTED slot_UpdateObjectFrame (R6 judges fresh, also against slot_BlendTwoPosesIntoNodeMatrices).
+ - 0x80046B44 sys_InitSceneState: FAIL, dropped ('Scene' covers neither the NDATA.INF read, arena_Reset, math_InitRotMatrixFuncs nor reloc_ClearCounts; no occasion stated). Record as NO_NAME (w124) at land, with that reason.
+ dry.txt re-run after the change: rc=0, 3 renames.

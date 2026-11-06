@@ -1,0 +1,64 @@
+rc=0
+==============================================================================
+NAMING WAVE — 3 operations (0 RESET, 3 RENAME)
+  3 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_funcs_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (14) --
+  asm: 8 files, 12 substitutions
+      asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (2)
+      asm/funcs/fighter_Update.s  (1)
+      asm/funcs/func_80016D78.s  (2)
+      asm/funcs/func_8001C51C.s  (2)
+      asm/funcs/func_80040D48.s  (2)
+      asm/funcs/main.s  (1)
+      ... and 2 more
+  include: 1 files, 1 substitutions
+      include/bb2.h  (1)
+  src: 5 files, 9 substitutions
+      src/main/28708.c  (1)
+      src/main/31548.c  (1)
+      src/main/4510C.c  (1)
+      src/main/6CF8.c  (2)
+      src/main/9F9C.c  (4)
+
+-- .s file renames (3) --
+  asm/funcs/func_80016D78.s -> asm/funcs/sys_InitAtBoot.s
+  asm/funcs/func_8001C51C.s -> asm/funcs/fight_StartNextSecondFighter.s
+  asm/funcs/func_80040D48.s -> asm/funcs/slot_UpdateObjectFrame.s
+
+-- ledger directory renames (5) --
+  memory/grind/func_8001C51C -> memory/grind/fight_StartNextSecondFighter
+  memory/grind/func_80040D48 -> memory/grind/slot_UpdateObjectFrame
+  memory/grind/_completed/func_80016D78 -> memory/grind/_completed/sys_InitAtBoot
+  memory/grind/_completed/func_8001C51C -> memory/grind/_completed/fight_StartNextSecondFighter
+  memory/grind/_completed/func_80040D48 -> memory/grind/_completed/slot_UpdateObjectFrame
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (6) --
+  engine/deferred.json: 1 changes
+      func_80040D48
+  memory/grind/func_8001C51C/layer2.jsonl: 1 changes
+      line 1: func func_8001C51C -> fight_StartNextSecondFighter
+  memory/grind/func_80040D48/layer2.jsonl: 3 changes
+      line 1: func func_80040D48 -> slot_UpdateObjectFrame
+      line 2: func func_80040D48 -> slot_UpdateObjectFrame
+      line 3: func func_80040D48 -> slot_UpdateObjectFrame
+  memory/grind/_completed/func_80016D78/layer2.jsonl: 3 changes
+      line 1: func func_80016D78 -> sys_InitAtBoot
+      line 2: func func_80016D78 -> sys_InitAtBoot
+      line 3: func func_80016D78 -> sys_InitAtBoot
+  memory/grind/_completed/func_8001C51C/layer2.jsonl: 2 changes
+      line 1: func func_8001C51C -> fight_StartNextSecondFighter
+      line 2: func func_8001C51C -> fight_StartNextSecondFighter
+  memory/grind/_completed/func_80040D48/layer2.jsonl: 8 changes
+      line 1: func func_80040D48 -> slot_UpdateObjectFrame
+      line 2: func func_80040D48 -> slot_UpdateObjectFrame
+      line 3: func func_80040D48 -> slot_UpdateObjectFrame
+      line 4: func func_80040D48 -> slot_UpdateObjectFrame
+      line 5: func func_80040D48 -> slot_UpdateObjectFrame
+      ... and 3 more
+
+DRY RUN — nothing written. Re-run with --apply.
