@@ -1,0 +1,62 @@
+{
+  "description": "link-cable pair, SIO1 server side (run with frontier-link-client, the instrument's \"settings\" turn on PCSX-Redux SIO1 networking: server here, client there): top menu DOWN x5 to Link Mode, CROSS at 6400, 6700, 7000 and 7300 (each attempt the partner is not ready for returns to the top menu on Link Mode), so one attempt meets the client's and the link reaches comb_EnableEvents, the first pad exchange and comb_Abort",
+  "evidence": [
+    "docs/naming/runtime/frontier-link-server-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 8000,
+  "inputs": [
+    "6080:DOWN",
+    "6140:DOWN",
+    "6200:DOWN",
+    "6260:DOWN",
+    "6320:DOWN",
+    "6400:CROSS",
+    "6700:CROSS",
+    "7000:CROSS",
+    "7300:CROSS"
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6400:link_1",
+    "6700:link_2",
+    "7000:link_3",
+    "7300:link_4"
+  ],
+  "shots": [
+    "6390:top_menu.link_cursor",
+    "6450:s6450",
+    "6500:s6500",
+    "6550:s6550",
+    "6600:s6600",
+    "6650:s6650",
+    "6700:s6700",
+    "6750:s6750",
+    "6800:s6800",
+    "6850:s6850",
+    "6900:s6900",
+    "6950:s6950",
+    "7000:s7000",
+    "7050:s7050",
+    "7100:s7100",
+    "7150:s7150",
+    "7200:s7200",
+    "7250:s7250",
+    "7300:s7300",
+    "7350:s7350",
+    "7400:s7400",
+    "7450:s7450",
+    "7500:s7500",
+    "7550:s7550",
+    "7600:s7600",
+    "7650:s7650",
+    "7700:s7700",
+    "7750:s7750",
+    "7800:s7800",
+    "7850:s7850",
+    "7900:s7900",
+    "7950:s7950"
+  ]
+}
