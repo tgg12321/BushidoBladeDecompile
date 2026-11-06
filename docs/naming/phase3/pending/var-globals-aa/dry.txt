@@ -1,0 +1,27 @@
+==============================================================================
+DATA WAVE — 1 addresses, 1 identifiers remapped
+  0x800a3894: D_800A3894 -> g_fight_first_fighter_substitution_command_operands
+
+-- file edits (13) --
+  asm/data/94000.bss.s  (2)
+  asm/funcs/fight_HandleDescriptorPlaybackCompletion.s  (4)
+  asm/funcs/fight_InitCommandStream.s  (2)
+  asm/funcs/fight_QueueSubstitutionCommandDescriptorPlayback.s  (2)
+  asm/funcs/fight_RunCommandStream.s  (4)
+  asm/funcs/fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState.s  (2)
+  asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (2)
+  asm/funcs/replay_PlayFrame.s  (2)
+  include/bb2.h  (1)
+  src/main/28708.c  (2)
+  src/main/2B344.c  (7)
+  src/main/9F9C.c  (2)
+  symbol_addrs.txt  (2)
+
+-- registry lines --
+  symbol_addrs.txt:1516 D_800A3894 -> g_fight_first_fighter_substitution_command_operands
+  symbol_addrs.txt:2017 D_800A3894 -> g_fight_first_fighter_substitution_command_operands
+
+-- python long strings NOT rewritten --
+  tools/trace/scan/story_streams.py: L2: ['D_800A3894'] in prose/docstring — NOT rewritten
+
+DRY RUN — nothing written. Re-run with --apply.

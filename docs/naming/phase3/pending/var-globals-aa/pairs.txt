@@ -1,0 +1,1 @@
+D_800A3894=g_fight_first_fighter_substitution_command_operands
