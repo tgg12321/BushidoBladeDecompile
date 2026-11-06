@@ -71,6 +71,15 @@ Spec (JSON):
     "pokes": [{"at": "D_80101EC8+0xE",  # set-and-observe (needs a script):
                "hex": "0600",         # these bytes written once when the
                "phase": "fight"}],    # phase starts (after its value reads)
+    "settings": {"emulator": {"Debug":  # PCSX-Redux settings (needs a
+        {"SIO1Server": true}}},      # script): written as the instance's
+                                     # pcsx.json, which the run then loads
+                                     # instead of -safe's defaults (keys it
+                                     # omits keep their defaults); the
+                                     # profile's own pcsx.json is put back
+                                     # after the run. For what the Lua API
+                                     # cannot set at power-on, e.g. SIO1
+                                     # networking (a link-cable partner).
     "script": {...}                  # PCSX-Redux scripted run: frame-timed
   }                                  # inputs, phases, screenshots (runkit.py)
 `at`/`base` take a symbol from the link map, a 0x address, `sym+0xNN`, or (for
@@ -793,6 +802,10 @@ def run(args) -> int:
             raise SystemExit("gdbtrace: a script starts at power-on; drop "
                              "--boot-wait")
         runkit.check_script(script)
+    args.redux_settings = check_settings(spec)
+    if args.redux_settings and args.keep_emulator:
+        raise SystemExit("gdbtrace: \"settings\" are put back when the run "
+                         "ends; drop --keep-emulator")
     if args.bios and (not os.path.isfile(args.bios)
                       or os.path.getsize(args.bios) != 0x80000):
         raise SystemExit(f"gdbtrace: --bios {args.bios} is not a 512 KiB "
@@ -835,6 +848,44 @@ def acquire_slot(args):
     args.portable_dir = slot.profile
     print(f"gdbtrace: headless instance slot {slot.n}, port {slot.port}")
     return slot
+
+
+def check_settings(spec: dict):
+    """spec["settings"]: {group: {key: value}} for the run's pcsx.json, or
+    None. Needs a script (a run without one already loads the portable
+    dir's pcsx.json)."""
+    settings = spec.get("settings")
+    if settings is None:
+        return None
+    if not spec.get("script"):
+        raise SystemExit("gdbtrace: \"settings\" needs a \"script\"")
+    if not isinstance(settings, dict) or not settings or not all(
+            isinstance(k, str) and isinstance(v, dict)
+            for k, v in settings.items()):
+        raise SystemExit("gdbtrace: \"settings\" must map settings groups "
+                         "(\"emulator\", ...) to objects of settings")
+    return settings
+
+
+def write_profile_settings(portable: str, settings: dict):
+    """Write settings as portable/pcsx.json; returns the function that puts
+    the previous file (or its absence) back."""
+    path = os.path.join(portable, "pcsx.json")
+    old = None
+    if os.path.isfile(path):
+        with open(path, "rb") as f:
+            old = f.read()
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(settings, f, indent=1, sort_keys=True)
+
+    def restore():
+        if old is None:
+            if os.path.isfile(path):
+                os.remove(path)
+        else:
+            with open(path, "wb") as f:
+                f.write(old)
+    return restore
 
 
 def run_launched(args, syms, spec, start) -> int:
@@ -1692,7 +1743,19 @@ def wait_for_stub(proc, host: str, port: int, wait: float, name: str):
 
 
 def launch_redux(args):
-    """Start PCSX-Redux in portable mode with the GDB server on."""
+    """Start PCSX-Redux in portable mode with the GDB server on. A spec's
+    "settings" are written as the profile's pcsx.json first; returns
+    (proc, restore), restore putting the old pcsx.json back (already done
+    if the launch fails)."""
+    box = [lambda: None]
+    try:
+        return launch_redux_with(args, box)
+    except BaseException:
+        box[0]()
+        raise
+
+
+def launch_redux_with(args, box):
     if not args.emulator:
         raise SystemExit("gdbtrace: --launch pcsx-redux needs --emulator")
     portable = os.path.abspath(args.portable_dir)
@@ -1702,7 +1765,13 @@ def launch_redux(args):
            "-iso", os.path.abspath(args.cue),
            "-gdb", "-gdb-port", str(args.port), "-debugger", "-interpreter",
            "-fastboot", "-noupdate"]  # dynarec skips breakpoints
-    if getattr(args, "lua", None):
+    restore = lambda: None  # noqa: E731
+    settings = getattr(args, "redux_settings", None)
+    if getattr(args, "lua", None) and settings:
+        # The spec's settings, written as pcsx.json, fix the setup in place
+        # of -safe (unlisted keys default). No -run, as below.
+        restore = box[0] = write_profile_settings(portable, settings)
+    elif getattr(args, "lua", None):
         # -safe: default settings (+ these flags) instead of whatever
         # pcsx.json holds, so the version + command line fix the setup.
         # No -run: the CPU waits at the reset vector for the first `c`,
@@ -1759,7 +1828,7 @@ def launch_redux(args):
         if proc.log is not None:
             proc.log.close()
         raise
-    return proc, lambda: None
+    return proc, restore
 
 
 def tail(path: str, n: int) -> str:

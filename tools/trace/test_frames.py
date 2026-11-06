@@ -527,5 +527,59 @@ class TraceLoopTest(unittest.TestCase):
                           "kick_pc": self.KICK_PC - 4, "from_ram": False})
 
 
+
+class SettingsTest(unittest.TestCase):
+    def test_check_settings(self):
+        script = {"end_frame": 10}
+        self.assertIsNone(gdbtrace.check_settings({"script": script}))
+        ok = {"emulator": {"Debug": {"SIO1Server": True}}}
+        self.assertEqual(gdbtrace.check_settings(
+            {"script": script, "settings": ok}), ok)
+        for bad in ({"script": script, "settings": {}},
+                    {"script": script, "settings": {"emulator": 1}},
+                    {"settings": ok}):
+            with self.assertRaises(SystemExit):
+                gdbtrace.check_settings(bad)
+
+    def test_profile_settings_written_then_put_back(self):
+        root = Path(__file__).resolve().parents[2] / "tmp" / (
+            "test-settings-" + uuid.uuid4().hex)
+        root.mkdir(parents=True)
+        try:
+            path = root / "pcsx.json"
+            new = {"emulator": {"Debug": {"SIO1Client": True}}}
+            restore = gdbtrace.write_profile_settings(str(root), new)
+            self.assertEqual(json.loads(path.read_text()), new)
+            restore()
+            self.assertFalse(path.exists())
+            path.write_bytes(b'{"old": {}}')
+            restore = gdbtrace.write_profile_settings(str(root), new)
+            restore()
+            self.assertEqual(path.read_bytes(), b'{"old": {}}')
+        finally:
+            shutil.rmtree(root)
+
+    def test_failed_launch_puts_the_old_settings_back(self):
+        root = Path(__file__).resolve().parents[2] / "tmp" / (
+            "test-settings-" + uuid.uuid4().hex)
+        root.mkdir(parents=True)
+        try:
+            path = root / "pcsx.json"
+            path.write_bytes(b'{"old": {}}')
+            args = argparse.Namespace(
+                emulator="redux.exe", portable_dir=str(root), host="127.0.0.1",
+                port=1, cue="game.cue", lua="run.lua", bios=None,
+                out=str(root / "capture.jsonl"), headless=False, slot=None,
+                redux_settings={"emulator": {"Debug": {"SIO1Server": True}}})
+            with patch.object(gdbtrace, "check_port_free"), \
+                    patch.object(gdbtrace.subprocess, "Popen",
+                                 side_effect=OSError("no emulator")):
+                with self.assertRaises(OSError):
+                    gdbtrace.launch_redux(args)
+            self.assertEqual(path.read_bytes(), b'{"old": {}}')
+        finally:
+            shutil.rmtree(root)
+
+
 if __name__ == "__main__":
     unittest.main()

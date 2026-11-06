@@ -551,8 +551,12 @@ def inputs_record(args, start: dict, repo: str) -> dict:
                                   (sorted(os.listdir(d)) if os.path.isdir(d)
                                    else [])
                                   if n.lower().endswith(".dll")],
-                         "settings": "defaults (-safe) + command line"
-                         " + script Lua settings"
+                         "settings": ("the spec's \"settings\" as pcsx.json"
+                                      " (other keys default) + command line"
+                                      " + script Lua settings"
+                                      if getattr(args, "redux_settings", None)
+                                      else "defaults (-safe) + command line"
+                                      " + script Lua settings")
                          if args.lua else "the portable dir's pcsx.json",
                          "headless": bool(getattr(args, "headless", False))}
         if args.bios:
