@@ -2208,13 +2208,16 @@ typedef struct {
  * node_StartFrameAnimatedEntryAndInitPairedNode /
  * node_AdvanceFrameAnimatedEntriesAndQueueDraws run the node from the
  * g_node_frame_animation_context.frame_data key frames and queue it on
- * g_draw_queue. unk58 is a word frame counter (lw/sw: -1 idle, 0 started by
- * node_StartFrameAnimatedEntryAndInitPairedNode, -2 done), anim_yaw the word Y
- * angle node_StartFrameAnimatedEntryAndInitPairedNode stores, unk60 an s16
- * node_AdvanceFrameAnimatedEntriesAndQueueDraws sets to 0x1000 at the last key
- * frame and then lowers by 0x40 per call to 0 (at 0, unk58 = -2 unless
- * g_node_frame_animation_context.resource_selector is 4); +0x62..0x67 are not
- * accessed. Not the Unk800A6690Rec layout: that table's +0x58 is a byte. */
+ * g_draw_queue. anim_progress is the word playback position (lw/sw: -1 idle,
+ * 0 started by node_StartFrameAnimatedEntryAndInitPairedNode, then the next
+ * key frame, held at the frame count during the fade, -2 done), anim_yaw the
+ * word Y angle node_StartFrameAnimatedEntryAndInitPairedNode stores,
+ * fade_scale an s16 node_AdvanceFrameAnimatedEntriesAndQueueDraws sets to
+ * 0x1000 at the last key frame and then lowers by 0x40 per call to 0 (at 0,
+ * anim_progress = -2 unless g_node_frame_animation_context.resource_selector
+ * is 4); gpu_EmitColorScaledFlatLitTextured{Triangles,Quads} read it as the
+ * Q12 IR0 colour scale of the queued node. +0x62..0x67 are not accessed. Not
+ * the Unk800A6690Rec layout: that table's +0x58 is a byte. */
 typedef struct {
     Unk80101DF0Record node; /* +0x00 */
     s32 anim_progress;      /* +0x58 */
