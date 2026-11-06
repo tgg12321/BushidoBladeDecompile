@@ -7,6 +7,15 @@
 #include "include_asm.h"
 #include "bb2.h"
 
+enum OptionModeFlowState {
+    OPTION_FLOW_OPTION_MENU = 0,
+    OPTION_FLOW_MEMCARD_MENU = 1,
+    OPTION_FLOW_MEMCARD_LOAD = 2,
+    OPTION_FLOW_MEMCARD_SAVE = 3,
+    OPTION_FLOW_KEY_CONFIG_INIT = 4,
+    OPTION_FLOW_KEY_CONFIG = 5,
+};
+
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern void AddPrim(void *, void *);
 
@@ -1377,13 +1386,13 @@ s32 InitRowMenuBlackBgResetFlow(s32 prim_buffer_pair_addr) {
     menu_LoadResourcesInitStateSelectFirstEnabledRow(
         prim_buffer_pair_addr, &g_working_record);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
-    g_option_mode_flow_state = 0;
+    g_option_mode_flow_state = OPTION_FLOW_OPTION_MENU;
     return 1;
 }
 
 s32 DrawWhiteTileAndSheetsAndResetFlowOnPadMatch(void) {
     if (((s32(*)())gpu_DrawWhiteTileAndSheetsTestPadMask)() == 1) {
-        g_option_mode_flow_state = 0;
+        g_option_mode_flow_state = OPTION_FLOW_OPTION_MENU;
         return 1;
     }
     return 0;
@@ -1397,7 +1406,7 @@ s32 menu_UpdateRowMenuStoreResult(s32 arg0, s32 pressed_buttons) {
     result = menu_UpdateRowMenu(arg0, pressed_buttons);
     if (result >= 0) {
         ret = 1;
-        g_option_mode_flow_state = 0;
+        g_option_mode_flow_state = OPTION_FLOW_OPTION_MENU;
         g_working_record.menu_mode = result;
     } else if (result == -2) {
         ret = -1;
@@ -1406,7 +1415,7 @@ s32 menu_UpdateRowMenuStoreResult(s32 arg0, s32 pressed_buttons) {
 }
 
 s32 ResetFlowAndFetchRowTablePair(void) {
-    g_option_mode_flow_state = 0;
+    g_option_mode_flow_state = OPTION_FLOW_OPTION_MENU;
     g_menu_pending_entry_extra_slot_count =
         g_menu_mode_selector_and_extra_slot_counts[g_working_record.menu_mode]
                                                   [1];
@@ -1439,12 +1448,12 @@ s32 StepThenCloseVab1OnNonzero(s32 held_buttons, s32 pressed_buttons) {
 }
 
 s32 menu_ResetFlowThenRunUpdate(s32 a0, s32 pressed_buttons) {
-    g_option_mode_flow_state = 0;
+    g_option_mode_flow_state = OPTION_FLOW_OPTION_MENU;
     return menu_UpdateStoredChoice(a0, pressed_buttons);
 }
 
 void menu_ResetFlowBackgroundAndConfirmCursor(void) {
-    g_option_mode_flow_state = 0;
+    g_option_mode_flow_state = OPTION_FLOW_OPTION_MENU;
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     menu_ResetConfirmCursor();
 }
@@ -1468,7 +1477,9 @@ void func_80077AE0(void) { gpu_BeginFullscreenImageDisplay(); }
 
 void func_80077B00(void) { gpu_EndFullscreenImageDisplay(); }
 
-void SetFlowStateOne(void) { g_option_mode_flow_state = 1; }
+void SetFlowStateOne(void) {
+    g_option_mode_flow_state = OPTION_FLOW_MEMCARD_MENU;
+}
 
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern s32 column;
@@ -1480,7 +1491,7 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 pressed_buttons) {
     s32 result;
 
     switch (g_option_mode_flow_state) {
-    case 0:
+    case OPTION_FLOW_OPTION_MENU:
         return_value = 0;
         result = menu_UpdateOptionMenuChoices(arg0, pressed_buttons);
         switch (result) {
@@ -1488,7 +1499,7 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 pressed_buttons) {
             return_value = -1;
             break;
         case 2:
-            g_option_mode_flow_state = 1;
+            g_option_mode_flow_state = OPTION_FLOW_MEMCARD_MENU;
             break;
         case 3:
             g_working_record.button_mappings[0] =
@@ -1497,36 +1508,36 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 pressed_buttons) {
                 g_working_record.committed_button_mappings[1];
             g_working_record.button_mappings[2] =
                 g_working_record.committed_button_mappings[2];
-            g_option_mode_flow_state = 4;
+            g_option_mode_flow_state = OPTION_FLOW_KEY_CONFIG_INIT;
             break;
         }
         break;
-    case 1:
+    case OPTION_FLOW_MEMCARD_MENU:
         return_value = 0;
         result = func_8006C1FC(arg0, pressed_buttons);
         if (result == 1) {
-            g_option_mode_flow_state = 0;
+            g_option_mode_flow_state = OPTION_FLOW_OPTION_MENU;
         } else if (result == 2) {
             g_option_mode_flow_state = result;
         } else if (result == 3) {
             g_option_mode_flow_state = result;
         }
         break;
-    case 2:
+    case OPTION_FLOW_MEMCARD_LOAD:
         return_value = 2;
         break;
-    case 3:
+    case OPTION_FLOW_MEMCARD_SAVE:
         return_value = 3;
         break;
-    case 4:
+    case OPTION_FLOW_KEY_CONFIG_INIT:
         menu_ResetRowBitCursors();
         g_option_mode_flow_state++;
         /* fall through */
-    case 5:
+    case OPTION_FLOW_KEY_CONFIG:
         return_value = 0;
         result = menu_UpdateRowBitMenu(arg0, pressed_buttons);
         if (result == 1) {
-            g_option_mode_flow_state = 0;
+            g_option_mode_flow_state = OPTION_FLOW_OPTION_MENU;
             g_working_record.committed_button_mappings[0] =
                 g_working_record.button_mappings[0];
             g_working_record.committed_button_mappings[1] =
@@ -1534,7 +1545,7 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 pressed_buttons) {
             g_working_record.committed_button_mappings[2] =
                 g_working_record.button_mappings[2];
         } else if (result == -1) {
-            g_option_mode_flow_state = 0;
+            g_option_mode_flow_state = OPTION_FLOW_OPTION_MENU;
         }
         break;
     }
