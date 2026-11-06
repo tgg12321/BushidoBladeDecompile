@@ -23386,6 +23386,11 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80021424	motion_ResolveMoveData	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8402	8402	1	opp1.8600@8600#d88f72a357c4	hitmap:first 1 hits per phase only	0	
 0x80021424	motion_ResolveMoveData	versus-cpu-tatsumi-1@016e75c2a56c	opp2	9380	9380	1	opp2.10000@10000#345997568672	hitmap:first 1 hits per phase only	0	
 0x80021424	motion_ResolveMoveData	versus-cpu-tatsumi-1@016e75c2a56c	opp3	11020	11020	1	opp3.11200@11200#599ec9aae5e9	hitmap:first 1 hits per phase only	0	
+0x80021494	motion_ResolveMoveData+0x70	data-lead-Tbl800A3860Entry-f66-versus-2p-effects-1@2c55b0a5bb9f	fight	8786	12084	9	fight.10500@10500#25829ca7181e;fight.10700@10700#3a60c4d99023;fight.12100@12100#4e02822dd7a3;fight.8900@8900#980264db0c76;fight.9100@9100#9381c7e9ebea;fight.9300@9300#91b89128b10b	recorded hits only; capture limits apply	0	
+0x80021494	motion_ResolveMoveData+0x70	data-lead-Tbl800A3860Entry-f66-versus-cpu-clear-retail-1@5843b0f76a11	opp1	8950	8950	1	opp1.last@9250#0f379139c711	recorded hits only; capture limits apply	0	
+0x80021494	motion_ResolveMoveData+0x70	data-lead-Tbl800A3860Entry-f66-versus-cpu-clear-retail-1@5843b0f76a11	opp2	10031	13164	9	opp2.11000@11000#3ace00dc36c1;opp2.12000@12000#8b7f445ec35b;opp2.last@14400#54f7145def40	recorded hits only; capture limits apply	0	
+0x80021494	motion_ResolveMoveData+0x70	data-lead-Tbl800A3860Entry-f66-versus-cpu-clear-retail-1@5843b0f76a11	opp3	15352	18994	24	opp3.16000@16000#360a0a26a85c;opp3.17500@17500#b3976fc60b5e;opp3.last@19150#7aa986eccf86	recorded hits only; capture limits apply	0	
+0x80021494	motion_ResolveMoveData+0x70	data-lead-Tbl800A3860Entry-f66-versus-cpu-clear-retail-1@5843b0f76a11	opp4	20151	20595	3	opp4.20400@20400#df6dc75b8b9f;opp4.last@20850#1548cc94978f	recorded hits only; capture limits apply	0	
 0x800218C8	motion_ResetVariantIndex	group-battle-draw-1@2004f4b160e6	bout1	9444	9444	1	bout1.first@9450#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x800218C8	motion_ResetVariantIndex	group-battle-draw-1@2004f4b160e6	bout1_again	24839	24839	1	bout1_again.first@24845#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x800218C8	motion_ResetVariantIndex	group-battle-draw-1@2004f4b160e6	bout2	13912	13912	1	bout2.first@13918#96d6d20da860	hitmap:first 1 hits per phase only	0	

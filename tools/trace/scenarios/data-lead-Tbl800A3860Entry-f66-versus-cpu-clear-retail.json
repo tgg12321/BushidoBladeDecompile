@@ -1,0 +1,8 @@
+{
+  "description": "versus-cpu-clear-retail re-run unchanged with a breakpoint at motion_ResolveMoveData+0x70 (the f66 branch, just after the lhu, inside its load delay: v0 = &f66[id - 0x7FF5][variant_index], dumped as 2 bytes, a3 = id, s0 = the fighter record, ra = the caller), dumping record +0x00/16, +0x48/4, +0x84/4 and the f66 halfword: trace-data-leads runtime evidence (unit 14, Tbl800A3860Entry.f66: which pseudo move ids 0x7FF5..0x7FFF are resolved, by which caller, at which variant_index, to which script index)",
+  "evidence": [
+    "docs/naming/runtime/data-lead-Tbl800A3860Entry-f66-versus-cpu-clear-retail-1/spec.json"
+  ],
+  "extends": "versus-cpu-clear-retail",
+  "refines": "versus-cpu-clear-retail"
+}
