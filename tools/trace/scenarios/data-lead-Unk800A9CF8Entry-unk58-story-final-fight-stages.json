@@ -1,0 +1,12 @@
+{
+  "description": "story-final-fight-stages cut at 127600 (its inputs to there unchanged, no pokes; the last frame before sel13 with no input held across it), so the run ends in katze with resource selector 0x12 (Lumberyard) loaded since 93436, the only phase where node_StartFrameAnimatedEntryAndInitPairedNode runs (coverage.tsv). trace-data-leads unit 13: who writes and reads Unk800A9CF8Entry.unk58 / unk60 (the g_node_frame_animation_context.frame_entries table), with which values, and does any code outside 35000.c read unk60",
+  "covers": [
+    "mode:story"
+  ],
+  "evidence": [
+    "docs/naming/runtime/data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-1/spec.json",
+    "docs/naming/runtime/data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2/spec.json"
+  ],
+  "extends": "story-final-fight-stages",
+  "end_frame": 127600
+}

@@ -83532,6 +83532,8 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80044504	gpu_PrepareViewAndFlushDrawQueue	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8400	8400	1	opp1.8600@8600#d88f72a357c4	hitmap:first 1 hits per phase only	0	
 0x80044504	gpu_PrepareViewAndFlushDrawQueue	versus-cpu-tatsumi-1@016e75c2a56c	opp2	9341	9341	1	opp2.10000@10000#345997568672	hitmap:first 1 hits per phase only	0	
 0x80044504	gpu_PrepareViewAndFlushDrawQueue	versus-cpu-tatsumi-1@016e75c2a56c	opp3	11013	11013	1	opp3.11200@11200#599ec9aae5e9	hitmap:first 1 hits per phase only	0	
+0x80044670	node_BindFrameDataAndReserveEntryBuffer	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-1@498e794a7f4f	sel12	93436	93436	7	sel12.93500@93500#0add8d2d885a	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x80044670	node_BindFrameDataAndReserveEntryBuffer	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	sel12	93436	93436	7	sel12.93500@93500#0add8d2d885a	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80044670	node_BindFrameDataAndReserveEntryBuffer	lib-story-final-fight-retail-1@2c1def7be909	story	93436	93436	1	s.126599@126599#19334832b963	hitmap:first 1 hits per phase only	0	
 0x80044670	node_BindFrameDataAndReserveEntryBuffer	story-final-fight-stages-1@58ffaa0e84cf	sel12	93436	93436	1	sel12.93500@93500#0add8d2d885a	hitmap:first 1 hits per phase only	0	
 0x80044670	node_BindFrameDataAndReserveEntryBuffer	versus-2p-pair-bamboo-1@07355ecd9358	t_load	8166	8166	1	t_load.mid@8200#d8d5628340eb	hitmap:first 1 hits per phase only	0	
@@ -83547,6 +83549,8 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80044670	node_BindFrameDataAndReserveEntryBuffer	versus-2p-tatsumi-drop-1@23ee9986923d	t_load	7826	7826	1	fight.first@8350#7b2d472e8b36	hitmap:first 1 hits per phase only	0	
 0x80044670	node_BindFrameDataAndReserveEntryBuffer	versus-2p-tatsumi-pickup-1@dc9817c9453d	t_load	7826	7826	1	fight.first@8350#7b2d472e8b36	hitmap:first 1 hits per phase only	0	
 0x80044670	node_BindFrameDataAndReserveEntryBuffer	versus-cpu-tatsumi-1@016e75c2a56c	opp3	10772	10772	1	opp3.10800@10800#2a6301f92dcd	hitmap:first 1 hits per phase only	0	
+0x8004473C	node_InitFrameEntriesFromWorldTranslations	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-1@498e794a7f4f	sel12	93436	93436	2	sel12.93500@93500#0add8d2d885a	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8004473C	node_InitFrameEntriesFromWorldTranslations	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	sel12	93436	93436	2	sel12.93500@93500#0add8d2d885a	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x8004473C	node_InitFrameEntriesFromWorldTranslations	lib-story-final-fight-retail-1@2c1def7be909	story	93436	93436	1	s.126599@126599#19334832b963	hitmap:first 1 hits per phase only	0	
 0x8004473C	node_InitFrameEntriesFromWorldTranslations	story-final-fight-stages-1@58ffaa0e84cf	sel12	93436	93436	1	sel12.93500@93500#0add8d2d885a	hitmap:first 1 hits per phase only	0	
 0x8004473C	node_InitFrameEntriesFromWorldTranslations	versus-2p-pair-bamboo-1@07355ecd9358	t_load	8166	8166	1	t_load.mid@8200#d8d5628340eb	hitmap:first 1 hits per phase only	0	
@@ -83562,6 +83566,10 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8004473C	node_InitFrameEntriesFromWorldTranslations	versus-2p-tatsumi-drop-1@23ee9986923d	t_load	7826	7826	1	fight.first@8350#7b2d472e8b36	hitmap:first 1 hits per phase only	0	
 0x8004473C	node_InitFrameEntriesFromWorldTranslations	versus-2p-tatsumi-pickup-1@dc9817c9453d	t_load	7826	7826	1	fight.first@8350#7b2d472e8b36	hitmap:first 1 hits per phase only	0	
 0x8004473C	node_InitFrameEntriesFromWorldTranslations	versus-cpu-tatsumi-1@016e75c2a56c	opp3	10772	10772	1	opp3.10800@10800#2a6301f92dcd	hitmap:first 1 hits per phase only	0	
+0x80044800	node_AdvanceFrameAnimatedEntriesAndQueueDraws	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-1@498e794a7f4f	katze	126600	126604	3		breakpoint:first 3 hits per phase only	1	no_later_screenshot
+0x80044800	node_AdvanceFrameAnimatedEntriesAndQueueDraws	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-1@498e794a7f4f	sel12	93910	93914	3	s.126599@126599#19334832b963	breakpoint:first 3 hits per phase only	0	
+0x80044800	node_AdvanceFrameAnimatedEntriesAndQueueDraws	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	katze	126600	127553	849		breakpoint:first 3 hits per phase only;recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x80044800	node_AdvanceFrameAnimatedEntriesAndQueueDraws	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	sel12	93910	126598	48506	s.126599@126599#19334832b963	breakpoint:first 3 hits per phase only;recorded hits only; capture limits apply	1	coverage_next_start_bound;max_hits_reached:Z3:0x800B6C54:25000
 0x80044800	node_AdvanceFrameAnimatedEntriesAndQueueDraws	lib-story-final-fight-retail-1@2c1def7be909	katze	126600	126600	1	s.127900@127900#f3de50fc58bd	hitmap:first 1 hits per phase only	0	
 0x80044800	node_AdvanceFrameAnimatedEntriesAndQueueDraws	lib-story-final-fight-retail-1@2c1def7be909	story	93910	93910	1	s.126599@126599#19334832b963	hitmap:first 1 hits per phase only	0	
 0x80044800	node_AdvanceFrameAnimatedEntriesAndQueueDraws	story-final-fight-stages-1@58ffaa0e84cf	katze	126600	126600	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
@@ -83625,9 +83633,13 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80044800	node_AdvanceFrameAnimatedEntriesAndQueueDraws	versus-2p-tatsumi-pickup-1@dc9817c9453d	fight	8350	8350	1	fight.8660@8660#8bf2b139cafc	hitmap:first 1 hits per phase only	0	
 0x80044800	node_AdvanceFrameAnimatedEntriesAndQueueDraws	versus-2p-tatsumi-pickup-1@dc9817c9453d	t_load	8318	8318	1	fight.first@8350#7b2d472e8b36	hitmap:first 1 hits per phase only	0	
 0x80044800	node_AdvanceFrameAnimatedEntriesAndQueueDraws	versus-cpu-tatsumi-1@016e75c2a56c	opp3	11013	11013	1	opp3.11200@11200#599ec9aae5e9	hitmap:first 1 hits per phase only	0	
+0x80044B30	node_StartFrameAnimatedEntryAndInitPairedNode	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-1@498e794a7f4f	sel12	97709	119958	3	s.126599@126599#19334832b963	recorded hits only; capture limits apply	0	
+0x80044B30	node_StartFrameAnimatedEntryAndInitPairedNode	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	sel12	97709	119958	11	s.126599@126599#19334832b963	recorded hits only; capture limits apply	1	coverage_next_start_bound;max_hits_reached:Z3:0x800B6C54:25000
 0x80044B30	node_StartFrameAnimatedEntryAndInitPairedNode	frame-anim-story-lumberyard-cut-1@1594db197f8c	lumber	97709	97953	2	lumber.97712@97712#1f40d4e6504b;lumber.97956@97956#d45a80dd70c2	recorded hits only; capture limits apply	0	
 0x80044B30	node_StartFrameAnimatedEntryAndInitPairedNode	lib-story-final-fight-retail-1@2c1def7be909	story	97709	97709	1	s.126599@126599#19334832b963	hitmap:first 1 hits per phase only	0	
 0x80044B30	node_StartFrameAnimatedEntryAndInitPairedNode	story-final-fight-stages-1@58ffaa0e84cf	sel12	97709	97709	1	s.126599@126599#19334832b963	hitmap:first 1 hits per phase only	0	
+0x80044C70	resource_RebaseFrameAnimatedEntryBlockAndPointers	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-1@498e794a7f4f	sel12	93508	93657	9	sel12.93736@93736#fa5e4d3b5094	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x80044C70	resource_RebaseFrameAnimatedEntryBlockAndPointers	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	sel12	93508	93657	9	sel12.93736@93736#fa5e4d3b5094	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80044C70	resource_RebaseFrameAnimatedEntryBlockAndPointers	lib-story-final-fight-retail-1@2c1def7be909	story	93508	93508	1	s.126599@126599#19334832b963	hitmap:first 1 hits per phase only	0	
 0x80044C70	resource_RebaseFrameAnimatedEntryBlockAndPointers	story-final-fight-stages-1@58ffaa0e84cf	sel12	93508	93508	1	sel12.93736@93736#fa5e4d3b5094	hitmap:first 1 hits per phase only	0	
 0x80044C70	resource_RebaseFrameAnimatedEntryBlockAndPointers	versus-2p-pair-exit-bamboo-1@8ff2e14f2b96	t_sub_menu	11313	11313	1	t_sub_menu.mid@11600#5a01b4b272fb	hitmap:first 1 hits per phase only	0	
@@ -103777,6 +103789,8 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8004BB68	gpu_SubdivideAndEmitTexturedTriangle	versus-cpu-clear-retail-1@d1b76e2e5d49	opp2	10109	10109	1	opp2.11000@11000#3ace00dc36c1	hitmap:first 1 hits per phase only	0	
 0x8004BB68	gpu_SubdivideAndEmitTexturedTriangle	versus-cpu-clear-retail-1@d1b76e2e5d49	opp5	23130	23130	1	opp5.last@23340#433e3770bfb5	hitmap:first 1 hits per phase only	0	
 0x8004BB68	gpu_SubdivideAndEmitTexturedTriangle	versus-cpu-tatsumi-1@016e75c2a56c	opp3	12665	12665	1	opp3.last@12999#9a15506bbc93	hitmap:first 1 hits per phase only	0	
+0x8004BCC0	gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	boot_intro	8872	8898	44	s.8899@8899#86d5daef52e3	recorded hits only; capture limits apply	1	coverage_next_start_bound;max_hits_reached:Z3:0x800B6C54:25000
+0x8004BCC0	gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	story	8900	25931	30686	sel0f.26153@26153#ff6abd692f93	recorded hits only; capture limits apply	1	coverage_next_start_bound;max_hits_reached:Z3:0x800B6C54:25000
 0x8004BCC0	gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision	group-battle-draw-1@2004f4b160e6	bout1	9446	9446	1	bout1.first@9450#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x8004BCC0	gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision	group-battle-draw-1@2004f4b160e6	bout1_again	24841	24841	1	bout1_again.first@24845#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x8004BCC0	gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision	group-battle-draw-1@2004f4b160e6	bout2	13914	13914	1	bout2.first@13918#96d6d20da860	hitmap:first 1 hits per phase only	0	
@@ -105309,6 +105323,8 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8004C388	math_MidpointS16x3U8x2	versus-cpu-tatsumi-1@016e75c2a56c	opp3	11014	11014	1	opp3.11200@11200#599ec9aae5e9	hitmap:first 1 hits per phase only	0	
 0x8004C404	gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets	data-lead-D_80103624-versus-2p-bamboo-1@9145a3a0cdc5	fight	8350	8526	6883	fight.8650@8650#2dae8235467c	recorded hits only; capture limits apply	1	coverage_next_start_bound;max_hits_reached:Z3:0x80103624:10000
 0x8004C404	gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets	data-lead-D_80103624-versus-2p-bamboo-1@9145a3a0cdc5	t_load	8311	8348	1412	t_load.last@8349#d31546a4e459	recorded hits only; capture limits apply	1	coverage_next_start_bound;max_hits_reached:Z3:0x80103624:10000
+0x8004C404	gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	boot_intro	8867	8898	32	s.8899@8899#86d5daef52e3	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8004C404	gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	story	8900	25931	28138	sel0f.26153@26153#ff6abd692f93	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x8004C404	gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets	group-battle-draw-1@2004f4b160e6	bout1	9446	9446	1	bout1.first@9450#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x8004C404	gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets	group-battle-draw-1@2004f4b160e6	bout1_again	24841	24841	1	bout1_again.first@24845#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x8004C404	gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets	group-battle-draw-1@2004f4b160e6	bout2	13914	13914	1	bout2.first@13918#96d6d20da860	hitmap:first 1 hits per phase only	0	
@@ -113964,6 +113980,9 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80051ED4	gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedQuadPacketsToOt256	story-pov-rematch-1@766b7b5b6104	t_rematch	13124	13124	1	t_rematch.last@13199#439ff30dbe35	hitmap:first 1 hits per phase only	0	
 0x80051ED4	gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedQuadPacketsToOt256	story-pov-sub-menu-1@5b40305ad49e	fight	8912	8912	1	fight.9200@9200#af2fdf10bc28	hitmap:first 1 hits per phase only	0	
 0x80051ED4	gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedQuadPacketsToOt256	story-pov-sub-menu-1@5b40305ad49e	t_ko	12401	12401	1	t_ko.12500@12500#5447d31529b8	hitmap:first 1 hits per phase only	0	
+0x800520B8	mem_MoveBlockRoundedUpToWords	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	boot_intro	8439	8439	30	sel08.8503@8503#8c9ed88c64be	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x800520B8	mem_MoveBlockRoundedUpToWords	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	sel12	93508	93657	103	sel12.93736@93736#fa5e4d3b5094	recorded hits only; capture limits apply	1	coverage_next_start_bound;max_hits_reached:Z3:0x800B6C54:25000
+0x800520B8	mem_MoveBlockRoundedUpToWords	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	story	26025	93370	348	sel0f.26153@26153#ff6abd692f93;sel0f.26389@26389#7e0d16b56119;sel10.46112@46112#b1282583c1be;sel10.46348@46348#d2a8d8f50de6	recorded hits only; capture limits apply	1	coverage_next_start_bound;max_hits_reached:Z3:0x800B6C54:25000;no_later_screenshot
 0x800520B8	mem_MoveBlockRoundedUpToWords	group-battle-draw-1@2004f4b160e6	roster	8859	8859	1	roster.mid@9131#aa713a6468ff	hitmap:first 1 hits per phase only	0	
 0x800520B8	mem_MoveBlockRoundedUpToWords	group-battle-draw-1@2004f4b160e6	t_bout1_again	24239	24239	1	t_bout1_again.mid@24538#aa713a6468ff	hitmap:first 1 hits per phase only	0	
 0x800520B8	mem_MoveBlockRoundedUpToWords	group-battle-draw-1@2004f4b160e6	t_bout2	13530	13530	1	t_bout2.mid@13720#8dab36e468fa	hitmap:first 1 hits per phase only	0	
@@ -117503,6 +117522,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80052C28	gpu_DepthToOtIndex	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8400	8400	1	opp1.8600@8600#d88f72a357c4	hitmap:first 1 hits per phase only	0	
 0x80052C28	gpu_DepthToOtIndex	versus-cpu-tatsumi-1@016e75c2a56c	opp2	9341	9341	1	opp2.10000@10000#345997568672	hitmap:first 1 hits per phase only	0	
 0x80052C28	gpu_DepthToOtIndex	versus-cpu-tatsumi-1@016e75c2a56c	opp3	11013	11013	1	opp3.11200@11200#599ec9aae5e9	hitmap:first 1 hits per phase only	0	
+0x80052C4C	gte_TransformPointDifferenceWithInheritedLastRow	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	story	35358	44786	10361	sel10.46112@46112#b1282583c1be	recorded hits only; capture limits apply	1	coverage_next_start_bound;max_hits_reached:Z3:0x800B6C54:25000
 0x80052C4C	gte_TransformPointDifferenceWithInheritedLastRow	group-battle-draw-1@2004f4b160e6	bout1	9445	9445	1	bout1.first@9450#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x80052C4C	gte_TransformPointDifferenceWithInheritedLastRow	group-battle-draw-1@2004f4b160e6	bout1_again	24840	24840	1	bout1_again.first@24845#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x80052C4C	gte_TransformPointDifferenceWithInheritedLastRow	group-battle-draw-1@2004f4b160e6	bout2	13913	13913	1	bout2.first@13918#96d6d20da860	hitmap:first 1 hits per phase only	0	
@@ -120260,6 +120280,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80053754	collision_TestCellKeepingNearestHitScalarProjection	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8400	8400	1	opp1.8600@8600#d88f72a357c4	hitmap:first 1 hits per phase only	0	
 0x80053754	collision_TestCellKeepingNearestHitScalarProjection	versus-cpu-tatsumi-1@016e75c2a56c	opp2	9340	9340	1	opp2.10000@10000#345997568672	hitmap:first 1 hits per phase only	0	
 0x80053754	collision_TestCellKeepingNearestHitScalarProjection	versus-cpu-tatsumi-1@016e75c2a56c	opp3	11013	11013	1	opp3.11200@11200#599ec9aae5e9	hitmap:first 1 hits per phase only	0	
+0x80053E9C	collision_TestCellKeepingNearestHitGteProjection	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	story	37566	80740	1562	sel10.46112@46112#b1282583c1be	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
 0x80053E9C	collision_TestCellKeepingNearestHitGteProjection	group-battle-draw-1@2004f4b160e6	bout1	9445	9445	1	bout1.first@9450#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x80053E9C	collision_TestCellKeepingNearestHitGteProjection	group-battle-draw-1@2004f4b160e6	bout1_again	24840	24840	1	bout1_again.first@24845#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x80053E9C	collision_TestCellKeepingNearestHitGteProjection	group-battle-draw-1@2004f4b160e6	bout2	13913	13913	1	bout2.first@13918#96d6d20da860	hitmap:first 1 hits per phase only	0	
@@ -157560,6 +157581,9 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 ?	?	data-lead-Tbl8008E194-unkC-versus-2p-kimigaura-throw-kaun-1@c37f1955368c	boot_intro	273	464	4	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	data-lead-Tbl8008E194-unkC-versus-2p-kimigaura-throw-mikado-1@5861a055a5a6	boot_intro	273	464	4	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	data-lead-Tbl8008E194-unkC-versus-2p-kimigaura-throw-tatsumi-1@8e7d2bfb6f61	boot_intro	273	464	4	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
+?	?	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-1@498e794a7f4f	boot_intro	259	462	12	s.5489@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
+?	?	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	boot_intro	259	5489	2176	s.5489@5489#e7bfd030cbff;sel08.8503@8503#8c9ed88c64be	recorded hits only; capture limits apply	1	max_hits_reached:Z3:0x800B6C54:25000;unknown_function_address;unresolved_function
+?	?	data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-2@6999657a1096	sel12	93508	93577	8	sel12.93736@93736#fa5e4d3b5094	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	data-lead-Unk800EFAE8Rec-unk44-group-battle-shainto-wins-1@f76215473ee7	boot_intro	270	464	4	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	data-lead-Unk800EFAE8Rec-unk44-story-final-fight-stages-1@debfdc59d3ca	boot_intro	270	464	4	s.5489@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	data-lead-Unk800EFAE8Rec-unk44-story-gengoro-stage-0e-1@79bd7f94f603	boot_intro	270	464	4	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
