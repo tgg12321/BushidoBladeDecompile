@@ -10,7 +10,9 @@ A wave manifest is a TSV with the header `kind<TAB>where<TAB>literal<TAB>name<TA
 - `site`: the literal token at file:line (the line in the tree the wave starts from) becomes NAME.
 - `define`: `#define NAME <literal>` in the file (reused if the file already defines NAME the
   same way; a different body is refused).
-- `enum`: member NAME = <literal> of `enum Tag` (name column `Tag.NAME`) in the file.
+- `enum`: member NAME = <literal> of `enum Tag` (name column `Tag.NAME`) in the file (reused if
+  `enum Tag` there already holds NAME = <literal>, so a later wave can name more sites with it;
+  any other existing NAME or `enum Tag` is refused: extend an enum by hand).
 
 `apply` substitutes the sites (token-exact; refusing a literal that is not one integer / char
 token, not unique on its line, on a preprocessor line, inside a string literal or an __asm__
@@ -177,6 +179,144 @@ def literal_value(text: str) -> int | str:
 
 def definitions(rows: list[Row]) -> dict[str, Row]:
     return {r.ident: r for r in rows if r.kind != "site"}
+
+
+def enum_member_at(text: str, defn: Row) -> int | None:
+    """Offset of `enum Tag { ... NAME = <literal> ... }` in the text (comments blanked, as cpp
+    reads it), spelled as the row says, or None."""
+    m = re.search(r"\benum\s+" + re.escape(defn.tag) + r"\s*\{[^}]*\b" + re.escape(defn.ident)
+                  + r"\s*=\s*" + re.escape(defn.literal) + r"\s*[,}]",
+                  blank_comments(cpp_text(text)))
+    return m.start() if m else None
+
+
+def name_declarations(text: str, ident: str) -> tuple[int, int]:
+    """(enum-body occurrences, other declaration-like occurrences) of `ident` in the text
+    (comments blanked, directives skipped). An enum body is the braces after `enum [Tag] {`; a
+    declaration-like occurrence follows an identifier other than return / case / sizeof, or a
+    `*` (refusing `x * NAME` too: the safe direction)."""
+    clean = blank_comments(cpp_text(text))
+    dirs = directive_lines(clean, comment_joined_lines(cpp_text(text)))
+    toks = [(ln, t, g) for ln, t, g in tokens(clean) if ln not in dirs]
+    in_enum, depth, members, decls = False, 0, 0, 0
+    for k, (_, t, g) in enumerate(toks):
+        if t == "{":
+            if not in_enum and (k >= 1 and toks[k - 1][1] == "enum"
+                                or k >= 2 and toks[k - 2][1] == "enum"):
+                in_enum, depth = True, 0
+            if in_enum:
+                depth += 1
+        elif t == "}" and in_enum:
+            depth -= 1
+            in_enum = depth > 0
+        elif t == ident:
+            prev = toks[k - 1] if k else (0, "", "")
+            if in_enum:
+                members += 1
+            elif prev[1] == "*" or (re.fullmatch(r"[A-Za-z_]\w*", prev[1])
+                                    and prev[1] not in ("return", "case", "sizeof")):
+                decls += 1
+    return members, decls
+
+
+def include_guard_lines(clean: str, dirs: set[int]) -> tuple[int, int] | None:
+    """(first, last) directive lines of a real include guard: the file's first directive is
+    `#ifndef G`, its next is `#define G`, and the `#endif` closing it is the last directive."""
+    seq = [(k, s.strip()) for k, s in enumerate(clean.split("\n"), 1)
+           if k in dirs and s.lstrip().startswith("#")]
+    if len(seq) < 3:
+        return None
+    m = re.fullmatch(r"#\s*ifndef\s+([A-Za-z_]\w*)", seq[0][1])
+    d = re.fullmatch(r"#\s*define\s+([A-Za-z_]\w*)", seq[1][1])
+    if not (m and d and m.group(1) == d.group(1)
+            and re.fullmatch(r"#\s*endif\b.*", seq[-1][1])):
+        return None
+    depth = 0
+    for k, (ln, s) in enumerate(seq):
+        kw = re.match(r"#\s*(\w+)", s)
+        kw = kw.group(1) if kw else ""
+        depth += kw in ("if", "ifdef", "ifndef")
+        depth -= kw == "endif"
+        if depth == 0:
+            return (seq[0][0], ln) if k == len(seq) - 1 else None
+    return None
+
+
+def enum_member_problem(text: str, defn: Row, header: bool) -> str | None:
+    """Why the file's `enum Tag` member NAME = <literal> is not the one definition every site
+    reads, or None. The text match alone cannot tell (the reuse reviews): the file must hold
+    one `enum Tag {`, NAME once in any enum body and nowhere as a declaration, no directive
+    naming NAME (#define / #undef / #ifdef), and the enum must not sit inside an #if block (a
+    header's real include guard aside)."""
+    at = enum_member_at(text, defn)
+    if at is None:
+        return f"does not define {defn.name} = {defn.literal}"
+    clean = blank_comments(cpp_text(text))
+    toks = tokens(clean)
+    dirs = directive_lines(clean, comment_joined_lines(cpp_text(text)))
+    if sum(1 for k in range(len(toks) - 2) if toks[k][1] == "enum"
+           and toks[k + 1][1] == defn.tag and toks[k + 2][1] == "{") != 1:
+        return f"enum {defn.tag} is declared more than once"
+    members, decls = name_declarations(text, defn.ident)
+    if members != 1 or decls:
+        return f"{defn.ident} is declared more than once"
+    if any(t == defn.ident and ln in dirs for ln, t, _ in toks):
+        return f"a preprocessor directive names {defn.ident}"
+    line = clean.count("\n", 0, at) + 1
+    guard = include_guard_lines(clean, dirs) if header else None
+    depth = 0
+    for k, s in enumerate(clean.split("\n"), 1):
+        if k >= line:
+            break
+        m = re.match(r"\s*#\s*(\w+)", s) if k in dirs else None
+        if not m or guard and k == guard[0]:
+            continue
+        if m.group(1) in ("if", "ifdef", "ifndef"):
+            depth += 1
+        elif m.group(1) == "endif":
+            depth -= 1
+    if depth:
+        return f"enum {defn.tag} is inside an #if block"
+    return None
+
+
+def file_scope_member(cpp_out: str, defn: Row) -> bool:
+    """cpp output (line markers aside) holds `enum Tag { ... NAME = <literal> ... }` at brace
+    depth 0, and NAME is declared nowhere else in it: every site after cpp reads that member."""
+    members, decls = name_declarations(cpp_out, defn.ident)
+    if members != 1 or decls:
+        return False
+    clean = blank_comments(cpp_text(cpp_out))
+    dirs = directive_lines(clean)
+    toks = [t for ln, t, _ in tokens(clean) if ln not in dirs]
+    depth = 0
+    for k, t in enumerate(toks):
+        if t == "{":
+            if (depth == 0 and k >= 2 and toks[k - 2] == "enum" and toks[k - 1] == defn.tag):
+                j, inner = k + 1, 1
+                while j < len(toks) and inner:
+                    inner += (toks[j] == "{") - (toks[j] == "}")
+                    if (inner == 1 and toks[j] == defn.ident and j + 3 < len(toks)
+                            and toks[j + 1] == "=" and toks[j + 2] == defn.literal
+                            and toks[j + 3] in (",", "}")):
+                        return True
+                    j += 1
+                return False
+            depth += 1
+        elif t == "}":
+            depth -= 1
+    return False
+
+
+def site_shadow_problem(text: str, ident: str) -> str | None:
+    """A site's file other than its enum row's file may not declare NAME itself (an enum
+    member or a declaration would shadow or replace the row's member)."""
+    members, decls = name_declarations(text, ident)
+    return f"{ident} is declared in the site's file" if members or decls else None
+
+
+def has_enum_member(text: str, defn: Row) -> bool:
+    return enum_member_at(text, defn) is not None
 
 
 def needs_cc1(defn: Row) -> bool:
@@ -557,6 +697,7 @@ def apply(rows: list[Row], read, write) -> list[str]:
     # definitions, grouped per file in manifest order
     blocks: dict[str, list[str]] = {}
     enums: dict[tuple[str, str], list[Row]] = {}
+    reused: set[str] = set()
     for r in defs.values():
         text = get(r.path)
         if r.kind == "define":
@@ -570,11 +711,23 @@ def apply(rows: list[Row], read, write) -> list[str]:
                 raise Refuse(f"{r.path}: {r.name} already names something in this file")
             blocks.setdefault(r.path, []).append(f"#define {r.name} {r.literal}")
         else:
+            if has_enum_member(text, r):
+                problem = enum_member_problem(text, r, r.path.endswith(".h"))
+                if problem:
+                    raise Refuse(f"{r.path}: cannot reuse {r.name} = {r.literal}: {problem}")
+                reused.add(r.ident)
+                continue
             if re.search(r"\b" + re.escape(r.ident) + r"\b", blank_comments(read(r.path) or "")):
                 raise Refuse(f"{r.path}: {r.ident} already names something in this file")
             if re.search(r"\benum\s+" + re.escape(r.tag) + r"\b", blank_comments(text)):
                 raise Refuse(f"{r.path}: enum {r.tag} exists; extend it by hand (one enum per set)")
             enums.setdefault((r.path, r.tag), []).append(r)
+    for r in rows:  # a site's own file may not declare the enum member it is to read
+        d = defs.get(r.name) if r.kind == "site" else None
+        if d is not None and d.kind == "enum" and r.path != d.path:
+            problem = site_shadow_problem(read(r.path) or "", d.ident)
+            if problem:
+                raise Refuse(f"{r.where}: {problem}")
     for (path, tag), members in enums.items():
         lines = [f"enum {tag} {{"] + [f"    {m.ident} = {m.literal}," for m in members] + ["};"]
         blocks.setdefault(path, []).extend(lines)
@@ -587,7 +740,7 @@ def apply(rows: list[Row], read, write) -> list[str]:
         return [ln for ln, t, _ in tokens(clean) if t in names and ln not in dirs]
 
     for path, block in blocks.items():
-        names = {r.ident for r in inserted.values() if r.path == path}
+        names = {r.ident for r in inserted.values() if r.path == path and r.ident not in reused}
         texts[path] = insert_block(get(path), block, path.endswith(".h"),
                                    early=bool(code_uses(get(path), names)))
     # define before use: in its own file, an inserted name is used only below its definition
@@ -897,11 +1050,32 @@ def explain(rows, base: Tree, new: Tree, loose: bool) -> tuple[Explained, list[s
         if d.kind == "define":
             ok = defined_body(text, d.name) == " ".join(d.literal.split())
         else:
-            ok = re.search(r"\benum\s+" + re.escape(d.tag) + r"\s*\{[^}]*\b" + re.escape(d.ident)
-                           + r"\s*=\s*" + re.escape(d.literal) + r"\s*[,}]", text) is not None
+            problem = enum_member_problem(new.read(d.path) or "", d, d.path.endswith(".h"))
+            ok = problem is None
+            if problem and has_enum_member(text, d):
+                ex.problems.append(f"{d.path}: {d.name} = {d.literal}: {problem}")
+                continue
         if not ok:
             ex.problems.append(f"{d.path}: does not define {d.name} = {d.literal} as its "
                                f"manifest row (line {d.lineno}) says")
+    for path in sorted({r.path for r in rows if r.kind == "site"}):
+        for d in definitions(rows).values():
+            if d.kind == "enum" and d.path != path and any(
+                    r.kind == "site" and r.path == path and r.name == d.ident for r in rows):
+                problem = site_shadow_problem(new.read(path) or "", d.ident)
+                if problem:
+                    ex.problems.append(f"{path}: {problem}")
+    # an enum member a directive anywhere in the tree names (#define / #undef / #ifdef) may not
+    # be what a site reads after cpp: refused, whichever file holds the directive
+    idents = {d.ident for d in definitions(rows).values() if d.kind == "enum"}
+    for path in sorted(p for p in tracked if idents and p.endswith((".c", ".h"))
+                       and p.startswith(("src/", "include/"))):
+        raw = cpp_text(new.read(path) or "")
+        clean = blank_comments(raw)
+        dirs = directive_lines(clean, comment_joined_lines(raw))
+        for ln, t, _ in tokens(clean):
+            if t in idents and ln in dirs:
+                ex.problems.append(f"{path}:{ln}: a preprocessor directive names enum member {t}")
     if not loose:
         for r in rows:
             if r.kind == "site":
@@ -983,7 +1157,7 @@ def cpp_tokens(out: str) -> list[str]:
 
 
 def prove(base: Tree, new: Tree, changed: list[str], cc1_files: set[str], log=print,
-          cpp=run_cpp, cc1=run_cc1) -> list[str]:
+          cpp=run_cpp, cc1=run_cc1, enum_sites: dict[str, list[Row]] | None = None) -> list[str]:
     """K3 per TU in scope. Returns the problems (empty = proved)."""
     problems = []
     changed_set = set(changed)
@@ -1003,6 +1177,26 @@ def prove(base: Tree, new: Tree, changed: list[str], cc1_files: set[str], log=pr
         if stray:
             problems.append(f"{tu}: cpp now reads files outside the tracked tree: "
                             + ", ".join(sorted(stray)))
+            continue
+        # a TU reaching an enum row's site must reach the row's own file: otherwise the site
+        # reads another declaration of the name, which cc1 cannot see when the site's value
+        # never reaches the .s (the third reuse review). Two file-scope enumerators of one
+        # name in one TU are a compile error, so reaching the row's file pins the definition.
+        seen = cpp_files(n_out) | {tu}
+        missing = sorted(f"{site} -> {d.path}" for site, defs in (enum_sites or {}).items()
+                         if site in seen for d in defs if d.path not in seen)
+        if missing:
+            problems.append(f"{tu}: reaches an enum site but not its row's file: "
+                            + ", ".join(missing))
+            continue
+        # and what cpp hands cc1 must hold the row's enum at file scope with NAME declared
+        # nowhere else (the fourth review: a block-scope enum Tag, or a header whose copied
+        # include guard skips its body, left the site reading another NAME)
+        dead = sorted({f"{d.name} = {d.literal}" for site, defs in (enum_sites or {}).items()
+                       if site in seen for d in defs if not file_scope_member(n_out, d)})
+        if dead:
+            problems.append(f"{tu}: cpp output does not hold, at file scope and alone, "
+                            + ", ".join(dead))
             continue
         reach = (cpp_files(b_out) | cpp_files(n_out) | {tu}) & changed_set
         docs = sorted(p for p in reach if p.startswith("docs/"))
@@ -1035,7 +1229,13 @@ def check(rows, base_rev: str, new_rev: str | None, loose: bool, log=print,
         ex, changed = explain(rows, base, new, loose)
         problems = list(ex.problems)
         if not problems:
-            problems += prove(base, new, changed, ex.cc1_files, log, cpp, cc1)
+            defs = definitions(rows)
+            enum_sites: dict[str, list[Row]] = {}
+            for r in rows:
+                d = defs.get(r.name) if r.kind == "site" else None
+                if d is not None and d.kind == "enum" and d not in enum_sites.get(r.path, []):
+                    enum_sites.setdefault(r.path, []).append(d)
+            problems += prove(base, new, changed, ex.cc1_files, log, cpp, cc1, enum_sites)
         return problems
     finally:
         try:

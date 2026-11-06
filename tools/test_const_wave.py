@@ -218,6 +218,63 @@ class TestApply(Repo):
         self.assertIn('#include "pad.h"\n\nenum GameMode {\n    GAME_MODE_VS = 3,\n};\n\nint', game)
         self.assertIn("return mode == GAME_MODE_VS;", game)
 
+    def test_existing_enum_member_reused_or_refused(self):
+        rows = ("site\tsrc/game.c:12\t3\tGAME_MODE_VS\tmode\ttrace",
+                "enum\tsrc/game.c\t3\tGameMode.GAME_MODE_VS\tmode\ttrace")
+        self.apply(manifest(*rows))
+        game = self.read("src/game.c").replace("GAME_MODE_VS;", "3;")
+        self.write("src/game.c", game)
+        line = next(k for k, l in enumerate(game.split("\n"), 1) if "mode == 3" in l)
+        rows = (rows[0].replace(":12\t", f":{line}\t"), rows[1])
+        self.apply(manifest(*rows))  # the member exists: only the site changes
+        self.assertEqual(self.read("src/game.c").count("GAME_MODE_VS = 3,"), 1)
+        self.assertIn("return mode == GAME_MODE_VS;", self.read("src/game.c"))
+        self.write("src/game.c", game.replace("GAME_MODE_VS = 3,", "GAME_MODE_VS = 4,"))
+        with self.assertRaises(cw.Refuse):  # same member, another value
+            self.apply(manifest(*rows))
+
+    def test_enum_reuse_refuses_a_member_cpp_may_not_read(self):
+        # the reuse review: a text match is not the one definition every site reads
+        site = "site\tsrc/game.c:{}\t3\tGAME_MODE_VS\tmode\ttrace"
+        enum = "enum\tsrc/game.c\t3\tGameMode.GAME_MODE_VS\tmode\ttrace"
+        member = "enum GameMode {\n    GAME_MODE_VS = 3,\n};\n"
+        hostile = {
+            "conditional": "#ifdef JP\n" + member + "#else\n"
+                           + member.replace("= 3", "= 4") + "#endif\n",
+            "redefined": member + "#define GAME_MODE_VS 4\n",
+            "dead block": "#if 0\n" + member + "#endif\nenum Other {\n    GAME_MODE_VS = 4,\n};\n",
+            "in an #if": "#if FOO\n" + member + "#endif\n",
+        }
+        for why, block in hostile.items():
+            with self.subTest(why):
+                game = GAME_C.replace("int mode;", block + "int mode;")
+                self.write("src/game.c", game)
+                line = next(k for k, l in enumerate(game.split("\n"), 1) if "mode == 3" in l)
+                with self.assertRaisesRegex(cw.Refuse, "cannot reuse"):
+                    self.apply(manifest(site.format(line), enum))
+
+    def test_enum_reuse_refuses_shadowing_and_fake_guards(self):
+        # the second reuse review: an implicit-value member in block scope, a header whose
+        # first #ifndef is no include guard, and a site file declaring the name itself
+        self.write("src/a.c", "enum Tag {\n    NAME = 4,\n};\n\nint f(int m) {\n"
+                              "    enum Local { L0, NAME };\n    typedef char buf_t[4];\n"
+                              "    return m + L0;\n}\n")
+        with self.assertRaisesRegex(cw.Refuse, "declared more than once"):
+            self.apply(manifest("site\tsrc/a.c:7\t4\tNAME\tr\te", "enum\tsrc/a.c\t4\tTag.NAME\tr\te"))
+        self.write("include/h.h", "#ifndef ALT_TAG\nenum Tag {\n    NAME = 4,\n};\n#endif\n"
+                                  "extern int arr[4];\n")
+        with self.assertRaisesRegex(cw.Refuse, "inside an #if block"):
+            self.apply(manifest("site\tinclude/h.h:6\t4\tNAME\tr\te",
+                                "enum\tinclude/h.h\t4\tTag.NAME\tr\te"))
+        self.write("include/g.h", "#ifndef G_H\n#define G_H\nenum Tag {\n    NAME = 4,\n};\n#endif\n")
+        self.write("src/b.c", '#include "g.h"\nint g(void) {\n    int NAME = 5;\n'
+                              "    return 4;\n}\n")
+        with self.assertRaisesRegex(cw.Refuse, "declared in the site's file"):
+            self.apply(manifest("site\tsrc/b.c:4\t4\tNAME\tr\te", "enum\tinclude/g.h\t4\tTag.NAME\tr\te"))
+        self.write("src/b.c", '#include "g.h"\nint g(void) {\n    return 4;\n}\n')
+        self.apply(manifest("site\tsrc/b.c:3\t4\tNAME\tr\te", "enum\tinclude/g.h\t4\tTag.NAME\tr\te"))
+        self.assertIn("return NAME;", self.read("src/b.c"))  # a real guard is no #if block
+
 
 class TestCheck(Repo):
     def test_define_wave_proves_by_cpp(self):
@@ -269,6 +326,60 @@ class TestCheck(Repo):
                         "enum\tsrc/game.c\t3\tGameMode.GAME_MODE_VS\tmode\ttrace")
         self.apply(rows)
         self.assertEqual(self.check(rows), [])
+
+    def test_enum_reuse_wave_proves_by_cc1(self):
+        # a later wave naming more sites with a member an earlier wave landed
+        rows = manifest("site\tsrc/game.c:12\t3\tGAME_MODE_VS\tmode\ttrace",
+                        "enum\tsrc/game.c\t3\tGameMode.GAME_MODE_VS\tmode\ttrace")
+        self.apply(rows)
+        landed = self.read("src/game.c")
+        self.write("src/game.c", landed.replace("GAME_MODE_VS;", "3;"))
+        self.base = self.commit("member landed, site still a literal")
+        line = next(k for k, l in enumerate(landed.split("\n"), 1) if "GAME_MODE_VS;" in l)
+        rows = manifest(f"site\tsrc/game.c:{line}\t3\tGAME_MODE_VS\tmode\ttrace",
+                        "enum\tsrc/game.c\t3\tGameMode.GAME_MODE_VS\tmode\ttrace")
+        self.apply(rows)
+        self.assertEqual(self.read("src/game.c"), landed)
+        self.assertEqual(self.check(rows), [])
+
+    def test_enum_site_tu_must_reach_the_rows_file(self):
+        # the third reuse review: b.c reads Other's NAME = 5 from o.h, never g.h's NAME = 4
+        self.write("include/g.h", "#ifndef G_H\n#define G_H\nenum Tag {\n    NAME = 4,\n};\n#endif\n")
+        self.write("include/o.h", "#ifndef O_H\n#define O_H\nenum Other {\n    NAME = 5,\n};\n#endif\n")
+        self.write("src/b.c", '#include "o.h"\nextern char arr[4];\n')
+        git(self.tmp, "add", "-A")
+        self.base = self.commit("two headers")
+        rows = manifest("site\tsrc/b.c:2\t4\tNAME\tr\te", "enum\tinclude/g.h\t4\tTag.NAME\tr\te")
+        self.apply(rows)
+        self.assertTrue(any("not its row's file: src/b.c -> include/g.h" in p
+                            for p in self.check(rows)))
+
+    def test_enum_site_needs_the_member_at_file_scope_in_cpp_output(self):
+        # the fourth review: a block-scope enum Tag; the site past it reads o.h's NAME = 5
+        self.write("include/o.h", "#ifndef O_H\n#define O_H\nenum Other {\n    NAME = 5,\n};\n#endif\n")
+        self.write("src/a.c", '#include "o.h"\n\nint f(int m) {\n    enum Tag {\n        NAME = 4,\n'
+                              "    };\n    return m == NAME;\n}\n\nextern char arr[4];\n")
+        git(self.tmp, "add", "-A")
+        self.base = self.commit("block-scope enum")
+        rows = manifest("site\tsrc/a.c:10\t4\tNAME\tr\te", "enum\tsrc/a.c\t4\tTag.NAME\tr\te")
+        self.apply(rows)
+        self.assertTrue(any("at file scope and alone" in p for p in self.check(rows)))
+        # alone at file scope it proves
+        self.write("include/o.h", "#ifndef O_H\n#define O_H\n#endif\n")
+        self.write("src/a.c", '#include "o.h"\n\nenum Tag {\n    NAME = 4,\n};\n\n'
+                              "extern char arr[4];\n")
+        self.base = self.commit("file-scope enum")
+        rows = manifest("site\tsrc/a.c:7\t4\tNAME\tr\te", "enum\tsrc/a.c\t4\tTag.NAME\tr\te")
+        self.apply(rows)
+        self.assertEqual(self.check(rows), [])
+
+    def test_enum_member_named_by_a_directive_elsewhere_fails(self):
+        rows = manifest("site\tsrc/game.c:12\t3\tGAME_MODE_VS\tmode\ttrace",
+                        "enum\tsrc/game.c\t3\tGameMode.GAME_MODE_VS\tmode\ttrace")
+        self.apply(rows)
+        self.write("include/pad.h", HEADER_H.replace("void", "#undef GAME_MODE_VS\nvoid"))
+        self.assertTrue(any("directive names enum member GAME_MODE_VS" in p
+                            for p in self.check(rows)))
 
     def test_enum_wave_wrong_value_fails_cc1(self):
         rows = manifest("site\tsrc/game.c:12\t3\tGAME_MODE_VS\tmode\ttrace",
