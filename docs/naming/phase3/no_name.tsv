@@ -72,9 +72,11 @@ address	name	kind	rounds	waves	reason	evidence_tried	commit	final
 0x800A33CC	D_800A33CC	data	1	naming-close-final	static D_800A33CC (368E4.c:30): gap, no reference	naming-reviewer PASS (final)	-	gap-filler
 0x800A33DC	D_800A33DC	data	1	naming-close-final	static D_800A33DC (368E4.c:34): gap, no reference	naming-reviewer PASS (final)	-	gap-filler
 0x800A33FC	D_800A33FC	data	1	naming-close-final	static D_800A33FC (43500.c:34): gap, no reference	naming-reviewer PASS (final)	-	gap-filler
+0x800A3400	D_800A3400	data	1	naming-close-final-2	static s16 D_800A3400 (snd.c:21): only access a store of 0 in snd_Init (snd.c:62; snd_Init.s:51), its .sbss initial value; no read in C, asm or asm/data	naming-reviewer PASS (final)	-	write-only
 0x800A3410	D_800A3410	data	1	naming-close-final	static s32 D_800A3410[2] (snd.c:25): gap, no reference	naming-reviewer PASS (final)	-	gap-filler
 0x800A3428	D_800A3428	data	1	naming-close-final	static s32 D_800A3428[2] (eff.c:21): gap, no reference	naming-reviewer PASS (final)	-	gap-filler
 0x800A3430	D_800A3430	data	1	naming-close-final	static s32 D_800A3430[2] (eff.c:23): gap, no reference	naming-reviewer PASS (final)	-	gap-filler
+0x800A34F4	D_800A34F4	data	1	naming-close-final-2	static s32 D_800A34F4 (eff.c:70): .sbss zero fill, no reference beyond its definition; the s16[2] neighbour's index stays 0..1 (eff.c:2839/3155)	naming-reviewer PASS (final)	-	gap-filler
 0x800A3504	D_800A3504	data	1	naming-close-final	static s32 D_800A3504[2] (596CC.c:22): gap, no reference	naming-reviewer PASS (final)	-	gap-filler
 0x800A3510	D_800A3510	data	1	naming-close-final	static s16 D_800A3510[2] (596CC.c:24): only stores of 0 to [0] and [1] (596CC.c:159-160)	naming-reviewer PASS (final)	-	write-only
 0x800A3538	D_800A3538	data	1	naming-close-final	static D_800A3538 (5ED34.c:25): gap, no reference	naming-reviewer PASS (final)	-	gap-filler
@@ -88,6 +90,10 @@ address	name	kind	rounds	waves	reason	evidence_tried	commit	final
 0x800A3745	D_800A3745	data	1	naming-close-final	u8 D_800A3745: only a store of 0 (6CF8.c:299)	naming-reviewer PASS (final)	-	write-only
 0x800A3746	D_800A3746	data	1	naming-close-final	u8 D_800A3746: only a store of 0 (6CF8.c:300)	naming-reviewer PASS (final)	-	write-only
 0x800A390F	D_800A390F	data	1	naming-close-final	u8 D_800A390F (bb2.h:484): only a store of 0 (2B344.c:551)	naming-reviewer PASS (final)	-	write-only
+Func80017A44Record.field_38	field_38	member	1	naming-close-final-2	include/game.h:2432 s32 field_38[2]; no access in C or INCLUDE_ASM (6CF8.c:640-790, 87A0.c:183-600); only the arena block move copies it	naming-reviewer PASS (final)	-	never-accessed
+Obj80106A78.unk_5A	unk_5A	member	1	naming-close-final-2	include/game.h:1928 u8 unk_5A[2]; no access in C or INCLUDE_ASM (rot read only [0..2], 17AFC.c:3937, 28708.c:1186, 368E4.c:1982); bss pool, no copy	naming-reviewer PASS (final)	-	never-accessed
+Obj80106A78.unk_62	unk_62	member	1	naming-close-final-2	include/game.h:1930 u8 unk_62[2]; no access in C or INCLUDE_ASM (rot_vel only [0..2], 17AFC.c:4133-4422); bss pool, no copy	naming-reviewer PASS (final)	-	never-accessed
+Scr1F800000.unk54	unk54	member	1	naming-close-final-2	src/main/87A0.c:24 s32 unk54[3]; no access in C or INCLUDE_ASM (87A0.c SCR uses, raw stores 0x1F800064+); only the whole-scratchpad save/restore copies it	naming-reviewer PASS (final)	-	never-accessed
 Unk1F800000Rec.unk2C	unk2C	member	1	naming-close-final	game.h:1210 u8 unk2C[4]; type comment game.h:1195 "unk2C: no access"	naming-reviewer PASS (final)	-	never-accessed
 Unk1F800000Unk00.unk1E	unk1E	member	1	naming-close-final	include/game.h:1034 u8 unk1E[2]; type comment game.h:1021 "unk1E: no access"	naming-reviewer PASS (final)	-	never-accessed
 Unk1F8000B8_800620B8.unk40	unk40	member	1	naming-close-final	game.h:1067 u8 unk40[4] /* no access */ (eff_DrawBillboardList's view)	naming-reviewer PASS (final)	-	never-accessed
@@ -103,9 +109,19 @@ Unk1F8000B8_800678A8.unk7A	unk7A	member	1	naming-close-final	game.h:1157 u8 unk7
 Unk1F8002B8_8005344C.unk1C	unk1C	member	1	naming-close-final	game.h:1405 s32 unk1C /* no access */	naming-reviewer PASS (final)	-	never-accessed
 Unk1F8002B8_8005344C.unk2C	unk2C	member	1	naming-close-final	game.h:1409 s32 unk2C /* no access */	naming-reviewer PASS (final)	-	never-accessed
 Unk1F8002B8_8005344C.unk36	unk36	member	1	naming-close-final	game.h:1411 s16 unk36 /* no access */	naming-reviewer PASS (final)	-	never-accessed
+Unk8003F824Rec.unk2	unk2	member	1	naming-close-final-2	src/main/2B344.c:2483 u8 unk2[2]; no access in C or INCLUDE_ASM (2B344.c:2529-2895); only the arena block move copies it	naming-reviewer PASS (final)	-	never-accessed
 Unk8005C8A8Rec.unk_4E4	unk_4E4	member	1	naming-close-final	game.h:428 u8 unk_4E4[0xC]; type comment game.h:421-423 "the last 0xC bytes are never written"	naming-reviewer PASS (final)	-	never-accessed
 Unk80060414Rec.unk_20	unk_20	member	1	naming-close-final	game.h:~496 u8 unk_20[0xC]; type comment game.h:491-492 "the last 0xC bytes are never written"	naming-reviewer PASS (final)	-	never-accessed
 Unk80060544Rec.unk_5E8	unk_5E8	member	1	naming-close-final	game.h:514 u8 unk_5E8[0xC]; type comment game.h:502-503 "the last 0xC bytes are never written"	naming-reviewer PASS (final)	-	never-accessed
+Unk8006E49CRec.unk_28	unk_28	member	1	naming-close-final-2	include/game.h:183 s32 unk_28; no access in C or INCLUDE_ASM (gpu_InitPrimBufferPair writes +0..+0x20, 596CC.c:2697; readers use named members only)	naming-reviewer PASS (final)	-	never-accessed
+Unk8008F13CRow.unk_2	unk_2	member	1	naming-close-final-2	include/bb2.h:280 u16 unk_2; no access in C or INCLUDE_ASM (only reader cdrom.c:111 skips it); 0 in all 12 g_cdrom_audio_entries rows (cdrom.c:433)	naming-reviewer PASS (final)	-	never-accessed
+Unk80099D88Rec.unk17	unk17	member	1	naming-close-final-2	include/game.h:1972 u8 unk17; no access in C or INCLUDE_ASM (script_kind_weight index <= 7, 4510C.c:2787); 0 in all 32 g_cpu_profiles rows (4510C.c:3030)	naming-reviewer PASS (final)	-	never-accessed
+Unk8009BD24Block.unk14_21	unk14_21	member	1	naming-close-final-2	include/game.h:567 u32 unk14_21:3; no access in C or INCLUDE_ASM (only sibling bitfield RMWs touch the word); initial 0 (d_8C4E4.c:48)	naming-reviewer PASS (final)	-	never-accessed
+Unk8009BD24Block.unk20_4	unk20_4	member	1	naming-close-final-2	include/game.h:575 u32 unk20_4:4; no access in C or INCLUDE_ASM (only sibling bits 0-3, 25788.c:21, 596CC.c:1422); initial 0 (d_8C4E4.c:48)	naming-reviewer PASS (final)	-	never-accessed
+Unk800EFAE8Rec.unk18	unk18	member	1	naming-close-final-2	include/game.h:741 s32 unk18; no access in C or INCLUDE_ASM (origin_x/y/z read singly, 4510C.c:113; raw refs +0x24..+0x40 only)	naming-reviewer PASS (final)	-	never-accessed
+Unk800EFAE8Rec.unk22	unk22	member	1	naming-close-final-2	include/game.h:745 s16 unk22; no access in C or INCLUDE_ASM (slot_UpdateObjectFrame reads rotation[0..2] only, 31548.c:25)	naming-reviewer PASS (final)	-	never-accessed
+Unk800EFAE8Rec.unkA	unkA	member	1	naming-close-final-2	include/game.h:737 s16 unkA; no access in C or INCLUDE_ASM (43500.c:779, 4510C.c:38/216/240 use named members; raw refs +0x24..+0x40 only)	naming-reviewer PASS (final)	-	never-accessed
+Unk800EFC78Record.unkE	unkE	member	1	naming-close-final-2	include/game.h:1050 s16 unkE; no access in C or INCLUDE_ASM (eff.c:2726 spawn writes the others; only raw ref D_800EFC8A = +0x12, eff.c:2834)	naming-reviewer PASS (final)	-	never-accessed
 Unk800FF5C8Rec.unk_0C	unk_0C	member	1	naming-close-final	game.h:2022 u8 unk_0C[4]; type comment game.h:2019 "+0x0C ... never accessed"	naming-reviewer PASS (final)	-	never-accessed
 Unk80101EC8Record.unk_10	unk_10	member	1	naming-close-final	fighter record gap member (include/game.h, Unk80101EC8Record); backlog var-members-80101ec8 note: declaration-only, no access in C or any INCLUDE_ASM body (none touches 0x80101EC8..0x80102760; 9F9C.c / 17AFC.c / 4510C.c hold no INCLUDE_ASM and pass only sca...	naming-reviewer PASS (final)	-	never-accessed
 Unk80101EC8Record.unk_100	unk_100	member	1	naming-close-final	game.h:1700; same basis	naming-reviewer PASS (final)	-	never-accessed
@@ -128,11 +144,20 @@ Unk80101EC8Record.unk_3F7	unk_3F7	member	1	naming-close-final	game.h:1844; same 
 Unk80101EC8Record.unk_4E	unk_4E	member	1	naming-close-final	game.h:1625; same basis	naming-reviewer PASS (final)	-	never-accessed
 Unk80101EC8Record.unk_63	unk_63	member	1	naming-close-final	game.h:1640; same basis	naming-reviewer PASS (final)	-	never-accessed
 Unk80101EC8Record.unk_B5	unk_B5	member	1	naming-close-final	game.h:1693; same basis	naming-reviewer PASS (final)	-	never-accessed
+ApplyWorkingRecordToPendingConfigAndInitializeMode:new_var	new_var	local	1	naming-close-final-2	ApplyWorkingRecordToPendingConfigAndInitializeMode:new_var (25788.c:36): FAKE-labelled (25788.c:33), only assignment the literal 5 (25788.c:43)	naming-reviewer PASS (final)	-	const-holder
+ApplyWorkingRecordToPendingConfigAndInitializeMode:new_var2	new_var2	local	1	naming-close-final-2	ApplyWorkingRecordToPendingConfigAndInitializeMode:new_var2 (25788.c:37): FAKE-labelled (25788.c:33), only assignment the literal 20 (25788.c:44)	naming-reviewer PASS (final)	-	const-holder
+InitSavedRecordAndResetCameraDistanceOffset:var_1	var_1	local	1	naming-close-final-2	InitSavedRecordAndResetCameraDistanceOffset:var_1 (6CF8.c:132): FAKE second handle (6CF8.c:127), holds only &g_saved_record	naming-reviewer PASS (final)	-	fake-copy
 comb_ExchangePad:var_7	var_7	local	1	naming-close-final	28708.c:1836-1838 FAKE: constant-holder	naming-reviewer PASS (final)	-	const-holder
+comb_ExchangePad:var_8	var_8	local	1	naming-close-final-2	comb_ExchangePad:var_8 (28708.c:1904): FAKE pointer alias (28708.c:1900), holds only &pad_state->held	naming-reviewer PASS (final)	-	fake-copy
 eff_DrawAndAdvanceRotatedQuadClusters:var_9	var_9	local	1	naming-close-final	eff.c:961-966 FAKE: work-area base, then the quad cursor	naming-reviewer PASS (final)	-	two-role
+eff_DrawAnimatedQuads:var_18	var_18	local	1	naming-close-final-2	eff_DrawAnimatedQuads:var_18 (eff.c:2132): FAKE pointer alias (eff.c:2130), holds only g_eff_animated_quad_counters (eff.c:2223)	naming-reviewer PASS (final)	-	fake-copy
 eff_DrawYawedSlotQuads:var_6	var_6	local	1	naming-close-final	eff.c:1461-1466 FAKE: work-area base, then the quad cursor	naming-reviewer PASS (final)	-	two-role
+eff_LoadImagesAndSetup:new_var	new_var	local	1	naming-close-final-2	eff_LoadImagesAndSetup:new_var (eff.c:172): FAKE param alias (eff.c:169), only assignment a copy of arg0 (eff.c:176)	naming-reviewer PASS (final)	-	fake-copy
+eff_UpdateParticles:var_10	var_10	local	1	naming-close-final-2	eff_UpdateParticles:var_10 (eff.c:2937): FAKE member stand-in (eff.c:2924), holds only &var_0->random_accumulator (eff.c:2949)	naming-reviewer PASS (final)	-	fake-copy
+eff_UpdateParticles:var_14	var_14	local	1	naming-close-final-2	eff_UpdateParticles:var_14 (eff.c:2941): FAKE member stand-in (eff.c:2925), holds only &var_0->unk70 (eff.c:2958)	naming-reviewer PASS (final)	-	fake-copy
 fight_BuildOpponentOrder:var_5	var_5	local	1	naming-close-final	17AFC.c:5745, :5755-5758 FAKE: carries the constant 1	naming-reviewer PASS (final)	-	const-holder
 fight_CreateBallisticRecordAndDispatchEvent:var_1	var_1	local	1	naming-close-final	17AFC.c:4725-4728 FAKE: constant holder for -0xC8	naming-reviewer PASS (final)	-	const-holder
+fight_QueuePositionalSoundWithRandomAlternate:s0	s0	local	1	naming-close-final-2	fight_QueuePositionalSoundWithRandomAlternate:s0 (9F9C.c:1331): FAKE pointer alias (9F9C.c:1350), holds only &g_fighter_records[0].character_data_index	naming-reviewer PASS (final)	-	fake-copy
 fighter_CastWeaponSegment:temp2	temp2	local	1	naming-close-final	17AFC.c:1602-1605 FAKE comment: two values (the first gte_Lzc input copy of temp, then the g_sqrt_table_u8 byte); uses 17AFC.c:1630-1641	naming-reviewer PASS (final)	-	two-role
 fighter_TestTriangleBoneHits:var_11	var_11	local	1	naming-close-final	17AFC.c:2598-2653; FAKE comment 17AFC.c:2606-2609: AABB reject flag, then overwritten by the call result	naming-reviewer PASS (final)	-	two-role
 gpu_DrawAndAdvanceTimedSpriteSequence:var_5	var_5	local	1	naming-close-final	64FD8.c:1567-1570 FAKE: constant-holder for 0x20	naming-reviewer PASS (final)	-	const-holder
