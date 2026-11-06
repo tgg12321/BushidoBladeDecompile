@@ -1,0 +1,27 @@
+var-locals-51 (naming-b 2026-11-06): 7 local / parameter bindings in 3 functions across 3 files (9F9C.c weapon, place_from_other_position; 596CC.c pressed_buttons; 25788.c roster_index, roster_index_dst, weapon_id_dst, match_pick).
+Tree: ln-naming-b = main 23e08171b (clean). Run in WSL via a script file (tmp/vl51/dry.py + run.sh in the main repo; NAMING_KEYCHECK_ROOT = the worktree, venv active).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (same tool result as var-locals-43 .. -50). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree (base = naming_keycheck.read_working_tree()) accepted all 7 pairs (27 token substitutions: 25788.c 15, 596CC.c 7, 9F9C.c 5; no include/ file touched). Each pair was also run alone: all 7 accepted (alone counts sum to 27, equal to the together total) and every pair's alone line list equals the drafter's independent token scan (7/7; 313 carries two tokens on one line, so 596CC.c lists 6 lines for 7 tokens, 25788.c lists var_7 lines 48-51 for 6 tokens).
+scoped_plan does not count the comment word `arg1` at 596CC.c:303 (see notes.txt: required comment edit, done by the applier).
+Per-pair substitutions (function:old=new count (lines)):
+  fighter_Init:arg3=weapon 2 (3943,3961)
+  fighter_Init:arg4=place_from_other_position 3 (3943,4023,4035)
+  menu_UpdateRowMenu:arg1=pressed_buttons 7 (296,313 x2,379,391,412,417)
+  ApplyWorkingRecordToPendingConfigAndInitializeMode:var_7=roster_index 6 (48,49,50 x2,51 x2)
+  ApplyWorkingRecordToPendingConfigAndInitializeMode:var_14=roster_index_dst 3 (92,96,101)
+  ApplyWorkingRecordToPendingConfigAndInitializeMode:var_13=weapon_id_dst 3 (91,100,102)
+  ApplyWorkingRecordToPendingConfigAndInitializeMode:var_16=match_pick 3 (95,97,100)
+
+Line widths after substitution (over 80; python tools/format.py reflows them in the naming commit; token-preserving): 25788.c 48 (76->83, a declaration initializer) and 25788.c 96 (75->85, `*roster_index_dst = (&g_fight_roster_indices_by_character_data_index)[var_16[0]];` assignment). Neither is a function-like macro argument, so the var-locals-40 sentinel limit does not apply. No other line goes over 80 (largest: 596CC.c 313 at 74, 25788.c 51 at 75). 0 rows flagged.
+
+Raw driver output (HEAD, scoped_plan alone per pair with the drafter's token-scan lines and definition range (start,end), then the set):
+HEAD 23e08171b
+ALONE fighter_Init:arg3=weapon {'9F9C.c': 2} ACCEPT | token scan [('9F9C.c', [3943, 3961], 3942, 4180)]
+ALONE fighter_Init:arg4=place_from_other_position {'9F9C.c': 3} ACCEPT | token scan [('9F9C.c', [3943, 4023, 4035], 3942, 4180)]
+ALONE menu_UpdateRowMenu:arg1=pressed_buttons {'596CC.c': 7} ACCEPT | token scan [('596CC.c', [296, 313, 313, 379, 391, 412, 417], 296, 421)]
+ALONE ApplyWorkingRecordToPendingConfigAndInitializeMode:var_7=roster_index {'25788.c': 6} ACCEPT | token scan [('25788.c', [48, 49, 50, 50, 51, 51], 29, 114)]
+ALONE ApplyWorkingRecordToPendingConfigAndInitializeMode:var_14=roster_index_dst {'25788.c': 3} ACCEPT | token scan [('25788.c', [92, 96, 101], 29, 114)]
+ALONE ApplyWorkingRecordToPendingConfigAndInitializeMode:var_13=weapon_id_dst {'25788.c': 3} ACCEPT | token scan [('25788.c', [91, 100, 102], 29, 114)]
+ALONE ApplyWorkingRecordToPendingConfigAndInitializeMode:var_16=match_pick {'25788.c': 3} ACCEPT | token scan [('25788.c', [95, 97, 100], 29, 114)]
+  WIDTH 25788.c 48 76 -> 83
+  WIDTH 25788.c 96 75 -> 85
+SET 7 pairs ACCEPT {'25788.c': 15, '596CC.c': 7, '9F9C.c': 5} total 27
