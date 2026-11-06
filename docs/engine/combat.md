@@ -28,7 +28,7 @@ object-pool update, src/main/17AFC.c:4325). It branches on fighter 0's state
   4. On contact, `fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint` (src/main/17AFC.c:2392), then
      `fighter_ResolveWeaponContact` (src/main/17AFC.c:636) for each fighter when either has
      `attack_hit_armed` set; otherwise `fighter_ProcessWeaponBodyHits(0)` (below).
-  5. When both fighters have `update_count >= 3`, `D_800A38A8` is set, both
+  5. When both fighters have `update_count >= 3`, `g_fight_mash_contest_start_requested` is set, both
      `pending_move_event` are -1, neither `character_roster_index` is 0x1F and their heights `world_pos.y`
      differ by less than 1000, both get `pending_move_event = 0xA`.
 - Then for every state: a fighter whose `move_kind` is 5 ends the round
