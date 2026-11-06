@@ -1,5 +1,9 @@
 capture	scenario	extends	covers	kind	manifest_sha1	match
 debug-config-menu-1	debug-config-menu	-	menu:debug_config,menu:top	hitmap,stub,values	fff8a2c8d2234b059a069e42dea59ca7978ba6a3	evidence
+frontier-link-client-1	frontier-link-client	-	-	hitmap	3236441a9029bb4537906ebe260d0030ba22bb4b	evidence
+frontier-link-client-2	frontier-link-client	-	-	hitmap	19413d3a60cd7610cc1eea6059a38eb5f0d553fe	evidence
+frontier-link-server-1	frontier-link-server	-	-	hitmap	7215219426db7f1c98429e2cb81537315dfc890e	evidence
+frontier-link-server-2	frontier-link-server	-	-	hitmap	eb04ac07f29a19358dd83e1216a9f0710a0d8bee	evidence
 group-battle-draw-1	group-battle-draw	-	event:draw,event:round_start,menu:char_select,menu:group_settings,menu:rematch,menu:school_select,menu:team_roster,menu:top,menu:weapon_select,mode:group_battle	hitmap,values	56e78d15fe1ffe226854fbf2c9937267876e91c6	evidence
 group-battle-hitmap-1	group-battle-3-0	-	char:gengoro,char:jo,char:kannuki,char:kaun,char:mikado,char:tatsumi,event:ko,event:out_of_bounds,event:round_start,event:win,menu:char_select,menu:group_settings,menu:school_select,menu:team_roster,menu:top,menu:weapon_select,mode:group_battle,weapon:katana,weapon:long_sword,weapon:nodachi	hitmap	2a120a9ba7c1530ba5196b8aa876628a764f86c6	evidence
 group-battle-shainto-wins-1	group-battle-shainto-wins	-	event:group_p2_victory,event:ko,event:round_start,menu:char_select,menu:group_settings,menu:rematch,menu:school_select,menu:team_roster,menu:top,menu:weapon_select,mode:group_battle	hitmap,values	6749eea5b9f77a8dc6a078f73c1a47e8129d4ade	evidence

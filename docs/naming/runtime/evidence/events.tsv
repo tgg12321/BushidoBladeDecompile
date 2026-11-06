@@ -4229,13 +4229,13 @@ fighter_Update+0x2F4	call	fighter_Update	opp5	0x800241F4	coverage			5	[[3,0,4294
 0x800A38A8	write	fighter_ProcessWeaponBodyHits	fight	0x8002BACC	coverage	0	2	2	[1]	0	data-lead-D_800A38A8-versus-2p-effects-1@316c0b4c2585	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fight_Init	t_load	0x8001E2E0	coverage			1	[[0,2148834040,0,4]]	0	data-lead-D_800A38A8-versus-2p-effects-1@316c0b4c2585	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fight_Init	t_load	0x8001E304	coverage			1	[[1,2149128316,0,0]]	0	data-lead-D_800A38A8-versus-2p-effects-1@316c0b4c2585	0	coverage_next_start_bound
+fighter_StartMoveScript	call	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	t_ko	0x8001EF60	coverage			1	[[0,2148663604,1,1]]	0	data-lead-D_800A38A8-versus-2p-effects-1@316c0b4c2585	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	fight	0x800241F4	coverage			42	[[0,2148663352,1,18],[0,2148663364,1,24],[0,2148663376,1,30],[0,2148663388,1,36],[0,2148663400,1,42],[0,2148663412,1,48],[0,2148663448,1,66],[0,2148663520,1,102]]	15	data-lead-D_800A38A8-versus-2p-effects-1@316c0b4c2585	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	fight	0x8002439C	coverage			138	[[0,2148663472,1,78],[0,2148663484,1,84],[0,2148663496,1,90],[0,2148663508,1,96],[0,2148664108,1,14614528],[0,2148831148,0,32753],[0,2148831148,0,32756],[0,2148831148,0,33666]]	14	data-lead-D_800A38A8-versus-2p-effects-1@316c0b4c2585	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	fight	0x80024438	coverage			1	[[0,2148665464,1,0]]	0	data-lead-D_800A38A8-versus-2p-effects-1@316c0b4c2585	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	fight	0x80024670	coverage			181	[[0,2148829924,0,33054],[0,2148830512,0,33348],[0,2148830596,0,33390],[0,2148830668,0,33426],[0,2148830740,0,33462],[0,2148830752,0,33468],[0,2148830928,0,32757],[0,2148830952,0,33568]]	37	data-lead-D_800A38A8-versus-2p-effects-1@316c0b4c2585	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	rematch_menu	0x8002439C	coverage			208	[[0,2148663592,1,138],[1,2148665640,1,1162]]	0	data-lead-D_800A38A8-versus-2p-effects-1@316c0b4c2585	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	t_ko	0x8002439C	coverage			23	[[0,2148663592,1,138],[1,2148665640,1,1162]]	0	data-lead-D_800A38A8-versus-2p-effects-1@316c0b4c2585	0	coverage_next_start_bound
-fighter_StartMoveScript	call	func_8001EEB4	t_ko	0x8001EF60	coverage			1	[[0,2148663604,1,1]]	0	data-lead-D_800A38A8-versus-2p-effects-1@316c0b4c2585	0	coverage_next_start_bound
 0x800A3876	read	fight_UpdatePairedInputTotalsEventsAndMidpointEffects	fight	0x80026E04	coverage	0	2	1	[null]	0	data-lead-D_800A38A8-versus-2p-kimigaura-effects-1@f6ea4b1ef191	1	coverage_next_start_bound;missing_value
 0x800A3876	write	?	boot_intro	0x800836FC	none	-2	4	1	[0]	0	data-lead-D_800A38A8-versus-2p-kimigaura-effects-1@f6ea4b1ef191	1	group_has_unresolved_site;unresolved_function
 0x800A3876	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	data-lead-D_800A38A8-versus-2p-kimigaura-effects-1@f6ea4b1ef191	1	group_has_unresolved_site
@@ -4286,6 +4286,11 @@ fighter_StartMoveScript	call	fight_Init	opp5	0x8001E2E0	coverage			2	[[0,2148834
 fighter_StartMoveScript	call	fight_Init	opp5	0x8001E304	coverage			2	[[1,2149126252,0,0]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fight_Init	t_load	0x8001E2E0	coverage			1	[[0,2148834040,0,2148837730]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fight_Init	t_load	0x8001E304	coverage			1	[[1,2148831148,0,0]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
+fighter_StartMoveScript	call	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp1	0x8001EF60	coverage			1	[[0,2148663604,1,13932]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
+fighter_StartMoveScript	call	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp2	0x8001EF60	coverage			4	[[0,2148663604,1,1],[1,2148663604,1,1]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
+fighter_StartMoveScript	call	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp3	0x8001EF60	coverage			1	[[0,2148663604,1,11061]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
+fighter_StartMoveScript	call	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp4	0x8001EF60	coverage			1	[[0,2148663604,1,1]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
+fighter_StartMoveScript	call	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp5	0x8001EF60	coverage			2	[[0,2148663604,1,1],[1,2148663604,1,1]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	opp1	0x800241F4	coverage			3	[[0,2148665184,1,934],[1,2148665580,1,1132],[1,2148830320,0,32766]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	opp1	0x8002439C	coverage			22	[[0,2148834040,0,32756],[0,2148834040,0,35112],[1,2148665568,1,1126],[1,2148830104,0,33144],[1,2148831060,0,33622],[1,2148831088,0,33636],[1,2148831148,0,33666]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	opp1	0x80024438	coverage			7	[[0,2148833428,0,0]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
@@ -4307,11 +4312,6 @@ fighter_StartMoveScript	call	fighter_Update	opp5	0x8002439C	coverage			85	[[0,21
 fighter_StartMoveScript	call	fighter_Update	opp5	0x80024438	coverage			6	[[1,2149125320,0,14024704],[1,2149125360,0,1],[1,2149125388,0,14024704]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	opp5	0x80024670	coverage			51	[[0,2148833444,0,34814],[1,2149125036,0,33154],[1,2149125120,0,33196],[1,2149125184,0,33228],[1,2149125652,0,33462],[1,2149125736,0,33504],[1,2149125792,0,33532],[1,2149125804,0,33538]]	4	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	t_load	0x80024670	coverage			1	[[1,2148831116,0,33650]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
-fighter_StartMoveScript	call	func_8001EEB4	opp1	0x8001EF60	coverage			1	[[0,2148663604,1,13932]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
-fighter_StartMoveScript	call	func_8001EEB4	opp2	0x8001EF60	coverage			4	[[0,2148663604,1,1],[1,2148663604,1,1]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
-fighter_StartMoveScript	call	func_8001EEB4	opp3	0x8001EF60	coverage			1	[[0,2148663604,1,11061]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
-fighter_StartMoveScript	call	func_8001EEB4	opp4	0x8001EF60	coverage			1	[[0,2148663604,1,1]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
-fighter_StartMoveScript	call	func_8001EEB4	opp5	0x8001EF60	coverage			2	[[0,2148663604,1,1],[1,2148663604,1,1]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-1@d613580378f7	0	coverage_next_start_bound
 0x800A3876	read	fight_UpdatePairedInputTotalsEventsAndMidpointEffects	opp2	0x80026E04	coverage	0	2	1	[null]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	1	coverage_next_start_bound;missing_value
 0x800A3876	read	fight_UpdatePairedInputTotalsEventsAndMidpointEffects	opp3	0x80026E04	coverage	0	2	1	[null]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	1	coverage_next_start_bound;missing_value
 0x800A3876	read	fight_UpdatePairedInputTotalsEventsAndMidpointEffects	opp4	0x80026E04	coverage	0	2	1	[null]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	1	coverage_next_start_bound;missing_value
@@ -4347,6 +4347,11 @@ fighter_StartMoveScript	call	fight_Init	opp5	0x8001E2E0	coverage			2	[[0,2148834
 fighter_StartMoveScript	call	fight_Init	opp5	0x8001E304	coverage			2	[[1,2149126252,0,0]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fight_Init	t_load	0x8001E2E0	coverage			1	[[0,2148834040,0,2148837730]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fight_Init	t_load	0x8001E304	coverage			1	[[1,2148831148,0,0]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
+fighter_StartMoveScript	call	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp1	0x8001EF60	coverage			1	[[0,2148663604,1,13932]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
+fighter_StartMoveScript	call	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp2	0x8001EF60	coverage			4	[[0,2148663604,1,1],[1,2148663604,1,1]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
+fighter_StartMoveScript	call	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp3	0x8001EF60	coverage			1	[[0,2148663604,1,11061]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
+fighter_StartMoveScript	call	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp4	0x8001EF60	coverage			1	[[0,2148663604,1,1]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
+fighter_StartMoveScript	call	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp5	0x8001EF60	coverage			2	[[0,2148663604,1,1],[1,2148663604,1,1]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	opp1	0x800241F4	coverage			3	[[0,2148665184,1,934],[1,2148665580,1,1132],[1,2148830320,0,32766]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	opp1	0x8002439C	coverage			22	[[0,2148834040,0,32756],[0,2148834040,0,35112],[1,2148665568,1,1126],[1,2148830104,0,33144],[1,2148831060,0,33622],[1,2148831088,0,33636],[1,2148831148,0,33666]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	opp1	0x80024438	coverage			7	[[0,2148833428,0,0]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
@@ -4368,11 +4373,6 @@ fighter_StartMoveScript	call	fighter_Update	opp5	0x8002439C	coverage			85	[[0,21
 fighter_StartMoveScript	call	fighter_Update	opp5	0x80024438	coverage			6	[[1,2149125320,0,14024704],[1,2149125360,0,1],[1,2149125388,0,14024704]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	opp5	0x80024670	coverage			51	[[0,2148833444,0,34814],[1,2149125036,0,33154],[1,2149125120,0,33196],[1,2149125184,0,33228],[1,2149125652,0,33462],[1,2149125736,0,33504],[1,2149125792,0,33532],[1,2149125804,0,33538]]	4	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
 fighter_StartMoveScript	call	fighter_Update	t_load	0x80024670	coverage			1	[[1,2148831116,0,33650]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
-fighter_StartMoveScript	call	func_8001EEB4	opp1	0x8001EF60	coverage			1	[[0,2148663604,1,13932]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
-fighter_StartMoveScript	call	func_8001EEB4	opp2	0x8001EF60	coverage			4	[[0,2148663604,1,1],[1,2148663604,1,1]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
-fighter_StartMoveScript	call	func_8001EEB4	opp3	0x8001EF60	coverage			1	[[0,2148663604,1,11061]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
-fighter_StartMoveScript	call	func_8001EEB4	opp4	0x8001EF60	coverage			1	[[0,2148663604,1,1]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
-fighter_StartMoveScript	call	func_8001EEB4	opp5	0x8001EF60	coverage			2	[[0,2148663604,1,1],[1,2148663604,1,1]]	0	data-lead-D_800A38A8-versus-cpu-clear-retail-2@dac250a43bcd	0	coverage_next_start_bound
 0x800F665A	write	?	boot_intro	0x800836FC	none	-2	4	1	[0]	0	data-lead-D_800F665A-story-pov-rematch-1@fa509afb2109	1	group_has_unresolved_site;unresolved_function
 0x800F665A	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	data-lead-D_800F665A-story-pov-rematch-1@fa509afb2109	1	group_has_unresolved_site
 0x800F665A	write	func_80046B44	boot_intro	0x80046BA8	coverage	0	2	1	[1]	0	data-lead-D_800F665A-story-pov-rematch-1@fa509afb2109	1	coverage_next_start_bound;group_has_unresolved_site
@@ -4383,11 +4383,11 @@ fighter_StartMoveScript	call	func_8001EEB4	opp5	0x8001EF60	coverage			2	[[0,2148
 0x800F665A	write	func_80046B44	t_menu	0x80046BA8	coverage	0	2	1	[1]	0	data-lead-D_800F665A-versus-2p-bamboo-1@7d40c94dc20e	0	coverage_next_start_bound
 0x800F665C	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	data-lead-D_800F665C-story-pov-rematch-1@c1693f0178d9	1	group_has_unresolved_site;unresolved_function
 0x800F665C	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	data-lead-D_800F665C-story-pov-rematch-1@c1693f0178d9	1	group_has_unresolved_site
-0x800F665C	write	func_8003F218	stage_card	0x8003F254	coverage	0	2	1	[1]	0	data-lead-D_800F665C-story-pov-rematch-1@c1693f0178d9	0	coverage_next_start_bound
-0x800F665C	write	func_8003F218	t_ko	0x8003F254	coverage	0	2	1	[0]	0	data-lead-D_800F665C-story-pov-rematch-1@c1693f0178d9	0	coverage_next_start_bound
-0x800F665C	write	func_8003F218	t_rematch	0x8003F254	coverage	0	2	1	[1]	0	data-lead-D_800F665C-story-pov-rematch-1@c1693f0178d9	0	coverage_next_start_bound
 0x800F665C	write	func_80046B44	boot_intro	0x80046BD4	coverage	0	2	1	[0]	0	data-lead-D_800F665C-story-pov-rematch-1@c1693f0178d9	1	coverage_next_start_bound;group_has_unresolved_site
 0x800F665C	write	func_80046B44	t_menu	0x80046BD4	coverage	0	2	1	[0]	0	data-lead-D_800F665C-story-pov-rematch-1@c1693f0178d9	0	coverage_next_start_bound
+0x800F665C	write	gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear	stage_card	0x8003F254	coverage	0	2	1	[1]	0	data-lead-D_800F665C-story-pov-rematch-1@c1693f0178d9	0	coverage_next_start_bound
+0x800F665C	write	gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear	t_ko	0x8003F254	coverage	0	2	1	[0]	0	data-lead-D_800F665C-story-pov-rematch-1@c1693f0178d9	0	coverage_next_start_bound
+0x800F665C	write	gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear	t_rematch	0x8003F254	coverage	0	2	1	[1]	0	data-lead-D_800F665C-story-pov-rematch-1@c1693f0178d9	0	coverage_next_start_bound
 0x800F665C	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	data-lead-D_800F665C-versus-2p-bamboo-1@a75205b6c956	1	group_has_unresolved_site;unresolved_function
 0x800F665C	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	data-lead-D_800F665C-versus-2p-bamboo-1@a75205b6c956	1	group_has_unresolved_site
 0x800F665C	write	func_80046B44	boot_intro	0x80046BD4	coverage	0	2	1	[0]	0	data-lead-D_800F665C-versus-2p-bamboo-1@a75205b6c956	1	coverage_next_start_bound;group_has_unresolved_site
@@ -6120,7 +6120,7 @@ fighter_StartMoveScript+0x260	call	fighter_StartMoveScript	opp4	0x80021C00	cover
 fighter_StartMoveScript+0x260	call	fighter_StartMoveScript	opp5	0x80021C00	coverage			25	[[2,12,4294967199,2147550624],[2,13,4294967199,2147550624],[2,15,1,2147550624]]	0	data-lead-Unk80101EC8Record-unk_AF-versus-cpu-clear-retail-1@4e4a28364538	0	coverage_next_start_bound
 0x800A36F9	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	group_has_unresolved_site;unresolved_function
 0x800A36F9	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	group_has_unresolved_site
-0x800A36F9	write	func_80016D78	boot_intro	0x80016DF4	coverage	0	1	1	[0]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;group_has_unresolved_site
+0x800A36F9	write	sys_InitAtBoot	boot_intro	0x80016DF4	coverage	0	1	1	[0]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;group_has_unresolved_site
 0x8010277C	read	ApplyPendingConfigAndInitializeMode	t_stage	0x80034530	coverage	0	1	1	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
 0x8010277C	read	ApplyWorkingRecordToPendingConfigAndInitializeMode	t_stage	0x800350D4	coverage	0	1	1	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
 0x8010277C	read	ApplyWorkingRecordToPendingConfigAndInitializeMode	t_stage	0x800350D4	coverage	1	1	1	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
@@ -6295,18 +6295,18 @@ fighter_StartMoveScript+0x260	call	fighter_StartMoveScript	opp5	0x80021C00	cover
 0x8010277C	read	fight_StartDescriptorPlaybackAndAudio	stage_11	0x8003BBE4	coverage	1	1	2	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
 0x8010277C	read	fight_StartDescriptorPlaybackAndAudio	stage_15	0x8003BBE4	coverage	1	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
 0x8010277C	read	fight_StartDescriptorPlaybackAndAudio	stage_16	0x8003BBE4	coverage	1	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x8010277C	read	func_8001C51C	stage_01	0x8001C580	coverage	1	1	2	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x8010277C	read	func_8001C51C	stage_01	0x8001C588	coverage	3	1	2	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x8010277C	read	func_8001C51C	stage_02	0x8001C580	coverage	1	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x8010277C	read	func_8001C51C	stage_02	0x8001C588	coverage	3	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x8010277C	read	func_8001C51C	stage_0d	0x8001C580	coverage	1	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x8010277C	read	func_8001C51C	stage_0d	0x8001C588	coverage	3	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x8010277C	read	func_8001C51C	stage_0e	0x8001C580	coverage	1	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x8010277C	read	func_8001C51C	stage_0e	0x8001C588	coverage	3	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x8010277C	read	func_8001C51C	stage_15	0x8001C580	coverage	1	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x8010277C	read	func_8001C51C	stage_15	0x8001C588	coverage	3	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x8010277C	read	func_8001C51C	stage_16	0x8001C580	coverage	1	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x8010277C	read	func_8001C51C	stage_16	0x8001C588	coverage	3	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x8010277C	read	fight_StartNextSecondFighter	stage_01	0x8001C580	coverage	1	1	2	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x8010277C	read	fight_StartNextSecondFighter	stage_01	0x8001C588	coverage	3	1	2	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x8010277C	read	fight_StartNextSecondFighter	stage_02	0x8001C580	coverage	1	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x8010277C	read	fight_StartNextSecondFighter	stage_02	0x8001C588	coverage	3	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x8010277C	read	fight_StartNextSecondFighter	stage_0d	0x8001C580	coverage	1	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x8010277C	read	fight_StartNextSecondFighter	stage_0d	0x8001C588	coverage	3	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x8010277C	read	fight_StartNextSecondFighter	stage_0e	0x8001C580	coverage	1	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x8010277C	read	fight_StartNextSecondFighter	stage_0e	0x8001C588	coverage	3	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x8010277C	read	fight_StartNextSecondFighter	stage_15	0x8001C580	coverage	1	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x8010277C	read	fight_StartNextSecondFighter	stage_15	0x8001C588	coverage	3	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x8010277C	read	fight_StartNextSecondFighter	stage_16	0x8001C580	coverage	1	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x8010277C	read	fight_StartNextSecondFighter	stage_16	0x8001C588	coverage	3	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
 0x8010277C	read	replay_PlayFrame	stage_0d	0x80039FD4	coverage	0	1	1	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
 0x8010277C	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	group_has_unresolved_site;unresolved_function
 0x8010277C	write	ApplyPendingConfigAndInitializeMode	stage_02	0x8003454C	coverage	1	1	1	[0]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound;partial_store
@@ -6380,12 +6380,12 @@ fighter_StartMoveScript+0x260	call	fighter_StartMoveScript	opp5	0x80021C00	cover
 0x80102780	read	fight_Init	stage_15	0x8001DD70	coverage	1	1	8	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
 0x80102780	read	fight_Init	stage_16	0x8001DD70	coverage	0	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
 0x80102780	read	fight_Init	stage_16	0x8001DD70	coverage	1	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x80102780	read	func_8001C51C	stage_01	0x8001C578	coverage	1	1	2	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x80102780	read	func_8001C51C	stage_02	0x8001C578	coverage	1	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x80102780	read	func_8001C51C	stage_0d	0x8001C578	coverage	1	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x80102780	read	func_8001C51C	stage_0e	0x8001C578	coverage	1	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x80102780	read	func_8001C51C	stage_15	0x8001C578	coverage	1	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
-0x80102780	read	func_8001C51C	stage_16	0x8001C578	coverage	1	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x80102780	read	fight_StartNextSecondFighter	stage_01	0x8001C578	coverage	1	1	2	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x80102780	read	fight_StartNextSecondFighter	stage_02	0x8001C578	coverage	1	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x80102780	read	fight_StartNextSecondFighter	stage_0d	0x8001C578	coverage	1	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x80102780	read	fight_StartNextSecondFighter	stage_0e	0x8001C578	coverage	1	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x80102780	read	fight_StartNextSecondFighter	stage_15	0x8001C578	coverage	1	1	4	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
+0x80102780	read	fight_StartNextSecondFighter	stage_16	0x8001C578	coverage	1	1	3	[null]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	coverage_next_start_bound;missing_value;partial_read
 0x80102780	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	1	group_has_unresolved_site;unresolved_function
 0x80102780	write	ApplyWorkingRecordToPendingConfigAndInitializeMode	t_stage	0x800350F4	coverage	0	1	1	[0]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound;partial_store
 0x80102780	write	ApplyWorkingRecordToPendingConfigAndInitializeMode	t_stage	0x800350F4	coverage	1	1	1	[0]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound;partial_store
@@ -6409,15 +6409,15 @@ fighter_Init	call	fight_Init	stage_0e	0x8001DD90	coverage			4	[[0,0,15,0],[1,1,1
 fighter_Init	call	fight_Init	stage_11	0x8001DD90	coverage			46	[[0,0,15,0],[1,1,8,6]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
 fighter_Init	call	fight_Init	stage_15	0x8001DD90	coverage			16	[[0,0,15,0],[0,0,27,0],[1,1,1,1],[1,1,14,0]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
 fighter_Init	call	fight_Init	stage_16	0x8001DD90	coverage			6	[[0,0,15,0],[1,1,12,3],[1,1,14,0]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
-fighter_Init	call	func_8001C51C	stage_01	0x8001C594	coverage			2	[[1,1,14,0]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
-fighter_Init	call	func_8001C51C	stage_02	0x8001C594	coverage			4	[[1,1,29,0]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
-fighter_Init	call	func_8001C51C	stage_0d	0x8001C594	coverage			4	[[1,1,14,0]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
-fighter_Init	call	func_8001C51C	stage_0e	0x8001C594	coverage			3	[[1,1,14,0]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
-fighter_Init	call	func_8001C51C	stage_15	0x8001C594	coverage			4	[[1,1,14,0]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
-fighter_Init	call	func_8001C51C	stage_16	0x8001C594	coverage			3	[[1,1,14,0]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
+fighter_Init	call	fight_StartNextSecondFighter	stage_01	0x8001C594	coverage			2	[[1,1,14,0]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
+fighter_Init	call	fight_StartNextSecondFighter	stage_02	0x8001C594	coverage			4	[[1,1,29,0]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
+fighter_Init	call	fight_StartNextSecondFighter	stage_0d	0x8001C594	coverage			4	[[1,1,14,0]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
+fighter_Init	call	fight_StartNextSecondFighter	stage_0e	0x8001C594	coverage			3	[[1,1,14,0]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
+fighter_Init	call	fight_StartNextSecondFighter	stage_15	0x8001C594	coverage			4	[[1,1,14,0]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
+fighter_Init	call	fight_StartNextSecondFighter	stage_16	0x8001C594	coverage			3	[[1,1,14,0]]	0	data-lead-g_fight_config-unk_4-story-gengoro-stage-0e-1@38a88e3bb89f	0	coverage_next_start_bound
 0x800A36F9	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	data-lead-g_fight_config-unk_4-training-practice-ko-1@d0ef8f00c9fe	1	group_has_unresolved_site;unresolved_function
 0x800A36F9	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	data-lead-g_fight_config-unk_4-training-practice-ko-1@d0ef8f00c9fe	1	group_has_unresolved_site
-0x800A36F9	write	func_80016D78	boot_intro	0x80016DF4	coverage	0	1	1	[0]	0	data-lead-g_fight_config-unk_4-training-practice-ko-1@d0ef8f00c9fe	1	coverage_next_start_bound;group_has_unresolved_site
+0x800A36F9	write	sys_InitAtBoot	boot_intro	0x80016DF4	coverage	0	1	1	[0]	0	data-lead-g_fight_config-unk_4-training-practice-ko-1@d0ef8f00c9fe	1	coverage_next_start_bound;group_has_unresolved_site
 0x8010277C	read	ApplyPendingConfigAndInitializeMode	t_load	0x80034688	coverage	0	1	1	[null]	0	data-lead-g_fight_config-unk_4-training-practice-ko-1@d0ef8f00c9fe	1	coverage_next_start_bound;missing_value;partial_read
 0x8010277C	read	fight_Init	f12000	0x8001DD7C	coverage	0	1	1	[null]	0	data-lead-g_fight_config-unk_4-training-practice-ko-1@d0ef8f00c9fe	1	coverage_next_start_bound;missing_value;partial_read
 0x8010277C	read	fight_Init	f12000	0x8001DD7C	coverage	1	1	1	[null]	0	data-lead-g_fight_config-unk_4-training-practice-ko-1@d0ef8f00c9fe	1	coverage_next_start_bound;missing_value;partial_read
@@ -6471,7 +6471,7 @@ fighter_Init	call	fight_Init	f14000	0x8001DD90	coverage			2	[[0,0,3,0],[1,1,29,0
 fighter_Init	call	fight_Init	t_load	0x8001DD90	coverage			2	[[0,0,3,0],[1,1,29,0]]	0	data-lead-g_fight_config-unk_4-training-practice-ko-1@d0ef8f00c9fe	0	coverage_next_start_bound
 0x800A36F9	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	data-lead-g_fight_config-unk_4-versus-2p-bamboo-1@96db74c9e80f	1	group_has_unresolved_site;unresolved_function
 0x800A36F9	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	data-lead-g_fight_config-unk_4-versus-2p-bamboo-1@96db74c9e80f	1	group_has_unresolved_site
-0x800A36F9	write	func_80016D78	boot_intro	0x80016DF4	coverage	0	1	1	[0]	0	data-lead-g_fight_config-unk_4-versus-2p-bamboo-1@96db74c9e80f	1	coverage_next_start_bound;group_has_unresolved_site
+0x800A36F9	write	sys_InitAtBoot	boot_intro	0x80016DF4	coverage	0	1	1	[0]	0	data-lead-g_fight_config-unk_4-versus-2p-bamboo-1@96db74c9e80f	1	coverage_next_start_bound;group_has_unresolved_site
 0x8010277C	read	fight_Init	t_load	0x8001DD7C	coverage	0	1	1	[null]	0	data-lead-g_fight_config-unk_4-versus-2p-bamboo-1@96db74c9e80f	1	coverage_next_start_bound;missing_value;partial_read
 0x8010277C	read	fight_Init	t_load	0x8001DD7C	coverage	1	1	1	[null]	0	data-lead-g_fight_config-unk_4-versus-2p-bamboo-1@96db74c9e80f	1	coverage_next_start_bound;missing_value;partial_read
 0x8010277C	read	fight_Init	t_load	0x8001DD88	coverage	2	1	1	[null]	0	data-lead-g_fight_config-unk_4-versus-2p-bamboo-1@96db74c9e80f	1	coverage_next_start_bound;missing_value;partial_read
@@ -6508,7 +6508,7 @@ fighter_Init	call	fight_Init	t_load	0x8001DD90	coverage			2	[[0,0,3,0],[1,1,29,0
 fighter_Init	call	fight_Init	t_load	0x8001DD90	coverage			2	[[0,0,3,0],[1,0,18,0]]	0	data-lead-g_fight_config-unk_4-versus-2p-bamboo-1@96db74c9e80f	0	coverage_next_start_bound
 0x800A36F9	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	data-lead-g_fight_config-unk_4-versus-cpu-clear-retail-1@378d7cbb27a1	1	group_has_unresolved_site;unresolved_function
 0x800A36F9	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	data-lead-g_fight_config-unk_4-versus-cpu-clear-retail-1@378d7cbb27a1	1	group_has_unresolved_site
-0x800A36F9	write	func_80016D78	boot_intro	0x80016DF4	coverage	0	1	1	[0]	0	data-lead-g_fight_config-unk_4-versus-cpu-clear-retail-1@378d7cbb27a1	1	coverage_next_start_bound;group_has_unresolved_site
+0x800A36F9	write	sys_InitAtBoot	boot_intro	0x80016DF4	coverage	0	1	1	[0]	0	data-lead-g_fight_config-unk_4-versus-cpu-clear-retail-1@378d7cbb27a1	1	coverage_next_start_bound;group_has_unresolved_site
 0x8010277C	read	fight_BuildOpponentOrder	t_load	0x800338F0	coverage	0	1	1	[null]	0	data-lead-g_fight_config-unk_4-versus-cpu-clear-retail-1@378d7cbb27a1	1	coverage_next_start_bound;missing_value;partial_read
 0x8010277C	read	fight_BuildOpponentOrder	t_load	0x80033B1C	coverage	0	1	1	[null]	0	data-lead-g_fight_config-unk_4-versus-cpu-clear-retail-1@378d7cbb27a1	1	coverage_next_start_bound;missing_value;partial_read
 0x8010277C	read	fight_Init	opp1	0x8001DD7C	coverage	0	1	1	[null]	0	data-lead-g_fight_config-unk_4-versus-cpu-clear-retail-1@378d7cbb27a1	1	coverage_next_start_bound;missing_value;partial_read
@@ -7479,20 +7479,20 @@ gpu_DrawModeSizedPanelWithSelectedCellOpaque	call	menu_RunPauseMenu	t_pause	0x80
 gpu_DrawModeSizedPanelWithSelectedCellOpaque	call	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange	t_ko	0x8001EBCC	report			12	[[1,0,2149449252,0],[1,0,2149449560,0],[1,0,2149449648,0],[1,0,2149449704,0],[1,0,2149450132,0],[1,0,2149528184,0],[1,0,2149528344,0],[1,0,2149528452,0]]	3	hud-versus-rematch-1/baseline@2272b10fcafb	1	max_hits_reached:Z0:gpu_DrawModeSizedPanelWithSelectedCellOpaque:12
 gpu_DrawTwoDigitCounterWithOptionalSecondSide	call	fight_UpdateModeDisplaysAndMatchProgress	t_load	0x8001CF7C	report			6	[[0,0,2149469296,1],[0,0,2149470988,1],[0,0,2149471620,1],[0,0,2149548168,1],[0,0,2149549676,1],[0,0,2149550140,1]]	0	hud-versus-wins-1/baseline@ca22cf509b46	1	max_hits_reached:Z0:gpu_DrawTwoDigitCounterWithOptionalSecondSide:6
 0x8001EF34	call	main	t_ko	0x8001733C	coverage			1	[[0,25,24,1]]	0	ko-followup-versus-2p-bamboo-1@2a04405351e6	0	coverage_next_start_bound
-0x8001EF60	call	func_8001EEB4	t_ko	0x8001EF48	coverage			1	[[0,2148663604,1,1]]	0	ko-followup-versus-2p-bamboo-1@2a04405351e6	0	coverage_next_start_bound
-0x8001EF6C	call	func_8001EEB4	t_ko	0x8001EF60	coverage			1	[[51,0,1,0]]	0	ko-followup-versus-2p-bamboo-1@2a04405351e6	0	coverage_next_start_bound
+0x8001EF60	call	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	t_ko	0x8001EF48	coverage			1	[[0,2148663604,1,1]]	0	ko-followup-versus-2p-bamboo-1@2a04405351e6	0	coverage_next_start_bound
+0x8001EF6C	call	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	t_ko	0x8001EF60	coverage			1	[[51,0,1,0]]	0	ko-followup-versus-2p-bamboo-1@2a04405351e6	0	coverage_next_start_bound
 func_8001EEB4	call	main	t_ko	0x8001733C	coverage			1	[[528489840,2149580512,24,1]]	0	ko-followup-versus-2p-bamboo-1@2a04405351e6	0	coverage_next_start_bound
 D_800A322C	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	pov-view-story-pov-rematch-1@95982af2cca4	0	
-D_800A322C	write	func_8003F218	stage_card	0x8003F238	coverage	0	4	1	[1]	0	pov-view-story-pov-rematch-1@95982af2cca4	0	coverage_next_start_bound
-D_800A322C	write	func_8003F218	t_ko	0x8003F238	coverage	0	4	1	[0]	0	pov-view-story-pov-rematch-1@95982af2cca4	0	coverage_next_start_bound
-D_800A322C	write	func_8003F218	t_rematch	0x8003F238	coverage	0	4	1	[1]	0	pov-view-story-pov-rematch-1@95982af2cca4	0	coverage_next_start_bound
+D_800A322C	write	gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear	stage_card	0x8003F238	coverage	0	4	1	[1]	0	pov-view-story-pov-rematch-1@95982af2cca4	0	coverage_next_start_bound
+D_800A322C	write	gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear	t_ko	0x8003F238	coverage	0	4	1	[0]	0	pov-view-story-pov-rematch-1@95982af2cca4	0	coverage_next_start_bound
+D_800A322C	write	gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear	t_rematch	0x8003F238	coverage	0	4	1	[1]	0	pov-view-story-pov-rematch-1@95982af2cca4	0	coverage_next_start_bound
 D_800F665C	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	pov-view-story-pov-rematch-1@95982af2cca4	1	group_has_unresolved_site;unresolved_function
 D_800F665C	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	pov-view-story-pov-rematch-1@95982af2cca4	1	group_has_unresolved_site
-D_800F665C	write	func_8003F218	stage_card	0x8003F254	coverage	0	2	1	[1]	0	pov-view-story-pov-rematch-1@95982af2cca4	0	coverage_next_start_bound
-D_800F665C	write	func_8003F218	t_ko	0x8003F254	coverage	0	2	1	[0]	0	pov-view-story-pov-rematch-1@95982af2cca4	0	coverage_next_start_bound
-D_800F665C	write	func_8003F218	t_rematch	0x8003F254	coverage	0	2	1	[1]	0	pov-view-story-pov-rematch-1@95982af2cca4	0	coverage_next_start_bound
 D_800F665C	write	func_80046B44	boot_intro	0x80046BD4	coverage	0	2	1	[0]	0	pov-view-story-pov-rematch-1@95982af2cca4	1	coverage_next_start_bound;group_has_unresolved_site
 D_800F665C	write	func_80046B44	t_menu	0x80046BD4	coverage	0	2	1	[0]	0	pov-view-story-pov-rematch-1@95982af2cca4	0	coverage_next_start_bound
+D_800F665C	write	gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear	stage_card	0x8003F254	coverage	0	2	1	[1]	0	pov-view-story-pov-rematch-1@95982af2cca4	0	coverage_next_start_bound
+D_800F665C	write	gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear	t_ko	0x8003F254	coverage	0	2	1	[0]	0	pov-view-story-pov-rematch-1@95982af2cca4	0	coverage_next_start_bound
+D_800F665C	write	gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear	t_rematch	0x8003F254	coverage	0	2	1	[1]	0	pov-view-story-pov-rematch-1@95982af2cca4	0	coverage_next_start_bound
 func_8003F218	call	camera_ApplyFightView	fight	0x8001E4E8	coverage			499	[[1,0,0,0],[1,83,0,4293956608],[1,126,0,0],[1,136,0,0],[1,143,0,0],[1,232,0,4294521634],[1,261,0,0],[1,298,0,4294060032]]	384	pov-view-story-pov-rematch-1@95982af2cca4	1	coverage_next_start_bound;max_hits_reached:Z0:func_8003F218:500
 func_8003F218	call	fight_Init	stage_card	0x8001DD1C	coverage			1	[[1,255,4294967295,0]]	0	pov-view-story-pov-rematch-1@95982af2cca4	1	coverage_next_start_bound;max_hits_reached:Z0:func_8003F218:500
 g_gpu_grid_and_fog_control	write	?	boot_intro	0x800836FC	none	-2	4	1	[0]	0	pov-view-story-pov-rematch-1@95982af2cca4	1	group_has_unresolved_site;unresolved_function
@@ -8848,6 +8848,9 @@ D_800A3834	write	fight_Init	t_rematch	0x8001E398	coverage	0	2	1	[1]	0	versus-2p-
 D_800A3834	write	fight_InitFighterFocusViewAndThreeItemMenu	t_ko	0x8001EA5C	coverage	0	2	1	[13]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	fight_InitFighterFocusViewAndThreeItemMenu	t_ko_2	0x8001EA5C	coverage	0	2	1	[13]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	fight_InitFighterFocusViewAndThreeItemMenu	t_ko_3	0x8001EA5C	coverage	0	2	1	[13]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	t_ko	0x8001EF84	coverage	0	2	1	[17]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	t_ko_2	0x8001EF84	coverage	0	2	1	[17]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	t_ko_3	0x8001EF84	coverage	0	2	1	[17]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	t_ko	0x8001CD0C	coverage	0	2	1	[4]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	t_ko_2	0x8001CD0C	coverage	0	2	1	[4]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	t_ko_3	0x8001CD0C	coverage	0	2	1	[4]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
@@ -8857,9 +8860,6 @@ D_800A3834	write	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedP
 D_800A3834	write	fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress	t_ko	0x8001F1B0	coverage	0	2	1	[12]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress	t_ko_2	0x8001F1B0	coverage	0	2	1	[12]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress	t_ko_3	0x8001F1B0	coverage	0	2	1	[12]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_8001EEB4	t_ko	0x8001EF84	coverage	0	2	1	[17]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_8001EEB4	t_ko_2	0x8001EF84	coverage	0	2	1	[17]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_8001EEB4	t_ko_3	0x8001EF84	coverage	0	2	1	[17]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	versus-2p-rematch-1@e593ee02ab83	1	coverage_next_start_bound;group_has_unresolved_site
 D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_menu	0x80035520	coverage	0	2	1	[9]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_sub_menu	0x80035520	coverage	0	2	1	[9]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
@@ -8929,6 +8929,11 @@ D_800A3834	write	fight_Init	t_load	0x8001E398	coverage	0	2	1	[1]	0	versus-cpu-cl
 D_800A3834	write	fight_InitFighterFocusViewAndThreeItemMenu	opp2	0x8001EA5C	coverage	0	2	3	[13]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_InitFighterFocusViewAndThreeItemMenu	opp5	0x8001EA5C	coverage	0	2	1	[13]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_InitRotatingViewDecimalPresentation	clear	0x8003CCF4	coverage	0	2	1	[33]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
+D_800A3834	write	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp1	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
+D_800A3834	write	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp2	0x8001EF84	coverage	0	2	4	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
+D_800A3834	write	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp3	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
+D_800A3834	write	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp4	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
+D_800A3834	write	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp5	0x8001EF84	coverage	0	2	2	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	opp1	0x8001CD0C	coverage	0	2	1	[4]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	opp2	0x8001CD0C	coverage	0	2	4	[4]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	opp3	0x8001CD0C	coverage	0	2	1	[4]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
@@ -8939,11 +8944,6 @@ D_800A3834	write	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedP
 D_800A3834	write	fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress	opp2	0x8001F1B0	coverage	0	2	3	[12]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress	opp5	0x8001F1B0	coverage	0	2	1	[12]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateRotatingViewDecimalPresentation	t_top	0x8003CE04	coverage	0	2	1	[8]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_8001EEB4	opp1	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_8001EEB4	opp2	0x8001EF84	coverage	0	2	4	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_8001EEB4	opp3	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_8001EEB4	opp4	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_8001EEB4	opp5	0x8001EF84	coverage	0	2	2	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	1	coverage_next_start_bound;group_has_unresolved_site
 D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_menu	0x80035520	coverage	0	2	1	[9]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_top	0x80035520	coverage	0	2	1	[9]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
@@ -8984,10 +8984,10 @@ D_800A3834	write	fight_AdvanceOpponentOrder	t_load	0x80033D24	coverage	0	2	1	[0]
 D_800A3834	write	fight_Init	opp1	0x8001E398	coverage	0	2	1	[1]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	opp2	0x8001E398	coverage	0	2	1	[1]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	opp3	0x8001E398	coverage	0	2	1	[1]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp1	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase	opp2	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	opp1	0x8001CD0C	coverage	0	2	1	[4]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	opp2	0x8001CD0C	coverage	0	2	1	[4]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
-D_800A3834	write	func_8001EEB4	opp1	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
-D_800A3834	write	func_8001EEB4	opp2	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	coverage_next_start_bound;group_has_unresolved_site
 D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_menu	0x80035520	coverage	0	2	1	[9]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	menu_UpdateRowMenuAndSubflows	t_load	0x80035D68	coverage	0	2	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
