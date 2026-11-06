@@ -2282,7 +2282,7 @@ typedef struct {
  * - unk_18F4[] / node_matrix_ptrs[]: &node.xf.mat of transform_nodes[] nodes
  * (node_RefreshObjectMatrixPointerTables); node_by_id[]: the node each id
  * selects (node_BuildIdToNodeMapWithDuplicates); object_ground_y:
- * slot_UpdateObjectFrame's arg5. */
+ * slot_UpdateObjectFrame's ground_y. */
 typedef struct Unk80045878Node {
     Unk80101DF0Record node; /* +0x00 */
     s32 unk58;              /* +0x58 */

@@ -3924,7 +3924,7 @@ void object_AttachToOpponentBone(Obj80106A78 *obj, s16 bone_index) {
     math_InvertMatrix3x3(bone_matrix, &mat_local);
     MulMatrix0(&mat_local, rot_mat, rot_mat);
 
-    /* Subtract mat_tbl[arg0->attached_bone]'s translation from the position. */
+    /* Subtract mat_tbl[obj->attached_bone]'s translation from the position. */
     obj->pos.x -= bone_matrix->t[0];
     obj->pos.y -= bone_matrix->t[1];
     obj->pos.z -= bone_matrix->t[2];

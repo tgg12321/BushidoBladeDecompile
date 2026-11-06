@@ -1478,7 +1478,7 @@ void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 selector, s32 arg1) {
 
     g_gpu_last_fog_ot_index = 0xFFFF;
     /* FAKE: the pair read through a pointer local; a direct
-       `g_gpu_fog_move_settings[arg0][0]` read is scheduled above the
+       `g_gpu_fog_move_settings[selector][0]` read is scheduled above the
        g_gpu_last_fog_ot_index store: score 9 (Q129) */
     rec = g_gpu_fog_move_settings[selector];
     if (rec[0] != 0) {
@@ -1514,8 +1514,8 @@ void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 selector, s32 arg1) {
             (u16)g_gpu_grid_and_fog_control;
         span_limit_entry = &g_gpu_fog_depth_span_limits[selector];
         {
-            /* FAKE: g_gpu_fog_move_settings[arg0][1] read as a byte offset off
-               the array base; element reads are scheduled past the
+            /* FAKE: g_gpu_fog_move_settings[selector][1] read as a byte offset
+               off the array base; element reads are scheduled past the
                g_gpu_fog_latch_last_grid_and_fog_control store above, ahead of
                the `sh`: score 8 */
             s32 idx = selector * 4;

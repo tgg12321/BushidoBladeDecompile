@@ -27,8 +27,9 @@ void slot_UpdateObjectFrame(
     slot_object->transform_nodes[0].node.xf.rot.vz = rotation[2];
 
     slot_object->transform_nodes[0].node.work.t[0] = position[0];
-    /* FAKE: s5 holds s4 + 0x2C here and the linked record pointer in the copy
-     * loop below; a fresh loop local scores 35, dropping this first role 46. */
+    /* FAKE: s5 holds slot_object + 0x2C here and the linked record pointer in
+     * the copy loop below; a fresh loop local scores 35, dropping this first
+     * role 46. */
     s5 = slot_object->transform_nodes;
     slot_object->transform_nodes[0].node.work.t[1] = position[1];
     s3 = &slot_object->transform_nodes[1];
@@ -45,7 +46,8 @@ void slot_UpdateObjectFrame(
         /* SOTN: src/dra/42398.c:75 @aa53500 */
         s0 = 1;
         tbl = g_node_pose_rotation_indices;
-        /* FAKE: s1 copies the parameter arg4; using arg4 directly scores 78. */
+        /* FAKE: s1 copies the parameter decoded_motion_frame; using
+         * decoded_motion_frame directly scores 78. */
         s1 = decoded_motion_frame;
 
         s3->node.work.t[0] = 0;
