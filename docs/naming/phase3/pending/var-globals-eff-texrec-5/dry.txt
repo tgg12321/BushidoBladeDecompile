@@ -1,0 +1,16 @@
+# python tools/data_wave.py --manifest-csv docs/naming/phase3/pending/var-globals-eff-texrec-5/data_manifest.csv (dry run, exit 0)
+==============================================================================
+DATA WAVE — 1 addresses, 1 identifiers remapped
+  0x8009b8c8: D_8009B8C8 -> g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec
+
+-- file edits (5) --
+  asm/funcs/eff_DrawAnimatedQuads.s  (6)
+  include/bb2.h  (1)
+  src/main/d_8BC50.c  (1)
+  src/main/eff.c  (4)
+  symbol_addrs.txt  (1)
+
+-- registry lines --
+  symbol_addrs.txt:794 D_8009B8C8 -> g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec
+
+DRY RUN — nothing written. Re-run with --apply.

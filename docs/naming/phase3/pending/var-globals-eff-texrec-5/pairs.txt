@@ -1,0 +1,1 @@
+D_8009B8C8=g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec
