@@ -121,7 +121,7 @@ u8 g_snd_stage_cd_audio_entry_indices[32] = {
     0, 4, 0, 0, 0, 0, 0, 3, 0, 3, 2, 2, 0, 4, 0, 4,
     4, 0, 2, 0, 0, 0, 2, 2, 3, 3, 4, 4, 0, 3, 3, 2};
 
-/* [g_fight_config.unk_4[i] / fighter_Init's roster_index] ->
+/* [g_fight_config.fighter_setup[i] / fighter_Init's roster_index] ->
  * Unk80101EC8Record.character_data_index; size from the gap. */
 u8 g_fight_config_id_data_rows[36] = {
     0,  1,  2,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
@@ -131,9 +131,10 @@ u8 g_fight_config_id_data_rows[36] = {
 u8 D_8008D55C[28] = {3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 18, 19,
                      20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 0};
 
-/* [g_fight_config.unk_4[i]] -> slot_LoadObjectBuildNodesSoftbodyAndFogLevels's
- * arg1; [character_roster_index] -> g_object_scale_factors's index
- * (fighter_Init); size from the gap. */
+/* [g_fight_config.fighter_setup[i]] ->
+ * slot_LoadObjectBuildNodesSoftbodyAndFogLevels's arg1;
+ * [character_roster_index] -> g_object_scale_factors's index (fighter_Init);
+ * size from the gap. */
 u8 g_fight_selection_object_ids[36] = {
     0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17,
     18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 62, 63, 0,  0,  0};
@@ -468,7 +469,7 @@ u16 g_fighter_summed_tally_step_scales[27][4] = {
     {0x1000, 0xFF0, 0xFE0, 0xFD0}, {0x1000, 0xFF0, 0xFE0, 0xFD0},
     {0x1000, 0xFF0, 0xFE0, 0xFD0}};
 
-/* [g_fight_config.unk_4[i]] (9F9C.c: D_800A30FC / D_800A30FD,
+/* [g_fight_config.fighter_setup[i]] (9F9C.c: D_800A30FC / D_800A30FD,
  * snd_ReloadListedVabsFromFileAndInstallBillboards; 17AFC.c); size from the
  * gap. */
 u8 g_fight_character_vab_and_ground_quad_classes[36] = {

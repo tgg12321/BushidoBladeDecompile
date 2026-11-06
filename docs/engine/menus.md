@@ -28,7 +28,7 @@ With the standard digital-pad bit order, the masks the handlers use are:
 
 ## Mode handlers and the scene script (src/main/2B344.c)
 
-`fight_RunCommandStream` (src/main/2B344.c:336) steps a byte script at `g_fight_command_stream_cursor`
+`fight_RunCommandStream` (src/main/2B344.c:338) steps a byte script at `g_fight_command_stream_cursor`
 until an opcode ends the step. The opcodes and what they do:
 
 - 0: mode 18 (with `g_fight_presentation_index` from `g_fighter_group_flags[fighter 0's character_data_index]`), or
@@ -37,7 +37,7 @@ until an opcode ends the step. The opcodes and what they do:
   mode 22.
 - 2: keeps a 0x1D-byte block in `D_800A3894`, sets up fighter 0
   (`fight_FillMissingConfigInitFighterAndLoadObject(0)`), then as 18.
-- 3: two operand bytes into `g_fight_config.unk_4[1]` / `[3]`; sets up fighter 1
+- 3: two operand bytes into `g_fight_config.fighter_setup[1]` / `[3]`; sets up fighter 1
   (`fight_FillMissingConfigInitFighterAndLoadObject(1)`, `fight_RequestBothFightersEntriesAndReloadOnChange`).
 - 16 / 17: `fight_ConfigureFighter1FromLookupAndOperandsAndLoad` / `fight_ConfigureFighter1FromOperandsAndLoad` on the operands, which return
   how many bytes they used.
@@ -48,29 +48,29 @@ until an opcode ends the step. The opcodes and what they do:
 
 Handlers that the script's modes reach:
 
-- `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:500, mode 6) loads the scene the
+- `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:502, mode 6) loads the scene the
   `g_fight_active_playback_descriptor` block describes (`motion_StartPlaybackAtIndexedBasePlusOffset` with its byte 0 and the
   fighters its flag byte 3 selects), starts its CD audio track (`cdrom_GetFileIndex(5, g_fight_active_playback_descriptor[1])`) and sets mode 7.
-- `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:577, mode 7) counts `g_handler_frame_counter`; while
+- `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:579, mode 7) counts `g_handler_frame_counter`; while
   `motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush()` is nonzero it waits for Cross. It then pauses the CD and,
   depending on the pending `D_800A3894` / `D_800A385C` blocks, sets mode 0
   or calls `fight_RunCommandStream` for the next script step.
-- `fight_InitScrollingSpriteDisplayAndAudio` (src/main/2B344.c:623, mode 10) resets the scene state
+- `fight_InitScrollingSpriteDisplayAndAudio` (src/main/2B344.c:625, mode 10) resets the scene state
   (`motion_InvalidateMarkedNdataPackAndResetLoadCaches`, `slot_ReleaseObjectAndResources`, `eff_ClearInitFlag`, `snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb`,
   `InitScrollingSpriteDisplay(0x80118800)`), starts CD audio
   (`cdrom_GetFileIndex(5, 0x20)`), waits for it, sets mode 0xB and turns the
   display on.
-- `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:642, mode 11) waits for Cross (0x40,
+- `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:644, mode 11) waits for Cross (0x40,
   player 0) or `StepScrollingSpriteDisplay()`, merges `g_fight_pending_unlock_mask_bits` into
   `g_saved_record.unlock_mask` and a per-character bit into `unk_04`, and sets mode
   0x1A when either changed, else 8.
-- `ExecMovieOverlayAndReinitialize` (src/main/2B344.c:682, mode 15) runs the FMV overlay
+- `ExecMovieOverlayAndReinitialize` (src/main/2B344.c:684, mode 15) runs the FMV overlay
   through `sys_ExecMovieOverlay` and sets mode 8.
-- `fight_UpdateMatchTallyPresentation` (src/main/2B344.c:831, mode 21) plays sounds at frames
+- `fight_UpdateMatchTallyPresentation` (src/main/2B344.c:833, mode 21) plays sounds at frames
   0x1E / 0x43 and, on Cross or after frame 0xF1, sets mode 0x18 or 0x12.
-- `fight_PackTimeRecordsAndInitPresentation` (src/main/2B344.c:879, mode 30) copies the three clock
+- `fight_PackTimeRecordsAndInitPresentation` (src/main/2B344.c:881, mode 30) copies the three clock
   records `g_saved_record.times` into the record `GetWorkingRecord()` returns, as
-  minutes, seconds and hundredths (its comment, src/main/2B344.c:871-878).
+  minutes, seconds and hundredths (its comment, src/main/2B344.c:873-880).
 
 ## The row menu (src/main/596CC.c)
 

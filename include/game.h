@@ -2398,11 +2398,14 @@ typedef struct {
 } CdState;
 
 /* The parameter block 0x80102778..0x80102787 (fight_InitSettings sets
- * every byte of it except 0x82/0x83): two u16 values, three per-player byte
- * pairs kept as one array (unk_4[2 * k + player], [0] = P1, [1] = P2), a
- * fourth per-player pair only other functions touch (operand_cpu_base_levels,
- * indexed by player in fighter_ConfigureCpuControl) and four single bytes. One
- * object: menu_PrintEditAndApplyConfigWithPerPadCursors reaches unk_4 and
+ * every byte of it except 0x82/0x83): two u16 values, the per-player fighter
+ * setup bytes every fighter_Init call takes its arguments from, kept as one
+ * array (fighter_setup[2 * k + player], [0] = P1, [1] = P2; k = 0 roster
+ * index, 1 weapon id (0xFF: take the other fighter's), 2 cpu-controlled
+ * flag), a fourth per-player pair only other functions touch
+ * (operand_cpu_base_levels, indexed by player in fighter_ConfigureCpuControl)
+ * and four single bytes. One object:
+ * menu_PrintEditAndApplyConfigWithPerPadCursors reaches fighter_setup and
  * pending_view_setting as offsets from the address of pending_stage_index.
  */
 typedef struct {

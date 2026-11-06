@@ -23,7 +23,7 @@ plus an offset. The groups that appear in calls:
   `gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth`, and functions in 4BC3C.c, 4D0A8.c, eff.c, 596CC.c and 5ED34.c.
 - group 5: CD-audio tracks, started through `cdrom_StartAudio`. Callers are
   `cdrom_StartAudioEntry` and three functions in src/main/2B344.c:
-  `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:500), `fight_InitScrollingSpriteDisplayAndAudio` (:623) and
+  `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:502), `fight_InitScrollingSpriteDisplayAndAudio` (:623) and
   `fight_InitImageAndPlaybackPresentation` (:697).
 - group 6: `cdrom_GetFileIndex(6, 0)` is the PS-X EXE that `cdrom_LoadExec`
   reads (`STR\MOVOVL.EXE`, [replay.md](replay.md)).

@@ -44,7 +44,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
   :5743 (`object_ThrowQueuedKind`) and :5750 / :5760 (`object_PickUpNearby`), gated on the
   record's `move_kind` / `move_frame` values.
 - Pool cleanup: `object_ResetPool` (src/main/17AFC.c:4029) frees all twelve
-  slots (called at src/main/9F9C.c:1778); `object_FreeAttachedObjects`
+  slots (called at src/main/9F9C.c:1776); `object_FreeAttachedObjects`
   (src/main/17AFC.c:3880) frees objects with `is_attached != 0` and `object_ClearFixedKindRange`
   (src/main/17AFC.c:4085) frees kinds 0x12..0x1D (both called at
   src/main/9F9C.c:1189-1190).
@@ -58,7 +58,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 
 1. Collects the IDs `i` in 0..26 whose bit is set in
    `g_saved_record.unlock_mask & 0x3EF3DF`, minus the bit
-   `g_fight_config_id_data_rows[g_fight_config.unk_4[0]]` (src/main/17AFC.c:5747-5748), into
+   `g_fight_config_id_data_rows[g_fight_config.fighter_setup[0]]` (src/main/17AFC.c:5747-5748), into
    `g_fight_opponent_order`.
 2. Swaps two `rand() % count` positions 108 times (src/main/17AFC.c:5768-5778).
 3. If bit 0x20 or 0x10000 of `g_saved_record.unlock_mask` is set, adds ID 5 (bit 0x20)
@@ -70,7 +70,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
    clears the cursor `g_fight_opponent_order_cursor`.
 
 `fight_AdvanceOpponentOrder` (src/main/17AFC.c:5858) steps the cursor: it sets
-`g_fight_config.unk_4[1] = D_8008D55C[g_fight_opponent_order[cursor]]`, or, once the cursor
+`g_fight_config.fighter_setup[1] = D_8008D55C[g_fight_opponent_order[cursor]]`, or, once the cursor
 reaches the count, sets the mode `g_main_loop_handler_index` to 0x12 (count 20) or 0x20.
 The 27 IDs match the row count of the per-character tables (`g_fighter_initial_carried_object_kinds`,
 `g_fighter_base_move_frame_steps`, include/bb2.h:181-193), which is consistent with the list being
