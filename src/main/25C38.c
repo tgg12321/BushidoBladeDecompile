@@ -14,13 +14,30 @@
 #include "common.h"
 #include "include_asm.h"
 
+enum RowMenuSubflow {
+    ROW_MENU_SUBFLOW_TOP_MENU = 1,
+    ROW_MENU_SUBFLOW_OPTION_MENU = 2,
+    ROW_MENU_SUBFLOW_ENTRY_MENU = 3,
+    ROW_MENU_SUBFLOW_STORY_SPRITE_SEQUENCE = 4,
+    ROW_MENU_SUBFLOW_PRACTICE_MENU = 5,
+    ROW_MENU_SUBFLOW_CHANBARA_MENU = 6,
+    ROW_MENU_SUBFLOW_BOOT_MEMCARD_CHECK = 7,
+    ROW_MENU_SUBFLOW_BOOT_MEMCARD_LOAD_PROMPT = 8,
+    ROW_MENU_SUBFLOW_BOOT_MEMCARD_LOAD = 9,
+    ROW_MENU_SUBFLOW_TEAM_SEL_SCREEN = 0xA,
+    ROW_MENU_SUBFLOW_FADE_TO_MODE = 0xB,
+    ROW_MENU_SUBFLOW_FADE_TO_MOVIE = 0xC,
+    ROW_MENU_SUBFLOW_OPTION_MEMCARD_LOAD = 0xD,
+    ROW_MENU_SUBFLOW_OPTION_MEMCARD_SAVE = 0xE,
+};
+
 extern void AddPrim(void *, void *);
 
 extern u8 g_row_menu_subflow_state;
 
 void menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows(void) {
     s32 a0;
-    g_row_menu_subflow_state = 1;
+    g_row_menu_subflow_state = ROW_MENU_SUBFLOW_TOP_MENU;
     CopySavedFlagsButtonMappingsAndTimesToWorkingRecord();
     if (g_saved_record.staff_roll_character_mask == 0x3F) {
         a0 = 0xFF;
@@ -107,26 +124,26 @@ void menu_InitSubflowForMode(s32 arg0) {
             InitTimedSpriteSequence(0x80118800);
             snd_SerialMixOn();
             cdrom_StartAudioEntry(0);
-            g_row_menu_subflow_state = 4;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_STORY_SPRITE_SEQUENCE;
             return;
         }
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
-        g_row_menu_subflow_state = 3;
+        g_row_menu_subflow_state = ROW_MENU_SUBFLOW_ENTRY_MENU;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 2:
-        g_row_menu_subflow_state = 5;
+        g_row_menu_subflow_state = ROW_MENU_SUBFLOW_PRACTICE_MENU;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 3:
         if (g_menu_mode_subflow_init_pending == 0) {
             menu_ResetFlowBackgroundAndConfirmCursor();
-            g_row_menu_subflow_state = 6;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_CHANBARA_MENU;
         } else {
             InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
-            g_row_menu_subflow_state = 3;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_ENTRY_MENU;
             cdrom_EnableSerialMixAndStartRepeatingAudio();
         }
         cdrom_EnableSerialMixAndStartRepeatingAudio();
@@ -135,7 +152,7 @@ void menu_InitSubflowForMode(s32 arg0) {
     case 6:
         if (g_menu_mode_subflow_init_pending != 0) {
             InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
-            g_row_menu_subflow_state = 3;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_ENTRY_MENU;
             cdrom_EnableSerialMixAndStartRepeatingAudio();
             return;
         }
@@ -146,7 +163,7 @@ void menu_InitSubflowForMode(s32 arg0) {
                                 g_comb_received_unlock_mask_bits | 0x7007) &
                                0x003FF3FF);
             InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
-            g_row_menu_subflow_state = 3;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_ENTRY_MENU;
             cdrom_EnableSerialMixAndStartRepeatingAudio();
             return;
         }
@@ -155,33 +172,33 @@ void menu_InitSubflowForMode(s32 arg0) {
             snd_QueueSound(2, 0x7F, 0x7F);
             g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_UPDATE;
             g_handler_frame_counter = 0;
-            g_row_menu_subflow_state = 1;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_TOP_MENU;
         }
         return;
 
     case 1:
         StoreCompactedBits(g_saved_record.unlock_mask & 0x003EF3DF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
-        g_row_menu_subflow_state = 3;
+        g_row_menu_subflow_state = ROW_MENU_SUBFLOW_ENTRY_MENU;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 5:
         StoreCompactedBits(g_saved_record.unlock_mask & 0x003FF3FF);
         menu_InitSelWithStoredBits(0x80118800);
-        g_row_menu_subflow_state = 0xA;
+        g_row_menu_subflow_state = ROW_MENU_SUBFLOW_TEAM_SEL_SCREEN;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 4:
         StoreCompactedBits(g_saved_record.unlock_mask & 0x053FF3FF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
-        g_row_menu_subflow_state = 3;
+        g_row_menu_subflow_state = ROW_MENU_SUBFLOW_ENTRY_MENU;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 7:
-        g_row_menu_subflow_state = 2;
+        g_row_menu_subflow_state = ROW_MENU_SUBFLOW_OPTION_MENU;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
     }
@@ -199,44 +216,46 @@ void menu_UpdateRowMenuAndSubflows(void) {
 
     g_main_frame_period = 1;
     rand();
-    if (g_row_menu_subflow_state == 1 && D_800A31D9 != 0) {
+    if (g_row_menu_subflow_state == ROW_MENU_SUBFLOW_TOP_MENU &&
+        D_800A31D9 != 0) {
         D_800A31D9 = 0;
-        g_row_menu_subflow_state = 7;
+        g_row_menu_subflow_state = ROW_MENU_SUBFLOW_BOOT_MEMCARD_CHECK;
     }
     if (g_menu_mode_subflow_init_pending != 0) {
         menu_InitSubflowForMode(g_fight_mode_selector);
         g_menu_mode_subflow_init_pending = 0;
     }
     switch (g_row_menu_subflow_state) {
-    case 7:
+    case ROW_MENU_SUBFLOW_BOOT_MEMCARD_CHECK:
         gpu_AddScreenGradient();
         ret = memcard_StartLoadOnceStepAndDrawSheetPair();
         if (ret == 1) {
-            g_row_menu_subflow_state = 8;
+            g_row_menu_subflow_state =
+                ROW_MENU_SUBFLOW_BOOT_MEMCARD_LOAD_PROMPT;
             break;
         }
         if (ret == -1) {
-            g_row_menu_subflow_state = 1;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_TOP_MENU;
         }
         break;
-    case 8:
+    case ROW_MENU_SUBFLOW_BOOT_MEMCARD_LOAD_PROMPT:
         gpu_AddScreenGradient();
         ret = menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult();
         if (ret == 1) {
-            g_row_menu_subflow_state = 9;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_BOOT_MEMCARD_LOAD;
             break;
         }
         if (ret == -1) {
-            g_row_menu_subflow_state = 1;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_TOP_MENU;
         }
         break;
-    case 9:
+    case ROW_MENU_SUBFLOW_BOOT_MEMCARD_LOAD:
         gpu_AddScreenGradient();
         if (memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress() != 0) {
             menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows();
         }
         break;
-    case 1:
+    case ROW_MENU_SUBFLOW_TOP_MENU:
         if (g_handler_frame_counter == 0) {
             snd_SerialMixOn();
             cdrom_StartAudioEntry(7);
@@ -256,16 +275,16 @@ void menu_UpdateRowMenuAndSubflows(void) {
         }
         if (ret == 1) {
             cdrom_StartMixFade(0x1E, 0, 0, 0, 0);
-            g_row_menu_subflow_state = 0xB;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_FADE_TO_MODE;
         } else if (ret == -1) {
             cdrom_StartMixFade(0x1E, 0, 0, 0, 0);
-            g_row_menu_subflow_state = 0xC;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_FADE_TO_MOVIE;
         } else {
             break;
         }
         g_handler_frame_counter = 0x3C;
         break;
-    case 11:
+    case ROW_MENU_SUBFLOW_FADE_TO_MODE:
         if (--g_handler_frame_counter == 0) {
             cdrom_PauseAndWait();
             g_fight_config.pending_mode_selector =
@@ -273,19 +292,19 @@ void menu_UpdateRowMenuAndSubflows(void) {
             menu_InitSubflowForMode((s8)g_fight_config.pending_mode_selector);
         }
         break;
-    case 12:
+    case ROW_MENU_SUBFLOW_FADE_TO_MOVIE:
         if (--g_handler_frame_counter == 0) {
             cdrom_PauseAndWait();
             g_main_loop_handler_index = MAIN_LOOP_MOVIE;
         }
         break;
-    case 2:
+    case ROW_MENU_SUBFLOW_OPTION_MENU:
         switch (menu_RunOptionModeFlowStateWithRowBitEdit(
             g_pad_state.held, g_pad_state.pressed)) {
         case -1:
         case 1:
             cdrom_PauseAndWait();
-            g_row_menu_subflow_state = 1;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_TOP_MENU;
             CopyWorkingFlagsAndButtonMappingsToSavedRecord();
             g_handler_frame_counter = 0;
             if (g_saved_record.staff_roll_character_mask == 0x3F) {
@@ -298,30 +317,30 @@ void menu_UpdateRowMenuAndSubflows(void) {
             break;
         case 2:
             CopyWorkingFlagsAndButtonMappingsToSavedRecord();
-            g_row_menu_subflow_state = 0xD;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_OPTION_MEMCARD_LOAD;
             break;
         case 3:
             CopyWorkingFlagsAndButtonMappingsToSavedRecord();
-            g_row_menu_subflow_state = 0xE;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_OPTION_MEMCARD_SAVE;
             break;
         }
         break;
-    case 13:
+    case ROW_MENU_SUBFLOW_OPTION_MEMCARD_LOAD:
         func_8006C1FC(0, 0);
         if (memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress() != 0) {
             SetFlowStateOne();
             CopySavedFlagsButtonMappingsAndTimesToWorkingRecord();
-            g_row_menu_subflow_state = 2;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_OPTION_MENU;
         }
         break;
-    case 14:
+    case ROW_MENU_SUBFLOW_OPTION_MEMCARD_SAVE:
         func_8006C1FC(0, 0);
         if (memcard_StepSaveOverwriteAndFormatPrompts() != 0) {
             SetFlowStateOne();
-            g_row_menu_subflow_state = 2;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_OPTION_MENU;
         }
         break;
-    case 3:
+    case ROW_MENU_SUBFLOW_ENTRY_MENU:
         ret = StepThenCloseVab1OnNonzero(g_pad_state.held, g_pad_state.pressed);
         if (ret == 0) {
             break;
@@ -330,7 +349,7 @@ void menu_UpdateRowMenuAndSubflows(void) {
             goto reset_mode;
         }
         goto check_quit;
-    case 4:
+    case ROW_MENU_SUBFLOW_STORY_SPRITE_SEQUENCE:
         ret = StepTimedSpriteSequenceWithSkip(g_pad_state.pressed);
         if (ret == 0) {
             break;
@@ -339,7 +358,7 @@ void menu_UpdateRowMenuAndSubflows(void) {
             goto load;
         }
         goto check_quit;
-    case 5:
+    case ROW_MENU_SUBFLOW_PRACTICE_MENU:
         ret =
             menu_ResetFlowThenRunUpdate(g_pad_state.held, g_pad_state.pressed);
         if (ret == 0) {
@@ -349,7 +368,7 @@ void menu_UpdateRowMenuAndSubflows(void) {
             goto load;
         }
         goto check_cancel;
-    case 6:
+    case ROW_MENU_SUBFLOW_CHANBARA_MENU:
         ret = func_80077A60(g_pad_state.held, g_pad_state.pressed);
         if (ret == 0) {
             break;
@@ -361,17 +380,17 @@ void menu_UpdateRowMenuAndSubflows(void) {
         cdrom_PauseAndWait();
         StoreCompactedBits(g_saved_record.unlock_mask & 0x3EF3DF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
-        g_row_menu_subflow_state = 3;
+        g_row_menu_subflow_state = ROW_MENU_SUBFLOW_ENTRY_MENU;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         break;
     check_cancel:
         if (ret == -1) {
             cdrom_PauseAndWait();
-            g_row_menu_subflow_state = 1;
+            g_row_menu_subflow_state = ROW_MENU_SUBFLOW_TOP_MENU;
             g_handler_frame_counter = 0;
         }
         break;
-    case 10:
+    case ROW_MENU_SUBFLOW_TEAM_SEL_SCREEN:
         ret = func_80077AC0(g_pad_state.held, g_pad_state.pressed);
         if (ret == 0) {
             break;

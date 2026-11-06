@@ -1,0 +1,57 @@
+kind	where	literal	name	role	evidence
+enum	src/main/25C38.c	1	RowMenuSubflow.ROW_MENU_SUBFLOW_TOP_MENU	g_row_menu_subflow_state value 1: menu_UpdateRowMenuAndSubflows (25C38.c) switch arm 1 runs menu_UpdateRowMenuStoreResult (the row menu), plays CD audio entry 7, after 0xCA9 idle frames starts the movie; result 1 -> 0xB, -1 -> 0xC	set by menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows (the row-menu init) and on every cancel back; runtime matrix/values.tsv (D_800A3740 per phase): 1 on top_menu in title-attract-1, top-menu-back-1, memory-card-boot-load-1
+enum	src/main/25C38.c	2	RowMenuSubflow.ROW_MENU_SUBFLOW_OPTION_MENU	g_row_menu_subflow_state value 2: menu_UpdateRowMenuAndSubflows (25C38.c) switch arm 2 runs menu_RunOptionModeFlowStateWithRowBitEdit; result 2 -> 0xD (load), 3 -> 0xE (save), +-1 back to 1	set by menu_InitSubflowForMode case 7 (the options row); runtime matrix/values.tsv (D_800A3740 per phase): 2 on option_menu .. option_menu_2 in memory-card-boot-load-1; runtime evidence/screens.tsv (phases hitting the step function): key-config-edit-1 option_menu / key_config
+enum	src/main/25C38.c	3	RowMenuSubflow.ROW_MENU_SUBFLOW_ENTRY_MENU	g_row_menu_subflow_state value 3: menu_UpdateRowMenuAndSubflows (25C38.c) switch arm 3 runs StepThenCloseVab1OnNonzero; result 1 -> start the fight (MAIN_LOOP_FIGHT_INIT, ApplyWorkingRecordToPendingConfigAndInitializeMode), -1 -> MAIN_LOOP_ROW_MENU_INIT	every store follows InitWithCachedValueAndStoredBitsBlackBg -> InitDisplayStateLoadPackAndSetEntryFlags (5ED34.c, the g_entry_menu_* subsystem); set in the mode arms 0 / 1 / 3 / 4 / 6 and after the story text / training menu; runtime evidence/screens.tsv (phases hitting the step function): char_select, weapon_select, stage_select, t_load of lib-versus-2p-kimigaura-*
+enum	src/main/25C38.c	4	RowMenuSubflow.ROW_MENU_SUBFLOW_STORY_SPRITE_SEQUENCE	g_row_menu_subflow_state value 4: menu_UpdateRowMenuAndSubflows (25C38.c) switch arm 4 runs StepTimedSpriteSequenceWithSkip (after InitTimedSpriteSequence); result 1 -> entry menu (3)	set only by menu_InitSubflowForMode case FIGHT_MODE_STORY (0) when no subflow init is pending; runtime evidence/screens.tsv (phases hitting the step function): t_story of story-concede-1, story-pov-rematch-1, story-gengoro-stage-0e-1, story-pov-sub-menu-1
+enum	src/main/25C38.c	5	RowMenuSubflow.ROW_MENU_SUBFLOW_PRACTICE_MENU	g_row_menu_subflow_state value 5: menu_UpdateRowMenuAndSubflows (25C38.c) switch arm 5 runs menu_ResetFlowThenRunUpdate; result 1 -> entry menu (3), -1 -> top menu	set only by menu_InitSubflowForMode case FIGHT_MODE_PRACTICE (2); runtime evidence/screens.tsv (phases hitting the step function): training-practice-ko-1 / training-practice-nodachi-trade-1 t_training, training_menu
+enum	src/main/25C38.c	6	RowMenuSubflow.ROW_MENU_SUBFLOW_CHANBARA_MENU	g_row_menu_subflow_state value 6: menu_UpdateRowMenuAndSubflows (25C38.c) switch arm 6 runs func_80077A60 (after menu_ResetFlowBackgroundAndConfirmCursor); result 1 -> entry menu (3), -1 -> top menu	set only by menu_InitSubflowForMode case FIGHT_MODE_CHANBARA (3) when no subflow init is pending; no capture
+enum	src/main/25C38.c	7	RowMenuSubflow.ROW_MENU_SUBFLOW_BOOT_MEMCARD_CHECK	g_row_menu_subflow_state value 7: menu_UpdateRowMenuAndSubflows (25C38.c) switch arm 7 runs memcard_StartLoadOnceStepAndDrawSheetPair (validation-only: g_memcard_validation_load_active = 1, 28708.c:512-515 / 115-117, nothing copied to g_saved_record) over the gradient; 1 -> 8, -1 -> top menu	entered from the top menu (state 1) once while D_800A31D9 is set (cleared on entry); runtime evidence/screens.tsv (phases hitting the step function): t_menu of every capture (the boot card check)
+enum	src/main/25C38.c	8	RowMenuSubflow.ROW_MENU_SUBFLOW_BOOT_MEMCARD_LOAD_PROMPT	g_row_menu_subflow_state value 8: menu_UpdateRowMenuAndSubflows (25C38.c) switch arm 8 runs menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult; 1 -> 9, -1 -> top menu	set only from state 7; runtime matrix/values.tsv (D_800A3740 per phase): 8 on load_prompt / boot_load in memory-card-boot-load-1
+enum	src/main/25C38.c	9	RowMenuSubflow.ROW_MENU_SUBFLOW_BOOT_MEMCARD_LOAD	g_row_menu_subflow_state value 9: menu_UpdateRowMenuAndSubflows (25C38.c) switch arm 9 runs memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress (its own memcard_RequestLoad, 28708.c:619-631), then the row-menu reset copying saved -> working (back to 1); the same step as state 0xD	set only from state 8 (the prompt accepted)
+enum	src/main/25C38.c	0xA	RowMenuSubflow.ROW_MENU_SUBFLOW_TEAM_SEL_SCREEN	g_row_menu_subflow_state value 10: menu_UpdateRowMenuAndSubflows (25C38.c) switch arm 10 runs func_80077AC0 = menu_StepSelScreen (after menu_InitSelWithStoredBits -> menu_InitSelScreen, D_SEL.BIN); result 1 -> start the fight, -1 -> MAIN_LOOP_ROW_MENU_INIT	set only by menu_InitSubflowForMode case FIGHT_MODE_TEAM (5); runtime evidence/screens.tsv (phases hitting the step function): group-battle-* t_group, group_settings, school_select, char_select, weapon_select, t_roster
+enum	src/main/25C38.c	0xB	RowMenuSubflow.ROW_MENU_SUBFLOW_FADE_TO_MODE	g_row_menu_subflow_state value 11: menu_UpdateRowMenuAndSubflows (25C38.c) switch arm 11 counts g_handler_frame_counter (0x3C) down after cdrom_StartMixFade, then stores the chosen row in pending_mode_selector and calls menu_InitSubflowForMode	set only from the top menu on result 1 (a row chosen)
+enum	src/main/25C38.c	0xC	RowMenuSubflow.ROW_MENU_SUBFLOW_FADE_TO_MOVIE	g_row_menu_subflow_state value 12: menu_UpdateRowMenuAndSubflows (25C38.c) switch arm 12 counts the same 0x3C fade down, then MAIN_LOOP_MOVIE	set only from the top menu on result -1; runtime matrix/values.tsv (D_800A3740 per phase): 12 on movie / t_skip / title in top-menu-back-1
+enum	src/main/25C38.c	0xD	RowMenuSubflow.ROW_MENU_SUBFLOW_OPTION_MEMCARD_LOAD	g_row_menu_subflow_state value 13: menu_UpdateRowMenuAndSubflows (25C38.c) switch arm 13 runs memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress, copies the saved record to the working one, back to 2	set only from the option menu on result 2 (after CopyWorkingFlagsAndButtonMappingsToSavedRecord); runtime evidence/screens.tsv (phases hitting the step function): memory-card-overwrite-1 load / load_empty
+enum	src/main/25C38.c	0xE	RowMenuSubflow.ROW_MENU_SUBFLOW_OPTION_MEMCARD_SAVE	g_row_menu_subflow_state value 14: menu_UpdateRowMenuAndSubflows (25C38.c) switch arm 14 runs memcard_StepSaveOverwriteAndFormatPrompts, back to 2	set only from the option menu on result 3; runtime evidence/screens.tsv (phases hitting the step function): memory-card-overwrite-1 save / overwrite, memory-card-format-1 save / format
+site	src/main/25C38.c:23	1	ROW_MENU_SUBFLOW_TOP_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:110	4	ROW_MENU_SUBFLOW_STORY_SPRITE_SEQUENCE	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:114	3	ROW_MENU_SUBFLOW_ENTRY_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:119	5	ROW_MENU_SUBFLOW_PRACTICE_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:126	6	ROW_MENU_SUBFLOW_CHANBARA_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:129	3	ROW_MENU_SUBFLOW_ENTRY_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:138	3	ROW_MENU_SUBFLOW_ENTRY_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:149	3	ROW_MENU_SUBFLOW_ENTRY_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:158	1	ROW_MENU_SUBFLOW_TOP_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:165	3	ROW_MENU_SUBFLOW_ENTRY_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:172	0xA	ROW_MENU_SUBFLOW_TEAM_SEL_SCREEN	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:179	3	ROW_MENU_SUBFLOW_ENTRY_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:184	2	ROW_MENU_SUBFLOW_OPTION_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:202	1	ROW_MENU_SUBFLOW_TOP_MENU	g_row_menu_subflow_state == test	see the enum row
+site	src/main/25C38.c:204	7	ROW_MENU_SUBFLOW_BOOT_MEMCARD_CHECK	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:211	7	ROW_MENU_SUBFLOW_BOOT_MEMCARD_CHECK	case label of switch (g_row_menu_subflow_state)	see the enum row
+site	src/main/25C38.c:215	8	ROW_MENU_SUBFLOW_BOOT_MEMCARD_LOAD_PROMPT	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:219	1	ROW_MENU_SUBFLOW_TOP_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:222	8	ROW_MENU_SUBFLOW_BOOT_MEMCARD_LOAD_PROMPT	case label of switch (g_row_menu_subflow_state)	see the enum row
+site	src/main/25C38.c:226	9	ROW_MENU_SUBFLOW_BOOT_MEMCARD_LOAD	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:230	1	ROW_MENU_SUBFLOW_TOP_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:233	9	ROW_MENU_SUBFLOW_BOOT_MEMCARD_LOAD	case label of switch (g_row_menu_subflow_state)	see the enum row
+site	src/main/25C38.c:239	1	ROW_MENU_SUBFLOW_TOP_MENU	case label of switch (g_row_menu_subflow_state)	see the enum row
+site	src/main/25C38.c:259	0xB	ROW_MENU_SUBFLOW_FADE_TO_MODE	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:262	0xC	ROW_MENU_SUBFLOW_FADE_TO_MOVIE	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:268	11	ROW_MENU_SUBFLOW_FADE_TO_MODE	case label of switch (g_row_menu_subflow_state)	see the enum row
+site	src/main/25C38.c:276	12	ROW_MENU_SUBFLOW_FADE_TO_MOVIE	case label of switch (g_row_menu_subflow_state)	see the enum row
+site	src/main/25C38.c:282	2	ROW_MENU_SUBFLOW_OPTION_MENU	case label of switch (g_row_menu_subflow_state)	see the enum row
+site	src/main/25C38.c:288	1	ROW_MENU_SUBFLOW_TOP_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:301	0xD	ROW_MENU_SUBFLOW_OPTION_MEMCARD_LOAD	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:305	0xE	ROW_MENU_SUBFLOW_OPTION_MEMCARD_SAVE	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:309	13	ROW_MENU_SUBFLOW_OPTION_MEMCARD_LOAD	case label of switch (g_row_menu_subflow_state)	see the enum row
+site	src/main/25C38.c:314	2	ROW_MENU_SUBFLOW_OPTION_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:317	14	ROW_MENU_SUBFLOW_OPTION_MEMCARD_SAVE	case label of switch (g_row_menu_subflow_state)	see the enum row
+site	src/main/25C38.c:321	2	ROW_MENU_SUBFLOW_OPTION_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:324	3	ROW_MENU_SUBFLOW_ENTRY_MENU	case label of switch (g_row_menu_subflow_state)	see the enum row
+site	src/main/25C38.c:333	4	ROW_MENU_SUBFLOW_STORY_SPRITE_SEQUENCE	case label of switch (g_row_menu_subflow_state)	see the enum row
+site	src/main/25C38.c:342	5	ROW_MENU_SUBFLOW_PRACTICE_MENU	case label of switch (g_row_menu_subflow_state)	see the enum row
+site	src/main/25C38.c:352	6	ROW_MENU_SUBFLOW_CHANBARA_MENU	case label of switch (g_row_menu_subflow_state)	see the enum row
+site	src/main/25C38.c:364	3	ROW_MENU_SUBFLOW_ENTRY_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:370	1	ROW_MENU_SUBFLOW_TOP_MENU	g_row_menu_subflow_state store	see the enum row
+site	src/main/25C38.c:374	10	ROW_MENU_SUBFLOW_TEAM_SEL_SCREEN	case label of switch (g_row_menu_subflow_state)	see the enum row
