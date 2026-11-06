@@ -70,13 +70,13 @@ one-object spelling matches.
   indexed via the first's address (`p = &D_800A37D2; p[t != 0]++`,
   `(&D_800A37D2)[g_fight_followup_fighter_index]`), each indexed use and `p`'s assignment `/* FAKE */`-annotated,
   `p` meeting [[pointer-alias-fake-exception]]. For fight_UpdateDefeatDelayAndModeProgress and func_8003CF84 only.
-- **D_80101EC8 per-word reads (Q73):** `D_80101FA0`, `D_80101FA8`, `D_801023EC`,
+- **g_fighter_records per-word reads (Q73):** `D_80101FA0`, `D_80101FA8`, `D_801023EC`,
   `D_801023F4`, `D_80101FBC`, `D_80101FC4`, `D_80102408`, `D_80102410`, read by name only in
   fighter_SetBasePositionSeparationCorrectionsAndGetDistance / fighter_CalcSeparationErrorAndOpposedOffsets, only after the three single-object spellings (direct
   field, typed base pointer, per-record pointer) are banked missing for the shared-base reason
   (`.cse` `use_related_value` and `.greg`/final `.s` addressing), with Q31 mechanism + search.
   Each per-word declaration is `/* FAKE */`-annotated; all other accesses use
-  `D_80101EC8`.
+  `g_fighter_records`.
 - **D_800A37E8 / EA / EC (Q96; Q117 2026-10-06):** fighter_ResolveBoneHit, fighter_ProcessWeaponBodyHits and object_ResolveFighterHits's two
   call sites only (object_ResolveFighterHits: at each argument). Three `s16` scalars;
   the vector's address handed to callees is `&D_800A37E8`, `/* FAKE */`-annotated at the

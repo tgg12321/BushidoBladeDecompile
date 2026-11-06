@@ -68,7 +68,7 @@ Spec (JSON):
                                      # own words back when it starts;
                                      # "calls": N after the first N calls
                                      # (every call then stops at the entry)
-    "pokes": [{"at": "D_80101EC8+0xE",  # set-and-observe (needs a script):
+    "pokes": [{"at": "g_fighter_records+0xE",  # set-and-observe (needs a script):
                "hex": "0600",         # these bytes written once when the
                "phase": "fight"}],    # phase starts (after its value reads)
     "settings": {"emulator": {"Debug":  # PCSX-Redux settings (needs a

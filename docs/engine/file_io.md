@@ -251,7 +251,7 @@ or clears the channel's enable bit (16 + ch).
 
 The save flow is `memcard_StepRequest` (28708.c:282), stepped on `g_memcard_request_state`:
 
-- **Save (state 3):** it checks for the save file `D_80010AAC`
+- **Save (state 3):** it checks for the save file `g_str_memcard_save_file_name`
   (`"BASLUS-00663BUSHIDO2"`, through `g_memcard_save_file_name`) and for free blocks. It
   clears the 0x200-byte buffer `g_shared_buffer` (`memcard_ClearBuffer`) and writes the
   card header into it (`memcard_BuildFileHeader`: icon CLUT and image). It fills the

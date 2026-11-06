@@ -1,7 +1,7 @@
 # Combat: contact tests and hit reactions
 
 The two fighters are `Unk80101EC8Record`s (0x44C bytes, include/game.h:1647)
-in `D_80101EC8[]` (include/bb2.h:153); each record's `other` points at the
+in `g_fighter_records[]` (include/bb2.h:153); each record's `other` points at the
 opponent. Most of the code below is in src/main/17AFC.c. Field names are the
 header's `unk_NN` names; where a field's role is shown by the code it is
 stated, otherwise only its use is described.

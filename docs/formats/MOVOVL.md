@@ -152,7 +152,7 @@ bb2_memcpy(0x8010DB00, 0x801D8800, size);
 // src/main/6CF8.c:291 sys_InitAtBoot — registers the region as a buffer
 D_800A3770 = 0x801D8800;        // buffer base
 D_800A3774 = 0x801EBC00;        // buffer end
-D_800A3798 = 0x13400;           // buffer size = 78,848 bytes
+g_gpu_prim_buffer_span = 0x13400;           // buffer size = 78,848 bytes
 ```
 
 `0x801EBC00 - 0x801D8800 = 0x13400 = 78,848 bytes` — the main game

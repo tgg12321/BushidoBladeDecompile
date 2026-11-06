@@ -2,7 +2,7 @@
 
 No routine in `src/` is identified as the CPU opponent's decision logic, i.e. code
 that picks moves for a computer-controlled fighter. Both fighters are
-`Unk80101EC8Record`s (0x44C bytes, include/game.h:1647) in `D_80101EC8[]`
+`Unk80101EC8Record`s (0x44C bytes, include/game.h:1647) in `g_fighter_records[]`
 (include/bb2.h:153). This page describes the routines nearest that topic: the
 per-fighter kind queue and its object pool, the shuffled ID list built for a
 match sequence, and three standalone helpers. All are C.

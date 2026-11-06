@@ -64,7 +64,7 @@ start-up code, in order:
   `g_pad_buf`, `StartPAD`, `ChangeClearPAD(0)`, `disp_Init`, display off,
   `g_gpu_jitter_burst_enabled = 0`, `cdrom_Init`, `memcard_Init`, `rcnt_StartCnt1Wrapper`.
 - `sys_InitAtBoot` (src/main/6CF8.c:285): sets the two primitive buffers
-  `D_800A3770[0..1] = 0x801D8800 / 0x801EBC00` and their size `D_800A3798 =
+  `D_800A3770[0..1] = 0x801D8800 / 0x801EBC00` and their size `g_gpu_prim_buffer_span =
   0x13400`, loads the common sound bank (`snd_InitAndLoadCommonVab`,
   src/main/6CF8.c:265), `pad_ResetStateMarkValid`, `font_LoadImage`,
   `fight_InitSettings`, `func_80046B44`, sets `g_main_frame_period = 2` and clears the

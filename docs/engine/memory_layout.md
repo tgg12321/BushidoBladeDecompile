@@ -61,7 +61,7 @@ These addresses are set in code:
 
 Each frame, `main` checks the cursor against the buffer's end, `var_4[idx] +
 0x13400` (src/main/6CF8.c:490). `sys_InitAtBoot` also stores 0x13400 in
-`D_800A3798` (src/main/6CF8.c:291). See [gpu_pipeline.md](gpu_pipeline.md).
+`g_gpu_prim_buffer_span` (src/main/6CF8.c:291). See [gpu_pipeline.md](gpu_pipeline.md).
 
 Large objects named elsewhere in these pages:
 
