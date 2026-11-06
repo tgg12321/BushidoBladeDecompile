@@ -1,0 +1,8 @@
+{
+  "description": "story-gengoro-stage-0e re-run unchanged with breakpoint fighter_StartCpuPadScript (a1 = the script; the starting record's move_kind / prev_move_kind +0x6A, incoming_projectile / attack_state +0x425, cpu_state_flags +0x430, cpu_level +0x438, cpu_threat_resolved_count +0x3F3, cpu_profile + cpu_probes +0x443, both fighters' unk_AF, g_fight_mode_selector; ra), read watches on D_8009A870..877 and D_8009A898, and write watches on fighter 1's queued_move_command +0x82 and move_kind +0x6A: trace-noname-leads runtime evidence (which branch picks D_8009A870 / D_8009A874 / D_8009A898 and what move follows each press)",
+  "evidence": [
+    "docs/naming/runtime/noname-lead-D_8009A870-story-gengoro-stage-0e-1/spec.json"
+  ],
+  "extends": "story-gengoro-stage-0e",
+  "refines": "story-gengoro-stage-0e"
+}
