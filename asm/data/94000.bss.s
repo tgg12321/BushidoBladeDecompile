@@ -52,9 +52,9 @@ dlabel g_fight_followup_playback_start_pair
 enddlabel g_fight_followup_playback_start_pair
 
 /* 800A381C */
-dlabel D_800A381C
+dlabel g_fight_paired_move_is_common
     .space 0x2
-enddlabel D_800A381C
+enddlabel g_fight_paired_move_is_common
 
 /* 800A381E */
 dlabel g_fight_time_up_phase_timer

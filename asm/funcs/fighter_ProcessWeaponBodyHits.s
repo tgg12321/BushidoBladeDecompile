@@ -712,8 +712,8 @@ glabel fighter_ProcessWeaponBodyHits
     /* 1BD54 8002B554 01000C24 */  addiu      $t4, $zero, 0x1
     /* 1BD58 8002B558 14006C15 */  bne        $t3, $t4, .L8002B5AC
     /* 1BD5C 8002B55C 00000000 */   nop
-    /* 1BD60 8002B560 0A80053C */  lui        $a1, %hi(D_800A37E8)
-    /* 1BD64 8002B564 E837A524 */  addiu      $a1, $a1, %lo(D_800A37E8)
+    /* 1BD60 8002B560 0A80053C */  lui        $a1, %hi(g_fight_strike_reverse_direction_x)
+    /* 1BD64 8002B564 E837A524 */  addiu      $a1, $a1, %lo(g_fight_strike_reverse_direction_x)
     /* 1BD68 8002B568 2F9D000C */  jal        math_NegNormalize3D
     /* 1BD6C 8002B56C 14016426 */   addiu     $a0, $s3, 0x114
     /* 1BD70 8002B570 801F023C */  lui        $v0, (0x1F8000A8 >> 16)
@@ -725,8 +725,8 @@ glabel fighter_ProcessWeaponBodyHits
     /* 1BD88 8002B588 80300600 */  sll        $a2, $a2, 2
     /* 1BD8C 8002B58C 2130C200 */  addu       $a2, $a2, $v0
     /* 1BD90 8002B590 8800AB8F */  lw         $t3, 0x88($sp)
-    /* 1BD94 8002B594 0A80073C */  lui        $a3, %hi(D_800A37E8)
-    /* 1BD98 8002B598 E837E724 */  addiu      $a3, $a3, %lo(D_800A37E8)
+    /* 1BD94 8002B594 0A80073C */  lui        $a3, %hi(g_fight_strike_reverse_direction_x)
+    /* 1BD98 8002B598 E837E724 */  addiu      $a3, $a3, %lo(g_fight_strike_reverse_direction_x)
     /* 1BD9C 8002B59C 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1BDA0 8002B5A0 21306601 */   addu      $a2, $t3, $a2
     /* 1BDA4 8002B5A4 0DAF0008 */  j          .L8002BC34
@@ -1144,8 +1144,8 @@ glabel fighter_ProcessWeaponBodyHits
     /* 1C398 8002BB98 01001124 */   addiu     $s1, $zero, 0x1
   .L8002BB9C:
     /* 1C39C 8002BB9C 14018424 */  addiu      $a0, $a0, 0x114
-    /* 1C3A0 8002BBA0 0A80053C */  lui        $a1, %hi(D_800A37E8)
-    /* 1C3A4 8002BBA4 E837A524 */  addiu      $a1, $a1, %lo(D_800A37E8)
+    /* 1C3A0 8002BBA0 0A80053C */  lui        $a1, %hi(g_fight_strike_reverse_direction_x)
+    /* 1C3A4 8002BBA4 E837A524 */  addiu      $a1, $a1, %lo(g_fight_strike_reverse_direction_x)
     /* 1C3A8 8002BBA8 2F9D000C */  jal        math_NegNormalize3D
     /* 1C3AC 8002BBAC 21206402 */   addu      $a0, $s3, $a0
   .L8002BBB0:

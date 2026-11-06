@@ -176,8 +176,8 @@ glabel object_ResolveFighterHits
     /* 225C8 80031DC8 23805000 */  subu       $s0, $v0, $s0
   .L80031DCC:
     /* 225CC 80031DCC 4000A98F */  lw         $t1, 0x40($sp)
-    /* 225D0 80031DD0 0A80053C */  lui        $a1, %hi(D_800A37E8)
-    /* 225D4 80031DD4 E837A524 */  addiu      $a1, $a1, %lo(D_800A37E8)
+    /* 225D0 80031DD0 0A80053C */  lui        $a1, %hi(g_fight_strike_reverse_direction_x)
+    /* 225D4 80031DD4 E837A524 */  addiu      $a1, $a1, %lo(g_fight_strike_reverse_direction_x)
     /* 225D8 80031DD8 2F9D000C */  jal        math_NegNormalize3D
     /* 225DC 80031DDC 44002425 */   addiu     $a0, $t1, 0x44
     /* 225E0 80031DE0 01000424 */  addiu      $a0, $zero, 0x1
@@ -273,8 +273,8 @@ glabel object_ResolveFighterHits
     /* 22740 80031F40 2130D500 */  addu       $a2, $a2, $s5
     /* 22744 80031F44 80300600 */  sll        $a2, $a2, 2
     /* 22748 80031F48 5800A98F */  lw         $t1, 0x58($sp)
-    /* 2274C 80031F4C 0A80073C */  lui        $a3, %hi(D_800A37E8)
-    /* 22750 80031F50 E837E724 */  addiu      $a3, $a3, %lo(D_800A37E8)
+    /* 2274C 80031F4C 0A80073C */  lui        $a3, %hi(g_fight_strike_reverse_direction_x)
+    /* 22750 80031F50 E837E724 */  addiu      $a3, $a3, %lo(g_fight_strike_reverse_direction_x)
     /* 22754 80031F54 2130C900 */  addu       $a2, $a2, $t1
     /* 22758 80031F58 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 2275C 80031F5C 21304600 */   addu      $a2, $v0, $a2

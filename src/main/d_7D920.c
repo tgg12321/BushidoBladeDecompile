@@ -472,7 +472,9 @@ u16 g_fighter_summed_tally_step_scales[27][4] = {
     {0x1000, 0xFF0, 0xFE0, 0xFD0}, {0x1000, 0xFF0, 0xFE0, 0xFD0},
     {0x1000, 0xFF0, 0xFE0, 0xFD0}};
 
-/* [g_fight_config.fighter_setup[i]] (9F9C.c: D_800A30FC / D_800A30FD,
+/* [g_fight_config.fighter_setup[i]] (9F9C.c:
+ * g_fight_loaded_first_fighter_vab_and_ground_quad_class /
+ * g_fight_loaded_second_fighter_vab_and_ground_quad_class,
  * snd_ReloadListedVabsFromFileAndInstallBillboards; 17AFC.c); size from the
  * gap. */
 u8 g_fight_character_vab_and_ground_quad_classes[36] = {
@@ -613,9 +615,10 @@ s8 g_fight_presentation_cd_audio_entries[40][2] = {
 
 /* per-stage s16 table, 34 entries
  * (fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams) */
-s16 D_8008EAC0[34] = {130, 130, 130, 130, 130, 130, 130, 130, 130, 130, -1, -1,
-                      135, 230, 130, 130, 130, 130, 230, 130, 130, 130, -1, -1,
-                      -1,  -1,  -1,  130, -1,  -1,  130, -1,  130, 0};
+s16 g_fight_followup_playback_own_character_sound_frames[34] = {
+    130, 130, 130, 130, 130, 130, 130, 130, 130, 130, -1, -1,
+    135, 230, 130, 130, 130, 130, 230, 130, 130, 130, -1, -1,
+    -1,  -1,  -1,  130, -1,  -1,  130, -1,  130, 0};
 
 /* fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams's parameters, one
  * reader each. */
@@ -623,7 +626,7 @@ s16 D_8008EB04 = 155;
 
 s16 D_8008EB06 = 159;
 
-s16 D_8008EB08 = 160;
+s16 g_fight_followup_playback_other_fighter_sound_frame = 160;
 
 s16 g_fight_followup_playback_common_sound_frame = 198;
 
@@ -642,7 +645,7 @@ u8 g_motion_preferred_variant_nibble_pairs[6][2] = {
     {1, 2}, {3, 1}, {1, 2}, {2, 1}, {2, 1}, {0, 0}};
 
 /* [weapon_id][flag] -> Unk80101EC8Record.weapon_entry_id */
-u8 D_8008EB28[8][2] = {
+u8 g_fighter_weapon_entry_ids_by_group_flag[8][2] = {
     {0, 1}, {2, 3}, {4, 5}, {6, 7}, {8, 9}, {8, 9}, {46, 47}, {46, 47}};
 
 /* [weapon_id] -> Unk80101EC8Record.weapon_entry_id */

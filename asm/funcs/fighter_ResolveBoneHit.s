@@ -9,8 +9,8 @@ glabel fighter_ResolveBoneHit
     /* 182F4 80027AF4 801F043C */  lui        $a0, (0x1F8000A8 >> 16)
     /* 182F8 80027AF8 A8008434 */  ori        $a0, $a0, (0x1F8000A8 & 0xFFFF)
     /* 182FC 80027AFC 4400B7AF */  sw         $s7, 0x44($sp)
-    /* 18300 80027B00 0A80173C */  lui        $s7, %hi(D_800A37E8)
-    /* 18304 80027B04 E837F726 */  addiu      $s7, $s7, %lo(D_800A37E8)
+    /* 18300 80027B00 0A80173C */  lui        $s7, %hi(g_fight_strike_reverse_direction_x)
+    /* 18304 80027B04 E837F726 */  addiu      $s7, $s7, %lo(g_fight_strike_reverse_direction_x)
     /* 18308 80027B08 40101000 */  sll        $v0, $s0, 1
     /* 1830C 80027B0C 21105000 */  addu       $v0, $v0, $s0
     /* 18310 80027B10 80100200 */  sll        $v0, $v0, 2
@@ -35,19 +35,19 @@ glabel fighter_ResolveBoneHit
     /* 1835C 80027B5C 1C000224 */  addiu      $v0, $zero, 0x1C
     /* 18360 80027B60 34006214 */  bne        $v1, $v0, .L80027C34
     /* 18364 80027B64 21F0A002 */   addu      $fp, $s5, $zero
-    /* 18368 80027B68 0A80033C */  lui        $v1, %hi(D_800A37E8)
-    /* 1836C 80027B6C E8376384 */  lh         $v1, %lo(D_800A37E8)($v1)
+    /* 18368 80027B68 0A80033C */  lui        $v1, %hi(g_fight_strike_reverse_direction_x)
+    /* 1836C 80027B6C E8376384 */  lh         $v1, %lo(g_fight_strike_reverse_direction_x)($v1)
     /* 18370 80027B70 EC01228E */  lw         $v0, 0x1EC($s1)
     /* 18374 80027B74 00000000 */  nop
     /* 18378 80027B78 18004300 */  mult       $v0, $v1
-    /* 1837C 80027B7C 0A80033C */  lui        $v1, %hi(D_800A37EA)
-    /* 18380 80027B80 EA376384 */  lh         $v1, %lo(D_800A37EA)($v1)
+    /* 1837C 80027B7C 0A80033C */  lui        $v1, %hi(g_fight_strike_reverse_direction_y)
+    /* 18380 80027B80 EA376384 */  lh         $v1, %lo(g_fight_strike_reverse_direction_y)($v1)
     /* 18384 80027B84 12280000 */  mflo       $a1
     /* 18388 80027B88 F001228E */  lw         $v0, 0x1F0($s1)
     /* 1838C 80027B8C 00000000 */  nop
     /* 18390 80027B90 18004300 */  mult       $v0, $v1
-    /* 18394 80027B94 0A80033C */  lui        $v1, %hi(D_800A37EC)
-    /* 18398 80027B98 EC376384 */  lh         $v1, %lo(D_800A37EC)($v1)
+    /* 18394 80027B94 0A80033C */  lui        $v1, %hi(g_fight_strike_reverse_direction_z)
+    /* 18398 80027B98 EC376384 */  lh         $v1, %lo(g_fight_strike_reverse_direction_z)($v1)
     /* 1839C 80027B9C 12200000 */  mflo       $a0
     /* 183A0 80027BA0 F401228E */  lw         $v0, 0x1F4($s1)
     /* 183A4 80027BA4 00000000 */  nop

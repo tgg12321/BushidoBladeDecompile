@@ -30,8 +30,8 @@ glabel fight_UpdatePairedMoves
     /* 10458 8001FC58 AE388484 */  lh         $a0, %lo(g_fight_paired_move_initiator)($a0)
     /* 1045C 8001FC5C 0A80053C */  lui        $a1, %hi(g_fight_paired_move)
     /* 10460 8001FC60 D836A58C */  lw         $a1, %lo(g_fight_paired_move)($a1)
-    /* 10464 8001FC64 0A80063C */  lui        $a2, %hi(D_800A381C)
-    /* 10468 8001FC68 1C38C684 */  lh         $a2, %lo(D_800A381C)($a2)
+    /* 10464 8001FC64 0A80063C */  lui        $a2, %hi(g_fight_paired_move_is_common)
+    /* 10468 8001FC68 1C38C684 */  lh         $a2, %lo(g_fight_paired_move_is_common)($a2)
     /* 1046C 8001FC6C A686000C */  jal        fighter_StartMoveScript
     /* 10470 8001FC70 00000000 */   nop
     /* 10474 8001FC74 0A80023C */  lui        $v0, %hi(g_fight_paired_move_flags)
@@ -54,8 +54,8 @@ glabel fight_UpdatePairedMoves
     /* 104B4 8001FCB4 D836A58C */  lw         $a1, %lo(g_fight_paired_move)($a1)
     /* 104B8 8001FCB8 0A80043C */  lui        $a0, %hi(g_fight_paired_move_initiator)
     /* 104BC 8001FCBC AE388484 */  lh         $a0, %lo(g_fight_paired_move_initiator)($a0)
-    /* 104C0 8001FCC0 0A80063C */  lui        $a2, %hi(D_800A381C)
-    /* 104C4 8001FCC4 1C38C684 */  lh         $a2, %lo(D_800A381C)($a2)
+    /* 104C0 8001FCC0 0A80063C */  lui        $a2, %hi(g_fight_paired_move_is_common)
+    /* 104C4 8001FCC4 1C38C684 */  lh         $a2, %lo(g_fight_paired_move_is_common)($a2)
     /* 104C8 8001FCC8 A686000C */  jal        fighter_StartMoveScript
     /* 104CC 8001FCCC 0100842C */   sltiu     $a0, $a0, 0x1
     /* 104D0 8001FCD0 02000224 */  addiu      $v0, $zero, 0x2

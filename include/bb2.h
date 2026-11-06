@@ -242,11 +242,11 @@ extern u8 g_fight_opponent_stage_indices;
 extern Unk8008EA44Entry g_snd_stage_sound_slot_trigger_delays[5];
 
 /* per-stage s16 table, 34 entries */
-extern s16 D_8008EAC0[34];
+extern s16 g_fight_followup_playback_own_character_sound_frames[34];
 
 extern s16 D_8008EB04;
 extern s16 D_8008EB06;
-extern s16 D_8008EB08;
+extern s16 g_fight_followup_playback_other_fighter_sound_frame;
 extern s16 g_fight_followup_playback_common_sound_frame;
 extern s16 g_fight_followup_playback_red_light_effect_frame;
 extern s32 g_fight_followup_playback_red_light_effect_offset_x;
@@ -254,7 +254,7 @@ extern s32 g_fight_followup_playback_red_light_effect_offset_y;
 extern s32 g_fight_followup_playback_red_light_effect_offset_z;
 extern u8 g_motion_preferred_variant_nibble_pairs[][2];
 /* [weapon_id][flag] -> Unk80101EC8Record.weapon_entry_id */
-extern u8 D_8008EB28[8][2];
+extern u8 g_fighter_weapon_entry_ids_by_group_flag[8][2];
 extern u8 D_8008EB38[8]; /* [weapon_id] -> Unk80101EC8Record.weapon_entry_id */
 extern Tbl8008EB54Entry g_fight_midpoint_effect_offsets[6];
 extern u8 g_fight_midpoint_effect_event_ids[6];
@@ -356,7 +356,7 @@ extern u8 g_main_frame_period;
 extern u8 D_800A36F2[2];
 extern u8 g_fight_displaced_bone_group_tim_requests;
 extern s16 g_fight_tracked_fighter_index;
-extern u8 D_800A36F9;
+extern u8 g_config_menu_m_option;
 extern u8 g_camera_fight_view_mode;
 extern s16 g_camera_turn_easing_countdown;
 extern u8 D_800A3712;
@@ -412,16 +412,16 @@ extern u8 g_fight_skip_first_defeats_left_expiry;
 extern u8 g_fight_first_fighter_win_count;
 extern u8 g_fight_second_fighter_win_count;
 extern u8 D_800A37E0;
-extern u8 D_800A37E1;
-extern s16 D_800A37E8;
-extern s16 D_800A37EA;
-extern s16 D_800A37EC;
+extern u8 g_fight_out_of_bounds_phase_timer;
+extern s16 g_fight_strike_reverse_direction_x;
+extern s16 g_fight_strike_reverse_direction_y;
+extern s16 g_fight_strike_reverse_direction_z;
 extern u8 g_fight_win_target;
 extern u8 g_fight_choice_menu_first_cursor;
 extern s32 g_fight_menu_restart_count;
 extern u8 g_fight_reinit_phase_timer;
 extern u8 g_fight_choice_menu_cursor;
-extern s16 D_800A381C;
+extern s16 g_fight_paired_move_is_common;
 extern u8 g_fight_time_up_phase_timer;
 /* the draw queue cursor (into g_draw_queue) */
 extern void **g_draw_queue_cursor;

@@ -21,7 +21,7 @@ extern u8 g_config_menu_right_cpu_base_level_fmt[];
 extern u8 g_config_menu_pending_stage_and_mode_fmt[];
 extern u8 g_config_menu_pending_view_setting_fmt[];
 extern u8 g_config_menu_saved_cpu_behavior_adjust_fmt[];
-extern u8 D_800A31C8[];
+extern u8 g_config_menu_m_option_fmt[];
 extern u8 g_config_menu_fight_view_option_fmt[];
 extern const char g_config_menu_force_weapon_inner_bone_hits_fmt[];
 extern const char g_config_menu_saved_grayscale_fmt[];
@@ -91,10 +91,10 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 (s32)(g_config_menu_cursors[0] == 9 ? selected_prefix
                                                     : unselected_prefix),
                 (g_saved_record.flags >> 1) & 1);
-    font_Printf(D_800A31C8,
+    font_Printf(g_config_menu_m_option_fmt,
                 (s32)(g_config_menu_cursors[0] == 10 ? selected_prefix
                                                      : unselected_prefix),
-                D_800A36F9);
+                g_config_menu_m_option);
     font_Printf(g_config_menu_fight_view_option_fmt,
                 (s32)(g_config_menu_cursors[0] == 11 ? selected_prefix
                                                      : unselected_prefix),
@@ -149,7 +149,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 g_saved_record.flags ^= 2;
                 break;
             case 10:
-                D_800A36F9--;
+                g_config_menu_m_option--;
                 break;
             case 11:
                 g_fight_view_option--;
@@ -189,7 +189,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 g_saved_record.flags ^= 2;
                 break;
             case 10:
-                D_800A36F9++;
+                g_config_menu_m_option++;
                 break;
             case 11:
                 g_fight_view_option++;
@@ -209,7 +209,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
         ((s8)g_fight_config.pending_mode_selector + 7) % 7;
     g_fight_config.pending_view_setting &= 1;
     g_fight_config.pending_force_weapon_inner_bone_hits &= 1;
-    D_800A36F9 = (D_800A36F9 + 4) % 4;
+    g_config_menu_m_option = (g_config_menu_m_option + 4) % 4;
     g_fight_view_option &= 1;
     if (g_pad_state.pressed & 0x08000800) {
         snd_QueueSound(1, 0x7F, 0x7F);
@@ -230,5 +230,5 @@ u8 g_config_menu_right_cpu_base_level_fmt[] = "%s%3x\n";
 u8 g_config_menu_pending_stage_and_mode_fmt[] = "%s%5d\n";
 u8 g_config_menu_pending_view_setting_fmt[] = "%sO%4d\n";
 u8 g_config_menu_saved_cpu_behavior_adjust_fmt[] = "%sL%4d\n";
-u8 D_800A31C8[] = "%sM%4d\n";
+u8 g_config_menu_m_option_fmt[] = "%sM%4d\n";
 u8 g_config_menu_fight_view_option_fmt[] = "%sD%4d\n";

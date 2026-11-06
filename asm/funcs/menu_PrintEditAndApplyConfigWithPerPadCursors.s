@@ -185,10 +185,10 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 251AC 800349AC 21280002 */   addu      $a1, $s0, $zero
     /* 251B0 800349B0 21282002 */  addu       $a1, $s1, $zero
   .L800349B4:
-    /* 251B4 800349B4 0A80063C */  lui        $a2, %hi(D_800A36F9)
-    /* 251B8 800349B8 F936C690 */  lbu        $a2, %lo(D_800A36F9)($a2)
-    /* 251BC 800349BC 0A80043C */  lui        $a0, %hi(D_800A31C8)
-    /* 251C0 800349C0 C8318424 */  addiu      $a0, $a0, %lo(D_800A31C8)
+    /* 251B4 800349B4 0A80063C */  lui        $a2, %hi(g_config_menu_m_option)
+    /* 251B8 800349B8 F936C690 */  lbu        $a2, %lo(g_config_menu_m_option)($a2)
+    /* 251BC 800349BC 0A80043C */  lui        $a0, %hi(g_config_menu_m_option_fmt)
+    /* 251C0 800349C0 C8318424 */  addiu      $a0, $a0, %lo(g_config_menu_m_option_fmt)
     /* 251C4 800349C4 4BF5000C */  jal        font_Printf
     /* 251C8 800349C8 00000000 */   nop
     /* 251CC 800349CC A8008387 */  lh         $v1, %gp_rel(g_config_menu_cursors)($gp)
@@ -349,12 +349,12 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 253F4 80034BF4 67D30008 */  j          .L80034D9C
     /* 253F8 80034BF8 000062A0 */   sb        $v0, 0x0($v1)
   jlabel .L80034BFC
-    /* 253FC 80034BFC 0A80023C */  lui        $v0, %hi(D_800A36F9)
-    /* 25400 80034C00 F9364290 */  lbu        $v0, %lo(D_800A36F9)($v0)
+    /* 253FC 80034BFC 0A80023C */  lui        $v0, %hi(g_config_menu_m_option)
+    /* 25400 80034C00 F9364290 */  lbu        $v0, %lo(g_config_menu_m_option)($v0)
     /* 25404 80034C04 00000000 */  nop
     /* 25408 80034C08 FFFF4224 */  addiu      $v0, $v0, -0x1
-    /* 2540C 80034C0C 0A80013C */  lui        $at, %hi(D_800A36F9)
-    /* 25410 80034C10 F93622A0 */  sb         $v0, %lo(D_800A36F9)($at)
+    /* 2540C 80034C0C 0A80013C */  lui        $at, %hi(g_config_menu_m_option)
+    /* 25410 80034C10 F93622A0 */  sb         $v0, %lo(g_config_menu_m_option)($at)
     /* 25414 80034C14 68D30008 */  j          .L80034DA0
     /* 25418 80034C18 0F3E023C */   lui       $v0, (0x3E0F83E1 >> 16)
   jlabel .L80034C1C
@@ -452,12 +452,12 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 2555C 80034D5C 67D30008 */  j          .L80034D9C
     /* 25560 80034D60 0000A2A2 */   sb        $v0, 0x0($s5)
   jlabel .L80034D64
-    /* 25564 80034D64 0A80023C */  lui        $v0, %hi(D_800A36F9)
-    /* 25568 80034D68 F9364290 */  lbu        $v0, %lo(D_800A36F9)($v0)
+    /* 25564 80034D64 0A80023C */  lui        $v0, %hi(g_config_menu_m_option)
+    /* 25568 80034D68 F9364290 */  lbu        $v0, %lo(g_config_menu_m_option)($v0)
     /* 2556C 80034D6C 00000000 */  nop
     /* 25570 80034D70 01004224 */  addiu      $v0, $v0, 0x1
-    /* 25574 80034D74 0A80013C */  lui        $at, %hi(D_800A36F9)
-    /* 25578 80034D78 F93622A0 */  sb         $v0, %lo(D_800A36F9)($at)
+    /* 25574 80034D74 0A80013C */  lui        $at, %hi(g_config_menu_m_option)
+    /* 25578 80034D78 F93622A0 */  sb         $v0, %lo(g_config_menu_m_option)($at)
     /* 2557C 80034D7C 68D30008 */  j          .L80034DA0
     /* 25580 80034D80 0F3E023C */   lui       $v0, (0x3E0F83E1 >> 16)
   jlabel .L80034D84
@@ -519,8 +519,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25650 80034E50 1800A200 */  mult       $a1, $v0
     /* 25654 80034E54 4992033C */  lui        $v1, (0x92492493 >> 16)
     /* 25658 80034E58 93246334 */  ori        $v1, $v1, (0x92492493 & 0xFFFF)
-    /* 2565C 80034E5C 0A800A3C */  lui        $t2, %hi(D_800A36F9)
-    /* 25660 80034E60 F9364A91 */  lbu        $t2, %lo(D_800A36F9)($t2)
+    /* 2565C 80034E5C 0A800A3C */  lui        $t2, %hi(g_config_menu_m_option)
+    /* 25660 80034E60 F9364A91 */  lbu        $t2, %lo(g_config_menu_m_option)($t2)
     /* 25664 80034E64 1080043C */  lui        $a0, %hi(g_fight_config + 0xD)
     /* 25668 80034E68 85278480 */  lb         $a0, %lo(g_fight_config + 0xD)($a0)
     /* 2566C 80034E6C 04004725 */  addiu      $a3, $t2, 0x4
@@ -565,8 +565,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25704 80034F04 00088434 */  ori        $a0, $a0, (0x8000800 & 0xFFFF)
     /* 25708 80034F08 FC012231 */  andi       $v0, $t1, 0x1FC
     /* 2570C 80034F0C 2310E200 */  subu       $v0, $a3, $v0
-    /* 25710 80034F10 0A80013C */  lui        $at, %hi(D_800A36F9)
-    /* 25714 80034F14 F93622A0 */  sb         $v0, %lo(D_800A36F9)($at)
+    /* 25710 80034F10 0A80013C */  lui        $at, %hi(g_config_menu_m_option)
+    /* 25714 80034F14 F93622A0 */  sb         $v0, %lo(g_config_menu_m_option)($at)
     /* 25718 80034F18 0A80023C */  lui        $v0, %hi(g_fight_view_option)
     /* 2571C 80034F1C 90364290 */  lbu        $v0, %lo(g_fight_view_option)($v0)
     /* 25720 80034F20 1080033C */  lui        $v1, %hi(g_pad_state + 0xC)

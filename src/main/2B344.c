@@ -1148,7 +1148,8 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
     snd_UpdateStageSounds();
     p = g_fight_followup_fighter_index;
     var_7 = g_fighter_records[p].character_data_index;
-    if (g_handler_frame_counter == D_8008EAC0[var_7]) {
+    if (g_handler_frame_counter ==
+        g_fight_followup_playback_own_character_sound_frames[var_7]) {
         snd_QueueSound(40 * p + 0x2D, 0x7F, 0x7F);
     }
     if (g_handler_frame_counter == D_8008EB04) {
@@ -1157,7 +1158,8 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
     if (g_handler_frame_counter == D_8008EB06) {
         snd_QueueSound(40 * g_fight_followup_fighter_index + 0x36, 0x7F, 0x7F);
     }
-    if (g_handler_frame_counter == D_8008EB08) {
+    if (g_handler_frame_counter ==
+        g_fight_followup_playback_other_fighter_sound_frame) {
         if (g_fight_followup_fighter_index == 0) {
             snd_QueueSound(0x53, 0x7F, 0x7F);
         } else {
@@ -1956,9 +1958,9 @@ void gpu_SetViewOriginSegmentCellsGateBit(s32 end_x, s32 end_z) {
 }
 
 extern s32 g_gpu_tracked_fighter_view_active;
-extern s32 D_800927C0[65][32];
-extern s32 D_80090740[65][32];
-extern s32 D_80094840[];
+extern s32 g_gpu_tracked_fighter_view_yaw_cell_masks[65][32];
+extern s32 g_gpu_grid_yaw_cell_masks[65][32];
+extern s32 g_gpu_grid_disc_cell_mask[];
 /* gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards's
  * buffer of the queued Unk800A6690Rec */
 extern Unk800A6690Rec *g_gpu_grid_unique_node_buffer[];
@@ -2012,14 +2014,14 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
     z = cz - 0xF;
     idx = (ang >> 6) & 0x3F;
     if (g_gpu_tracked_fighter_view_active != 0) {
-        mask = D_800927C0[idx];
+        mask = g_gpu_tracked_fighter_view_yaw_cell_masks[idx];
     } else if (g_gpu_grid_and_fog_control & 1) {
-        mask = D_80090740[idx];
+        mask = g_gpu_grid_yaw_cell_masks[idx];
     } else {
         s32 *src2;
         s32 *dst;
-        src2 = D_80094840;
-        mask = D_80090740[idx];
+        src2 = g_gpu_grid_disc_cell_mask;
+        mask = g_gpu_grid_yaw_cell_masks[idx];
         dst = (s32 *)0x1F800004;
         for (i = 0; i < 0x1F; i++) {
             *dst++ = *src2++ & *mask++;

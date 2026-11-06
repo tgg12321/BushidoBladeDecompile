@@ -1194,7 +1194,8 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
     pad_out->unheld = pad_words[3];
     if (g_fight_mode_selector == 5 &&
         (g_fight_time_up_phase_timer != 0 || g_fight_reinit_phase_timer != 0 ||
-         D_800A37E1 != 0 || g_fight_mark_tally_phase_timer != 0 ||
+         g_fight_out_of_bounds_phase_timer != 0 ||
+         g_fight_mark_tally_phase_timer != 0 ||
          g_fight_point_award_phase_timer != 0 ||
          g_fight_match_result_timer != 0)) {
         pad_ClearStateBits(pad_out);
@@ -1581,12 +1582,12 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                 g_fight_reinit_reuses_assets = 1;
                 g_main_loop_handler_index = 0;
             }
-        } else if (D_800A37E1 != 0) {
+        } else if (g_fight_out_of_bounds_phase_timer != 0) {
             g_prim_buf_cursor += gpu_DrawSelectedStretchedSheetPair(
                                      2, (s32)g_prim_buf_cursor, 1) /
                                  4;
-            if (++D_800A37E1 == 0x3C) {
-                D_800A37E1 = 0;
+            if (++g_fight_out_of_bounds_phase_timer == 0x3C) {
+                g_fight_out_of_bounds_phase_timer = 0;
                 if (g_fight_result_subject_index != 2) {
                     snd_QueueSound(0xA0, 0x7F, 0x7F);
                     D_800A38AA[g_fight_result_subject_index]++;
@@ -1679,7 +1680,7 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
             u16 id;
 
             snd_QueueSound(0x9F, 0x7F, 0x7F);
-            D_800A37E1 = 1;
+            g_fight_out_of_bounds_phase_timer = 1;
             id = g_fighter_records[0].move_kind;
             if (id == 0x13 || id == 0x1B || id == 0x30 || id == 0x19 ||
                 id == 0x1A || id == 0x18) {
@@ -1691,7 +1692,7 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
             u16 id;
 
             snd_QueueSound(0x9F, 0x7F, 0x7F);
-            D_800A37E1 = 1;
+            g_fight_out_of_bounds_phase_timer = 1;
             id = g_fighter_records[1].move_kind;
             if (id == 0x13 || id == 0x1B || id == 0x30 || id == 0x19 ||
                 id == 0x1A || id == 0x18) {
@@ -1723,8 +1724,8 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
     }
 }
 
-extern s8 D_800A30FC;
-extern s8 D_800A30FD;
+extern s8 g_fight_loaded_first_fighter_vab_and_ground_quad_class;
+extern s8 g_fight_loaded_second_fighter_vab_and_ground_quad_class;
 extern s32 g_snd_listed_vab_copy;
 
 void fight_ResetGraphAndReloadResourcesOnCachedKeyChange(void) {
@@ -1737,10 +1738,10 @@ void fight_ResetGraphAndReloadResourcesOnCachedKeyChange(void) {
     if (g_fight_stage_index != g_fight_loaded_stage_index ||
         g_fight_character_vab_and_ground_quad_classes[(s8)g_fight_config
                                                           .fighter_setup[0]] !=
-            D_800A30FC ||
+            g_fight_loaded_first_fighter_vab_and_ground_quad_class ||
         g_fight_character_vab_and_ground_quad_classes[(s8)g_fight_config
                                                           .fighter_setup[1]] !=
-            D_800A30FD) {
+            g_fight_loaded_second_fighter_vab_and_ground_quad_class) {
         motion_InvalidateMarkedNdataPackAndClearSlot1Id();
         resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
             g_fight_stage_index, load_addr);
@@ -1755,10 +1756,12 @@ void fight_ResetGraphAndReloadResourcesOnCachedKeyChange(void) {
                 [(s8)g_fight_config.fighter_setup[1]]);
 
         g_fight_loaded_stage_index = g_fight_stage_index;
-        D_800A30FC = g_fight_character_vab_and_ground_quad_classes
-            [(s8)g_fight_config.fighter_setup[0]];
-        D_800A30FD = g_fight_character_vab_and_ground_quad_classes
-            [(s8)g_fight_config.fighter_setup[1]];
+        g_fight_loaded_first_fighter_vab_and_ground_quad_class =
+            g_fight_character_vab_and_ground_quad_classes
+                [(s8)g_fight_config.fighter_setup[0]];
+        g_fight_loaded_second_fighter_vab_and_ground_quad_class =
+            g_fight_character_vab_and_ground_quad_classes
+                [(s8)g_fight_config.fighter_setup[1]];
 
         if (copy_size >= 0x2519) {
             sys_Panic();
@@ -2874,13 +2877,15 @@ void fight_UpdatePairedMoves(void) {
             return;
         }
         fighter_StartMoveScript(
-            g_fight_paired_move_initiator, g_fight_paired_move, D_800A381C);
+            g_fight_paired_move_initiator, g_fight_paired_move,
+            g_fight_paired_move_is_common);
         if (g_fight_paired_move_flags & 0x1000) {
             g_fighter_records[g_fight_paired_move_initiator == 0]
                 .borrow_other_motion = 1;
         }
-        fighter_StartMoveScript(g_fight_paired_move_initiator == 0,
-                                g_fight_paired_move, D_800A381C);
+        fighter_StartMoveScript(
+            g_fight_paired_move_initiator == 0, g_fight_paired_move,
+            g_fight_paired_move_is_common);
         g_fighter_records[1].move_started = 2;
         g_fighter_records[0].move_started = 2;
         return;
@@ -3954,17 +3959,15 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
         (g_fight_mode_selector == 2 && D_800A389A == 0)) {
         p->weapon_entry_id = D_8008EB38[p->weapon_id];
     } else if (fighter_index == 1 && g_fight_mode_selector == 3) {
-        p->weapon_entry_id =
-            D_8008EB28[p->weapon_id]
-                      [g_fighter_group_flags[p->other->character_data_index] ==
-                       0];
+        p->weapon_entry_id = g_fighter_weapon_entry_ids_by_group_flag
+            [p->weapon_id]
+            [g_fighter_group_flags[p->other->character_data_index] == 0];
     } else if (
         g_fight_mode_selector == 0 && D_800A385C != 0 && fighter_index == 0) {
         p->weapon_entry_id = 0x32;
     } else {
-        p->weapon_entry_id =
-            D_8008EB28[p->weapon_id]
-                      [g_fighter_group_flags[p->character_data_index]];
+        p->weapon_entry_id = g_fighter_weapon_entry_ids_by_group_flag
+            [p->weapon_id][g_fighter_group_flags[p->character_data_index]];
     }
 
     if (fighter_index == 1 && g_fight_mode_selector == 3) {
@@ -4877,7 +4880,8 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
             if (fighter_record->move_kind == 0x11) {
                 g_fight_paired_move_start_pending = 1;
                 g_fight_paired_move = fighter_record->queued_move;
-                D_800A381C = fighter_record->queued_move_is_common;
+                g_fight_paired_move_is_common =
+                    fighter_record->queued_move_is_common;
                 g_fight_paired_move_flags = fighter_record->queued_move_command;
             } else {
                 fighter_record->move_is_common =
@@ -4951,7 +4955,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
                         g_fight_paired_move_start_pending = 1;
                         g_fight_paired_move = move_script;
                         g_fight_paired_move_flags = transition_command;
-                        D_800A381C = is_common;
+                        g_fight_paired_move_is_common = is_common;
                     } else {
                         fighter_record->move_is_common = is_common;
                         fighter_StartMoveScript(
@@ -5893,5 +5897,5 @@ const u32 D_80010428[1] = {0x00000000};
 s32 g_motion_decode_skip_code_copy = 0;
 u8 g_camera_eye_blocked_flags[4] = {0, 0, 0, 0};
 s32 g_camera_pitch_search_steps[2] = {0, 0};
-s8 D_800A30FC = -1;
-s8 D_800A30FD = -1;
+s8 g_fight_loaded_first_fighter_vab_and_ground_quad_class = -1;
+s8 g_fight_loaded_second_fighter_vab_and_ground_quad_class = -1;

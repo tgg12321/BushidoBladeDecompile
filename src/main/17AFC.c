@@ -394,10 +394,11 @@ s32 fighter_ResolveBoneHit(
     s32 var_12;
     s32 code;
 
-    /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached by the
-     * first's address, passed to fighter_StoreBoneLocalVectorAndArmEventTrigger
-     * and read as vec[0..2] (Q96); as s16[3] or {x,y,z}: score 2 */
-    vec = &D_800A37E8;
+    /* FAKE: g_fight_strike_reverse_direction_x / EA / EC are one s16 x,y,z
+     * vector reached by the first's address, passed to
+     * fighter_StoreBoneLocalVectorAndArmEventTrigger and read as vec[0..2]
+     * (Q96); as s16[3] or {x,y,z}: score 2 */
+    vec = &g_fight_strike_reverse_direction_x;
     fighter_index = fighter_record->index;
     other_record = fighter_record->other;
     var_0 = rec;
@@ -405,10 +406,14 @@ s32 fighter_ResolveBoneHit(
     hit_point = &SPAD->spadA8[fighter_index][hit_record_index].x;
     *out = 0;
     if (fighter_record->character_roster_index == 0x1C) {
-        bone_axis_dot = (fighter_record->bone_y_axis.x * D_800A37E8 +
-                         fighter_record->bone_y_axis.y * D_800A37EA +
-                         fighter_record->bone_y_axis.z * D_800A37EC) >>
-                        12;
+        bone_axis_dot =
+            (fighter_record->bone_y_axis.x *
+                 g_fight_strike_reverse_direction_x +
+             fighter_record->bone_y_axis.y *
+                 g_fight_strike_reverse_direction_y +
+             fighter_record->bone_y_axis.z *
+                 g_fight_strike_reverse_direction_z) >>
+            12;
         bone_axis_dot &= 0x1FFF;
         if (bone_axis_dot >= 0x1000) {
             bone_axis_dot -= 0x2000;
@@ -1583,10 +1588,11 @@ s32 fighter_ProcessWeaponContacts(void) {
  * nonzero, the function skips to the end when the cast point is no nearer the
  * base than obj+0xF4 and otherwise clears *outer_hit_mask and *inner_hit_mask;
  * then, unless `suppress_effects`, effect 0xA plays at the cast point.
- * D_800A37E8.. receive -q. GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc) per
- * square root, inline_o.h class (inline-asm-policy, owner ruling 2026-09-26).
- * Everything else is ordinary C, except the five Ruling 11 locals (dx, dy, dz,
- * temp, temp2) and the do-while(0), each annotated below. */
+ * g_fight_strike_reverse_direction_x.. receive -q. GTE: gte_Lzc (gte_ldlzc,
+ * gte_nop x2, gte_stlzc) per square root, inline_o.h class (inline-asm-policy,
+ * owner ruling 2026-09-26). Everything else is ordinary C, except the five
+ * Ruling 11 locals (dx, dy, dz, temp, temp2) and the do-while(0), each
+ * annotated below. */
 extern void math_PrepareSegmentCollisionFrame(Unk1F8002B8Rec *scr);
 extern s32 math_TestPreparedSegmentSphere(
     Unk1F8002B8Rec *scr, Unk80107850Rec *pos, s32 threshold, s32 r_sq);
@@ -1736,9 +1742,9 @@ void fighter_CastWeaponSegment(Unk80101EC8Record *obj, u32 *outer_hit_mask,
         }
     }
 done:
-    D_800A37E8 = -qx;
-    D_800A37EA = -qy;
-    D_800A37EC = -qz;
+    g_fight_strike_reverse_direction_x = -qx;
+    g_fight_strike_reverse_direction_y = -qy;
+    g_fight_strike_reverse_direction_z = -qz;
 }
 
 extern void fighter_TestTriangleBoneHits(
@@ -1747,11 +1753,11 @@ extern s32 math_PrepareTriangleCollisionFrame(Unk1F8002B8Rec *obj);
 
 void fighter_ProcessWeaponBodyHits(s32 mode) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
-    /* FAKE: second handle to D_800A37E8, so the address is rematerialized at
-     * each of the three calls as in the target; spelled directly, cse keeps it
-     * in a callee-saved register: score 6 (pointer-alias-fake-exception;
-     * vector: Q96) */
-    s16 *var_1 = &D_800A37E8;
+    /* FAKE: second handle to g_fight_strike_reverse_direction_x, so the address
+     * is rematerialized at each of the three calls as in the target; spelled
+     * directly, cse keeps it in a callee-saved register: score 6
+     * (pointer-alias-fake-exception; vector: Q96) */
+    s16 *var_1 = &g_fight_strike_reverse_direction_x;
     s32 i;
 
     for (i = 0; i < 2; i++) {
@@ -4677,10 +4683,11 @@ void object_ResolveFighterHits(void) {
             diff = 0x1000 - diff;
         math_NegNormalize3D(
             (s32 *)&obj->vel,
-            /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached
-             * by the first's address, passed to math_NegNormalize3D (Q96 /
-             * Q117; as s16[3] or {x,y,z}, fighter_ResolveBoneHit scores 2) */
-            &D_800A37E8);
+            /* FAKE: g_fight_strike_reverse_direction_x / EA / EC are one s16
+             * x,y,z vector reached by the first's address, passed to
+             * math_NegNormalize3D (Q96 / Q117; as s16[3] or {x,y,z},
+             * fighter_ResolveBoneHit scores 2) */
+            &g_fight_strike_reverse_direction_x);
         obj->pos.x -= obj->vel.x / 2;
         obj->pos.y -= obj->vel.y / 2;
         obj->pos.z -= obj->vel.z / 2;
@@ -4705,11 +4712,11 @@ void object_ResolveFighterHits(void) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 target_fighter_index ^ 1, 0xE,
                 &SPAD->spadA8[target_fighter_index][j].x,
-                /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached
-                 * by the first's address, passed to
+                /* FAKE: g_fight_strike_reverse_direction_x / EA / EC are one
+                 * s16 x,y,z vector reached by the first's address, passed to
                  * fight_RecordReplayEventAndDispatchSoundOrEffect (Q96 / Q117;
                  * as s16[3] or {x,y,z}, fighter_ResolveBoneHit scores 2) */
-                &D_800A37E8);
+                &g_fight_strike_reverse_direction_x);
             obj->kind = -1;
             continue;
         }
@@ -6147,7 +6154,7 @@ void fight_AdvanceMatch(void) {
         g_fight_reinit_phase_timer = 0;
         g_fight_sound_cue_countdown = 0x50;
         g_fight_time_up_phase_timer = 0;
-        D_800A37E1 = 0;
+        g_fight_out_of_bounds_phase_timer = 0;
         g_fight_match_result_timer = 0;
         g_fight_mark_tally_phase_timer = 0;
         g_fight_point_award_phase_timer = 0;

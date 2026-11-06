@@ -18,7 +18,7 @@ glabel fight_ResetGraphAndReloadResourcesOnCachedKeyChange
     /* DFD0 8001D7D0 0980013C */  lui        $at, %hi(g_fight_character_vab_and_ground_quad_classes)
     /* DFD4 8001D7D4 21082200 */  addu       $at, $at, $v0
     /* DFD8 8001D7D8 A8E52390 */  lbu        $v1, %lo(g_fight_character_vab_and_ground_quad_classes)($at)
-    /* DFDC 8001D7DC 30008283 */  lb         $v0, %gp_rel(D_800A30FC)($gp)
+    /* DFDC 8001D7DC 30008283 */  lb         $v0, %gp_rel(g_fight_loaded_first_fighter_vab_and_ground_quad_class)($gp)
     /* DFE0 8001D7E0 00000000 */  nop
     /* DFE4 8001D7E4 0A006214 */  bne        $v1, $v0, .L8001D810
     /* DFE8 8001D7E8 00000000 */   nop
@@ -27,7 +27,7 @@ glabel fight_ResetGraphAndReloadResourcesOnCachedKeyChange
     /* DFF4 8001D7F4 0980013C */  lui        $at, %hi(g_fight_character_vab_and_ground_quad_classes)
     /* DFF8 8001D7F8 21082200 */  addu       $at, $at, $v0
     /* DFFC 8001D7FC A8E52390 */  lbu        $v1, %lo(g_fight_character_vab_and_ground_quad_classes)($at)
-    /* E000 8001D800 31008283 */  lb         $v0, %gp_rel(D_800A30FD)($gp)
+    /* E000 8001D800 31008283 */  lb         $v0, %gp_rel(g_fight_loaded_second_fighter_vab_and_ground_quad_class)($gp)
     /* E004 8001D804 00000000 */  nop
     /* E008 8001D808 37006210 */  beq        $v1, $v0, .L8001D8E8
     /* E00C 8001D80C 00000000 */   nop
@@ -68,12 +68,12 @@ glabel fight_ResetGraphAndReloadResourcesOnCachedKeyChange
     /* E094 8001D894 1080043C */  lui        $a0, %hi(g_fight_config + 0x5)
     /* E098 8001D898 7D278480 */  lb         $a0, %lo(g_fight_config + 0x5)($a0)
     /* E09C 8001D89C 21884000 */  addu       $s1, $v0, $zero
-    /* E0A0 8001D8A0 300083A3 */  sb         $v1, %gp_rel(D_800A30FC)($gp)
+    /* E0A0 8001D8A0 300083A3 */  sb         $v1, %gp_rel(g_fight_loaded_first_fighter_vab_and_ground_quad_class)($gp)
     /* E0A4 8001D8A4 0980013C */  lui        $at, %hi(g_fight_character_vab_and_ground_quad_classes)
     /* E0A8 8001D8A8 21082400 */  addu       $at, $at, $a0
     /* E0AC 8001D8AC A8E52390 */  lbu        $v1, %lo(g_fight_character_vab_and_ground_quad_classes)($at)
     /* E0B0 8001D8B0 1925222A */  slti       $v0, $s1, 0x2519
-    /* E0B4 8001D8B4 310083A3 */  sb         $v1, %gp_rel(D_800A30FD)($gp)
+    /* E0B4 8001D8B4 310083A3 */  sb         $v1, %gp_rel(g_fight_loaded_second_fighter_vab_and_ground_quad_class)($gp)
     /* E0B8 8001D8B8 03004014 */  bnez       $v0, .L8001D8C8
     /* E0BC 8001D8BC 00000000 */   nop
     /* E0C0 8001D8C0 0F5B000C */  jal        sys_Panic

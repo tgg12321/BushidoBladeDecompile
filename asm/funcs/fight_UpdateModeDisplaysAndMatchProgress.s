@@ -129,8 +129,8 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D834 8001D034 AE740008 */  j          .L8001D2B8
     /* D838 8001D038 00000000 */   nop
   .L8001D03C:
-    /* D83C 8001D03C 0A80023C */  lui        $v0, %hi(D_800A37E1)
-    /* D840 8001D040 E1374290 */  lbu        $v0, %lo(D_800A37E1)($v0)
+    /* D83C 8001D03C 0A80023C */  lui        $v0, %hi(g_fight_out_of_bounds_phase_timer)
+    /* D840 8001D040 E1374290 */  lbu        $v0, %lo(g_fight_out_of_bounds_phase_timer)($v0)
     /* D844 8001D044 00000000 */  nop
     /* D848 8001D048 30004010 */  beqz       $v0, .L8001D10C
     /* D84C 8001D04C 02000424 */   addiu     $a0, $zero, 0x2
@@ -144,14 +144,14 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
   .L8001D06C:
     /* D86C 8001D06C 83100200 */  sra        $v0, $v0, 2
     /* D870 8001D070 80100200 */  sll        $v0, $v0, 2
-    /* D874 8001D074 0A80043C */  lui        $a0, %hi(D_800A37E1)
-    /* D878 8001D078 E1378490 */  lbu        $a0, %lo(D_800A37E1)($a0)
+    /* D874 8001D074 0A80043C */  lui        $a0, %hi(g_fight_out_of_bounds_phase_timer)
+    /* D878 8001D078 E1378490 */  lbu        $a0, %lo(g_fight_out_of_bounds_phase_timer)($a0)
     /* D87C 8001D07C 0A80033C */  lui        $v1, %hi(g_prim_buf_cursor)
     /* D880 8001D080 B438638C */  lw         $v1, %lo(g_prim_buf_cursor)($v1)
     /* D884 8001D084 01008424 */  addiu      $a0, $a0, 0x1
     /* D888 8001D088 21186200 */  addu       $v1, $v1, $v0
-    /* D88C 8001D08C 0A80013C */  lui        $at, %hi(D_800A37E1)
-    /* D890 8001D090 E13724A0 */  sb         $a0, %lo(D_800A37E1)($at)
+    /* D88C 8001D08C 0A80013C */  lui        $at, %hi(g_fight_out_of_bounds_phase_timer)
+    /* D890 8001D090 E13724A0 */  sb         $a0, %lo(g_fight_out_of_bounds_phase_timer)($at)
     /* D894 8001D094 FF008430 */  andi       $a0, $a0, 0xFF
     /* D898 8001D098 3C000224 */  addiu      $v0, $zero, 0x3C
     /* D89C 8001D09C 0A80013C */  lui        $at, %hi(g_prim_buf_cursor)
@@ -160,8 +160,8 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D8A8 8001D0A8 00000000 */   nop
     /* D8AC 8001D0AC 0A80023C */  lui        $v0, %hi(g_fight_result_subject_index)
     /* D8B0 8001D0B0 B0384290 */  lbu        $v0, %lo(g_fight_result_subject_index)($v0)
-    /* D8B4 8001D0B4 0A80013C */  lui        $at, %hi(D_800A37E1)
-    /* D8B8 8001D0B8 E13720A0 */  sb         $zero, %lo(D_800A37E1)($at)
+    /* D8B4 8001D0B4 0A80013C */  lui        $at, %hi(g_fight_out_of_bounds_phase_timer)
+    /* D8B8 8001D0B8 E13720A0 */  sb         $zero, %lo(g_fight_out_of_bounds_phase_timer)($at)
     /* D8BC 8001D0BC 7D005010 */  beq        $v0, $s0, .L8001D2B4
     /* D8C0 8001D0C0 A0000424 */   addiu     $a0, $zero, 0xA0
     /* D8C4 8001D0C4 7F000524 */  addiu      $a1, $zero, 0x7F
@@ -477,8 +477,8 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* DD44 8001D544 1080043C */  lui        $a0, %hi(D_80101F32)
     /* DD48 8001D548 321F8494 */  lhu        $a0, %lo(D_80101F32)($a0)
     /* DD4C 8001D54C 01000224 */  addiu      $v0, $zero, 0x1
-    /* DD50 8001D550 0A80013C */  lui        $at, %hi(D_800A37E1)
-    /* DD54 8001D554 E13722A0 */  sb         $v0, %lo(D_800A37E1)($at)
+    /* DD50 8001D550 0A80013C */  lui        $at, %hi(g_fight_out_of_bounds_phase_timer)
+    /* DD54 8001D554 E13722A0 */  sb         $v0, %lo(g_fight_out_of_bounds_phase_timer)($at)
     /* DD58 8001D558 13000224 */  addiu      $v0, $zero, 0x13
     /* DD5C 8001D55C FFFF8330 */  andi       $v1, $a0, 0xFFFF
     /* DD60 8001D560 0A006210 */  beq        $v1, $v0, .L8001D58C
@@ -508,8 +508,8 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* DDB8 8001D5B8 1080043C */  lui        $a0, %hi(D_8010237E)
     /* DDBC 8001D5BC 7E238494 */  lhu        $a0, %lo(D_8010237E)($a0)
     /* DDC0 8001D5C0 01000224 */  addiu      $v0, $zero, 0x1
-    /* DDC4 8001D5C4 0A80013C */  lui        $at, %hi(D_800A37E1)
-    /* DDC8 8001D5C8 E13722A0 */  sb         $v0, %lo(D_800A37E1)($at)
+    /* DDC4 8001D5C4 0A80013C */  lui        $at, %hi(g_fight_out_of_bounds_phase_timer)
+    /* DDC8 8001D5C8 E13722A0 */  sb         $v0, %lo(g_fight_out_of_bounds_phase_timer)($at)
     /* DDCC 8001D5CC 13000224 */  addiu      $v0, $zero, 0x13
     /* DDD0 8001D5D0 FFFF8330 */  andi       $v1, $a0, 0xFFFF
     /* DDD4 8001D5D4 0B006210 */  beq        $v1, $v0, .L8001D604

@@ -427,15 +427,15 @@ glabel fighter_CastWeaponSegment
     /* 1B2A4 8002AAA4 00000000 */  nop
     /* 1B2A8 8002AAA8 23100900 */  negu       $v0, $t1
     /* 1B2AC 8002AAAC 4001A98F */  lw         $t1, 0x140($sp)
-    /* 1B2B0 8002AAB0 0A80013C */  lui        $at, %hi(D_800A37E8)
-    /* 1B2B4 8002AAB4 E83722A4 */  sh         $v0, %lo(D_800A37E8)($at)
+    /* 1B2B0 8002AAB0 0A80013C */  lui        $at, %hi(g_fight_strike_reverse_direction_x)
+    /* 1B2B4 8002AAB4 E83722A4 */  sh         $v0, %lo(g_fight_strike_reverse_direction_x)($at)
     /* 1B2B8 8002AAB8 23100900 */  negu       $v0, $t1
     /* 1B2BC 8002AABC 4801A98F */  lw         $t1, 0x148($sp)
-    /* 1B2C0 8002AAC0 0A80013C */  lui        $at, %hi(D_800A37EA)
-    /* 1B2C4 8002AAC4 EA3722A4 */  sh         $v0, %lo(D_800A37EA)($at)
+    /* 1B2C0 8002AAC0 0A80013C */  lui        $at, %hi(g_fight_strike_reverse_direction_y)
+    /* 1B2C4 8002AAC4 EA3722A4 */  sh         $v0, %lo(g_fight_strike_reverse_direction_y)($at)
     /* 1B2C8 8002AAC8 23100900 */  negu       $v0, $t1
-    /* 1B2CC 8002AACC 0A80013C */  lui        $at, %hi(D_800A37EC)
-    /* 1B2D0 8002AAD0 EC3722A4 */  sh         $v0, %lo(D_800A37EC)($at)
+    /* 1B2CC 8002AACC 0A80013C */  lui        $at, %hi(g_fight_strike_reverse_direction_z)
+    /* 1B2D0 8002AAD0 EC3722A4 */  sh         $v0, %lo(g_fight_strike_reverse_direction_z)($at)
   .L8002AAD4:
     /* 1B2D4 8002AAD4 7C01BF8F */  lw         $ra, 0x17C($sp)
     /* 1B2D8 8002AAD8 7801BE8F */  lw         $fp, 0x178($sp)

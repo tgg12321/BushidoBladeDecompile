@@ -65,9 +65,10 @@ s16 g_gpu_fog_move_settings[39][2] = {
 };
 
 /* gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards's row
- * masks, 64 angle rows and a 65th (size from the gap to D_800927C0; the
- * .L80091560 label inside was a stray branch target). */
-s32 D_80090740[65][32] = {
+ * masks, 64 angle rows and a 65th (size from the gap to
+ * g_gpu_tracked_fighter_view_yaw_cell_masks; the .L80091560 label inside was a
+ * stray branch target). */
+s32 g_gpu_grid_yaw_cell_masks[65][32] = {
     {0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
      0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
      0x00000000, 0x00000000, 0x00000000, 0x0001E000, 0x0001F000, 0x0003F000,
@@ -461,8 +462,8 @@ s32 D_80090740[65][32] = {
 };
 
 /* The same for g_gpu_tracked_fighter_view_active != 0; 65 rows from the gap to
- * D_80094840. */
-s32 D_800927C0[65][32] = {
+ * g_gpu_grid_disc_cell_mask. */
+s32 g_gpu_tracked_fighter_view_yaw_cell_masks[65][32] = {
     {0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
      0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
      0x00000000, 0x00000000, 0x00000000, 0x0001F000, 0x0003F800, 0x0007FC00,
@@ -855,10 +856,10 @@ s32 D_800927C0[65][32] = {
      0x00000000, 0x00000000},
 };
 
-/* ANDed with a D_80090740 row: 31 words,
+/* ANDed with a g_gpu_grid_yaw_cell_masks row: 31 words,
  * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards's loop
  * count. */
-s32 D_80094840[31] = {
+s32 g_gpu_grid_disc_cell_mask[31] = {
     0x00000000, 0x00000000, 0x0001C000, 0x001FFC00, 0x007FFF00, 0x00FFFF80,
     0x01FFFFC0, 0x03FFFFE0, 0x07FFFFF0, 0x07FFFFF0, 0x0FFFFFF8, 0x0FFFFFF8,
     0x0FFFFFF8, 0x0FFFFFF8, 0x1FFFFFFC, 0x1FFFFFFC, 0x1FFFFFFC, 0x0FFFFFF8,
@@ -919,7 +920,7 @@ Unk800948BCEntry g_resource_selector_callbacks[38] = {
  * g_gpu_view_centered_cell_attribute_pattern (32 words, from the end of
  * g_resource_selector_callbacks to g_gpu_view_centered_cell_attribute_pattern).
  */
-s32 D_800949EC[32] = {
+s32 g_hollow_2bit_cell_pattern[32] = {
     0x00000000, 0x00000000, 0x00155500, 0x01555550, 0x01555550, 0x0556A554,
     0x055AA954, 0x05680A54, 0x05680A54, 0x05680A54, 0x055AA954, 0x0556A554,
     0x01555550, 0x01555550, 0x00155500, 0x00000000, 0x00000000, 0x00000000,

@@ -293,7 +293,7 @@ void sys_InitAtBoot(void) {
     pad_ResetStateMarkValid();
     font_LoadImage();
     fight_InitSettings();
-    D_800A36F9 = 0;
+    g_config_menu_m_option = 0;
     g_fight_view_option = 0;
     D_800A3744 = 0;
     D_800A3745 = 0;
@@ -832,7 +832,7 @@ u8 g_gpu_jitter_burst_enabled;
 s32 g_gpu_presented_frame_count;
 u8 D_800A36B0;
 u8 g_main_frame_period;
-u8 D_800A36F9;
+u8 g_config_menu_m_option;
 s16 g_camera_distance_offset;
 u8 g_fight_auto_pause_countdown;
 u8 g_eff_initialized;

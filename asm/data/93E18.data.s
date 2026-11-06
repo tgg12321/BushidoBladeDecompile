@@ -339,11 +339,11 @@ dlabel g_replay_write_frame
     /* 93EF8 800A36F8 */ .byte 0x00
 enddlabel g_replay_write_frame
 
-nonmatching D_800A36F9
+nonmatching g_config_menu_m_option
 
-dlabel D_800A36F9
+dlabel g_config_menu_m_option
     /* 93EF9 800A36F9 */ .byte 0x00
-enddlabel D_800A36F9
+enddlabel g_config_menu_m_option
 
 nonmatching g_camera_fight_view_mode
 
@@ -830,9 +830,9 @@ dlabel D_800A37E0
     /* 93FE0 800A37E0 */ .byte 0x00
 enddlabel D_800A37E0
 
-nonmatching D_800A37E1
+nonmatching g_fight_out_of_bounds_phase_timer
 
-dlabel D_800A37E1
+dlabel g_fight_out_of_bounds_phase_timer
     /* 93FE1 800A37E1 */ .byte 0x00
     /* 93FE2 800A37E2 */ .byte 0x00
     /* 93FE3 800A37E3 */ .byte 0x00
@@ -840,26 +840,26 @@ dlabel D_800A37E1
     /* 93FE5 800A37E5 */ .byte 0x00
     /* 93FE6 800A37E6 */ .byte 0x00
     /* 93FE7 800A37E7 */ .byte 0x00
-enddlabel D_800A37E1
+enddlabel g_fight_out_of_bounds_phase_timer
 
-nonmatching D_800A37E8
+nonmatching g_fight_strike_reverse_direction_x
 
-dlabel D_800A37E8
+dlabel g_fight_strike_reverse_direction_x
     /* 93FE8 800A37E8 */ .short 0x0000
-enddlabel D_800A37E8
+enddlabel g_fight_strike_reverse_direction_x
 
-nonmatching D_800A37EA
+nonmatching g_fight_strike_reverse_direction_y
 
-dlabel D_800A37EA
+dlabel g_fight_strike_reverse_direction_y
     /* 93FEA 800A37EA */ .short 0x0000
-enddlabel D_800A37EA
+enddlabel g_fight_strike_reverse_direction_y
 
-nonmatching D_800A37EC
+nonmatching g_fight_strike_reverse_direction_z
 
-dlabel D_800A37EC
+dlabel g_fight_strike_reverse_direction_z
     /* 93FEC 800A37EC */ .short 0x0000
     /* 93FEE 800A37EE */ .short 0x0000
-enddlabel D_800A37EC
+enddlabel g_fight_strike_reverse_direction_z
 
 nonmatching g_memcard_sw_event_err
 

@@ -64,8 +64,8 @@ glabel fighter_Init
     /* 12E6C 8002266C 00000000 */  nop
     /* 12E70 80022670 0D006214 */  bne        $v1, $v0, .L800226A8
     /* 12E74 80022674 00000000 */   nop
-    /* 12E78 80022678 0980043C */  lui        $a0, %hi(D_8008EB28)
-    /* 12E7C 8002267C 28EB8424 */  addiu      $a0, $a0, %lo(D_8008EB28)
+    /* 12E78 80022678 0980043C */  lui        $a0, %hi(g_fighter_weapon_entry_ids_by_group_flag)
+    /* 12E7C 8002267C 28EB8424 */  addiu      $a0, $a0, %lo(g_fighter_weapon_entry_ids_by_group_flag)
     /* 12E80 80022680 0000038E */  lw         $v1, 0x0($s0)
     /* 12E84 80022684 0E000286 */  lh         $v0, 0xE($s0)
     /* 12E88 80022688 0A006384 */  lh         $v1, 0xA($v1)
@@ -90,8 +90,8 @@ glabel fighter_Init
     /* 12ED0 800226D0 0C004012 */  beqz       $s2, .L80022704
     /* 12ED4 800226D4 32000224 */   addiu     $v0, $zero, 0x32
   .L800226D8:
-    /* 12ED8 800226D8 0980043C */  lui        $a0, %hi(D_8008EB28)
-    /* 12EDC 800226DC 28EB8424 */  addiu      $a0, $a0, %lo(D_8008EB28)
+    /* 12ED8 800226D8 0980043C */  lui        $a0, %hi(g_fighter_weapon_entry_ids_by_group_flag)
+    /* 12EDC 800226DC 28EB8424 */  addiu      $a0, $a0, %lo(g_fighter_weapon_entry_ids_by_group_flag)
     /* 12EE0 800226E0 0E000286 */  lh         $v0, 0xE($s0)
     /* 12EE4 800226E4 0A000386 */  lh         $v1, 0xA($s0)
     /* 12EE8 800226E8 40100200 */  sll        $v0, $v0, 1

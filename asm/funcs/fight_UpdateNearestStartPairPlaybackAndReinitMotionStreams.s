@@ -19,9 +19,9 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2D7C8 8003CFC8 D21E2284 */  lh         $v0, %lo(g_fighter_records + 0xA)($at)
     /* 2D7CC 8003CFCC 00000000 */  nop
     /* 2D7D0 8003CFD0 40100200 */  sll        $v0, $v0, 1
-    /* 2D7D4 8003CFD4 0980013C */  lui        $at, %hi(D_8008EAC0)
+    /* 2D7D4 8003CFD4 0980013C */  lui        $at, %hi(g_fight_followup_playback_own_character_sound_frames)
     /* 2D7D8 8003CFD8 21082200 */  addu       $at, $at, $v0
-    /* 2D7DC 8003CFDC C0EA2384 */  lh         $v1, %lo(D_8008EAC0)($at)
+    /* 2D7DC 8003CFDC C0EA2384 */  lh         $v1, %lo(g_fight_followup_playback_own_character_sound_frames)($at)
     /* 2D7E0 8003CFE0 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
     /* 2D7E4 8003CFE4 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2D7E8 8003CFE8 00000000 */  nop
@@ -67,8 +67,8 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2D880 8003D080 9471010C */  jal        snd_QueueSound
     /* 2D884 8003D084 36008424 */   addiu     $a0, $a0, 0x36
   .L8003D088:
-    /* 2D888 8003D088 0980033C */  lui        $v1, %hi(D_8008EB08)
-    /* 2D88C 8003D08C 08EB6384 */  lh         $v1, %lo(D_8008EB08)($v1)
+    /* 2D888 8003D088 0980033C */  lui        $v1, %hi(g_fight_followup_playback_other_fighter_sound_frame)
+    /* 2D88C 8003D08C 08EB6384 */  lh         $v1, %lo(g_fight_followup_playback_other_fighter_sound_frame)($v1)
     /* 2D890 8003D090 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
     /* 2D894 8003D094 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2D898 8003D098 00000000 */  nop

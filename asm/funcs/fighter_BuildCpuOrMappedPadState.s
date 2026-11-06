@@ -331,8 +331,8 @@ glabel fighter_BuildCpuOrMappedPadState
     /* CAB8 8001C2B8 00000000 */  nop
     /* CABC 8001C2BC 15004014 */  bnez       $v0, .L8001C314
     /* CAC0 8001C2C0 00000000 */   nop
-    /* CAC4 8001C2C4 0A80023C */  lui        $v0, %hi(D_800A37E1)
-    /* CAC8 8001C2C8 E1374290 */  lbu        $v0, %lo(D_800A37E1)($v0)
+    /* CAC4 8001C2C4 0A80023C */  lui        $v0, %hi(g_fight_out_of_bounds_phase_timer)
+    /* CAC8 8001C2C8 E1374290 */  lbu        $v0, %lo(g_fight_out_of_bounds_phase_timer)($v0)
     /* CACC 8001C2CC 00000000 */  nop
     /* CAD0 8001C2D0 10004014 */  bnez       $v0, .L8001C314
     /* CAD4 8001C2D4 00000000 */   nop

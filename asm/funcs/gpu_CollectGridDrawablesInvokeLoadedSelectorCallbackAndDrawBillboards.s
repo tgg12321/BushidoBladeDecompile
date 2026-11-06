@@ -70,8 +70,8 @@ glabel gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
     /* 2EFE8 8003E7E8 06006010 */  beqz       $v1, .L8003E804
     /* 2EFEC 8003E7EC 3F004630 */   andi      $a2, $v0, 0x3F
     /* 2EFF0 8003E7F0 C0190600 */  sll        $v1, $a2, 7
-    /* 2EFF4 8003E7F4 0980023C */  lui        $v0, %hi(D_800927C0)
-    /* 2EFF8 8003E7F8 C0274224 */  addiu      $v0, $v0, %lo(D_800927C0)
+    /* 2EFF4 8003E7F4 0980023C */  lui        $v0, %hi(g_gpu_tracked_fighter_view_yaw_cell_masks)
+    /* 2EFF8 8003E7F8 C0274224 */  addiu      $v0, $v0, %lo(g_gpu_tracked_fighter_view_yaw_cell_masks)
     /* 2EFFC 8003E7FC 1FFA0008 */  j          .L8003E87C
     /* 2F000 8003E800 21606200 */   addu      $t4, $v1, $v0
   .L8003E804:
@@ -81,15 +81,15 @@ glabel gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
     /* 2F010 8003E810 01004230 */  andi       $v0, $v0, 0x1
     /* 2F014 8003E814 05004010 */  beqz       $v0, .L8003E82C
     /* 2F018 8003E818 C0190600 */   sll       $v1, $a2, 7
-    /* 2F01C 8003E81C 0980023C */  lui        $v0, %hi(D_80090740)
-    /* 2F020 8003E820 40074224 */  addiu      $v0, $v0, %lo(D_80090740)
+    /* 2F01C 8003E81C 0980023C */  lui        $v0, %hi(g_gpu_grid_yaw_cell_masks)
+    /* 2F020 8003E820 40074224 */  addiu      $v0, $v0, %lo(g_gpu_grid_yaw_cell_masks)
     /* 2F024 8003E824 1FFA0008 */  j          .L8003E87C
     /* 2F028 8003E828 21606200 */   addu      $t4, $v1, $v0
   .L8003E82C:
-    /* 2F02C 8003E82C 0980073C */  lui        $a3, %hi(D_80094840)
-    /* 2F030 8003E830 4048E724 */  addiu      $a3, $a3, %lo(D_80094840)
-    /* 2F034 8003E834 0980023C */  lui        $v0, %hi(D_80090740)
-    /* 2F038 8003E838 40074224 */  addiu      $v0, $v0, %lo(D_80090740)
+    /* 2F02C 8003E82C 0980073C */  lui        $a3, %hi(g_gpu_grid_disc_cell_mask)
+    /* 2F030 8003E830 4048E724 */  addiu      $a3, $a3, %lo(g_gpu_grid_disc_cell_mask)
+    /* 2F034 8003E834 0980023C */  lui        $v0, %hi(g_gpu_grid_yaw_cell_masks)
+    /* 2F038 8003E838 40074224 */  addiu      $v0, $v0, %lo(g_gpu_grid_yaw_cell_masks)
     /* 2F03C 8003E83C 21606200 */  addu       $t4, $v1, $v0
     /* 2F040 8003E840 801F063C */  lui        $a2, (0x1F800004 >> 16)
     /* 2F044 8003E844 0400C634 */  ori        $a2, $a2, (0x1F800004 & 0xFFFF)
