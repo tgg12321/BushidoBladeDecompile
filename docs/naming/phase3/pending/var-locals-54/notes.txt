@@ -1,0 +1,51 @@
+var-locals-54 (naming-b 2026-11-06): 15 research rows, 15 drafted, 0 dropped (2 renamed by the drafter); 103 substitutions: 17AFC.c 17, 25C38.c 3, 2B344.c 4, 4510C.c 62, 6CF8.c 17; no include/ file touched.
+Class: m2c placeholder locals and parameters (arg0, a0, var_N, val) in 9 functions of 5 files, reached by the landed const-fight-mode (FIGHT_MODE_* tests), const-row-menu-subflow (enum RowMenuSubflow stores in menu_InitSubflowForMode) and var-locals-53 (descriptor_index / D_800A390C).
+Tree: ln-naming-b = main eee832786 (clean). Research: tmp/codex/var-locals-54-research.md (its line numbers match HEAD; this draft uses HEAD numbers).
+Method (drafter, re-derived, not copied): every definition read at eee832786 together with its callers (C and asm/funcs/*.s for the parameters); a regex tokenizer with brace matching (tmp/vl54/scan.py), separate from scoped_plan (comments and strings blanked, ./-> member tokens excluded), gives every use line of signature + body: all 15 lists equal the research and equal the scoped_plan alone lines (dry.txt). Whole-word grep of src/, include/, asm/, tools/, engine/, symbol_addrs.txt for every new name (no hit except descriptor_index and mode_selector, which are only locals / parameters of other functions). docs/naming/phase3/no_name.tsv has no entry for any of the 15 bindings (its only entry in these files is menu_RunPauseMenu:var_7, not proposed). No binding is FAKE-covered (fighter_ResolveBoneHit var_0 / var_1, menu_RunPauseMenu var_1 / var_7 and motion_LoadFighterData var_0 / j are excluded).
+
+Specific checks:
+- fighter_ResolveBoneHit:arg0 / fighter_ResolveBoneHitTail:arg0 / fighter_DispatchBoneHitSoundEvent:a0 = is_object_hit: the only callers (C 17AFC.c:2240 literal 0, 4694 literal 1; asm fighter_ProcessWeaponBodyHits.s:1178, object_ResolveFighterHits.s:220) give 0 / 1, 1 = a pooled object hits a fighter; the two callees take the same value forwarded (443-451, 530-531, 570-589). Every in-function use is a test or forward of that one predicate. The three rows share one name in three different functions; none collides in its own function. If a reviewer rejects the predicate reading, drop all three.
+- fighter_InitCpuControl:var_2=limits_row, :var_5=script_row, :var_9=mask_bit_index: row of D_8009A9B4 (u8 [20][2]) read for two limit members; the index of the three script rows (game.h:1658 already says so); the shift count of the `1 << var_9` entry-mask test, assigned from either character_data_index or cpu_profile (so it claims neither).
+- fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_22=wide_radius_flag: DEVIATION from the research name wide_waypoint_radius. The value is `result & 4` (4 or 0), tested as a boolean and in a ?: at 2316, never used as the radius itself; a radius-named local holding 4 would fail N1. wide_radius_flag claims only the selection. Kept.
+- :var_37=pick_variant and :var_3=best_pick_variant, :var_56=pick_chance (same function): var_37 is reset per pick and latched into var_3 with best_pick_weight_index; var_3 is read only to choose the odd / even action of the winning pair; var_56 is compared with a rand() & 0xFF byte (quartered when the latched nibble is 4). Names claim only those roles; the profile member unk6 stays unnamed. var_41, var_54, var_55 and var_59 are not proposed (NO_NAME).
+- fight_HandleDescriptorPlaybackCompletion:val=descriptor_index (OPTIONAL): D_800A390C has one writer (the landed descriptor_index parameter) and val is its sole reader; 0 means none latched. The existing name is neutral, so a reviewer may drop this row without affecting any other.
+- menu_InitSubflowForMode:arg0=mode_selector: the callers pass g_fight_mode_selector and (s8)pending_mode_selector; the switch handles 0-7 where 7 is the option menu (not a FightMode value), which is why the name is mode_selector and not fight_mode.
+- menu_RunPauseMenu:var_2=selected_row: the cursor row (wraps 0..limit-1, drawn as the selected cell, indexes toggle bits from row 3, decides the exit action). The FAKE comment at 6CF8.c:359-360 spells var_2 and is rewritten (names only) below. var_1 and var_7 stay.
+- fighter_BuildCpuPad:var_1=updated_record and :var_2=updated_record_opponent (pair; drop both if either fails): DEVIATION from the research name updated_opponent, which could be read as the opponent being the updated one. var_1 is the record whose opponent-relative fields are refreshed; var_2 is that record's opponent (rec->other or rec, by the build-count parity), only its position is read.
+
+Required comment edits (Q133: comments naming an old name are rewritten with the pair; the FAKE label and its content are kept):
+1. src/main/6CF8.c:359-360 (FAKE comment in menu_RunPauseMenu before the do-while). Replace these 2 lines:
+        /* FAKE: do-while(0) raises var_1's loop-depth weight above var_2's,
+           seating var_1 in $s0 and var_2 in $s1; unwrapped: score 21.
+with these 3 lines (reflowed, all <= 80 columns; 6CF8.c:361 `Unwrapped trials: ...` stays):
+        /* FAKE: do-while(0) raises var_1's loop-depth weight above
+           selected_row's, seating var_1 in $s0 and selected_row in $s1;
+           unwrapped: score 21.
+No other comment in the 9 functions spells an old name: 17AFC.c:262-312 / 358-639 and 2235-2239 (names the function and "first argument 1 / 0", no old token), 4510C.c:268-484 / 603-988 / 1745-3024, 2B344.c:590-633, 25C38.c:114-205 and 6CF8.c:310-417 were checked by a comment scan; game.h:1658 already describes the script_row index.
+Width: the substituted lines listed in dry.txt exceed 80 columns; tools/format.py reflows them (token-preserving).
+
+DROPPED:
+- none. All 15 research rows re-derived true at every use and accepted by scoped_plan together and alone (two renamed, see wide_radius_flag and updated_record_opponent above).
+
+Research notes copied below (NO_NAME with reasons, LEADS retitled for var-locals-55)
+## NO_NAME
+- fighter_ResolveBoneHit:arg6 (17AFC.c:377). Uses 444 / 451 / 531 forward it as fighter_DispatchBoneHitSoundEvent:stack_v1, which then dispatches event 0x2B for the opponent and returns. Callers pass `flag` (17AFC.c:2240; set to 1 for attacker roster 0x1D / 0xE on the second weapon point, 2216-2221) and 0 (4694). The roster-specific condition shows no role a name could claim beyond the event, so it is kept.
+- fighter_ResolveBoneHit:var_12 (17AFC.c:394). Uses: 463 `= fighter_record->unk_AF == other_record->unk_AF`, 464 stored to both unk_B4, 466 event 0xF vs 2, 469 last index of g_fighter_power_difference_move_events. While unk_AF / unk_B4 are unnamed, "same unk_AF" is all the code says. The members need names first (LEADS).
+- fighter_ResolveBoneHit:var_0 / var_1: FAKE (17AFC.c:378-381). Excluded per brief.
+- fighter_AccumulateBoneGroupFlagWhenGameModeZero:a0 (17AFC.c:79, within 70-117): every use is a `/* FAKE: Q97 */` site (`*(&g_fight_bone_group_tim_requests + a0)`), and the only caller passes 0 (17AFC.c:528). Excluded because the FAKE covers it.
+- fighter_InitCpuControl:temp: a reused local with six roles (Ruling 11 comment, 4510C.c:285-290); a multi-role local has no single name.
+- fighter_InitCpuControl:var_18: FAKE-staged (4510C.c:431-435).
+- fighter_InitCpuControl:var_15 (4510C.c:291, 419 `= e[0] & 7`, 421 tested `< 2` or `== 7`): the low three bits of entry byte 0 have no established meaning, so it is kept.
+- fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_41 (2033 `= 0`; 2035 `= cpu_pad_build_count > 0x3C` under a cpu_level/8 roll; 2053 lets range rules without flag 4 match). A name would have to say what rule flag 4 means, so it is kept.
+- fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_54 / var_55 (2415-2421): block-local u8[4] copies of D_800A325C / D_800A3260, indexed by the opponent's motion_metadata_nibble for opponent move_kind 0x19 / 0x1A. The globals are unnamed; name them first (LEADS).
+- fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_59: final const-holder in no_name.tsv (FAKE at 2673).
+- menu_RunPauseMenu:var_1 / var_7: covered by the FAKEs (6CF8.c:322-325, 359-367). arg0 receives main's var_1 (excluded) and is used only through var_7; arg1 is unused.
+- Temps reached by FIGHT_MODE tests that hold more than one value (Ruling 11): fighter_BuildCpuOrMappedPadState:temp (9F9C.c:1103: shift 16*i, then 4*i or 0), fight_UpdateModeDisplaysAndMatchProgress:temp (9F9C.c:1569-1572), fight_SearchRadialFlatSurfacePointOrUseStartPositionPair:temp (9F9C.c:3771-3777), fighter_Update:temp (9F9C.c:4749, several roles), object_UpdatePool:temp (17AFC.c:4362-4367), fighter_BuildCpuPad:temp / temp2 / temp3 (4510C.c:610-627).
+- Excluded per brief, not revisited: fight_RecordReplayEventAndDispatchSoundOrEffect:arg0, replay_RecordEvent:arg0, fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags:ranks/moves, menu_UpdateEntryGridCursors:var_6, menu_UpdateRowCursors:var_4, fighter_ProcessWeaponBodyHits:var_1, PatchColorImmediatesAtListedCodeSites:a1, replay_PlayFrame:var_19/temp, fight_RunCommandStream:var_0, fight_SearchRadialFlatSurfacePointOrUseStartPositionPair:arg0, pad_Update:arg0, motion_LoadFighterData:var_0/j.
+
+## LEADS for var-locals-55
+- Members Unk80101EC8Record.unk_AF and unk_B4. unk_AF is set at 9F9C.c:3736-3738 to `(matched_transition_command_byte & 0xF) != 5` for attack move kinds 2/0x1B/0x28/0x26, and read at 17AFC.c:463 and 4510C.c:1848 (`& 1`). unk_B4 is written at 17AFC.c:464 and read at 9F9C.c:5436. Name them, then fighter_ResolveBoneHit:var_12 can follow.
+- fighter_DispatchBoneHitSoundEvent:a3 (the object-kind record, non-NULL, or the 0/1 flag; 17AFC.c:289) and :stack_v1 (= fighter_ResolveBoneHit:arg6). Both need the meanings of events 0x2B / 0x27.
+- Data: D_800A325C / D_800A3260 (tables from the opponent's motion nibble to a CPU action slot, for opponent move_kind 0x19 / 0x1A); D_8009A9B4 (CHANBARA threshold / wait-limit pairs); D_800A390C / D_800A385C / D_800A37B0 (from var-locals-53).
+- resource_LoadOrReuseSelectedBlock (368E4.c:41): register-style locals s0..s7 / sp18 / sp20 / a0_ptr (s7 is a FAKE reuse). Not reached by recent waves; a candidate set of its own.
+- menu_RunPauseMenu:arg0 together with main:var_1 (both g_gpu_db[idx]), if main:var_1 is ever reopened.

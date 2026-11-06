@@ -1,0 +1,56 @@
+var-locals-54 (naming-b 2026-11-06): 15 local / parameter bindings in 9 functions across 5 files (17AFC.c 17, 25C38.c 3, 2B344.c 4, 4510C.c 62, 6CF8.c 17). Research rows 15, 0 dropped; 2 names changed by the drafter (wide_waypoint_radius -> wide_radius_flag, updated_opponent -> updated_record_opponent).
+Tree: ln-naming-b = main eee832786 (clean). Run in WSL via a script file (tmp/vl54/dry.py + run.sh in the lane worktree; NAMING_KEYCHECK_ROOT = the worktree, venv active).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (same tool result as var-locals-43 .. -53). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree (base = naming_keycheck.read_working_tree()).
+All 15 pairs together were accepted (103 token substitutions: 17AFC.c 17, 25C38.c 3, 2B344.c 4, 4510C.c 62, 6CF8.c 17; no include/ file touched). Each pair was also run alone: all accepted (alone counts sum to 103) and every pair's alone line list equals the drafter's independent token scan (15/15; tmp/vl54/scan.py, written separately from scoped_plan: comments and strings blanked, ./-> member tokens excluded, signature plus body found by brace matching). Lines are mapped from the working-tree text through the token index over naming_keycheck.code_spans.
+Required comment edits: 6CF8.c:359-360 (FAKE comment in menu_RunPauseMenu spelling var_2), see notes.txt. No other comment inside the 9 functions spells an old name (comment scan of every function range).
+Per-pair substitutions (function:old=new count (lines)):
+  fighter_ResolveBoneHit:arg0=is_object_hit 13 (376,426,444,451,458,503,510,522,531,549,571,584,589)
+  fighter_ResolveBoneHitTail:arg0=is_object_hit 2 (360,362)
+  fighter_DispatchBoneHitSoundEvent:a0=is_object_hit 2 (263,267)
+  fighter_InitCpuControl:var_2=limits_row 4 (272,358,359,360)
+  fighter_InitCpuControl:var_5=script_row 8 (278,392,392,392,398,442,443,444)
+  fighter_InitCpuControl:var_9=mask_bit_index 4 (282,384,389,393)
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_22=wide_radius_flag 4 (1805,2308,2309,2316)
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_37=pick_variant 10 (1822,2521,2526,2536,2541,2550,2556,2557,2559,2583)
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_3=best_pick_variant 6 (1749,2583,2603,2606,2613,2620)
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_56=pick_chance 3 (2508,2510,2511)
+  fight_HandleDescriptorPlaybackCompletion:val=descriptor_index 4 (622,624,628,628)
+  menu_InitSubflowForMode:arg0=mode_selector 3 (114,117,121)
+  menu_RunPauseMenu:var_2=selected_row 17 (313,320,349,353,377,386,386,386,389,389,389,392,395,398,403,404,408)
+  fighter_BuildCpuPad:var_1=updated_record 18 (605,637,639,642,642,643,644,645,646,648,649,651,652,653,654,655,656,656)
+  fighter_BuildCpuPad:var_2=updated_record_opponent 5 (606,636,640,644,645)
+
+Line widths after substitution (over 80; python tools/format.py reflows them in the naming commit; token-preserving). Set run (all pairs together, pairs of one function applied to the same line together; none is a function-like macro argument):
+  17AFC.c 444 (76->85)
+  17AFC.c 451 (76->85)
+  17AFC.c 531 (72->81)
+  4510C.c 642 (68->86)
+  4510C.c 644 (56->83)
+  4510C.c 645 (58->85)
+  4510C.c 656 (78->96)
+  4510C.c 2556 (76->82)
+0 rows flagged.
+
+Raw driver output (HEAD eee832786, scoped_plan together then alone per pair; line numbers are working-tree lines):
+SET 15 pairs ACCEPT {'17AFC.c': 17, '25C38.c': 3, '2B344.c': 4, '4510C.c': 62, '6CF8.c': 17} total 103
+  SETLINES 17AFC.c [263, 267, 360, 362, 376, 426, 444, 451, 458, 503, 510, 522, 531, 549, 571, 584, 589]
+  SETLINES 25C38.c [114, 117, 121]
+  SETLINES 2B344.c [622, 624, 628, 628]
+  SETLINES 4510C.c [272, 278, 282, 358, 359, 360, 384, 389, 392, 392, 392, 393, 398, 442, 443, 444, 605, 606, 636, 637, 639, 640, 642, 642, 643, 644, 644, 645, 645, 646, 648, 649, 651, 652, 653, 654, 655, 656, 656, 1749, 1805, 1822, 2308, 2309, 2316, 2508, 2510, 2511, 2521, 2526, 2536, 2541, 2550, 2556, 2557, 2559, 2583, 2583, 2603, 2606, 2613, 2620]
+  SETLINES 6CF8.c [313, 320, 349, 353, 377, 386, 386, 386, 389, 389, 389, 392, 395, 398, 403, 404, 408]
+ALONE fighter_ResolveBoneHit:arg0=is_object_hit ACCEPT 13 17AFC.c [376, 426, 444, 451, 458, 503, 510, 522, 531, 549, 571, 584, 589]
+ALONE fighter_ResolveBoneHitTail:arg0=is_object_hit ACCEPT 2 17AFC.c [360, 362]
+ALONE fighter_DispatchBoneHitSoundEvent:a0=is_object_hit ACCEPT 2 17AFC.c [263, 267]
+ALONE fighter_InitCpuControl:var_2=limits_row ACCEPT 4 4510C.c [272, 358, 359, 360]
+ALONE fighter_InitCpuControl:var_5=script_row ACCEPT 8 4510C.c [278, 392, 392, 392, 398, 442, 443, 444]
+ALONE fighter_InitCpuControl:var_9=mask_bit_index ACCEPT 4 4510C.c [282, 384, 389, 393]
+ALONE fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_22=wide_radius_flag ACCEPT 4 4510C.c [1805, 2308, 2309, 2316]
+ALONE fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_37=pick_variant ACCEPT 10 4510C.c [1822, 2521, 2526, 2536, 2541, 2550, 2556, 2557, 2559, 2583]
+ALONE fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_3=best_pick_variant ACCEPT 6 4510C.c [1749, 2583, 2603, 2606, 2613, 2620]
+ALONE fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_56=pick_chance ACCEPT 3 4510C.c [2508, 2510, 2511]
+ALONE fight_HandleDescriptorPlaybackCompletion:val=descriptor_index ACCEPT 4 2B344.c [622, 624, 628, 628]
+ALONE menu_InitSubflowForMode:arg0=mode_selector ACCEPT 3 25C38.c [114, 117, 121]
+ALONE menu_RunPauseMenu:var_2=selected_row ACCEPT 17 6CF8.c [313, 320, 349, 353, 377, 386, 386, 386, 389, 389, 389, 392, 395, 398, 403, 404, 408]
+ALONE fighter_BuildCpuPad:var_1=updated_record ACCEPT 18 4510C.c [605, 637, 639, 642, 642, 643, 644, 645, 646, 648, 649, 651, 652, 653, 654, 655, 656, 656]
+ALONE fighter_BuildCpuPad:var_2=updated_record_opponent ACCEPT 5 4510C.c [606, 636, 640, 644, 645]
+ALONE SUM 103 SET 103
