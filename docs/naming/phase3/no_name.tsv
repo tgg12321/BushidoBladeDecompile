@@ -88,7 +88,6 @@ address	name	kind	rounds	waves	reason	evidence_tried	commit	final
 0x800A3745	D_800A3745	data	1	naming-close-final	u8 D_800A3745: only a store of 0 (6CF8.c:299)	naming-reviewer PASS (final)	-	write-only
 0x800A3746	D_800A3746	data	1	naming-close-final	u8 D_800A3746: only a store of 0 (6CF8.c:300)	naming-reviewer PASS (final)	-	write-only
 0x800A390F	D_800A390F	data	1	naming-close-final	u8 D_800A390F (bb2.h:484): only a store of 0 (2B344.c:551)	naming-reviewer PASS (final)	-	write-only
-0x800F665A	D_800F665A	data	1	naming-close-final	s16 D_800F665A (368E4.c:316): only a store of the constant 1 (368E4.c:444)	naming-reviewer PASS (final)	-	write-only
 Unk1F800000Rec.unk2C	unk2C	member	1	naming-close-final	game.h:1210 u8 unk2C[4]; type comment game.h:1195 "unk2C: no access"	naming-reviewer PASS (final)	-	never-accessed
 Unk1F800000Unk00.unk1E	unk1E	member	1	naming-close-final	include/game.h:1034 u8 unk1E[2]; type comment game.h:1021 "unk1E: no access"	naming-reviewer PASS (final)	-	never-accessed
 Unk1F8000B8_800620B8.unk40	unk40	member	1	naming-close-final	game.h:1067 u8 unk40[4] /* no access */ (eff_DrawBillboardList's view)	naming-reviewer PASS (final)	-	never-accessed

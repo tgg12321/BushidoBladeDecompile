@@ -130,6 +130,51 @@ class NoNameTest(unittest.TestCase):
         self.assertEqual([k for k in nn.load()],
                          ['0x80010000', '0x80010008', '0x80090000', 'Rec.unk_04', 'f:var_1'])
 
+    def write_ledger(self, *rows):
+        with open(nn.LEDGER, 'w', newline='\n') as f:
+            f.write(HEAD + ''.join(rows))
+
+    def test_q136_classes_load_and_save(self):
+        """Each Q136 token loads, survives a save and stays final under its kind."""
+        new = [('0x80090004', 'D_80090004', 'data', 'two-role'),
+               ('0x80090008', 'D_80090008', 'data', 'write-only'),
+               ('Rec.unk06', 'unk06', 'member', 'write-only'),
+               ('Rec.unk_04', 'unk_04', 'member', 'two-role'),
+               ('f:arg0', 'arg0', 'local', 'unused-param'),
+               ('f:var_1', 'var_1', 'local', 'write-only'),
+               ('f:var_2', 'var_2', 'local', 'two-role')]
+        self.write_ledger(*(row(*r) for r in new))
+        rows = nn.load()
+        self.assertEqual({k: r['final'] for k, r in rows.items()},
+                         {(nn.norm(a) if kind in ('func', 'data') else a): tok
+                          for a, _, kind, tok in new})
+        self.assertTrue(all(nn.is_final(r) for r in rows.values()))
+        nn.save(rows)
+        self.assertEqual(nn.load(), rows)
+        for kind, tokens in nn.FINAL_CLASSES.items():
+            for tok in tokens:
+                nn.check_final({'address': 'x', 'kind': kind, 'final': tok})
+
+    def test_class_must_fit_kind(self):
+        for kind, tok in [('data', 'unused-param'), ('local', 'gap-filler'),
+                          ('func', 'unused-param'), ('member', 'const-holder'),
+                          ('func', 'two-role'), ('func', 'write-only'), ('local', 'bogus')]:
+            self.write_ledger(row('0x80090000' if kind != 'local' else 'f:var_1', 'x', kind, tok))
+            with self.assertRaisesRegex(ValueError, f"final class '{tok}' is not one of {kind}'s"):
+                nn.load()
+        rows = {'f:var_1': {'address': 'f:var_1', 'name': 'var_1', 'kind': 'local', 'rounds': '1',
+                            'waves': 'w1', 'reason': 'r', 'evidence_tried': 'e', 'commit': 'abc',
+                            'final': 'never-accessed'}}
+        with self.assertRaises(ValueError):
+            nn.save(rows)
+
+    def test_rejected_proposals_are_no_class(self):
+        """Q136 rejected twin, index-only and relay: no kind accepts them."""
+        for kind in nn.KINDS:
+            for tok in ('twin', 'index-only', 'relay', 'single-use-temp'):
+                with self.assertRaises(ValueError):
+                    nn.check_final({'address': 'x', 'kind': kind, 'final': tok})
+
     def test_status(self):
         code, out, _ = self.run_cmd('status')
         lines = dict(l.split('\t', 1) for l in out.splitlines()[1:])

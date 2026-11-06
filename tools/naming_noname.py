@@ -8,14 +8,36 @@ a global (data, address), a struct member (member, Type.member) or a local or
 parameter (local, function:binding). Its `final` column is `-` when the row is
 neutral for lack of evidence (OPEN: new evidence may revive it), else the class
 that makes it structurally neutral (FINAL: no name can meet the naming bar
-whatever evidence comes, and a fresh naming-reviewer passed that claim):
-  func    empty (jr ra body), dead (no caller, no address use), forwarder (one
-          call of a named callee, arguments passed through unchanged)
-  data    gap-filler (no reference), write-only (only stores of a constant)
-  member  never-accessed (no access in C or in any INCLUDE_ASM body)
-  local   const-holder, two-role, fake-copy (FAKE-labelled bindings)
-A row becomes final only through such a review (backlog row naming-close-final);
-every placeholder not final is OPEN.
+whatever evidence comes, and a fresh naming-reviewer passed that claim;
+naming-bar N7, Phase 5 and owner ruling Q136; the class tests are
+.claude/rules/naming-final-classes.md). FINAL_CLASSES holds the tokens:
+  func    empty (jr ra body), dead (no caller or address use; the body returns
+          nothing or one literal, writes and calls only final placeholders), forwarder (one call of a
+          named callee, arguments passed through unchanged, its result
+          returned or dropped)
+  data    gap-filler (no reference; no describable contents), write-only (no read anywhere, uncalled
+          code, block copies, I/O and disc-asset layouts included; every
+          store writes the initial value, so it never changes), two-role
+  member  never-accessed (no access in C or in any INCLUDE_ASM body, through
+          any alias; no disc-asset layout),
+          write-only (as for data), two-role
+  local   const-holder, fake-copy (FAKE-labelled non-parameter locals), unused-param (a
+          parameter never read, or only passed unchanged to an unused-param,
+          whose callers, traced through every unchanged pass-through and
+          forwarder and through function-pointer dispatch, do not all supply
+          one quantity, named or still placeholder), write-only (a
+          non-parameter local never read, address never taken), two-role
+  two-role: a FAKE-labelled local whose label says it holds two values, or
+  values of different kinds (type, unit or kind of object, not
+  another instance), one use cited per role; a refined quantity (an index
+  then its element's address, a cast), an advancing cursor, a counter or
+  values one use reads alike are one role.
+Classes cover game code and types only (not src/main/psxsdk or
+include/psxsdk: Sony's names may come, N3.1). A name that meets the bar
+still wins over a class. A row becomes final
+only through such a review (backlog rows naming-close-final*); every
+placeholder not final is OPEN. load and save refuse a token not listed for the
+row's kind.
 
   free <tu-prefix>[,...] [--revive ADDR=EVIDENCE ...] [--force-final]
       census func_ rows in those TUs (src_location prefix, e.g. src/main/9F9C.c)
@@ -58,6 +80,12 @@ CENSUS = 'docs/naming/function-names.csv'
 COLS = ['address', 'name', 'kind', 'rounds', 'waves', 'reason', 'evidence_tried', 'commit',
         'final']
 KINDS = ('func', 'data', 'member', 'local')
+FINAL_CLASSES = {
+    'func': ('empty', 'dead', 'forwarder'),
+    'data': ('gap-filler', 'write-only', 'two-role'),
+    'member': ('never-accessed', 'write-only', 'two-role'),
+    'local': ('const-holder', 'fake-copy', 'two-role', 'unused-param', 'write-only'),
+}
 SECTIONS = ('HOMES', 'USES', 'BODY', 'CALLERS', 'DATA', 'COUNTER-EVIDENCE', 'PRIOR', 'TRACE')
 D_SYM = re.compile(r'\bD_8[0-9A-F]{7}\b')
 NEUTRAL_MEMBER = re.compile(r'^(unk_?[0-9A-Fa-f]+(_\w+)?|f[0-9A-Fa-f]{1,4}|field_?[0-9A-Fa-f]+)$')
@@ -105,11 +133,20 @@ def load_census():
         return {norm(r['address']): r for r in csv.DictReader(f)}
 
 
+def check_final(r):
+    """The row's final token is `-` or a class of its kind (FINAL_CLASSES)."""
+    tok, kind = r.get('final') or '-', r.get('kind', 'func')
+    if tok != '-' and tok not in FINAL_CLASSES.get(kind, ()):
+        raise ValueError(f"{r['address']}: final class {tok!r} is not one of {kind}'s "
+                         f"({', '.join(FINAL_CLASSES.get(kind, ())) or 'none'})")
+
+
 def load():
     with io.open(LEDGER, encoding='utf-8') as f:
         rows = list(csv.DictReader(f, delimiter='\t'))
     for r in rows:
         r['final'] = r.get('final') or '-'
+        check_final(r)
     return {key_of(r): r for r in rows}
 
 
@@ -124,6 +161,8 @@ def order(item):
 
 
 def save(rows):
+    for r in rows.values():
+        check_final(r)
     with io.open(LEDGER, 'w', encoding='utf-8', newline='\n') as f:
         f.write('\t'.join(COLS) + '\n')
         for _, r in sorted(rows.items(), key=order):

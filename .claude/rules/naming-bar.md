@@ -68,17 +68,25 @@ An address-named game TU (`9F9C.c`) takes a subsystem name only when the admitte
 data of every function in it agree on that subsystem; a mixed file keeps its ROM-offset name.
 Moves keep the top comment's boundary evidence.
 
+## N7 — final neutral (Phase 5, Q136)
+
+A game-code placeholder is FINAL (`final` in `docs/naming/phase3/no_name.tsv`, never revived by
+evidence) when a fresh `naming-reviewer` re-derives from the code one class test of
+[[naming-final-classes]]: func `empty` / `dead` / `forwarder`; data `gap-filler` /
+`write-only`; member `never-accessed` / `write-only`; local `const-holder` / `fake-copy` /
+`unused-param` / `write-only`; `two-role` for data, members and locals. A class
+shows no use can bear a name out, never that none was found; a name meeting N1-N4 wins.
+
 ## The wave
 
 1. **Manifest:** a miner writes one row per op: address, kind, old -> new, every use with its
    `file:line`, and the counter-evidence considered. Function rows go in
    `docs/naming/phase3/<wave>/func_manifest.csv` with `evidence_class` `sotn-review` (tier
-   CORROBORATED), `RESET` rows `reset-contradicted`, and an N5 KEEP
-   (an existing name that passes) as a `sotn-review` row with `proposed_name` = the current name.
-   It upgrades the census tier and is not a pair. Data rows go in `data_manifest.csv` for
-   `tools/data_wave.py`. Type, member and local rows go in `type_manifest.csv`,
-   `member_manifest.csv`, `local_manifest.csv` (data_manifest's columns); their CONFIRMed pairs
-   (`Old=New`, `T.m=n`, `f:l=n`) are the wave's `pairs.txt`.
+   CORROBORATED), `RESET` rows `reset-contradicted`, and an N5 KEEP as a `sotn-review` row
+   with `proposed_name` = the current name (it upgrades the tier; no pair). Data rows go in
+   `data_manifest.csv` for `tools/data_wave.py`. Type, member and local rows go in
+   `type_manifest.csv`, `member_manifest.csv`, `local_manifest.csv` (data_manifest's columns);
+   their CONFIRMed pairs (`Old=New`, `T.m=n`, `f:l=n`) are the wave's `pairs.txt`.
 2. **Review:** a fresh `naming-reviewer` checks each manifest. It may set `verdict` CONFIRM only
    on rows it PASSes. Rows it FAILs are dropped or re-mined, never patched by hand.
    Neutral resets: [[naming-bulk-reset]] (Q119, Q120).
@@ -97,29 +105,19 @@ Moves keep the top comment's boundary evidence.
 5. **Gates:** `verify-oracle --rebuild` (SHA1 == oracle); `tus-check`;
    `tools/check_completion_integrity.py`; `engine test`; then stage the whole wave (`git add -A`)
    and run `python3 tools/naming_keycheck.py --from-manifests <naming_wave.json>,<data_wave.json>
-   --pairs-file <pairs.txt>`. It checks what a commit would store (an unstaged or intent-to-add
-   path fails), failing closed. Every changed, added, deleted or renamed path must be the base
-   with the pairs substituted, using the wave tools' own substitutions:
-   - C and header tokens, and each comment in its place, change only by the pairs, as is or as
-     `tools/format.py` lands them (a longer name may re-wrap a comment). Any other moved
-     comment, or a `#define NAME(` spacing change, fails.
-   - Each moved `layer2.jsonl` must equal naming_wave's retarget of the old record. Every other
-     moved ledger file is unchanged; nothing else under `memory/` changes.
-   - The census CSV equals a fresh `build_census.py` run (after the rebuild: it reads
-     `build/bb2.map`). `docs/naming/phase3/**` is the only free path. Registries change line
-     by line, only into what naming_wave / data_wave emit for that line. Other text files
-     (gate lists, tools) change only by the pairs.
-   - `.claude/**`, `movovl/**` (not oracle-covered) and the tool never change.
-   - Global pairs: a new non-auto name must not already exist in a build or tool file; an auto
-     name must carry the old name's address; old names may share a new name only when they name
-     one address; no old name survives in a build file (C comments included).
-     `movovl/` definitions of, and in-module references to, the same routine of the same verbatim
-     Sony module pass (Q130); other movovl hits block.
+   --pairs-file <pairs.txt>`. It checks what a commit would store, failing closed: every
+   changed path must be the base with the pairs substituted by the wave tools' own substitutions
+   (its docstring lists each surface; `.claude/**`, `movovl/**` and the tool never change;
+   under `memory/` only the ledgers the pairs move change).
+   - Global pairs: a new non-auto name is new to build and tool files; an auto name carries
+     the old name's address; old names share a new name only when they name one address; no
+     old name survives in a build file (C comments included); movovl hits block, save Q130's
+     same routine of the same verbatim Sony module.
    - `T.m=n`: `n` is no member, type, macro, paste or keyword name in `src/` / `include/` C
-     (base and post-global trees), save that members the code shows alike may share `n` in one
-     wave; accesses resolve to `T` only by the oracle build.
-   - `f:l=n`: `n` is fresh in `f`, at file scope and in enums (post-global tree), in no macro,
-     no keyword; the cc1 differential proves the binding. Scoped comment edits are notes (R6).
+     (base and post-global trees; members the code shows alike may share `n` in one wave).
+     `f:l=n`: `n` is no name in `f`, at file scope, in enums (post-global tree) or macros, nor a
+     keyword. The oracle build and the cc1 differential prove the binding; scoped comment
+     edits are notes (R6).
 
    These are **the wave's surfaces**.
 6. **Moved layer-2 keys:** a completed body whose key moved only by the wave's pairs (the

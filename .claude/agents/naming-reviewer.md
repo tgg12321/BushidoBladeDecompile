@@ -80,6 +80,14 @@ For each row:
   every comment edit. Do not ask whether a use supports the old name.
 - **File rows (N6):** PASS only when every function and datum in the TU belongs to the
   subsystem the name claims.
+- **FINAL rows (N7, owner ruling Q136, `.claude/rules/naming-final-classes.md`):** PASS only for
+  game code and types (never `psxsdk`), when you re-derive the class's test from the code
+  yourself (every use, C and INCLUDE_ASM; for `dead` what the body returns, writes and calls;
+  for `gap-filler` the contents; for `write-only` every store (only the initial value); for
+  `unused-param` what every caller passes, traced through pass-throughs, forwarders and
+  function-pointer dispatch; for `two-role` the FAKE label, or one cited read per role checked
+  against the one-role examples; a parameter is never `write-only`, `const-holder` or
+  `fake-copy`). FAIL when any use breaks the test, or when a name meets N1-N4 (the name wins).
 
 Never approve a replacement name you suggest yourself in the same review. Put it in
 `suggestion` and let it come back as a new row for a fresh review.
