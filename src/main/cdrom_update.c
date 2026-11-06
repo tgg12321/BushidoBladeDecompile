@@ -37,7 +37,7 @@ void cdrom_UpdateAudio(void) {
     switch (g_cdrom_state.rec.io_state) {
     case 0x10:
         cdrom_SetMix(0, 0, 0, 0);
-        CdControlF(0xE, &g_cdrom_state.rec.audio_mode);
+        CdControlF(CdlSetmode, &g_cdrom_state.rec.audio_mode);
         g_cdrom_state.rec.audio_step_count = 0;
         g_cdrom_state.rec.command_delay_count = 0;
         g_cdrom_state.rec.end_countdown = 0;
@@ -45,10 +45,10 @@ void cdrom_UpdateAudio(void) {
         break;
     case 0x11: {
         s32 ret = CdSync(1, g_cd_result);
-        if (ret == 2) {
-            CdControlF(2, (u8 *)&g_cdrom_state.rec.pair);
+        if (ret == CdlComplete) {
+            CdControlF(CdlSetloc, (u8 *)&g_cdrom_state.rec.pair);
             g_cdrom_state.rec.io_state = 0x12;
-        } else if (ret == 5) {
+        } else if (ret == CdlDiskError) {
             g_cdrom_state.rec.io_state = 0x17;
         }
         break;
@@ -56,32 +56,33 @@ void cdrom_UpdateAudio(void) {
     case 0x12:
         if (++g_cdrom_state.rec.command_delay_count >= 3) {
             s32 ret = CdSync(1, g_cd_result);
-            if (ret == 2) {
-                CdControlF(0x16, 0);
+            if (ret == CdlComplete) {
+                CdControlF(CdlSeekP, 0);
                 g_cdrom_state.rec.io_state = 0x13;
-            } else if (ret == 5) {
+            } else if (ret == CdlDiskError) {
                 g_cdrom_state.rec.io_state = 0x17;
             }
         }
         break;
     case 0x13: {
         s32 ret = CdSync(1, g_cd_result);
-        if (ret == 2) {
+        if (ret == CdlComplete) {
             if (g_cdrom_state.rec.audio_hold == 0) {
-                CdControlF(g_cdrom_state.rec.is_xa_audio ? 0x1B : 3, 0);
+                CdControlF(
+                    g_cdrom_state.rec.is_xa_audio ? CdlReadS : CdlPlay, 0);
                 g_cdrom_state.rec.io_state = 0x14;
             }
-        } else if (ret == 5) {
+        } else if (ret == CdlDiskError) {
             g_cdrom_state.rec.io_state = 0x17;
         }
         break;
     }
     case 0x14: {
         s32 ret = CdSync(1, g_cd_result);
-        if (ret == 2) {
+        if (ret == CdlComplete) {
             g_cdrom_state.rec.report_timeout = 0;
             g_cdrom_state.rec.io_state = 0x15;
-        } else if (ret == 5) {
+        } else if (ret == CdlDiskError) {
             g_cdrom_state.rec.io_state = 0x17;
         }
         break;
@@ -97,14 +98,14 @@ void cdrom_UpdateAudio(void) {
         }
         g_cdrom_state.rec.io_state = 0x16;
         if (g_cdrom_state.rec.is_xa_audio != 0) {
-            CdControlF(0x11, g_cd_result);
+            CdControlF(CdlGetlocP, g_cd_result);
             g_cdrom_state.rec.getloc_timeout = 0;
             break;
         }
-        CdControlF(1, 0);
+        CdControlF(CdlNop, 0);
         {
             s32 ret = CdReady(1, g_cd_result);
-            if (ret == 1) {
+            if (ret == CdlDataReady) {
                 if (!(g_cd_result[4] & 0x80)) {
                     g_cdrom_state.rec.report_timeout = 0;
                     if (CdPosToInt((CdlLOC *)&g_cd_result[3]) >=
@@ -114,7 +115,7 @@ void cdrom_UpdateAudio(void) {
                             g_cdrom_state.rec.audio_repeat ? 0x10 : 0x1C;
                     }
                 }
-            } else if (ret == 5) {
+            } else if (ret == CdlDiskError) {
                 g_cdrom_state.rec.io_state = 0x17;
             }
         }
@@ -134,7 +135,7 @@ void cdrom_UpdateAudio(void) {
         }
         {
             s32 ret = CdSync(1, g_cd_result);
-            if (ret == 2) {
+            if (ret == CdlComplete) {
                 g_cdrom_state.rec.io_state = 0x15;
                 if (g_cdrom_state.rec.is_xa_audio != 0) {
                     s32 pos = CdPosToInt((CdlLOC *)&g_cd_result[5]);
@@ -149,7 +150,7 @@ void cdrom_UpdateAudio(void) {
                         }
                     }
                 }
-            } else if (ret == 5) {
+            } else if (ret == CdlDiskError) {
                 g_cdrom_state.rec.io_state = 0x17;
             } else if (g_cdrom_state.rec.is_xa_audio != 0) {
                 if (++g_cdrom_state.rec.getloc_timeout >= 0x1F) {
@@ -161,15 +162,15 @@ void cdrom_UpdateAudio(void) {
         break;
     case 0x1C:
         cdrom_SetMix(0, 0, 0, 0);
-        CdControlF(9, 0);
+        CdControlF(CdlPause, 0);
         g_cdrom_state.rec.io_state = 0x1D;
         break;
     case 0x1D: {
         s32 ret = CdSync(1, g_cd_result);
-        if (ret == 2) {
+        if (ret == CdlComplete) {
             g_cdrom_state.rec.audio_step_count = 0;
             g_cdrom_state.rec.io_state = 0x1E;
-        } else if (ret == 5) {
+        } else if (ret == CdlDiskError) {
             g_cdrom_state.rec.io_state = 0x17;
         }
         break;
@@ -181,39 +182,39 @@ void cdrom_UpdateAudio(void) {
         break;
     case 0x17:
         cdrom_SetMix(0, 0, 0, 0);
-        if (g_cd_result[0] & 0x10) {
+        if (g_cd_result[0] & CdlStatShellOpen) {
             g_cdrom_state.rec.io_state = 0x18;
         } else {
             g_cdrom_state.rec.io_state = 0x1A;
         }
         break;
     case 0x18:
-        CdControlF(1, 0);
+        CdControlF(CdlNop, 0);
         g_cdrom_state.rec.io_state = 0x19;
         break;
     case 0x19: {
         s32 ret = CdSync(1, g_cd_result);
-        if (ret == 2) {
-            if (g_cd_result[0] & 0x10) {
+        if (ret == CdlComplete) {
+            if (g_cd_result[0] & CdlStatShellOpen) {
                 g_cdrom_state.rec.io_state = 0x18;
             } else {
                 g_cdrom_state.rec.io_state = 0x1A;
             }
-        } else if (ret == 5) {
+        } else if (ret == CdlDiskError) {
             g_cdrom_state.rec.io_state = 0x18;
         }
         break;
     }
     case 0x1A:
-        CdControlF(0x13, 0);
+        CdControlF(CdlGetTN, 0);
         g_cdrom_state.rec.io_state = 0x1B;
         break;
     case 0x1B: {
         s32 ret = CdSync(1, g_cd_result);
-        if (ret == 2) {
+        if (ret == CdlComplete) {
             g_cdrom_state.rec.io_state =
                 g_cdrom_state.rec.stop_request ? 0 : 0x10;
-        } else if (ret == 5) {
+        } else if (ret == CdlDiskError) {
             g_cdrom_state.rec.io_state = 0x17;
         }
         break;
@@ -239,17 +240,17 @@ void cdrom_Update(void) {
             break;
         }
         param[0] = 0xA0;
-        CdControlF(0xE, param);
+        CdControlF(CdlSetmode, param);
         g_cdrom_state.rec.unk06 = 0;
         g_cdrom_state.rec.read_timeout = 0;
         g_cdrom_state.rec.io_state = 3;
         break;
     case 3: {
         s32 sync_status = CdSync(1, g_cd_result);
-        if (sync_status == 2) {
+        if (sync_status == CdlComplete) {
             g_cdrom_state.rec.io_state = 4;
             g_cdrom_state.rec.command_delay_count = 0;
-        } else if (sync_status == 5) {
+        } else if (sync_status == CdlDiskError) {
             g_cdrom_state.rec.io_state = 9;
         } else if (++g_cdrom_state.rec.read_timeout > 0x3C) {
             g_cdrom_state.rec.io_state = 0xA;
@@ -262,19 +263,19 @@ void cdrom_Update(void) {
             g_cdrom_state.rec.cd20 = g_cdrom_state.rec.read_sector_count;
             g_cdrom_state.rec.expected_pos =
                 CdPosToInt(&g_cdrom_state.rec.pair.loc);
-            CdControl(2, (u8 *)&g_cdrom_state.rec.pair.loc, 0);
+            CdControl(CdlSetloc, (u8 *)&g_cdrom_state.rec.pair.loc, 0);
             g_cdrom_state.rec.read_timeout = 0;
             g_cdrom_state.rec.io_state = 5;
         }
         break;
     case 5: {
         s32 sync_status = CdSync(1, g_cd_result);
-        if (sync_status == 2) {
+        if (sync_status == CdlComplete) {
             g_cdrom_state.rec.read_timeout = 0;
             CdReadyCallback(cdrom_ReadyCallback);
-            CdControlF(6, (u8 *)&g_cdrom_state.rec.pair);
+            CdControlF(CdlReadN, (u8 *)&g_cdrom_state.rec.pair);
             g_cdrom_state.rec.io_state = 6;
-        } else if (sync_status == 5) {
+        } else if (sync_status == CdlDiskError) {
             g_cdrom_state.rec.io_state = 9;
         } else if (++g_cdrom_state.rec.read_timeout > 0x3C) {
             g_cdrom_state.rec.io_state = 0xA;
@@ -283,7 +284,7 @@ void cdrom_Update(void) {
     }
     case 6: {
         s32 sync_status = CdSync(1, g_cd_result);
-        if (sync_status == 2) {
+        if (sync_status == CdlComplete) {
             if (g_cdrom_state.rec.cd20 == 0) {
                 g_cdrom_state.rec.io_state = 8;
             } else if (g_cdrom_state.rec.cd20 < 0) {
@@ -292,7 +293,7 @@ void cdrom_Update(void) {
                 CdReadyCallback(0);
                 g_cdrom_state.rec.io_state = 0xA;
             }
-        } else if (sync_status == 5) {
+        } else if (sync_status == CdlDiskError) {
             CdReadyCallback(0);
             g_cdrom_state.rec.io_state = 9;
         } else if (++g_cdrom_state.rec.read_timeout > 0x3C) {
@@ -305,26 +306,26 @@ void cdrom_Update(void) {
         g_cdrom_state.rec.io_state = 0;
         break;
     case 9:
-        if (g_cd_result[0] & 0x10) {
+        if (g_cd_result[0] & CdlStatShellOpen) {
             g_cdrom_state.rec.io_state = 0xA;
         } else {
             g_cdrom_state.rec.io_state = 0xC;
         }
         break;
     case 0xA:
-        CdControlF(1, 0);
+        CdControlF(CdlNop, 0);
         g_cdrom_state.rec.io_state = 0xB;
         g_cdrom_state.sync_wait_count = 0;
         break;
     case 0xB: {
         s32 sync_status = CdSync(1, g_cd_result);
-        if (sync_status == 2) {
-            if (g_cd_result[0] & 0x10) {
+        if (sync_status == CdlComplete) {
+            if (g_cd_result[0] & CdlStatShellOpen) {
                 g_cdrom_state.rec.io_state = 0xA;
             } else {
                 g_cdrom_state.rec.io_state = 0xC;
             }
-        } else if (sync_status == 5) {
+        } else if (sync_status == CdlDiskError) {
             g_cdrom_state.rec.io_state = 0xA;
         } else if (++g_cdrom_state.sync_wait_count > 0xA) {
             CdFlush();
@@ -333,19 +334,19 @@ void cdrom_Update(void) {
         break;
     }
     case 0xC:
-        CdControlF(0x13, 0);
+        CdControlF(CdlGetTN, 0);
         g_cdrom_state.rec.io_state = 0xD;
         g_cdrom_state.sync_wait_count = 0;
         break;
     case 0xD: {
         s32 sync_status = CdSync(1, g_cd_result);
-        if (sync_status == 2) {
+        if (sync_status == CdlComplete) {
             g_cdrom_state.rec.io_state = 2;
             VSync(4);
             VSync(4);
             VSync(4);
             VSync(4);
-        } else if (sync_status == 5) {
+        } else if (sync_status == CdlDiskError) {
             g_cdrom_state.rec.io_state = 9;
         } else if (++g_cdrom_state.sync_wait_count > 0x1E) {
             CdFlush();

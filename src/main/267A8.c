@@ -32,7 +32,7 @@ void cdrom_FlushInit(void) {
 void cdrom_ReadyCallback(u8 arg0, u8 *result) {
     s32 sp[4];
 
-    if (arg0 == 1) {
+    if (arg0 == CdlDataReady) {
         g_cdrom_state.rec.read_timeout = 0;
         if (g_cdrom_state.rec.cd20 <= 0) {
             return;
@@ -53,7 +53,7 @@ void cdrom_ReadyCallback(u8 arg0, u8 *result) {
         g_cdrom_state.rec.cd20 = -1;
     }
     CdReadyCallback(0);
-    CdControlF(9, 0);
+    CdControlF(CdlPause, 0);
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order; values

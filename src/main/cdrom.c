@@ -47,7 +47,7 @@ void cdrom_Pause(void) {
     CdReadyCallback(0);
     cdrom_SetMix(0, 0, 0, 0);
     CdFlush();
-    CdControlF(9, 0);
+    CdControlF(CdlPause, 0);
     g_cdrom_state.rec.stop_request = 1;
     g_cdrom_state.rec.io_state = 0xB;
     g_cdrom_state.sync_wait_count = 0;
@@ -95,7 +95,7 @@ s32 cdrom_StartAudio(s32 file_index, s32 audio_channel) {
         g_cdrom_state.rec.is_xa_audio = 1;
         g_cdrom_state.file = 1;
         g_cdrom_state.chan = audio_channel;
-        CdControlB(0xD, &g_cdrom_state.file, 0);
+        CdControlB(CdlSetfilter, &g_cdrom_state.file, 0);
         g_cdrom_state.rec.audio_mode = 0xC8;
     }
 
@@ -194,11 +194,11 @@ void cdrom_LoadExec(EXEC *dest) {
     s32 pos;
     s32 mode;
 
-    mode = 0x80; /* CdlModeSpeed - double-speed transfer */
+    mode = CdlModeSpeed; /* CdlModeSpeed - double-speed transfer */
     file_index = cdrom_GetFileIndex(6, 0);
 
     for (;;) {
-        CdControl(2, (u8 *)&g_cd_file_table[file_index].loc, 0);
+        CdControl(CdlSetloc, (u8 *)&g_cd_file_table[file_index].loc, 0);
         read_result = cdrom_ReadWait(0x800, (s32)header_sector, mode);
         if (read_result != 0)
             continue;
@@ -207,7 +207,7 @@ void cdrom_LoadExec(EXEC *dest) {
 
         pos = CdPosToInt(&g_cd_file_table[file_index].loc);
         CdIntToPos(pos + 1, &next_sector_loc);
-        CdControl(2, (u8 *)&next_sector_loc, 0);
+        CdControl(CdlSetloc, (u8 *)&next_sector_loc, 0);
         read_result = cdrom_ReadWait(dest->t_size, dest->t_addr, mode);
         if (read_result == 0)
             break;

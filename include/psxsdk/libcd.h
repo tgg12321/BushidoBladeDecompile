@@ -90,4 +90,21 @@ extern s32 CdReadSync(s32, s32);  /* PsyQ: int CdReadSync(int, u_char *) */
 extern CdlCB CdReadCallback(CdlCB);
 extern void CdReadBreak(void);
 
+#define CdlNop 1
+#define CdlSetloc 2
+#define CdlPlay 3
+#define CdlReadN 6
+#define CdlPause 9
+#define CdlSetfilter 0xD
+#define CdlSetmode 0xE
+#define CdlGetlocP 0x11
+#define CdlGetTN 0x13
+#define CdlSeekP 0x16
+#define CdlReadS 0x1B
+#define CdlDataReady 1
+#define CdlComplete 2
+#define CdlDiskError 5
+#define CdlStatShellOpen 0x10
+#define CdlModeSpeed 0x80
+
 #endif /* PSXSDK_LIBCD_H */
