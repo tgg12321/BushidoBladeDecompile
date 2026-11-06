@@ -1260,7 +1260,7 @@ D_1F800110                                       = 0x1F800110;  /* data-wave 202
 /* convention. NOTE: src/*.c usages stay as D_<addr>; promoting them */
 /* triggers the GCC cascade (LONG_TERM_DX_PROMOTION_FIX.md). */
 D_1F80000C                                  = 0x1F80000C;  /* 14 refs; scratchpad RAM offset 0xC (0x1F800000 + 0xC) */  /* data-wave 2026-10-10: was g_scratchpad_ptr_c_1F80000C */
-/* 2026-10-16: D_800A377B retired -- not an object: fight_UpdateModeDisplaysAndMatchProgress reads D_800A377C[D_800A3874 - 1], whose folded base is 0x800A377B (the last byte of D_800A3778). */
+/* 2026-10-16: D_800A377B retired -- not an object: fight_UpdateModeDisplaysAndMatchProgress reads D_800A377C[D_800A3874 - 1], whose folded base is 0x800A377B (the last byte of g_camera_halved_row_view_matrix_ptr). */
 
 /* === Data symbol naming pass 2 (6-9 ref unnamed) (2026-05-18) === */
 /* 30 cluster-evidenced D_* aliases. Selective filter: skipped 21 weak */
