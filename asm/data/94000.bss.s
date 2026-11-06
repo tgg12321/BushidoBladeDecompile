@@ -2163,9 +2163,9 @@ dlabel g_pad_state_plus_0x14
 enddlabel g_pad_state_plus_0x14
 
 /* 801027A0 */
-dlabel D_801027A0
+dlabel g_fight_match_roster_indices
     .space 0x10
-enddlabel D_801027A0
+enddlabel g_fight_match_roster_indices
 
 /* 801027B0 */
 dlabel g_motion_fighter_sections
@@ -2188,9 +2188,9 @@ dlabel D_801027D4
 enddlabel D_801027D4
 
 /* 801027D8 */
-dlabel D_801027D8
+dlabel g_fight_match_weapon_ids
     .space 0xC
-enddlabel D_801027D8
+enddlabel g_fight_match_weapon_ids
 
 /* 801027E4 */
 dlabel _snd_openflag

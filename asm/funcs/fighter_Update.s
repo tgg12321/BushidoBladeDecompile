@@ -2948,8 +2948,8 @@ glabel fighter_Update
     /* 171DC 800269DC 1F000224 */  addiu      $v0, $zero, 0x1F
     /* 171E0 800269E0 0F006210 */  beq        $v1, $v0, .L80026A20
     /* 171E4 800269E4 21202002 */   addu      $a0, $s1, $zero
-    /* 171E8 800269E8 0980053C */  lui        $a1, %hi(D_8008D90C)
-    /* 171EC 800269EC 0CD9A524 */  addiu      $a1, $a1, %lo(D_8008D90C)
+    /* 171E8 800269E8 0980053C */  lui        $a1, %hi(g_fighter_weapon_object_kinds_by_group_flag)
+    /* 171EC 800269EC 0CD9A524 */  addiu      $a1, $a1, %lo(g_fighter_weapon_object_kinds_by_group_flag)
     /* 171F0 800269F0 0A002286 */  lh         $v0, 0xA($s1)
     /* 171F4 800269F4 0E002386 */  lh         $v1, 0xE($s1)
     /* 171F8 800269F8 0980013C */  lui        $at, %hi(g_fighter_group_flags)

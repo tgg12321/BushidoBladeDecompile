@@ -28,9 +28,10 @@
  * not an owner candidate). Readers: 9F9C.c, fight_paired_input_totals.c,
  * 17AFC.c, 24BF0.c, 25788.c, 28708.c, 2B344.c, 4510C.c (interleaved against
  * .data link order, so no reader owns it). Not including bb2.h: it declares
- * g_snd_stage_cd_audio_entry_indices, D_8008D55C, D_8008E748 and
- * g_fight_opponent_stage_indices as scalars (their readers index &D_8008xxxx),
- * which these array definitions would contradict. */
+ * g_snd_stage_cd_audio_entry_indices,
+ * g_fight_roster_indices_by_character_data_index, g_fight_opponent_weapon_ids
+ * and g_fight_opponent_stage_indices as scalars (their readers index
+ * &D_8008xxxx), which these array definitions would contradict. */
 #include "common.h"
 #include "game.h"
 
@@ -131,9 +132,11 @@ u8 g_fight_config_id_data_rows[36] = {
     0,  1,  2,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
     12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 0,  0,  0};
 
-/* (&D_8008D55C)[i] (fight_AdvanceOpponentOrder, 25788.c); size from the gap. */
-u8 D_8008D55C[28] = {3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 18, 19,
-                     20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 0};
+/* (&g_fight_roster_indices_by_character_data_index)[i]
+ * (fight_AdvanceOpponentOrder, 25788.c); size from the gap. */
+u8 g_fight_roster_indices_by_character_data_index[28] = {
+    3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 18, 19,
+    20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 0};
 
 /* [g_fight_config.fighter_setup[i]] ->
  * slot_LoadObjectBuildNodesSoftbodyAndFogLevels's arg1;
@@ -223,8 +226,9 @@ SVec4i16 *D_8008D88C[32] = {
 /* [g_fighter_group_flags[character_data_index]][weapon_id]: the object_kind
  * fighter_Update hands object_SpawnScatteredAt; g_fighter_group_flags holds
  * only 0 and 1, so two rows. */
-u8 D_8008D90C[2][8] = {{0x12, 0x14, 0x16, 0x18, 0x1A, 0x1A, 0x1C, 0x1C},
-                       {0x13, 0x15, 0x17, 0x19, 0x1B, 0x1B, 0x1D, 0x1D}};
+u8 g_fighter_weapon_object_kinds_by_group_flag[2][8] = {
+    {0x12, 0x14, 0x16, 0x18, 0x1A, 0x1A, 0x1C, 0x1C},
+    {0x13, 0x15, 0x17, 0x19, 0x1B, 0x1B, 0x1D, 0x1D}};
 
 /* No reader: D_800100FC's first 52 names, last to first (the word at
  * 0x8008D9E8 points at its first name). */
@@ -243,7 +247,8 @@ const char *g_fighter_move_kind_names[52] = {
     D_800100FC[7],  D_800100FC[6],  D_800100FC[5],  D_800100FC[4],
     D_800100FC[3],  D_800100FC[2],  D_800100FC[1],  D_800100FC[0]};
 
-/* Unk80101EC8Record.character_data_index -> row of D_8008D90C (0 / 1). */
+/* Unk80101EC8Record.character_data_index -> row of
+ * g_fighter_weapon_object_kinds_by_group_flag (0 / 1). */
 u8 g_fighter_group_flags[28] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
                                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0};
 
@@ -512,10 +517,10 @@ u8 g_resource_alternate_pair_selections[27][6] = {
     {0, 2, 4, 5, 6, 7}, {0, 2, 4, 5, 6, 7}, {0, 2, 4, 5, 6, 7},
     {0, 2, 4, 5, 6, 7}, {0, 1, 4, 5, 6, 7}, {0, 2, 4, 5, 6, 7}};
 
-/* (&D_8008E748)[x] and (&g_fight_opponent_stage_indices)[i]
+/* (&g_fight_opponent_weapon_ids)[x] and (&g_fight_opponent_stage_indices)[i]
  * (fight_AdvanceOpponentOrder); sizes from the gaps. */
-u8 D_8008E748[20] = {0, 4, 3, 1, 2, 0, 4, 3, 1, 2,
-                     0, 4, 1, 3, 2, 1, 4, 0, 0, 0};
+u8 g_fight_opponent_weapon_ids[20] = {
+    0, 4, 3, 1, 2, 0, 4, 3, 1, 2, 0, 4, 1, 3, 2, 1, 4, 0, 0, 0};
 
 u8 g_fight_opponent_stage_indices[28] = {
     4,  5,  3,  1,  24, 9,  23, 6, 8, 22, 0, 0, 26, 12,
@@ -554,7 +559,8 @@ u8 g_fight_step_table[100][4] = {
 
 /* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags's move rows (with
  * g_fight_step_row_object_ids's rank rows). */
-u8 D_8008E908[2][5] = {{7, 2, 10, 0, 32}, {7, 2, 10, 0, 30}};
+u8 g_fight_step_row_second_fighter_roster_indices[2][5] = {
+    {7, 2, 10, 0, 32}, {7, 2, 10, 0, 30}};
 
 /* 38 rows indexed by g_fight_stage_index (g_fight_start_position_pairs also has
  * 38 rows): the four (type, value) sound pairs snd_UpdateStageSounds walks. */

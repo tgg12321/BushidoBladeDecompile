@@ -13,9 +13,9 @@ glabel ApplyWorkingRecordToPendingConfigAndInitializeMode
     /* 25878 80035078 F7FF0525 */  addiu      $a1, $t0, -0x9
   .L8003507C:
     /* 2587C 8003507C 0000C290 */  lbu        $v0, 0x0($a2)
-    /* 25880 80035080 0980013C */  lui        $at, %hi(D_8008D55C)
+    /* 25880 80035080 0980013C */  lui        $at, %hi(g_fight_roster_indices_by_character_data_index)
     /* 25884 80035084 21082200 */  addu       $at, $at, $v0
-    /* 25888 80035088 5CD52390 */  lbu        $v1, %lo(D_8008D55C)($at)
+    /* 25888 80035088 5CD52390 */  lbu        $v1, %lo(g_fight_roster_indices_by_character_data_index)($at)
     /* 2588C 8003508C 00000000 */  nop
     /* 25890 80035090 FDFF6224 */  addiu      $v0, $v1, -0x3
     /* 25894 80035094 0200422C */  sltiu      $v0, $v0, 0x2
@@ -105,11 +105,11 @@ glabel ApplyWorkingRecordToPendingConfigAndInitializeMode
     /* 259D8 800351D8 02000424 */  addiu      $a0, $zero, 0x2
   .L800351DC:
     /* 259DC 800351DC 21400000 */  addu       $t0, $zero, $zero
-    /* 259E0 800351E0 10800A3C */  lui        $t2, %hi(D_801027D8)
-    /* 259E4 800351E4 D8274A25 */  addiu      $t2, $t2, %lo(D_801027D8)
+    /* 259E0 800351E0 10800A3C */  lui        $t2, %hi(g_fight_match_weapon_ids)
+    /* 259E4 800351E4 D8274A25 */  addiu      $t2, $t2, %lo(g_fight_match_weapon_ids)
     /* 259E8 800351E8 1400628D */  lw         $v0, 0x14($t3)
-    /* 259EC 800351EC 1080093C */  lui        $t1, %hi(D_801027A0)
-    /* 259F0 800351F0 A0272925 */  addiu      $t1, $t1, %lo(D_801027A0)
+    /* 259EC 800351EC 1080093C */  lui        $t1, %hi(g_fight_match_roster_indices)
+    /* 259F0 800351F0 A0272925 */  addiu      $t1, $t1, %lo(g_fight_match_roster_indices)
     /* 259F4 800351F4 0A80013C */  lui        $at, %hi(g_fight_win_target)
     /* 259F8 800351F8 F83724A0 */  sb         $a0, %lo(g_fight_win_target)($at)
     /* 259FC 800351FC C2130200 */  srl        $v0, $v0, 15
@@ -125,9 +125,9 @@ glabel ApplyWorkingRecordToPendingConfigAndInitializeMode
     /* 25A1C 8003521C 21186401 */  addu       $v1, $t3, $a0
     /* 25A20 80035220 00006290 */  lbu        $v0, 0x0($v1)
     /* 25A24 80035224 0A008424 */  addiu      $a0, $a0, 0xA
-    /* 25A28 80035228 0980013C */  lui        $at, %hi(D_8008D55C)
+    /* 25A28 80035228 0980013C */  lui        $at, %hi(g_fight_roster_indices_by_character_data_index)
     /* 25A2C 8003522C 21082200 */  addu       $at, $at, $v0
-    /* 25A30 80035230 5CD52290 */  lbu        $v0, %lo(D_8008D55C)($at)
+    /* 25A30 80035230 5CD52290 */  lbu        $v0, %lo(g_fight_roster_indices_by_character_data_index)($at)
     /* 25A34 80035234 0100E724 */  addiu      $a3, $a3, 0x1
     /* 25A38 80035238 0000A2A0 */  sb         $v0, 0x0($a1)
     /* 25A3C 8003523C 01006290 */  lbu        $v0, 0x1($v1)

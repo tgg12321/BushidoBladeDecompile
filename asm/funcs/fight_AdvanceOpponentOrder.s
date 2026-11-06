@@ -46,9 +46,9 @@ glabel fight_AdvanceOpponentOrder
     /* 24464 80033C64 B0772590 */  lbu        $a1, %lo(g_fight_opponent_order)($at)
     /* 24468 80033C68 00000000 */  nop
     /* 2446C 80033C6C FF00A430 */  andi       $a0, $a1, 0xFF
-    /* 24470 80033C70 0980013C */  lui        $at, %hi(D_8008D55C)
+    /* 24470 80033C70 0980013C */  lui        $at, %hi(g_fight_roster_indices_by_character_data_index)
     /* 24474 80033C74 21082400 */  addu       $at, $at, $a0
-    /* 24478 80033C78 5CD52290 */  lbu        $v0, %lo(D_8008D55C)($at)
+    /* 24478 80033C78 5CD52290 */  lbu        $v0, %lo(g_fight_roster_indices_by_character_data_index)($at)
     /* 2447C 80033C7C 1080013C */  lui        $at, %hi(g_fight_config + 0x5)
     /* 24480 80033C80 7D2722A0 */  sb         $v0, %lo(g_fight_config + 0x5)($at)
     /* 24484 80033C84 05000224 */  addiu      $v0, $zero, 0x5
@@ -59,16 +59,16 @@ glabel fight_AdvanceOpponentOrder
   .L80033C98:
     /* 24498 80033C98 18008210 */  beq        $a0, $v0, .L80033CFC
     /* 2449C 80033C9C 07000224 */   addiu     $v0, $zero, 0x7
-    /* 244A0 80033CA0 0A80023C */  lui        $v0, %hi(D_800A37BC)
-    /* 244A4 80033CA4 BC374290 */  lbu        $v0, %lo(D_800A37BC)($v0)
+    /* 244A0 80033CA0 0A80023C */  lui        $v0, %hi(g_fight_opponent_weapon_cursor)
+    /* 244A4 80033CA4 BC374290 */  lbu        $v0, %lo(g_fight_opponent_weapon_cursor)($v0)
     /* 244A8 80033CA8 00000000 */  nop
     /* 244AC 80033CAC 01004324 */  addiu      $v1, $v0, 0x1
     /* 244B0 80033CB0 FF004230 */  andi       $v0, $v0, 0xFF
-    /* 244B4 80033CB4 0A80013C */  lui        $at, %hi(D_800A37BC)
-    /* 244B8 80033CB8 BC3723A0 */  sb         $v1, %lo(D_800A37BC)($at)
-    /* 244BC 80033CBC 0980013C */  lui        $at, %hi(D_8008E748)
+    /* 244B4 80033CB4 0A80013C */  lui        $at, %hi(g_fight_opponent_weapon_cursor)
+    /* 244B8 80033CB8 BC3723A0 */  sb         $v1, %lo(g_fight_opponent_weapon_cursor)($at)
+    /* 244BC 80033CBC 0980013C */  lui        $at, %hi(g_fight_opponent_weapon_ids)
     /* 244C0 80033CC0 21082200 */  addu       $at, $at, $v0
-    /* 244C4 80033CC4 48E72290 */  lbu        $v0, %lo(D_8008E748)($at)
+    /* 244C4 80033CC4 48E72290 */  lbu        $v0, %lo(g_fight_opponent_weapon_ids)($at)
     /* 244C8 80033CC8 04000324 */  addiu      $v1, $zero, 0x4
     /* 244CC 80033CCC 1080013C */  lui        $at, %hi(g_fight_config + 0x7)
     /* 244D0 80033CD0 7F2722A0 */  sb         $v0, %lo(g_fight_config + 0x7)($at)

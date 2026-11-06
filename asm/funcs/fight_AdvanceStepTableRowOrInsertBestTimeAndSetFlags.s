@@ -116,8 +116,8 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 247A8 80033FA8 0300A290 */  lbu        $v0, 0x3($a1)
     /* 247AC 80033FAC 0A80013C */  lui        $at, %hi(g_fight_step_row_tint_blue)
     /* 247B0 80033FB0 EE3822A0 */  sb         $v0, %lo(g_fight_step_row_tint_blue)($at)
-    /* 247B4 80033FB4 0980023C */  lui        $v0, %hi(D_8008E908)
-    /* 247B8 80033FB8 08E94224 */  addiu      $v0, $v0, %lo(D_8008E908)
+    /* 247B4 80033FB4 0980023C */  lui        $v0, %hi(g_fight_step_row_second_fighter_roster_indices)
+    /* 247B8 80033FB8 08E94224 */  addiu      $v0, $v0, %lo(g_fight_step_row_second_fighter_roster_indices)
     /* 247BC 80033FBC 21208200 */  addu       $a0, $a0, $v0
     /* 247C0 80033FC0 21208600 */  addu       $a0, $a0, $a2
     /* 247C4 80033FC4 00008390 */  lbu        $v1, 0x0($a0)

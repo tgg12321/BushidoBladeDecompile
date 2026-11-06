@@ -5875,7 +5875,7 @@ void fight_BuildOpponentOrder(void) {
 set_count:
     g_fight_opponent_order_count = count;
     g_fight_opponent_order_cursor = 0;
-    D_800A37BC = 0;
+    g_fight_opponent_weapon_cursor = 0;
 }
 
 void fight_AdvanceOpponentOrder(void) {
@@ -5902,16 +5902,17 @@ void fight_AdvanceOpponentOrder(void) {
         g_fight_opponent_order_cursor = order_cursor + 1;
         opponent_character_index = g_fight_opponent_order[order_cursor];
         g_fight_config.fighter_setup[1] =
-            (&D_8008D55C)[opponent_character_index];
+            (&g_fight_roster_indices_by_character_data_index)
+                [opponent_character_index];
         if (opponent_character_index == 5) {
             g_fight_config.fighter_setup[3] = 6;
         } else if (opponent_character_index == 0x10) {
             g_fight_config.fighter_setup[3] = 7;
         } else {
-            u8 x = D_800A37BC;
+            u8 x = g_fight_opponent_weapon_cursor;
             s8 opponent_weapon_id;
-            D_800A37BC = x + 1;
-            opponent_weapon_id = (&D_8008E748)[x];
+            g_fight_opponent_weapon_cursor = x + 1;
+            opponent_weapon_id = (&g_fight_opponent_weapon_ids)[x];
             g_fight_config.fighter_setup[3] = opponent_weapon_id;
             if (opponent_weapon_id == 4) {
                 u8 v = g_fighter_group_flags[opponent_character_index];
@@ -6012,7 +6013,7 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
     } else {
         u8 *table = g_fight_step_table[tableIndex];
         u8(*ranks)[5] = g_fight_step_row_object_ids;
-        u8(*moves)[5] = D_8008E908;
+        u8(*moves)[5] = g_fight_step_row_second_fighter_roster_indices;
         s32 entry;
         s32 row;
 
@@ -6160,9 +6161,10 @@ void fight_AdvanceMatch(void) {
         g_fight_point_award_phase_timer = 0;
         for (fighter_index = 0; fighter_index < 2; fighter_index++) {
             g_fight_config.fighter_setup[fighter_index] =
-                D_801027A0[g_fight_match_cursor][fighter_index];
+                g_fight_match_roster_indices[g_fight_match_cursor]
+                                            [fighter_index];
             g_fight_config.fighter_setup[2 + fighter_index] =
-                D_801027D8[g_fight_match_cursor][fighter_index];
+                g_fight_match_weapon_ids[g_fight_match_cursor][fighter_index];
         }
         gpu_HideResetAndClear();
         cdrom_PauseAndWait();

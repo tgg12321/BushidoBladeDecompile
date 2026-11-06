@@ -180,7 +180,7 @@ extern Unk80101EC8Record g_fighter_records[];
 extern const char g_str_memcard_device_fmt[];
 extern u8 g_snd_stage_cd_audio_entry_indices;
 extern u8 g_fight_config_id_data_rows[];
-extern u8 D_8008D55C;
+extern u8 g_fight_roster_indices_by_character_data_index;
 extern u8 g_fight_selection_object_ids[];
 
 /* Attachment point sets fighter_UpdateBoneWorldData rotates by a character's
@@ -237,7 +237,7 @@ extern u8 g_fight_character_vab_and_ground_quad_classes[];
 extern u8 g_resource_default_pair_selections[][8];
 /* [character_data_index][weapon_id] of g_fighter_records */
 extern u8 g_resource_alternate_pair_selections[][6];
-extern u8 D_8008E748;
+extern u8 g_fight_opponent_weapon_ids;
 extern u8 g_fight_opponent_stage_indices;
 extern Unk8008EA44Entry g_snd_stage_sound_slot_trigger_delays[5];
 
@@ -406,7 +406,7 @@ extern u8 g_fight_operand_tint_red;
 extern u8 g_fight_operand_tint_green;
 extern u8 g_fight_operand_tint_blue;
 extern s32 g_handler_frame_counter;
-extern u8 D_800A37BC;
+extern u8 g_fight_opponent_weapon_cursor;
 extern s32 g_fight_stage_list_step_timer;
 extern u8 g_fight_skip_first_defeats_left_expiry;
 extern u8 g_fight_first_fighter_win_count;
@@ -591,7 +591,7 @@ extern void gpu_SetSegmentCellsGateBit(s32, s32, s32, s32);
 extern void cdrom_Update(void);
 
 /* Declared by more than one translation unit: data, then functions, by name. */
-extern u8 D_8008E908[][5];
+extern u8 g_fight_step_row_second_fighter_roster_indices[][5];
 extern u8 g_snd_stage_sound_slot_specs[][8];
 extern s32 g_snd_stage_sound_slot_positions[2][4];
 extern u8 g_fight_step_row_object_ids[][5];
@@ -665,8 +665,8 @@ extern Unk800F1B18Rec g_motion_decoders[];
 extern u8 g_shared_buffer[];
 extern s16 D_800F6650;
 extern s16 g_gpu_grid_and_fog_control;
-extern u8 D_801027A0[5][2];
-extern u8 D_801027D8[5][2];
+extern u8 g_fight_match_roster_indices[5][2];
+extern u8 g_fight_match_weapon_ids[5][2];
 /* the draw queue: record pointers (0x80102C00..0x801035FF) */
 extern void *g_draw_queue[640];
 extern s32 g_eff_command_handlers[];

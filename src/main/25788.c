@@ -45,7 +45,7 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
     s = (u8 *)p;
 
     do {
-        s32 var_7 = (&D_8008D55C)[s[0]];
+        s32 var_7 = (&g_fight_roster_indices_by_character_data_index)[s[0]];
         g_fight_config.fighter_setup[i] = var_7;
         if ((u32)(var_7 - 3) < 2 || (s8)var_7 == new_var ||
             (u32)(var_7 - 18) < 2 || (s8)var_7 == new_var2) {
@@ -80,12 +80,12 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
             win_target = 2;
         }
         g_fight_win_target = win_target;
-        s = D_801027D8[0];
+        s = g_fight_match_weapon_ids[0];
         D_800A38E1 = p->unk14_15;
         {
             s32 j = 0;
             u8 *dst_d = s;
-            u8 *dst_a = D_801027A0[0];
+            u8 *dst_a = g_fight_match_roster_indices[0];
             do {
                 s32 k = 0;
                 u8 *var_13 = dst_d;
@@ -93,7 +93,8 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
                 s32 off = j << 1;
             loop_inner: {
                 u8 *var_16 = (u8 *)p + off;
-                *var_14 = (&D_8008D55C)[var_16[0]];
+                *var_14 = (&g_fight_roster_indices_by_character_data_index)
+                    [var_16[0]];
                 off += 10;
                 k++;
                 *var_13 = var_16[1];

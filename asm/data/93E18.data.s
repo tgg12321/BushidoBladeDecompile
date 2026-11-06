@@ -750,14 +750,14 @@ dlabel g_handler_frame_counter
     /* 93FB8 800A37B8 00000000 */ .word 0x00000000
 enddlabel g_handler_frame_counter
 
-nonmatching D_800A37BC
+nonmatching g_fight_opponent_weapon_cursor
 
-dlabel D_800A37BC
+dlabel g_fight_opponent_weapon_cursor
     /* 93FBC 800A37BC */ .byte 0x00
     /* 93FBD 800A37BD */ .byte 0x00
     /* 93FBE 800A37BE */ .byte 0x00
     /* 93FBF 800A37BF */ .byte 0x00
-enddlabel D_800A37BC
+enddlabel g_fight_opponent_weapon_cursor
 
 nonmatching g_fight_stage_list_step_timer
 

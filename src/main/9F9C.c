@@ -4687,7 +4687,7 @@ void fighter_UpdateGroundYByMoveKind(Unk80101EC8Record *fighter_record) {
 extern s16 g_fighter_power_scales[27][4];
 /* [g_fighter_group_flags[character_data_index]][weapon_id]: the object_kind
  * fighter_Update hands object_SpawnScatteredAt. */
-extern u8 D_8008D90C[2][8];
+extern u8 g_fighter_weapon_object_kinds_by_group_flag[2][8];
 extern void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *);
 
 /* Per-frame update of character `fighter_index`'s record from this frame's pad
@@ -5797,9 +5797,10 @@ skip_62:
         if (fighter_record->character_roster_index != 0x1F) {
             object_SpawnScatteredAt(
                 fighter_record,
-                D_8008D90C[g_fighter_group_flags[fighter_record
-                                                     ->character_data_index]]
-                          [fighter_record->weapon_id],
+                g_fighter_weapon_object_kinds_by_group_flag
+                    [g_fighter_group_flags[fighter_record
+                                               ->character_data_index]]
+                    [fighter_record->weapon_id],
                 (Vec3i32 *)bone_matrices[0x12]->t);
         }
         fighter_record->is_defeated = 1;
