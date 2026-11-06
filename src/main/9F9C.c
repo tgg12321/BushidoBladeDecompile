@@ -3115,9 +3115,11 @@ void fighter_ScaleBoneHitRecords(s32 fighter_index, s32 size_scale) {
         dst->ofs.vy = (src->ofs.vy * size_scale) >> 12;
         dst->ofs.vz = (src->ofs.vz * size_scale) >> 12;
         dst->outer_radius = (src->outer_radius * size_scale) >> 12;
-        dst->unk_0E = (src->unk_0E * size_scale) >> 12;
+        dst->outer_dist_sq_limit =
+            (src->outer_dist_sq_limit * size_scale) >> 12;
         dst->inner_radius = (src->inner_radius * size_scale) >> 12;
-        dst->unk_12 = (src->unk_12 * size_scale) >> 12;
+        dst->inner_dist_sq_limit =
+            (src->inner_dist_sq_limit * size_scale) >> 12;
     }
 }
 

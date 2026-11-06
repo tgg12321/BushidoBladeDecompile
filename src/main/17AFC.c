@@ -1684,13 +1684,14 @@ void fighter_CastWeaponSegment(Unk80101EC8Record *obj, u32 *outer_hit_mask,
                 continue;
             }
             pos = &SPAD->spadA8[id][i];
-            if (math_TestPreparedSegmentSphere(
-                    scr, pos, rec->outer_radius, rec->unk_0E) != 0) {
+            if (math_TestPreparedSegmentSphere(scr, pos, rec->outer_radius,
+                                               rec->outer_dist_sq_limit) != 0) {
                 s32 bit = 1 << i;
                 *outer_hit_mask |= bit;
                 if (rec->has_inner_sphere != 0 &&
                     math_TestPreparedSegmentSphere(
-                        scr, pos, rec->inner_radius, rec->unk_12) != 0) {
+                        scr, pos, rec->inner_radius,
+                        rec->inner_dist_sq_limit) != 0) {
                     *inner_hit_mask |= bit;
                 }
             }
@@ -2031,7 +2032,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 dx = SPAD->spadA8[i][temp3].x - scr->unkC8.x;
                 dy = SPAD->spadA8[i][temp3].y - scr->unkC8.y;
                 dz = SPAD->spadA8[i][temp3].z - scr->unkC8.z;
-                work = dx * dx + dy * dy + dz * dz - rec->unk_0E;
+                work = dx * dx + dy * dy + dz * dz - rec->outer_dist_sq_limit;
                 if (work < best) {
                     best = work;
                     idx = temp3;
@@ -2627,24 +2628,25 @@ void fighter_TestTriangleBoneHits(
 
         if (a1 != 0) {
             var_11 = math_TestPreparedTriangleSphere(
-                0, scr, (s32 *)&SPAD->spadA8[id][i], r, rec->unk_0E);
+                0, scr, (s32 *)&SPAD->spadA8[id][i], r,
+                rec->outer_dist_sq_limit);
             if (var_11 != 0) {
                 if (rec->has_inner_sphere != 0 && test_inner_spheres != 0) {
                     if (math_TestPreparedTriangleSphere(
-                            1, scr, (s32 *)0, rec->inner_radius, rec->unk_12) !=
-                        0) {
+                            1, scr, (s32 *)0, rec->inner_radius,
+                            rec->inner_dist_sq_limit) != 0) {
                         inner_hit_mask |= 1 << i;
                     }
                 }
             }
         } else {
             var_11 = math_TestSphereAgainstPreparedAxialVertexSpan(
-                0, scr, &SPAD->spadA8[id][i], r, rec->unk_0E);
+                0, scr, &SPAD->spadA8[id][i], r, rec->outer_dist_sq_limit);
             if (var_11 != 0) {
                 if (rec->has_inner_sphere != 0 && test_inner_spheres != 0) {
                     if (math_TestSphereAgainstPreparedAxialVertexSpan(
-                            1, scr, NULL, rec->inner_radius, rec->unk_12) !=
-                        0) {
+                            1, scr, NULL, rec->inner_radius,
+                            rec->inner_dist_sq_limit) != 0) {
                         inner_hit_mask |= 1 << i;
                     }
                 }
@@ -4641,14 +4643,14 @@ void object_ResolveFighterHits(void) {
                 continue;
             pos = &SPAD->spadA8[target_fighter_index][j];
             outer_sphere_hit = math_TestPreparedSegmentSphere(
-                scr, pos, rec->outer_radius, rec->unk_0E);
+                scr, pos, rec->outer_radius, rec->outer_dist_sq_limit);
             if (outer_sphere_hit != 0) {
                 inner_sphere_hit = 0;
                 if (rec->has_inner_sphere != 0 &&
                     g_object_kind_params[obj->kind].unkD == 0) {
-                    inner_sphere_hit =
-                        math_TestPreparedSegmentSphere(
-                            scr, pos, rec->inner_radius, rec->unk_12) != 0;
+                    inner_sphere_hit = math_TestPreparedSegmentSphere(
+                                           scr, pos, rec->inner_radius,
+                                           rec->inner_dist_sq_limit) != 0;
                 }
                 break;
             }

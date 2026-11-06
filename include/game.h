@@ -939,9 +939,9 @@ typedef struct BoneHitRec {
     s16 bone;
     SVec4i16 ofs;
     u16 outer_radius;
-    u16 unk_0E;
+    u16 outer_dist_sq_limit;
     u16 inner_radius;
-    u16 unk_12;
+    u16 inner_dist_sq_limit;
 } BoneHitRec; /* sizeof == 0x14 */
 
 /* Pad input record (0x18 bytes) at 0x80102788.  pad_Update fills it each
