@@ -79,4 +79,8 @@ extern void SsUtSetReverbDepth(s16, s16);
 extern s16 SsUtGetReverbType(void);
 extern s32 SsUtGetVBaddrInSB(s16);
 
+#define SS_REV_TYPE_OFF 0
+#define SS_TICK60 1
+#define SS_WAIT_COMPLETED 1
+
 #endif /* PSXSDK_LIBSND_H */

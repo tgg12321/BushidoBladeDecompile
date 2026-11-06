@@ -49,10 +49,10 @@ void snd_Init(void) {
     SsInit();
     func_800858D0(0);
     SsUtReverbOff();
-    SsUtSetReverbType(0);
+    SsUtSetReverbType(SS_REV_TYPE_OFF);
     SsUtSetReverbDepth(0, 0);
     SsSetReservedVoice(0);
-    SsSetTickMode(1);
+    SsSetTickMode(SS_TICK60);
     for (queue_index = 0; queue_index < 24; queue_index++) {
         g_snd_queue[queue_index].req = 0;
         g_snd_queue[queue_index].volr = g_snd_queue[queue_index].voll = 0x7F;
@@ -70,7 +70,7 @@ void snd_Quit(void) {
     Unk8005C2A8Pack **vab_record_cursor;
     func_800858D0(0);
     SsUtReverbOff();
-    SsUtSetReverbType(0);
+    SsUtSetReverbType(SS_REV_TYPE_OFF);
     SsUtSetReverbDepth(0, 0);
     SsEnd();
     SsQuit();
@@ -132,7 +132,7 @@ void snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb(void) {
     Unk8005C2A8Pack **vab_record_cursor;
     func_800858D0(0);
     SsUtReverbOff();
-    SsUtSetReverbType(0);
+    SsUtSetReverbType(SS_REV_TYPE_OFF);
     SsUtSetReverbDepth(0, 0);
     vab_sbaddr_cursor = &g_vab_vb_sbaddr[1];
     vab_record_cursor = &g_vab_rec_ptr[1];
@@ -347,7 +347,7 @@ s32 snd_SetReverb(s32 reverb_index) {
     var_4 = reverb_index << 1;
     if (*reverb_type_row >= 0) {
         SsUtReverbOff();
-        SsUtSetReverbType(0);
+        SsUtSetReverbType(SS_REV_TYPE_OFF);
         SsUtSetReverbDepth(0, 0);
         result = SsUtSetReverbType(*reverb_type_row);
         SpuClearReverbWorkArea(*reverb_type_row);
@@ -363,7 +363,7 @@ s32 snd_SetReverb(s32 reverb_index) {
 void snd_StopVoicesAndReverb(void) {
     func_800858D0(0);
     SsUtReverbOff();
-    SsUtSetReverbType(0);
+    SsUtSetReverbType(SS_REV_TYPE_OFF);
     SsUtSetReverbDepth(0, 0);
 }
 
@@ -375,10 +375,10 @@ s32 snd_MoveVabBody(
     SsVabClose((s16)vab_id);
     SpuSetTransferStartAddr(src_sbaddr);
     SpuRead(ram_buffer_addr, g_vab_rec_ptr[vab_id]->vab_body_size);
-    SpuIsTransferCompleted(1);
+    SpuIsTransferCompleted(SPU_TRANSFER_WAIT);
     SpuSetTransferStartAddr(dest_sbaddr);
     SpuWrite(ram_buffer_addr, g_vab_rec_ptr[vab_id]->vab_body_size);
-    SpuIsTransferCompleted(1);
+    SpuIsTransferCompleted(SPU_TRANSFER_WAIT);
     SsVabFakeHead(g_vab_rec_ptr[vab_id]->vab_header, (s16)vab_id, dest_sbaddr);
     SsVabFakeBody((s16)vab_id);
     g_vab_vb_sbaddr[vab_id] = dest_sbaddr;
@@ -480,7 +480,7 @@ s32 snd_LoadVabPack(
     vab_pack->vab_header += (s32)vab_pack;
     vab_pack->vab_body += (s32)vab_pack;
     id = snd_VabOpen(vab_pack, vab_id);
-    SsVabTransCompleted(1);
+    SsVabTransCompleted(SS_WAIT_COMPLETED);
     if (id != -1) {
         g_vab_rec_ptr[id] = vab_pack;
         g_vab_sb_used_bytes += vab_pack->vab_body_size;

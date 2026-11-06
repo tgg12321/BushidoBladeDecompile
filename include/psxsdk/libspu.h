@@ -87,4 +87,6 @@ extern s32 SpuSetReverbModeParam(SpuReverbAttr *);
 extern s32 SpuClearReverbWorkArea(u32);
 extern void SpuSetCommonAttr(SpuCommonAttr *);
 
+#define SPU_TRANSFER_WAIT 1
+
 #endif /* PSXSDK_LIBSPU_H */
