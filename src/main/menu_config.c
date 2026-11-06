@@ -38,27 +38,27 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
     font_Printf(D_800A3188,
                 (s32)(g_config_menu_cursors[0] == 0 ? selected_prefix
                                                     : unselected_prefix),
-                (s8)g_fight_config.unk_4[0]);
+                (s8)g_fight_config.fighter_setup[0]);
     font_Printf(g_config_menu_right_pad_value_fmt,
                 (s32)(g_config_menu_cursors[1] == 0 ? selected_prefix
                                                     : unselected_prefix),
-                (s8)g_fight_config.unk_4[1]);
+                (s8)g_fight_config.fighter_setup[1]);
     font_Printf(D_800A3188,
                 (s32)(g_config_menu_cursors[0] == 1 ? selected_prefix
                                                     : unselected_prefix),
-                (s8)g_fight_config.unk_4[2]);
+                (s8)g_fight_config.fighter_setup[2]);
     font_Printf(g_config_menu_right_pad_value_fmt,
                 (s32)(g_config_menu_cursors[1] == 1 ? selected_prefix
                                                     : unselected_prefix),
-                (s8)g_fight_config.unk_4[3]);
+                (s8)g_fight_config.fighter_setup[3]);
     font_Printf(D_800A3198,
                 (s32)(g_config_menu_cursors[0] == 2 ? selected_prefix
                                                     : unselected_prefix),
-                (s8)g_fight_config.unk_4[4]);
+                (s8)g_fight_config.fighter_setup[4]);
     font_Printf(g_config_menu_right_pad_value_fmt,
                 (s32)(g_config_menu_cursors[1] == 2 ? selected_prefix
                                                     : unselected_prefix),
-                (s8)g_fight_config.unk_4[5]);
+                (s8)g_fight_config.fighter_setup[5]);
     font_Printf(g_config_menu_left_cpu_base_level_fmt,
                 (s32)(g_config_menu_cursors[0] == 3 ? selected_prefix
                                                     : unselected_prefix),
@@ -119,13 +119,13 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
             snd_QueueSound(4, 0x3F, 0x3F);
             switch (g_config_menu_cursors[i]) {
             case 0:
-                g_fight_config.unk_4[i]--;
+                g_fight_config.fighter_setup[i]--;
                 break;
             case 1:
-                g_fight_config.unk_4[2 + i]--;
+                g_fight_config.fighter_setup[2 + i]--;
                 break;
             case 2:
-                g_fight_config.unk_4[4 + i]--;
+                g_fight_config.fighter_setup[4 + i]--;
                 break;
             case 3:
                 g_fight_config.cpu_base_levels[i] -= 0x80;
@@ -159,13 +159,13 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
             snd_QueueSound(4, 0x3F, 0x3F);
             switch (g_config_menu_cursors[i]) {
             case 0:
-                g_fight_config.unk_4[i]++;
+                g_fight_config.fighter_setup[i]++;
                 break;
             case 1:
-                g_fight_config.unk_4[2 + i]++;
+                g_fight_config.fighter_setup[2 + i]++;
                 break;
             case 2:
-                g_fight_config.unk_4[4 + i]++;
+                g_fight_config.fighter_setup[4 + i]++;
                 break;
             case 3:
                 g_fight_config.cpu_base_levels[i] += 0x80;
@@ -196,9 +196,12 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 break;
             }
         }
-        g_fight_config.unk_4[i] = ((s8)g_fight_config.unk_4[i] + 33) % 33;
-        g_fight_config.unk_4[2 + i] = ((s8)g_fight_config.unk_4[2 + i] + 8) % 8;
-        g_fight_config.unk_4[4 + i] = ((s8)g_fight_config.unk_4[4 + i] + 2) % 2;
+        g_fight_config.fighter_setup[i] =
+            ((s8)g_fight_config.fighter_setup[i] + 33) % 33;
+        g_fight_config.fighter_setup[2 + i] =
+            ((s8)g_fight_config.fighter_setup[2 + i] + 8) % 8;
+        g_fight_config.fighter_setup[4 + i] =
+            ((s8)g_fight_config.fighter_setup[4 + i] + 2) % 2;
     }
     g_fight_config.pending_stage_index =
         ((s8)g_fight_config.pending_stage_index + 38) % 38;

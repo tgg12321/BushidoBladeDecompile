@@ -46,17 +46,18 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
 
     do {
         s32 var_7 = (&D_8008D55C)[s[0]];
-        g_fight_config.unk_4[i] = var_7;
+        g_fight_config.fighter_setup[i] = var_7;
         if ((u32)(var_7 - 3) < 2 || (s8)var_7 == new_var ||
             (u32)(var_7 - 18) < 2 || (s8)var_7 == new_var2) {
             if ((s8)g_fight_config.pending_mode_selector == 0) {
-                g_fight_config.unk_4[i] = g_fight_config.unk_4[i] - 3;
+                g_fight_config.fighter_setup[i] =
+                    g_fight_config.fighter_setup[i] - 3;
             }
         }
         tmp = s[1];
         s += 10;
-        g_fight_config.unk_4[4 + i] = 0;
-        g_fight_config.unk_4[2 + i] = tmp;
+        g_fight_config.fighter_setup[4 + i] = 0;
+        g_fight_config.fighter_setup[2 + i] = tmp;
         i++;
     } while (i < 2);
 

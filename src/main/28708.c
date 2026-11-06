@@ -1556,8 +1556,8 @@ void replay_PlayFrame(void) {
                     D_800A38D4 = 2;
                     if (g_fight_saved_first_fighter_selection != 0xFF) {
                         g_fight_pending_unlock_mask_bits |=
-                            1 << g_fight_config_id_data_rows[(s8)g_fight_config
-                                                                 .unk_4[0]];
+                            1 << g_fight_config_id_data_rows
+                                [(s8)g_fight_config.fighter_setup[0]];
                     }
                     if (var_19) {
                         fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields();

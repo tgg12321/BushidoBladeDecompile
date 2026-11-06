@@ -2407,7 +2407,7 @@ typedef struct {
  */
 typedef struct {
     u16 cpu_base_levels[2];
-    u8 unk_4[6];
+    u8 fighter_setup[6];
     u8 operand_cpu_base_levels[2];
     u8 pending_stage_index;
     u8 pending_mode_selector;

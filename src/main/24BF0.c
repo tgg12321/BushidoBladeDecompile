@@ -52,21 +52,21 @@ void ApplyPendingConfigAndInitializeMode(void) {
         break;
     case 0:
         fight_InitCommandStream(
-            g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]]);
-        g_fight_config.unk_4[1] = 0;
+            g_fight_config_id_data_rows[(s8)g_fight_config.fighter_setup[0]]);
+        g_fight_config.fighter_setup[1] = 0;
         fight_RunCommandStream();
         fighter_ClearCpuTally(1);
         break;
     case 1:
-        g_fight_config.unk_4[5] = 1;
+        g_fight_config.fighter_setup[5] = 1;
         fight_BuildOpponentOrder();
         g_local_ot_draw_mode = 1;
         fight_AdvanceOpponentOrder();
         break;
     case 3:
-        g_fight_config.unk_4[5] = 1;
-        g_fight_config.unk_4[3] = 0;
-        g_fight_config.unk_4[2] = 0;
+        g_fight_config.fighter_setup[5] = 1;
+        g_fight_config.fighter_setup[3] = 0;
+        g_fight_config.fighter_setup[2] = 0;
         g_fight_step_table_next_row = 0;
         g_fight_start_position_pair_index = 0;
         g_fight_timer_frames = 0;
@@ -86,11 +86,11 @@ void ApplyPendingConfigAndInitializeMode(void) {
     case 2:
         g_fight_auto_pause_countdown = (D_800A389A == 0) << 1;
         g_fight_stage_index = (D_800A389A != 0) ? 0x24 : 0x23;
-        g_fight_config.unk_4[5] = 1;
+        g_fight_config.fighter_setup[5] = 1;
         if (D_800A389A == 0) {
-            g_fight_config.unk_4[1] =
+            g_fight_config.fighter_setup[1] =
                 g_fighter_group_flags[g_fight_config_id_data_rows
-                                          [(s8)g_fight_config.unk_4[0]]]
+                                          [(s8)g_fight_config.fighter_setup[0]]]
                     ? 0xE
                     : 0x1D;
         }
@@ -104,7 +104,7 @@ void ApplyPendingConfigAndInitializeMode(void) {
         g_main_loop_handler_index = 0;
         break;
     }
-    if ((s8)g_fight_config.unk_4[5] != 0) {
+    if ((s8)g_fight_config.fighter_setup[5] != 0) {
         fighter_ClearCpuTally(1);
     }
 }

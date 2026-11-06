@@ -162,18 +162,20 @@ void fight_ScanCommandStreamAndLoadImage(u8 *command_cursor) {
 }
 
 void fight_FillMissingConfigInitFighterAndLoadObject(s32 fighter_index) {
-    if (g_fight_config.unk_4[2 + fighter_index] == 0xFF) {
-        g_fight_config.unk_4[2 + fighter_index] =
-            (&g_fight_config.unk_4[2])[(u32)fighter_index < 1u];
+    if (g_fight_config.fighter_setup[2 + fighter_index] == 0xFF) {
+        g_fight_config.fighter_setup[2 + fighter_index] =
+            (&g_fight_config.fighter_setup[2])[(u32)fighter_index < 1u];
     }
-    fighter_Init(fighter_index, (s8)g_fight_config.unk_4[4 + fighter_index],
-                 (s8)g_fight_config.unk_4[fighter_index],
-                 (s8)g_fight_config.unk_4[2 + fighter_index], 0);
+    fighter_Init(
+        fighter_index, (s8)g_fight_config.fighter_setup[4 + fighter_index],
+        (s8)g_fight_config.fighter_setup[fighter_index],
+        (s8)g_fight_config.fighter_setup[2 + fighter_index], 0);
     gpu_ResetGraphMode1();
     motion_InvalidateMarkedNdataPackAndClearSlot1Id();
     slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
         fighter_index,
-        g_fight_selection_object_ids[(s8)g_fight_config.unk_4[fighter_index]],
+        g_fight_selection_object_ids[(s8)g_fight_config
+                                         .fighter_setup[fighter_index]],
         (s32)0x80190800);
 }
 
@@ -230,8 +232,8 @@ void fight_RequestOneFighterEntriesAndReloadOnChange(s32 fighter_index) {
 }
 
 void fight_InitCommandStream(s32 stream_index) {
-    g_fight_config.unk_4[4] = 0;
-    g_fight_config.unk_4[5] = 1;
+    g_fight_config.fighter_setup[4] = 0;
+    g_fight_config.fighter_setup[5] = 1;
     D_800A3894 = 0;
     D_800A385C = 0;
     g_fight_saved_first_fighter_selection = 0xFF;
@@ -244,33 +246,33 @@ void fight_InitCommandStream(s32 stream_index) {
     fight_ScanCommandStreamAndLoadImage(g_fight_command_stream_cursor);
     fight_FillMissingConfigInitFighterAndLoadObject(0);
     g_fight_playback_file_base_index =
-        g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]];
+        g_fight_config_id_data_rows[(s8)g_fight_config.fighter_setup[0]];
 }
 
 void fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState(
     void) {
-    g_fight_saved_first_fighter_selection = g_fight_config.unk_4[0];
+    g_fight_saved_first_fighter_selection = g_fight_config.fighter_setup[0];
     {
         u8 *base = D_800A3894;
         u8 v1 = g_fight_bone_group_tim_requests;
         u8 v0 = *base;
         g_fight_saved_bone_group_tim_requests = v1;
         g_fight_bone_group_tim_requests = 0;
-        g_fight_config.unk_4[0] = v0;
+        g_fight_config.fighter_setup[0] = v0;
     }
     slot_RequestTimGroupsAndMarkReloadOnChange(0, 0);
 }
 
 void fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields(
     void) {
-    u8 v_277C = g_fight_config.unk_4[0];
+    u8 v_277C = g_fight_config.fighter_setup[0];
     u8 v_376A = g_fight_bone_group_tim_requests;
     u8 v_3836 = g_fight_saved_first_fighter_selection;
     u8 v_36C8 = g_fight_saved_bone_group_tim_requests;
     g_fight_saved_first_fighter_selection = 0xFF;
     g_fight_displaced_first_fighter_selection = v_277C;
     g_fight_displaced_bone_group_tim_requests = v_376A;
-    g_fight_config.unk_4[0] = v_3836;
+    g_fight_config.fighter_setup[0] = v_3836;
     g_fight_bone_group_tim_requests = v_36C8;
     slot_RequestTimGroupsAndMarkReloadOnChange(0, v_36C8);
     fighter_ResetBoneGroupHitState(D_80101EC8);
@@ -280,13 +282,13 @@ s32 fight_ConfigureFighter1FromLookupAndOperandsAndLoad(u8 *operands) {
     u8 idx;
     u8 group_flag;
     D_800A3712 = 0;
-    idx = g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]];
+    idx = g_fight_config_id_data_rows[(s8)g_fight_config.fighter_setup[0]];
     group_flag = g_fighter_group_flags[idx];
     if (group_flag != 0 && g_fight_stage_command_count == 1) {
         group_flag = 0;
     }
-    g_fight_config.unk_4[1] = group_flag != 0 ? 0xE : 0x1D;
-    g_fight_config.unk_4[3] = 0;
+    g_fight_config.fighter_setup[1] = group_flag != 0 ? 0xE : 0x1D;
+    g_fight_config.fighter_setup[3] = 0;
     {
         u8 v = operands[0];
         g_fight_second_fighter_defeats_left = v;
@@ -303,8 +305,8 @@ s32 fight_ConfigureFighter1FromLookupAndOperandsAndLoad(u8 *operands) {
 
 s32 fight_ConfigureFighter1FromOperandsAndLoad(u8 *operands) {
     D_800A3712 = 1;
-    g_fight_config.unk_4[1] = operands[0];
-    g_fight_config.unk_4[3] = operands[1];
+    g_fight_config.fighter_setup[1] = operands[0];
+    g_fight_config.fighter_setup[3] = operands[1];
     g_fight_config.operand_cpu_base_levels[1] = operands[2];
     fight_FillMissingConfigInitFighterAndLoadObject(1);
     fight_RequestBothFightersEntriesAndReloadOnChange();
@@ -313,9 +315,9 @@ s32 fight_ConfigureFighter1FromOperandsAndLoad(u8 *operands) {
 
 void fight_SetFixedFighterBytesAndLoadBothFighters(void) {
     D_800A3712 = 1;
-    g_fight_config.unk_4[2] = 0;
-    g_fight_config.unk_4[1] = 0x1F;
-    g_fight_config.unk_4[3] = 0;
+    g_fight_config.fighter_setup[2] = 0;
+    g_fight_config.fighter_setup[1] = 0x1F;
+    g_fight_config.fighter_setup[3] = 0;
     fight_FillMissingConfigInitFighterAndLoadObject(0);
     fight_FillMissingConfigInitFighterAndLoadObject(1);
     fight_RequestBothFightersEntriesAndReloadOnChange();
@@ -339,7 +341,7 @@ void fight_RunCommandStream(void) {
 
     snd_ResetVoicesAndQueue();
     var_0 = 0;
-    var_1 = &g_fight_config.unk_4[1];
+    var_1 = &g_fight_config.fighter_setup[1];
 
     do {
         u8 *ptr = g_fight_command_stream_cursor;
@@ -556,8 +558,8 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     if (g_fight_active_playback_descriptor[3] & 0x40)
         resource_SelectRetainedSubblockOrApplyHeaderSections(-1);
-    if ((s8)g_fight_config.unk_4[1] == 0xE ||
-        (s8)g_fight_config.unk_4[1] == 0x1D) {
+    if ((s8)g_fight_config.fighter_setup[1] == 0xE ||
+        (s8)g_fight_config.fighter_setup[1] == 0x1D) {
         gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels(
             g_fight_operand_tint_red, g_fight_operand_tint_green,
             g_fight_operand_tint_blue);
@@ -704,23 +706,23 @@ void fight_InitImageAndPlaybackPresentation(void) {
         eff_ClearInitFlag();
     }
     if (g_fight_presentation_index == 6) {
-        g_fight_config.unk_4[0] = 8;
-        g_fight_config.unk_4[2] = 6;
+        g_fight_config.fighter_setup[0] = 8;
+        g_fight_config.fighter_setup[2] = 6;
         fight_FillMissingConfigInitFighterAndLoadObject(0);
         fight_RequestOneFighterEntriesAndReloadOnChange(0);
     } else if (g_fight_presentation_index == 7) {
-        g_fight_config.unk_4[0] = 0x16;
-        g_fight_config.unk_4[2] = 7;
+        g_fight_config.fighter_setup[0] = 0x16;
+        g_fight_config.fighter_setup[2] = 7;
         fight_FillMissingConfigInitFighterAndLoadObject(0);
         fight_RequestOneFighterEntriesAndReloadOnChange(0);
     } else if (g_fight_presentation_index == 8) {
-        g_fight_config.unk_4[0] = 0x1E;
-        g_fight_config.unk_4[2] = 0;
+        g_fight_config.fighter_setup[0] = 0x1E;
+        g_fight_config.fighter_setup[2] = 0;
         fight_FillMissingConfigInitFighterAndLoadObject(0);
         fight_RequestOneFighterEntriesAndReloadOnChange(0);
     } else if (g_fight_presentation_index == 9) {
-        g_fight_config.unk_4[0] = 0x20;
-        g_fight_config.unk_4[2] = 0;
+        g_fight_config.fighter_setup[0] = 0x20;
+        g_fight_config.fighter_setup[2] = 0;
         fight_FillMissingConfigInitFighterAndLoadObject(0);
         fight_RequestOneFighterEntriesAndReloadOnChange(0);
     }
@@ -735,8 +737,8 @@ void fight_InitImageAndPlaybackPresentation(void) {
          g_fighter_group_flags[D_80101EC8[0].character_data_index] != 0) ||
         (g_fight_presentation_index == 5 &&
          g_fighter_group_flags[D_80101EC8[0].character_data_index] == 0)) {
-        g_fight_config.unk_4[0] = g_fight_config.unk_4[1];
-        g_fight_config.unk_4[2] = g_fight_config.unk_4[3];
+        g_fight_config.fighter_setup[0] = g_fight_config.fighter_setup[1];
+        g_fight_config.fighter_setup[2] = g_fight_config.fighter_setup[3];
         fight_FillMissingConfigInitFighterAndLoadObject(0);
         fight_RequestOneFighterEntriesAndReloadOnChange(0);
     }
