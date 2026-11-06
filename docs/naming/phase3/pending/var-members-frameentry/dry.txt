@@ -1,0 +1,55 @@
+PASS Unk800A9CF8Entry.unk58=anim_progress, Unk800A9CF8Entry.unk60=fade_scale
+decl Unk800A9CF8Entry.unk58 -> anim_progress  include/game.h:2220
+decl Unk800A9CF8Entry.unk60 -> fade_scale  include/game.h:2222
+  round 0: 9 member error line(s)
+    src/main/32D04.c:1222 unk58 x1
+    src/main/35000.c:33 unk58 x1
+    src/main/35000.c:64 unk60 x1
+    src/main/35000.c:66 unk58 x1
+    src/main/35000.c:95 unk60 x1
+    src/main/35000.c:101 unk58 x1
+    src/main/35000.c:103 unk60 x1
+    src/main/35000.c:119 unk58 x1
+    src/main/35000.c:136 unk58 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -2220 +2220 @@
+-    s32 unk58;              /* +0x58 */
++    s32 anim_progress;              /* +0x58 */
+@@ -2222 +2222 @@
+-    s16 unk60;              /* +0x60 */
++    s16 fade_scale;              /* +0x60 */
+--- a/src/main/32D04.c
++++ b/src/main/32D04.c
+@@ -1222 +1222 @@
+-        dst->unk58 = -1;
++        dst->anim_progress = -1;
+--- a/src/main/35000.c
++++ b/src/main/35000.c
+@@ -33 +33 @@
+-        var_5 = rec->unk58;
++        var_5 = rec->anim_progress;
+@@ -64 +64 @@
+-                rec->unk60 = 0x1000;
++                rec->fade_scale = 0x1000;
+@@ -66 +66 @@
+-            rec->unk58 = var_5;
++            rec->anim_progress = var_5;
+@@ -95 +95 @@
+-            var_15 = rec->unk60 - 0x40;
++            var_15 = rec->fade_scale - 0x40;
+@@ -101 +101 @@
+-                rec->unk58 = -2;
++                rec->anim_progress = -2;
+@@ -103 +103 @@
+-            rec->unk60 = var_15;
++            rec->fade_scale = var_15;
+@@ -119 +119 @@
+-    if (p->unk58 != -1)
++    if (p->anim_progress != -1)
+@@ -136 +136 @@
+-    p->unk58 = 0;
++    p->anim_progress = 0;
+DRY RUN: 3 file(s) would change; nothing written
+OK: every member access renamed

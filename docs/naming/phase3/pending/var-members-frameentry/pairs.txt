@@ -1,0 +1,2 @@
+Unk800A9CF8Entry.unk58=anim_progress
+Unk800A9CF8Entry.unk60=fade_scale

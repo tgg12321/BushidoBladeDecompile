@@ -1,0 +1,10 @@
+var-members-frameentry -- draft notes (research: Opus, tmp/codex/var-members-frameentry-research.md, at 79478a121; drafted in ln-naming-b)
+
+Scope: Unk800A9CF8Entry.unk58 / unk60 (include/game.h:2220 / 2222), NO_NAME in var-members-rest-21 / -22, reopened by the trace-b data-lead captures data-lead-Unk800A9CF8Entry-unk58-story-final-fight-stages-{1,2} (backlog row note).
+
+Result: 2 RENAME pairs (pairs.txt). Dry run dry.txt exit 0, "OK: every member access renamed", 3 files (include/game.h, src/main/32D04.c, src/main/35000.c).
+
+- unk58 -> anim_progress: -1 not started (init, 32D04.c:1222; the only state Start accepts, 35000.c:119), 0 at start (35000.c:136), the next key frame index while playing (35000.c:33-66), held at anim_frame_count during the fade, -2 finished (35000.c:101). Answers rest-12's anim_frame FAIL (sentinels): 'progress' names the lifecycle, not a pure index. Draw asm reads node+0x58 only on node_kind 3 / 10 paths (func_8004A940.s:316 / :483); these entries are node_kind 0 (32D04.c:1207). Fallback NO_NAME.
+- unk60 -> fade_scale: answers rest-12's finish_countdown FAIL. Writer: 0x1000 at the last key frame, -0x40 per call to 0, then finished (35000.c:64, 95-103). Reader: gpu_EmitColorScaledFlatLitTextured{Triangles,Quads}.s:13 'lh $s7, 0x60($s2)' of the queued node -> IR0 -> gpf 1 (Q12 colour multiplier); reachable from node_kind 0 via g_gpu_default_primitive_handlers types 0x2A / 0x2B (32D04.c:1150, 1399-1400). The trace saw no read because the lumberyard models carry no such primitives. Fallback color_scale, else NO_NAME.
+
+Not in this wave: the research suggests the type rename Unk800A9CF8Entry -> FrameAnimatedEntry (fresh); it needs its own row.
