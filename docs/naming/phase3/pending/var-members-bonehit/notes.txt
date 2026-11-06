@@ -1,0 +1,10 @@
+var-members-bonehit -- draft notes (research tmp/codex/var-members-bonehit-research.md, Opus; drafter re-derived from ln-naming-c @ main 08363a023)
+
+BASIS: 2 RENAME rows (BoneHitRec.unk_0E=outer_dist_sq_limit, BoneHitRec.unk_12=inner_dist_sq_limit). verdict / verifier_note empty (the reviewer decides).
+
+Re-derivation: git grep -nw unk_0E / unk_12 over src include. unk_0E hits: game.h:942 decl, game.h:935 comment, 17AFC.c:1566 comment, code 1688, 2034, 2630, 2642, 4644, 9F9C.c:3118. unk_12 hits: game.h:944 decl, 936 comment, 17AFC.c:1568 comment, code 1693, 2634, 2646, 4651, 9F9C.c:3120; game.h:2626 and 596CC.c:147 are other types (not renamed). All rec/src/dst are BoneHitRec*. None of fighter_CastWeaponSegment, fighter_ProcessWeaponBodyHits, fighter_ScaleBoneHitRecords, fighter_TestTriangleBoneHits, object_ResolveFighterHits is an INCLUDE_ASM in src (asm/funcs listings are reference only).
+
+History: rest-21/22 objected to names claiming a radius squared (outer_radius_sq), because after fighter_ScaleBoneHitRecords the value is (template * size_scale) >> 12, not outer_radius^2. These names claim only the role (the inclusive limit on a squared distance from the record point, as fed to r_sq of the sphere tests and subtracted at 17AFC.c:2034), true before and after scaling.
+
+Comments to update at apply: include/game.h:934-936 (struct comment, "outer_radius / unk_0E ... inner_radius / unk_12") and src/main/17AFC.c:1566 / 1568 (fighter_CastWeaponSegment comment). naming_keycheck --sub-comments lists them.
+Weak spot for review: the triangle test's inside-triangle branch hits on the threshold alone without reading the limit.

@@ -1,0 +1,64 @@
+PASS BoneHitRec.unk_0E=outer_dist_sq_limit, BoneHitRec.unk_12=inner_dist_sq_limit
+decl BoneHitRec.unk_0E -> outer_dist_sq_limit  include/game.h:942
+decl BoneHitRec.unk_12 -> inner_dist_sq_limit  include/game.h:944
+  round 0: 11 member error line(s)
+    src/main/17AFC.c:1688 unk_0E x1
+    src/main/17AFC.c:1693 unk_12 x1
+    src/main/17AFC.c:2034 unk_0E x1
+    src/main/17AFC.c:2630 unk_0E x1
+    src/main/17AFC.c:2634 unk_12 x1
+    src/main/17AFC.c:2642 unk_0E x1
+    src/main/17AFC.c:2646 unk_12 x1
+    src/main/17AFC.c:4644 unk_0E x1
+    src/main/17AFC.c:4651 unk_12 x1
+    src/main/9F9C.c:3118 unk_0E x2
+    src/main/9F9C.c:3120 unk_12 x2
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -942 +942 @@
+-    u16 unk_0E;
++    u16 outer_dist_sq_limit;
+@@ -944 +944 @@
+-    u16 unk_12;
++    u16 inner_dist_sq_limit;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -1688 +1688 @@
+-                    scr, pos, rec->outer_radius, rec->unk_0E) != 0) {
++                    scr, pos, rec->outer_radius, rec->outer_dist_sq_limit) != 0) {
+@@ -1693 +1693 @@
+-                        scr, pos, rec->inner_radius, rec->unk_12) != 0) {
++                        scr, pos, rec->inner_radius, rec->inner_dist_sq_limit) != 0) {
+@@ -2034 +2034 @@
+-                work = dx * dx + dy * dy + dz * dz - rec->unk_0E;
++                work = dx * dx + dy * dy + dz * dz - rec->outer_dist_sq_limit;
+@@ -2630 +2630 @@
+-                0, scr, (s32 *)&SPAD->spadA8[id][i], r, rec->unk_0E);
++                0, scr, (s32 *)&SPAD->spadA8[id][i], r, rec->outer_dist_sq_limit);
+@@ -2634 +2634 @@
+-                            1, scr, (s32 *)0, rec->inner_radius, rec->unk_12) !=
++                            1, scr, (s32 *)0, rec->inner_radius, rec->inner_dist_sq_limit) !=
+@@ -2642 +2642 @@
+-                0, scr, &SPAD->spadA8[id][i], r, rec->unk_0E);
++                0, scr, &SPAD->spadA8[id][i], r, rec->outer_dist_sq_limit);
+@@ -2646 +2646 @@
+-                            1, scr, NULL, rec->inner_radius, rec->unk_12) !=
++                            1, scr, NULL, rec->inner_radius, rec->inner_dist_sq_limit) !=
+@@ -4644 +4644 @@
+-                scr, pos, rec->outer_radius, rec->unk_0E);
++                scr, pos, rec->outer_radius, rec->outer_dist_sq_limit);
+@@ -4651 +4651 @@
+-                            scr, pos, rec->inner_radius, rec->unk_12) != 0;
++                            scr, pos, rec->inner_radius, rec->inner_dist_sq_limit) != 0;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -3118 +3118 @@
+-        dst->unk_0E = (src->unk_0E * size_scale) >> 12;
++        dst->outer_dist_sq_limit = (src->outer_dist_sq_limit * size_scale) >> 12;
+@@ -3120 +3120 @@
+-        dst->unk_12 = (src->unk_12 * size_scale) >> 12;
++        dst->inner_dist_sq_limit = (src->inner_dist_sq_limit * size_scale) >> 12;
+DRY RUN: 3 file(s) would change; nothing written
+OK: every member access renamed
+exit=0

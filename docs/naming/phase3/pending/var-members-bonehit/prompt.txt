@@ -1,0 +1,1 @@
+var-members-bonehit -- research was done by Opus: tmp/codex/var-members-bonehit-research.md. Drafter re-derived every access from source in ln-naming-c. Apply: python3 tools/naming_member_apply.py docs/naming/phase3/pending/var-members-bonehit/pairs.txt, then comment pass per notes.txt, format, gates in naming-bar step 5.

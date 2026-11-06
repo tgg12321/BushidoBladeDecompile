@@ -1,0 +1,2 @@
+BoneHitRec.unk_0E=outer_dist_sq_limit
+BoneHitRec.unk_12=inner_dist_sq_limit
