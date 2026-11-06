@@ -1226,7 +1226,7 @@ typedef struct {
     s16 x_extent_work;     /* g_eff_x_extent_work */
     s32 upper_y_offset;    /* g_eff_upper_y_offset */
     s32 y_extent_work;     /* g_eff_y_extent_work */
-    s32 unk8C;             /* g_eff_rtp_flag */
+    s32 rtp_flag;          /* g_eff_rtp_flag */
     s32 depth_work[2];     /* g_eff_depth_work */
     u16 top_left_uv;       /* g_eff_top_left_uv */
     u16 top_right_uv;      /* g_eff_top_right_uv */

@@ -239,7 +239,7 @@ void eff_BindScratchpad(s16 *src_rotation, s32 *src_position) {
     g_eff_x_extent_work = &SPAD51268->x_extent_work;
     g_eff_upper_y_offset = &SPAD51268->upper_y_offset;
     g_eff_y_extent_work = &SPAD51268->y_extent_work;
-    g_eff_rtp_flag = &SPAD51268->unk8C;
+    g_eff_rtp_flag = &SPAD51268->rtp_flag;
     g_eff_depth_work = SPAD51268->depth_work;
     g_eff_top_left_uv = &SPAD51268->top_left_uv;
     g_eff_top_right_uv = &SPAD51268->top_right_uv;
