@@ -1143,13 +1143,14 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
     s32 *root_translation;
     s32 flag = 0;
     s8 p;
-    s16 var_7;
+    s16 followup_character_data_index;
 
     snd_UpdateStageSounds();
     p = g_fight_followup_fighter_index;
-    var_7 = g_fighter_records[p].character_data_index;
+    followup_character_data_index = g_fighter_records[p].character_data_index;
     if (g_handler_frame_counter ==
-        g_fight_followup_playback_own_character_sound_frames[var_7]) {
+        g_fight_followup_playback_own_character_sound_frames
+            [followup_character_data_index]) {
         snd_QueueSound(40 * p + 0x2D, 0x7F, 0x7F);
     }
     if (g_handler_frame_counter == D_8008EB04) {

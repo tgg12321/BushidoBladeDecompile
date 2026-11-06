@@ -276,22 +276,23 @@ void PatchColorImmediatesAtListedCodeSites(s32 color) {
     s32 a1 = (color >> 16) & 0xFF;
     s32 mask16 = (s32)0xFFFF0000;
     s32 color_low_half = color & 0xFFFF;
-    s32 t3 = (func_800545F4 & mask8) | a1;
-    s32 t2 =
+    s32 first_lui_insn = (func_800545F4 & mask8) | a1;
+    s32 first_ori_insn =
         (g_color_immediate_patch_first_ori_template & mask16) | color_low_half;
-    s32 v1 = (g_color_immediate_patch_second_lui_template & mask8) | a1;
-    s32 a4 =
+    s32 second_lui_insn =
+        (g_color_immediate_patch_second_lui_template & mask8) | a1;
+    s32 second_ori_insn =
         (g_color_immediate_patch_second_ori_template & mask16) | color_low_half;
     do {
-        s32 *v0 = *site_cursor;
+        s32 *first_site = *site_cursor;
         site_cursor++;
         t1++;
-        v0[0] = t3;
-        v0[1] = t2;
+        first_site[0] = first_lui_insn;
+        first_site[1] = first_ori_insn;
         {
-            s32 *v0b = *site_cursor;
-            v0b[0] = v1;
-            v0b[1] = a4;
+            s32 *second_site = *site_cursor;
+            second_site[0] = second_lui_insn;
+            second_site[1] = second_ori_insn;
         }
         site_cursor++;
     } while (t1 < 4);

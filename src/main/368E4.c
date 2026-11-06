@@ -1624,7 +1624,7 @@ extern u32 g_gpu_ot256_db[][256];
 extern s16 g_node_retained_draw_matrix_indices[];
 
 void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
-    s32 arg0, s32 arg1, s32 arg2) {
+    s32 arg0, s32 weapon_id, s32 arg2) {
     MATRIX mtx;
     SVECTOR rot;
     s32 index;
@@ -1638,8 +1638,8 @@ void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
     if (mat_tbl == 0) {
         return;
     }
-    if (arg1 >= 6) {
-        arg1 = -1;
+    if (weapon_id >= 6) {
+        weapon_id = -1;
     }
 
     rot.vx = 0x1770;
@@ -1674,10 +1674,10 @@ void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
         *g_draw_queue_cursor++ = node;
         node++;
     }
-    if (arg1 >= 0) {
+    if (weapon_id >= 0) {
         node->node.xf.mat = *mat_tbl[18];
         list = g_draw_queue_cursor;
-        node->node.reloc_entry_index = arg1 + 0xF;
+        node->node.reloc_entry_index = weapon_id + 0xF;
         g_draw_queue_cursor = list + 1;
         *list = node;
         node++;

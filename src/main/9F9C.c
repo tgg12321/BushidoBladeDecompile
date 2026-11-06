@@ -2215,16 +2215,17 @@ void camera_ApplyReplayView(s32 playback_fraction) {
 void fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt(void) {
     s32 v = g_fight_tracked_fighter_index;
     Unk80101EC8Record *ptr = &g_fighter_records[v];
-    s32 a1;
+    s32 tracked_weapon_id;
     if (ptr->frame_flags & 1) {
-        a1 = ptr->weapon_id;
+        tracked_weapon_id = ptr->weapon_id;
     } else {
-        a1 = -1;
+        tracked_weapon_id = -1;
     }
     {
         u32 flags = ptr->frame_flags & 4;
         node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
-            g_camera_alternate_view_record.turn_easing_angle, a1, flags > 0);
+            g_camera_alternate_view_record.turn_easing_angle, tracked_weapon_id,
+            flags > 0);
     }
 }
 
@@ -3578,17 +3579,20 @@ void motion_ResetVariantIndex(s32 fighter_index) {
 }
 
 MoveScript *motion_GetCurrentVariantScript(s32 fighter_index) {
-    s16 v1 = g_fighter_records[fighter_index].motion_slot;
-    s16 v0 = g_fighter_records[fighter_index].variant_index;
-    return (MoveScript *)&g_motion_fighter_sections[v1].move_scripts
-        [g_motion_fighter_buffers[v1]->variant_move_script_index[v0]];
+    s16 motion_slot_index = g_fighter_records[fighter_index].motion_slot;
+    s16 current_variant = g_fighter_records[fighter_index].variant_index;
+    return (MoveScript *)&g_motion_fighter_sections[motion_slot_index]
+        .move_scripts[g_motion_fighter_buffers[motion_slot_index]
+                          ->variant_move_script_index[current_variant]];
 }
 
 MoveScript *motion_GetDefaultVariantScript(s32 fighter_index) {
-    s16 v1 = g_fighter_records[fighter_index].motion_slot;
-    s16 v0 = g_fighter_records[fighter_index].default_variant_index;
-    return (MoveScript *)&g_motion_fighter_sections[v1].move_scripts
-        [g_motion_fighter_buffers[v1]->variant_move_script_index[v0]];
+    s16 motion_slot_index = g_fighter_records[fighter_index].motion_slot;
+    s16 default_variant =
+        g_fighter_records[fighter_index].default_variant_index;
+    return (MoveScript *)&g_motion_fighter_sections[motion_slot_index]
+        .move_scripts[g_motion_fighter_buffers[motion_slot_index]
+                          ->variant_move_script_index[default_variant]];
 }
 
 MoveScript *motion_GetCommonScriptAtFighterBufferOffset(s32 fighter_index) {
