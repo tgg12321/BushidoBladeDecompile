@@ -619,13 +619,13 @@ void fight_HandleDescriptorPlaybackCompletion(void) {
             return;
         }
     } else if (D_800A385C != 0) {
-        s32 val = D_800A390C;
+        s32 descriptor_index = D_800A390C;
 
-        if (val == 1) {
+        if (descriptor_index == 1) {
             g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
             return;
         }
-        if (val == 0 || val >= 4) {
+        if (descriptor_index == 0 || descriptor_index >= 4) {
             return;
         }
         D_800A385C = 0;

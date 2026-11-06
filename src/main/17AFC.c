@@ -260,11 +260,11 @@ void fighter_RelocateAndStartEventMove(Unk80101EC8Record *fighter_record) {
 }
 
 void fighter_DispatchBoneHitSoundEvent(
-    s32 a0, Unk80101EC8Record *fighter_record, s32 hit_record_index,
+    s32 is_object_hit, Unk80101EC8Record *fighter_record, s32 hit_record_index,
     Tbl8008E194 *a3, s32 *hit_point, s32 stack_v1) {
     Unk80101EC8Record *other_record;
 
-    if (a0 == 1) {
+    if (is_object_hit == 1) {
         return;
     }
 
@@ -357,9 +357,9 @@ extern u8 g_fighter_power_difference_move_events[3][2][2];
 
 /* the tail fighter_ResolveBoneHit's cases 0, 1-3 and 4-5 share */
 static inline s32 fighter_ResolveBoneHitTail(
-    s32 arg0, Tbl8008E194 *var_0, Unk80101EC8Record *fighter_record,
+    s32 is_object_hit, Tbl8008E194 *var_0, Unk80101EC8Record *fighter_record,
     s32 fighter_index, s32 *hit_point) {
-    if (arg0 == 1 && var_0->unkD == 2) {
+    if (is_object_hit == 1 && var_0->unkD == 2) {
         fighter_record->power_scale_tally++;
     }
     if (g_fight_mode_selector != FIGHT_MODE_TEAM) {
@@ -373,7 +373,7 @@ static inline s32 fighter_ResolveBoneHitTail(
 }
 
 s32 fighter_ResolveBoneHit(
-    s32 arg0, Unk80101EC8Record *fighter_record, s32 hit_record_index,
+    s32 is_object_hit, Unk80101EC8Record *fighter_record, s32 hit_record_index,
     s32 heading_difference, s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
     /* FAKE: var_0, var_1: copies of the stack-passed parameter `rec` (an
      * unmodified stack parameter gets half the register priority); rec used
@@ -423,7 +423,7 @@ s32 fighter_ResolveBoneHit(
             if (fighter_record->is_defeated == 0) {
                 fighter_record->pending_move_event = 0x1E;
             }
-            if (arg0 == 0 && other_record->pending_move_event == -1) {
+            if (is_object_hit == 0 && other_record->pending_move_event == -1) {
                 other_record->pending_move_event = var_0 == NULL ? 0xB : 0x19;
             }
             fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -441,21 +441,23 @@ s32 fighter_ResolveBoneHit(
         fighter_StoreBoneLocalVectorAndArmEventTrigger(
             fighter_record, hit_record_index, vec);
         fighter_DispatchBoneHitSoundEvent(
-            arg0, fighter_record, hit_record_index, var_1, hit_point, arg6);
+            is_object_hit, fighter_record, hit_record_index, var_1, hit_point,
+            arg6);
         return 1;
     }
     if (fighter_record->character_roster_index == 0x1F) {
         fighter_StoreBoneLocalVectorAndArmEventTrigger(
             fighter_record, hit_record_index, vec);
         fighter_DispatchBoneHitSoundEvent(
-            arg0, fighter_record, hit_record_index, var_1, hit_point, arg6);
+            is_object_hit, fighter_record, hit_record_index, var_1, hit_point,
+            arg6);
         fighter_record->pending_move_event = 7;
         return 1;
     }
     if ((current_move_kind == 2 || current_move_kind == 0x1B ||
          current_move_kind == 0x28 || current_move_kind == 0x26) &&
         fighter_record->move_frame < fighter_record->attack_early_frame_limit) {
-        if (arg0 == 0) {
+        if (is_object_hit == 0) {
             power_difference = other_record->power - fighter_record->power;
             power_difference_class =
                 math_ClassifyAbsMagnitude(power_difference);
@@ -500,14 +502,14 @@ s32 fighter_ResolveBoneHit(
             }
             return 0;
         }
-        if (arg0 == 1) {
+        if (is_object_hit == 1) {
             if (var_0->early_attack_hit_reaction == 0) {
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
                     fighter_index, 2, hit_point, 0);
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
                     fighter_index, 0x25, hit_point, 0);
                 fighter_record->pending_move_event = 0;
-                *out = arg0;
+                *out = is_object_hit;
                 return 0;
             }
             if (var_0->early_attack_hit_reaction == 1) {
@@ -519,7 +521,7 @@ s32 fighter_ResolveBoneHit(
                 fighter_SetTurnDelta(fighter_record, ratan2(vec[0], vec[2]));
                 fighter_record->decaying_velocity.vx -= vec[0] / 16;
                 fighter_record->decaying_velocity.vz -= vec[2] / 16;
-                *out = arg0;
+                *out = is_object_hit;
                 return 0;
             }
         }
@@ -527,8 +529,8 @@ s32 fighter_ResolveBoneHit(
     if (g_fight_mode_selector == 0 && fighter_index == 0) {
         fighter_AccumulateBoneGroupFlagWhenGameModeZero(0, hit_record_index);
     }
-    fighter_DispatchBoneHitSoundEvent(
-        arg0, fighter_record, hit_record_index, var_1, hit_point, arg6);
+    fighter_DispatchBoneHitSoundEvent(is_object_hit, fighter_record,
+                                      hit_record_index, var_1, hit_point, arg6);
     current_move_kind = fighter_record->move_kind;
     if (current_move_kind == 6 || current_move_kind == 9) {
         if (flag) {
@@ -546,7 +548,7 @@ s32 fighter_ResolveBoneHit(
             fighter_record, hit_record_index, 1);
         return 0;
     }
-    if (arg0 == 1 && var_0->unk0 == 4) {
+    if (is_object_hit == 1 && var_0->unk0 == 4) {
         s16 kind = fighter_record->character_data_index;
         if (kind == 2 || kind == 4 || kind == 0xE || kind == 0xF) {
             fighter_AccumulateOrClearByBoneGroup(
@@ -568,7 +570,7 @@ s32 fighter_ResolveBoneHit(
             return 1;
         }
         return fighter_ResolveBoneHitTail(
-            arg0, var_0, fighter_record, fighter_index, hit_point);
+            is_object_hit, var_0, fighter_record, fighter_index, hit_point);
     case 1:
     case 2:
     case 3:
@@ -581,12 +583,12 @@ s32 fighter_ResolveBoneHit(
             return 1;
         }
         return fighter_ResolveBoneHitTail(
-            arg0, var_0, fighter_record, fighter_index, hit_point);
+            is_object_hit, var_0, fighter_record, fighter_index, hit_point);
     case 4:
     case 5:
         if (!flag) {
             return fighter_ResolveBoneHitTail(
-                arg0, var_0, fighter_record, fighter_index, hit_point);
+                is_object_hit, var_0, fighter_record, fighter_index, hit_point);
         }
         fighter_record->pending_move_event = heading_difference > 0x400 ? 8 : 9;
         fighter_StoreBoneLocalVectorAndArmEventTrigger(

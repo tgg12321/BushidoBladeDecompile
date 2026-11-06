@@ -310,14 +310,14 @@ void gpu_WaitDrawSync(void) { DrawSync(0); }
 void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
     u32 local_ot[2];
     GpuDb *var_1;
-    s32 var_2;
+    s32 selected_row;
     s32 has_toggle_rows;
     s32 limit;
     u32 prim_buffer_addr;
     s32 idx;
     GpuDb *var_7;
 
-    var_2 = 0;
+    selected_row = 0;
     has_toggle_rows = 0;
     /* FAKE: pass-through handle on the parameter, used once at DrawOTag;
        moves the prologue's $s5 save/init group from first to third. Removed:
@@ -346,11 +346,11 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
         pad_Update();
         if (has_toggle_rows != 0) {
             gpu_DrawModeSizedPanelWithSelectedCellOpaque(
-                2, var_2 | (g_fight_toggle_option_bits << 16),
+                2, selected_row | (g_fight_toggle_option_bits << 16),
                 (s32)g_prim_buf_cursor, 0);
         } else {
             gpu_DrawModeSizedPanelWithSelectedCellOpaque(
-                0, var_2, (s32)g_prim_buf_cursor, 0);
+                0, selected_row, (s32)g_prim_buf_cursor, 0);
         }
         cdrom_Update();
         snd_FlushSoundQueue();
@@ -374,7 +374,7 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
 
         if (g_pad_state.pressed & 0x100010) {
             snd_QueueSound(1, 0x7F, 0x7F);
-            var_2 = 0;
+            selected_row = 0;
             break;
         }
         if (g_pad_state.pressed & 0x400040) {
@@ -383,29 +383,29 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
         }
         if (g_pad_state.pressed & 0x10001000) {
             snd_QueueSound(0, 0x7F, 0x7F);
-            var_2 = (var_2 == 0) ? limit - 1 : var_2 - 1;
+            selected_row = (selected_row == 0) ? limit - 1 : selected_row - 1;
         } else if (g_pad_state.pressed & 0x40004000) {
             snd_QueueSound(0, 0x7F, 0x7F);
-            var_2 = (var_2 == limit - 1) ? 0 : var_2 + 1;
+            selected_row = (selected_row == limit - 1) ? 0 : selected_row + 1;
         }
 
-        if ((has_toggle_rows != 0) && (var_2 >= 3)) {
+        if ((has_toggle_rows != 0) && (selected_row >= 3)) {
             if (g_pad_state.pressed & 0x80008000) {
                 snd_QueueSound(0, 0x7F, 0x7F);
-                g_fight_toggle_option_bits |= 1 << (var_2 - 3);
+                g_fight_toggle_option_bits |= 1 << (selected_row - 3);
             } else if (g_pad_state.pressed & 0x20002000) {
                 snd_QueueSound(0, 0x7F, 0x7F);
-                g_fight_toggle_option_bits &= ~(1 << (var_2 - 3));
+                g_fight_toggle_option_bits &= ~(1 << (selected_row - 3));
             }
         }
     }
 
-    if (var_2 != 0) {
-        if (var_2 == 1) {
+    if (selected_row != 0) {
+        if (selected_row == 1) {
             g_menu_mode_subflow_init_pending = 1;
             g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
             cdrom_PauseAndWait();
-        } else if (var_2 == 2) {
+        } else if (selected_row == 2) {
             g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
             cdrom_PauseAndWait();
         }

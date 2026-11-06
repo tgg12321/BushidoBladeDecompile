@@ -269,17 +269,17 @@ void fighter_InitCpuControl(
     s32 fighter_index, u16 *script_table, u16 *other_script_table) {
     Unk80101EC8Record *p = &g_fighter_records[fighter_index];
     Unk8009A8C8Entry *src;
-    u8 *var_2;
+    u8 *limits_row;
     u8 base;
     /* idx counts two loops: the eight bytes cleared at 0x444, then the two
      * players (0 = this record, 1 = the opponent's) (Ruling 11,
      * ordinary-c-judge-decidable). */
     s32 idx;
-    s32 var_5;
+    s32 script_row;
     Unk80101EC8Record *rec;
     u16 *cursor;
     u16 *list;
-    s32 var_9;
+    s32 mask_bit_index;
     s32 bit;
     s32 lo, hi1, hi2;
     /* temp holds six values in turn, each read before the next write: case 2's
@@ -355,9 +355,9 @@ void fighter_InitCpuControl(
         if (g_fight_step_table_next_row % 10 == 0) {
             temp--;
         }
-        var_2 = D_8009A9B4[temp];
-        p->cpu_tracked_move_tally_threshold = var_2[0];
-        p->cpu_script_wait_limit = var_2[1];
+        limits_row = D_8009A9B4[temp];
+        p->cpu_tracked_move_tally_threshold = limits_row[0];
+        p->cpu_script_wait_limit = limits_row[1];
         break;
     }
     if (fighter_GetSavedCpuBehaviorAdjustFlag() &&
@@ -381,21 +381,21 @@ void fighter_InitCpuControl(
             rec = p->other;
             cursor = other_script_table;
             list = other_script_table;
-            var_9 = rec->character_data_index;
+            mask_bit_index = rec->character_data_index;
         } else {
             rec = p;
             cursor = script_table;
             list = script_table;
-            var_9 = p->cpu_profile;
+            mask_bit_index = p->cpu_profile;
         }
         rec->scale_distance_offset = (rec->size_scale - 0x1000) * 225 >> 11;
-        for (var_5 = 0; var_5 < 3; var_5++) {
-            bit = 1 << var_9;
+        for (script_row = 0; script_row < 3; script_row++) {
+            bit = 1 << mask_bit_index;
             lo = 0xFFFF;
             hi2 = 0;
             hi1 = 0;
             if (idx == 0) {
-                p->cpu_script_rows[var_5] = cursor;
+                p->cpu_script_rows[script_row] = cursor;
             }
             for (; *cursor != 0; cursor++) {
                 u8 *e = (u8 *)list + *cursor;
@@ -439,9 +439,9 @@ void fighter_InitCpuControl(
                 var_18 += hi2 * 40;
             }
             cursor++;
-            rec->script_min_distances[var_5] = lo_val;
-            rec->script_max_distances[var_5] = hi1_val;
-            rec->filtered_script_max_distances[var_5] = var_18;
+            rec->script_min_distances[script_row] = lo_val;
+            rec->script_max_distances[script_row] = hi1_val;
+            rec->filtered_script_max_distances[script_row] = var_18;
         }
     }
     other_record = p->other;
@@ -602,8 +602,8 @@ extern s32 fighter_CalcOpponentDistanceThresholdFromTables(Unk80101EC8Record *);
 
 void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
     Unk80101EC8Record *rec;
-    Unk80101EC8Record *var_1;
-    Unk80101EC8Record *var_2;
+    Unk80101EC8Record *updated_record;
+    Unk80101EC8Record *updated_record_opponent;
     PadState pad;
     PadBitTable bits;
     s32 opponent_hit_start_frame, hi;
@@ -633,27 +633,31 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
     rec = &g_fighter_records[fighter_index];
     rec->cpu_pad_decision_result = 0;
     if (rec->cpu_pad_build_count & 1) {
-        var_2 = rec->other;
-        var_1 = rec;
+        updated_record_opponent = rec->other;
+        updated_record = rec;
     } else {
-        var_1 = rec->other;
-        var_2 = rec;
+        updated_record = rec->other;
+        updated_record_opponent = rec;
     }
-    var_1->motion_metadata_nibble = var_1->motion_metadata[2] & 0xF;
-    var_1->opponent_angle_from_orientation =
-        (ratan2(var_2->world_pos.x - var_1->world_pos.x,
-                var_2->world_pos.z - var_1->world_pos.z) -
-         var_1->orientation.vy) &
+    updated_record->motion_metadata_nibble =
+        updated_record->motion_metadata[2] & 0xF;
+    updated_record->opponent_angle_from_orientation =
+        (ratan2(
+             updated_record_opponent->world_pos.x - updated_record->world_pos.x,
+             updated_record_opponent->world_pos.z -
+                 updated_record->world_pos.z) -
+         updated_record->orientation.vy) &
         0xFFF;
-    if (var_1->opponent_angle_from_orientation > 0x800) {
-        var_1->opponent_angle_from_orientation -= 0x1000;
+    if (updated_record->opponent_angle_from_orientation > 0x800) {
+        updated_record->opponent_angle_from_orientation -= 0x1000;
     }
-    var_1->opponent_angle_from_orientation_abs =
-        var_1->opponent_angle_from_orientation < 0
-            ? -var_1->opponent_angle_from_orientation
-            : var_1->opponent_angle_from_orientation;
-    if (var_1->move_kind == 0x15) {
-        var_1->latched_motion_metadata_nibble = var_1->motion_metadata_nibble;
+    updated_record->opponent_angle_from_orientation_abs =
+        updated_record->opponent_angle_from_orientation < 0
+            ? -updated_record->opponent_angle_from_orientation
+            : updated_record->opponent_angle_from_orientation;
+    if (updated_record->move_kind == 0x15) {
+        updated_record->latched_motion_metadata_nibble =
+            updated_record->motion_metadata_nibble;
     }
 
     rec->cpu_state_flags =
@@ -1746,7 +1750,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     s32 wx;
     u8 *chosen_script;
     s32 wz;
-    s8 var_3;
+    s8 best_pick_variant;
     s16 chosen_script_index;
     s32 chosen_script_max_distance;
     s32 effective_cpu_level;
@@ -1802,7 +1806,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     s32 waypoint_radius;
     s32 base_pad_buttons;
     s32 parity_pad_buttons;
-    s32 var_22;
+    s32 wide_radius_flag;
     s32 distance_error_streak;
     s16 script_score;
     NavVertexChainSet *nav_set;
@@ -1819,7 +1823,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     u16 off;
     s16 best_script_score;
     u8 table_other_move_kind;
-    s8 var_37;
+    s8 pick_variant;
     s32 goal_kind;
     s32 cnt;
     s32 use_stock;
@@ -2305,15 +2309,15 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         fighter_BuildCpuRoutePadWithSurfaceProbe(
                             p, wx, wz, work3);
                     waypoint_radius = 300;
-                    var_22 = p->cpu_pad_decision_result & 4;
-                    if (var_22) {
+                    wide_radius_flag = p->cpu_pad_decision_result & 4;
+                    if (wide_radius_flag) {
                         waypoint_radius = 1000;
                     }
                     if (CPU_SQ(p->cpu_route.node[p->cpu_route.count - 1].x -
                                p->world_pos.x) +
                             CPU_SQ(p->cpu_route.node[p->cpu_route.count - 1].z -
                                    p->world_pos.z) <
-                        waypoint_radius * (var_22 ? 1000 : 300)) {
+                        waypoint_radius * (wide_radius_flag ? 1000 : 300)) {
                         if (--p->cpu_route.count != 0) {
                             work3 =
                                 (ratan2(
@@ -2505,10 +2509,10 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 }
             }
         } else if (p->cpu_action_countdown == 0) {
-            s32 var_56 = g_cpu_profiles[p->cpu_profile].unk6;
+            s32 pick_chance = g_cpu_profiles[p->cpu_profile].unk6;
             r = rand() & 0xFF;
-            if (p->latched_motion_metadata_nibble == 4 ? r < (var_56 >> 2)
-                                                       : r < var_56) {
+            if (p->latched_motion_metadata_nibble == 4 ? r < (pick_chance >> 2)
+                                                       : r < pick_chance) {
                 work2 = -1;
                 best_pick_weight_index = -1;
                 pick_weight_index = 0;
@@ -2518,12 +2522,12 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                             .pick_weight[pick_weight_index]) >>
                     12;
                 if (pick_score != 0) {
-                    var_37 = 0;
+                    pick_variant = 0;
                     switch (pick_weight_index) {
                     case 0:
                     case 2:
                         if (rand() & 1) {
-                            var_37 = 1;
+                            pick_variant = 1;
                         } else if (p->cpu_probes[3] != 0) {
                             goto pick_next;
                         }
@@ -2533,12 +2537,12 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                  ? distance_error_streak
                                  : -distance_error_streak)) {
                             pick_score += 0x80;
-                            var_37 = distance_error_streak > 0;
+                            pick_variant = distance_error_streak > 0;
                         }
                         if (p->weapon_id >= 6 && p->weapon_ammo == 0 &&
                             pick_weight_index == 2) {
                             pick_score += 0x100;
-                            var_37 = 0;
+                            pick_variant = 0;
                         }
                         break;
                     case 1:
@@ -2547,16 +2551,17 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                             if (p->cpu_probes[5] != 0) {
                                 goto pick_next;
                             }
-                            var_37 = 1;
+                            pick_variant = 1;
                         } else if (p->cpu_probes[1] != 0) {
                             goto pick_next;
                         }
                         if (p->cpu_state_flags & 0x20000) {
                             pick_score += 0x80;
-                            var_37 = p->opponent_angle_from_orientation > 0;
-                            if (*(var_37 ? &p->cpu_probes[5]
-                                         : &p->cpu_probes[1]) != 0) {
-                                var_37 ^= 1;
+                            pick_variant =
+                                p->opponent_angle_from_orientation > 0;
+                            if (*(pick_variant ? &p->cpu_probes[5]
+                                               : &p->cpu_probes[1]) != 0) {
+                                pick_variant ^= 1;
                             }
                         }
                         break;
@@ -2580,7 +2585,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     if ((s16)work2 < pick_score) {
                         best_pick_weight_index = pick_weight_index;
                         work2 = pick_score;
-                        var_3 = var_37;
+                        best_pick_variant = pick_variant;
                     }
                 }
             }
@@ -2600,24 +2605,24 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         p->base_move_frame_step;
                     switch (best_pick_weight_index) {
                     case 0:
-                        p->cpu_action_index = var_3 != 0;
+                        p->cpu_action_index = best_pick_variant != 0;
                         break;
                     case 1:
-                        if (var_3) {
+                        if (best_pick_variant) {
                             p->cpu_action_index = 3;
                         } else {
                             p->cpu_action_index = 2;
                         }
                         break;
                     case 2:
-                        if (var_3) {
+                        if (best_pick_variant) {
                             p->cpu_action_index = 5;
                         } else {
                             p->cpu_action_index = 4;
                         }
                         break;
                     case 3:
-                        if (var_3) {
+                        if (best_pick_variant) {
                             p->cpu_action_index = 7;
                         } else {
                             p->cpu_action_index = 6;

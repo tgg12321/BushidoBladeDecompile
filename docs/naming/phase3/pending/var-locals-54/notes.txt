@@ -49,3 +49,6 @@ Research notes copied below (NO_NAME with reasons, LEADS retitled for var-locals
 - Data: D_800A325C / D_800A3260 (tables from the opponent's motion nibble to a CPU action slot, for opponent move_kind 0x19 / 0x1A); D_8009A9B4 (CHANBARA threshold / wait-limit pairs); D_800A390C / D_800A385C / D_800A37B0 (from var-locals-53).
 - resource_LoadOrReuseSelectedBlock (368E4.c:41): register-style locals s0..s7 / sp18 / sp20 / a0_ptr (s7 is a FAKE reuse). Not reached by recent waves; a candidate set of its own.
 - menu_RunPauseMenu:arg0 together with main:var_1 (both g_gpu_db[idx]), if main:var_1 is ever reopened.
+
+## Deferred at LAND (naming-b 2026-11-06)
+- menu_InitSubflowForMode:arg0=mode_selector (25C38.c, 3 substitutions): passed pre-apply and R6, but src/main/25C38.c was path-claimed by the const lane (row const-game-codes) for over an hour, so lanes.py land refused the wave. The pair is removed from this wave and carried to var-locals-55 unchanged.
