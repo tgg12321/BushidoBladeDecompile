@@ -1,0 +1,1 @@
+D_8009BC38=g_entry_menu_row_picks_by_choice_cursor
