@@ -3944,7 +3944,7 @@ void fighter_ResetBoneGroupHitState(Unk80101EC8Record *fighter_record) {
 }
 
 void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
-                  s32 arg3, s32 arg4) {
+                  s32 weapon, s32 place_from_other_position) {
     Unk80101EC8Record *p;
     Vec3i32 other_position;
     s32 var_2;
@@ -3962,7 +3962,7 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
     p->cpu_controlled = is_cpu_controlled;
     p->character_roster_index = roster_index;
     p->character_data_index = g_fight_config_id_data_rows[roster_index];
-    p->weapon_id = arg3;
+    p->weapon_id = weapon;
 
     if (g_fight_mode_selector == 5 ||
         (g_fight_mode_selector == 2 && D_800A389A == 0)) {
@@ -4024,7 +4024,7 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
 
     switch (g_fight_mode_selector) {
     case 0:
-        if (arg4 != 0) {
+        if (place_from_other_position != 0) {
             other_position = p->other->base_pos;
             fight_PickRandomStartPositionExcludingNearestAndFarthest(
                 fighter_index, &p->base_pos.x, &other_position.x);
@@ -4036,7 +4036,7 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
         break;
     case 2:
     case 3:
-        if (arg4 != 0) {
+        if (place_from_other_position != 0) {
             other_position = p->other->base_pos;
             fight_SearchRadialFlatSurfacePointOrUseStartPositionPair(
                 fighter_index, &p->base_pos, &other_position.x);

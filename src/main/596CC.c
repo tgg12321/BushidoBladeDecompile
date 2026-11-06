@@ -293,7 +293,7 @@ s32 pad_StepOffsetsGetDirectionEvents(
     return sum;
 }
 
-s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
+s32 menu_UpdateRowMenu(s32 arg0, s32 pressed_buttons) {
     extern void gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(
         s32 *, s32, GpuDb *);
     extern void menu_DrawMaskedRowList(u8 *, u16 *, s32);
@@ -310,7 +310,7 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
     gpu_db = &g_gpu_db[g_gpu_presented_frame_count & 1];
     gpu_AdvanceBufferCounterAndBuildDrawContext(
         var_0, &g_menu_draw_buffer_counter);
-    var_0[12] = (arg1 & 0xFFFF) | ((u32)arg1 >> 16);
+    var_0[12] = (pressed_buttons & 0xFFFF) | ((u32)pressed_buttons >> 16);
     direction_events = pad_StepOffsetsGetDirectionEvents(
         (u32 *)&var_0[12], 0, g_row_menu_work_block->menu_draw_offsets,
         g_menu_draw_offset_steps);
@@ -376,7 +376,7 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
         var_0, g_row_menu_row_state.opt[g_menu_packed_cursors & 0xF].mode);
     menu_DrawModeBit0Sheets(
         var_0, g_row_menu_row_state.opt[g_menu_packed_cursors & 0xF].mode);
-    if (arg1 & PADRdown) {
+    if (pressed_buttons & PADRdown) {
         switch (g_row_menu_row_state.opt[g_menu_packed_cursors & 0xF].state) {
         case 4:
         case 5:
@@ -388,7 +388,7 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
         }
         goto accept;
     }
-    if (arg1 & 0x400000) {
+    if (pressed_buttons & 0x400000) {
         switch (g_row_menu_row_state.opt[g_menu_packed_cursors & 0xF].state) {
         case 0:
         case 1:
@@ -409,12 +409,12 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
         }
         return g_row_menu_row_state.opt[g_menu_packed_cursors & 0xF].state;
     }
-    if (arg1 & 0x100010) {
+    if (pressed_buttons & 0x100010) {
         snd_QueueSound(2, 0x7F, 0x7F);
         return -2;
     }
 cancel:
-    if (arg1 & 0x50005000) {
+    if (pressed_buttons & 0x50005000) {
         snd_QueueSound(0, 0x7F, 0x7F);
     }
     return -1;

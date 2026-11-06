@@ -45,10 +45,11 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
     s = (u8 *)p;
 
     do {
-        s32 var_7 = (&g_fight_roster_indices_by_character_data_index)[s[0]];
-        g_fight_config.fighter_setup[i] = var_7;
-        if ((u32)(var_7 - 3) < 2 || (s8)var_7 == new_var ||
-            (u32)(var_7 - 18) < 2 || (s8)var_7 == new_var2) {
+        s32 roster_index =
+            (&g_fight_roster_indices_by_character_data_index)[s[0]];
+        g_fight_config.fighter_setup[i] = roster_index;
+        if ((u32)(roster_index - 3) < 2 || (s8)roster_index == new_var ||
+            (u32)(roster_index - 18) < 2 || (s8)roster_index == new_var2) {
             if ((s8)g_fight_config.pending_mode_selector == 0) {
                 g_fight_config.fighter_setup[i] =
                     g_fight_config.fighter_setup[i] - 3;
@@ -88,18 +89,19 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
             u8 *dst_a = g_fight_match_roster_indices[0];
             do {
                 s32 k = 0;
-                u8 *var_13 = dst_d;
-                u8 *var_14 = dst_a;
+                u8 *weapon_id_dst = dst_d;
+                u8 *roster_index_dst = dst_a;
                 s32 off = j << 1;
             loop_inner: {
-                u8 *var_16 = (u8 *)p + off;
-                *var_14 = (&g_fight_roster_indices_by_character_data_index)
-                    [var_16[0]];
+                u8 *match_pick = (u8 *)p + off;
+                *roster_index_dst =
+                    (&g_fight_roster_indices_by_character_data_index)
+                        [match_pick[0]];
                 off += 10;
                 k++;
-                *var_13 = var_16[1];
-                var_14++;
-                var_13++;
+                *weapon_id_dst = match_pick[1];
+                roster_index_dst++;
+                weapon_id_dst++;
             }
                 if (k < 2)
                     goto loop_inner;
