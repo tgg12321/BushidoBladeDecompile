@@ -1,0 +1,11 @@
+var-members-motionfile -- draft notes (research: tmp/var-members-motionfile-research.md; re-derived in ln-naming-b)
+
+Scope: Tbl800A3860Entry.f66 (include/game.h:848, u16 f66[11][3]), NO_NAME in var-members-rest-21 / -22, reopened by the trace-b data-lead captures (backlog row var-members-motionfile). SelWork also has an f66 member; the tool resolves by type and the dry run touches only the Tbl800A3860Entry use.
+
+Result: 1 RENAME pair (pairs.txt). Dry run dry.txt exit 0, "OK: every member access renamed", 2 files (include/game.h decl + src/main/9F9C.c:3492 only; SelWork.f66 untouched). Run in WSL (python3 under wsl; the Windows python lacks the mipsel cpp). The renamed line at 9F9C.c:3492 exceeds 80 columns: tools/format.py must re-wrap it.
+
+- f66 -> variant_move_script_index_by_move_id: only C access is the read at 9F9C.c:3492 in motion_ResolveMoveData, [id - 0x7FF5][rec->variant_index], a move_scripts index. No INCLUDE_ASM body touches the buffer (all asm/funcs readers of g_motion_fighter_buffers are functions already in C). Fallback NO_NAME if 'by_move_id' is judged too broad. Rejected: reserved_id_move_script_index, move_id_variant_move_script_index.
+
+Comment lines in include/game.h that mention f66 (reword after the rename; the tool renames identifiers only, comments need a hand edit):
+- include/game.h:825 ` * f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). common_move_script_index` -> `variant_move_script_index_by_move_id[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF)`, re-wrapped so the line stays within 80 columns (common_move_script_index moves to the next line).
+- include/game.h:859 ` * next_variant_move_script_index / f66 / common_move_script_index /` -> `... next_variant_move_script_index / variant_move_script_index_by_move_id /` with common_move_script_index re-wrapped onto the next line.

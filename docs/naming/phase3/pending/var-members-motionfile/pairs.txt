@@ -1,0 +1,1 @@
+Tbl800A3860Entry.f66=variant_move_script_index_by_move_id

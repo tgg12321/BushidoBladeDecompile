@@ -1,0 +1,17 @@
+PASS Tbl800A3860Entry.f66=variant_move_script_index_by_move_id
+decl Tbl800A3860Entry.f66 -> variant_move_script_index_by_move_id  include/game.h:848
+  round 0: 1 member error line(s)
+    src/main/9F9C.c:3492 f66 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -848 +848 @@
+-    u16 f66[11][3];
++    u16 variant_move_script_index_by_move_id[11][3];
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -3492 +3492 @@
+-                                      ->f66[id - 0x7FF5][rec->variant_index]];
++                                      ->variant_move_script_index_by_move_id[id - 0x7FF5][rec->variant_index]];
+DRY RUN: 2 file(s) would change; nothing written
+OK: every member access renamed
