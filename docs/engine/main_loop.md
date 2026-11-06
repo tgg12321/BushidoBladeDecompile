@@ -23,7 +23,7 @@ start-up code, in order:
 
 1. Start-up: `__main()` (the SN constructor walker; the game has no
    constructors, src/main/psxsdk/libsn/73E98.c:16-22), `SetSp(0x801FFF00)`,
-   `SetMem(2)`, `sys_Init()`, `func_80016D78()`, `SetDispMask(1)`, then
+   `SetMem(2)`, `sys_Init()`, `sys_InitAtBoot()`, `SetDispMask(1)`, then
    `gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth(0x80118800, ...)` (src/main/6CF8.c:188), which reads file
    `cdrom_GetFileIndex(2, 0x61)`, shows it for 150 frames and darkens it over
    the last 29.
@@ -63,7 +63,7 @@ start-up code, in order:
 - `sys_Init` (src/main/6CF8.c:175): `ResetCallback`, `InitPAD` on
   `g_pad_buf`, `StartPAD`, `ChangeClearPAD(0)`, `disp_Init`, display off,
   `g_gpu_jitter_burst_enabled = 0`, `cdrom_Init`, `memcard_Init`, `rcnt_StartCnt1Wrapper`.
-- `func_80016D78` (src/main/6CF8.c:285): sets the two primitive buffers
+- `sys_InitAtBoot` (src/main/6CF8.c:285): sets the two primitive buffers
   `D_800A3770[0..1] = 0x801D8800 / 0x801EBC00` and their size `D_800A3798 =
   0x13400`, loads the common sound bank (`snd_InitAndLoadCommonVab`,
   src/main/6CF8.c:265), `pad_ResetStateMarkValid`, `font_LoadImage`,

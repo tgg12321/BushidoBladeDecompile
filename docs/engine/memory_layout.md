@@ -51,7 +51,7 @@ These addresses are set in code:
 
 | Address | Size | Use | Set / used at |
 | --- | --- | --- | --- |
-| 0x801D8800 | 0x13400 | primitive buffer 0 (`D_800A3770[0]`) | `func_80016D78` (src/main/6CF8.c:289) |
+| 0x801D8800 | 0x13400 | primitive buffer 0 (`D_800A3770[0]`) | `sys_InitAtBoot` (src/main/6CF8.c:289) |
 | 0x801EBC00 | 0x13400 | primitive buffer 1 (`D_800A3770[1]`); ends at 0x801FF000 | src/main/6CF8.c:290 |
 | 0x801D8800 | | also load scratch: `eff_Init`'s `eff_LoadImagesAndSetup(0x801D8800, ...)` (called from mode handlers) and `snd_LoadCommonVab(0x801D8800)` (at boot and again after `sys_Exec` returns) | src/main/6CF8.c:254, :269 |
 | 0x8010DB00 | <= 0xD00 | the common VAB's main-RAM part (sound table + VabHdr), copied from 0x801D8800 | src/main/6CF8.c:273 |
@@ -60,7 +60,7 @@ These addresses are set in code:
 | 0x801FFF00 | | stack top after `SetSp` | src/main/6CF8.c:435 |
 
 Each frame, `main` checks the cursor against the buffer's end, `var_4[idx] +
-0x13400` (src/main/6CF8.c:490). `func_80016D78` also stores 0x13400 in
+0x13400` (src/main/6CF8.c:490). `sys_InitAtBoot` also stores 0x13400 in
 `D_800A3798` (src/main/6CF8.c:291). See [gpu_pipeline.md](gpu_pipeline.md).
 
 Large objects named elsewhere in these pages:
@@ -77,7 +77,7 @@ Large objects named elsewhere in these pages:
 - `g_scratchpad_save` (0x800F5370): `scratchpad_Save` /
   `scratchpad_Restore` copy 0xF8 words (992 bytes) between it and
   0x1F800000 (src/main/6CF8.c:782, :791). The one caller pair is in
-  `fighter_Update` (src/main/9F9C.c:5434, :5438), around `func_80040D48`.
+  `fighter_Update` (src/main/9F9C.c:5434, :5438), around `slot_UpdateObjectFrame`.
 - `CdlREAD D_800A14D0`: libcd `CdRead` state (include/psxsdk/libcd.h:41-57).
 
 ## The `$gp` window

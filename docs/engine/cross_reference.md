@@ -12,7 +12,7 @@ gives its `.text` start and its boundary evidence. Sony and SN code is in
 
 | File | `.text` | Contents (named functions, or the top comment) |
 | --- | --- | --- |
-| `6CF8.c` | 0x800164F8 | boot and frame loop: `main`, `sys_Init`, `disp_Init`, `func_80016D78`, `sys_Panic`, `eff_Init`, `snd_InitAndLoadCommonVab`, `pcdrv_*`, `rng_*`, `scratchpad_*`, `math_FovToScreenDist`, `math_Distance3D*`; [main_loop.md](main_loop.md), [gpu_pipeline.md](gpu_pipeline.md) |
+| `6CF8.c` | 0x800164F8 | boot and frame loop: `main`, `sys_Init`, `disp_Init`, `sys_InitAtBoot`, `sys_Panic`, `eff_Init`, `snd_InitAndLoadCommonVab`, `pcdrv_*`, `rng_*`, `scratchpad_*`, `math_FovToScreenDist`, `math_Distance3D*`; [main_loop.md](main_loop.md), [gpu_pipeline.md](gpu_pipeline.md) |
 | `87A0.c` | 0x80017FA0 | 12 functions: `pad_ResetState`, `pad_ResetStateMarkValid`, `pad_Update`, `softbody_PrepareStep`, `softbody_SolveSprings` ([replay.md](replay.md)) |
 | `9F9C.c` | 0x8001979C | 93 functions, among them `camera_CalcEye`, `math_RotMatrixZYXAngles`, `pad_ClearStateBits`, `fighter_Update` |
 | `175A4.c` | 0x80026DA4 | `fight_UpdatePairedInputTotalsEventsAndMidpointEffects` |

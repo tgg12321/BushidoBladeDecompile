@@ -45,7 +45,7 @@ Companion documents:
                             |                             |
                             |  motion_Open  -> CTORs      |
                             |  sys_Init     -> hardware   |
-                            |  func_80016D78 -> init      |
+                            |  sys_InitAtBoot -> init     |
                             |  main loop (label `loop:`)  |
                             +--------------+--------------+
                                            |
@@ -94,7 +94,7 @@ address is the stable key.
 
 | File | `.text` range | Contents |
 | --- | --- | --- |
-| `ings.c` | 0x800164F8-0x80017FA0 | Boot/init: `main`, `func_80016D78`, `disp_Init`, PC-drv file loaders, RNG, object-position math, scratchpad save/restore |
+| `ings.c` | 0x800164F8-0x80017FA0 | Boot/init: `main`, `sys_InitAtBoot`, `disp_Init`, PC-drv file loaders, RNG, object-position math, scratchpad save/restore |
 | `code6cac.c` | 0x80017FA0-0x8001979C | mixed / unclear (11 functions, mostly unnamed) |
 | `code6cac_tu2.c` | 0x8001979C-0x80026DA4 | Game-mode handlers and match flow (`g_main_loop_handlers` slots 1/12/17: `fight_Update`, `fight_InitFighterFocusViewAndThreeItemMenu`, `fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress`), practice-menu code (motion_ResolveMoveData), CPU move-pattern helpers; mixed |
 | `code6cac_b.c` | 0x80026DA4-0x800272FC | fight_UpdatePairedInputTotalsEventsAndMidpointEffects only |

@@ -568,7 +568,7 @@
 /* See MISNOMERS.md. */
 
 /* === Primitive-buffer bases + render state (2026-05-17) -- 6 highs === */
-/* From 6CF8.c: func_80016D78 (:291-292) stores two main-RAM primitive-buffer */
+/* From 6CF8.c: sys_InitAtBoot (:291-292) stores two main-RAM primitive-buffer */
 /* bases in D_800A3770[0] / [1]; main (:455) and menu_RunPauseMenu (:340-344) */
 /* base g_prim_buf_cursor on D_800A3770[g_gpu_presented_frame_count & 1]. */
 
@@ -1049,8 +1049,8 @@
 /* From memcard_info_load.c memcard_StepCardInfoAndLoad: 5-state machine driving memcard */
 /* bios_A0_0xAB / 0xAC operations with event polling and completion. */
 
-/* === func_80016D78 reset cluster (2026-05-17) -- 6 highs === */
-/* From 6CF8.c func_80016D78 (:300-304): state cells reset */
+/* === sys_InitAtBoot reset cluster (2026-05-17) -- 6 highs === */
+/* From 6CF8.c sys_InitAtBoot (:300-304): state cells reset */
 /* during start-up init (g_gpu_cd_file_image_rect excepted, see its line). */
 
 /* === SPU transfer single-slot state (2026-05-17) -- 5 highs === */

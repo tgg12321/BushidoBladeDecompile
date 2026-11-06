@@ -30,7 +30,7 @@ are described in [docs/formats/](../formats/README.md).
    src/main/6CF8.c:458).
 
 `sys_Exec` (src/main/cdrom.c:213) runs it again after the FMV overlay
-returns. `func_80016D78` (src/main/6CF8.c:285) runs it at boot.
+returns. `sys_InitAtBoot` (src/main/6CF8.c:285) runs it at boot.
 
 ## VAB slots (4BC3C.c)
 

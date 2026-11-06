@@ -92,7 +92,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
 4. integrates the velocities `base_velocity` / `decaying_velocity`, resolves the position
    (`fighter_ResolveMovement`, src/main/9F9C.c:4164), and builds the pose:
    `slot_BlendTwoPosesIntoNodeMatrices(fighter_index, &pose_frames[0], &pose_frames[1], pose_interp_weight, ...)` (src/main/9F9C.c:5434) and
-   `func_80040D48` (src/main/9F9C.c:5438).
+   `slot_UpdateObjectFrame` (src/main/9F9C.c:5438).
 
 ## Building the pose
 
@@ -102,7 +102,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
   with `gte_LerpMatrixRowsAndRebuildOrthonormalBasis` into the model object's node `work` matrices
   (`g_slot_objects[i]`); joints 18 and 19 also blend a translation
   (`math_LerpShortVectorsNegateYZ`).
-- `func_80040D48(i, mode, pos, rot, ...)` (src/main/31548.c:10) sets the root
+- `slot_UpdateObjectFrame(i, mode, pos, rot, ...)` (src/main/31548.c:10) sets the root
   node's position and rotation, completes the joint nodes (mode 0 takes the
   angles from a channel array), runs `node_UpdateWorldMatrix` on each of the 18 nodes,
   and queues the nodes on `g_draw_queue_cursor`.
@@ -113,7 +113,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
   per-frame records `g_replay_fighter_frames` (`Rec1C`, include/game.h:1807, written by
   `replay_RecordFighter` from `cur_move`, `world_pos`, `blend_src_frame_code`, `blend_dst_frame_code`, `pose_interp_weight` and others): it
   decodes the two stored frame keys and calls `slot_BlendTwoPosesIntoNodeMatrices` /
-  `func_80040D48` as the live path does.
+  `slot_UpdateObjectFrame` as the live path does.
 - `motion_UpdatePlayback` (src/main/4510C.c) plays a loaded sequence: a camera
   stream plus per-object motion streams it registers with `motion_InitStream`
   and decodes each frame with `motion_DecodeFrame`.

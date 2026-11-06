@@ -22,7 +22,7 @@ Each frame `main` (src/main/6CF8.c:423) runs these steps:
 1. Clears the record's OT with `ClearOTagR(ot, 0x1008)` (src/main/6CF8.c:451)
    and makes it `g_gpu_ot_ptr`.
 2. Points `g_prim_buf_cursor` at the parity's primitive buffer
-   `D_800A3770[idx]`. `func_80016D78` sets the two buffers to 0x801D8800 and
+   `D_800A3770[idx]`. `sys_InitAtBoot` sets the two buffers to 0x801D8800 and
    0x801EBC00 (src/main/6CF8.c:289-290).
 3. After the mode handler, waits for `DrawSync(0)` and the vsync, then sends
    `PutDispEnv` and `PutDrawEnv`.
