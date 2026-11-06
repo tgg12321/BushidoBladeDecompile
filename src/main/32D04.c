@@ -417,19 +417,19 @@ void math_TransposeMatrixInPlace(MATRIX *matrix) {
     matrix->m[1][2] = temp;
 }
 
-void math_Rotate2D(s32 *x_ptr, s32 *a1, s32 angle) {
+void math_Rotate2D(s32 *x_ptr, s32 *y_ptr, s32 angle) {
     s16 cosine, sine;
     s32 x, y;
     s32 x_cosine, x_sine, y_cosine, y_sine;
     cosine = Judge[(angle + 0x400) & 0xFFF];
     x = *x_ptr;
     sine = Judge[angle & 0xFFF];
-    y = *a1;
+    y = *y_ptr;
     x_cosine = cosine * x;
     x_sine = sine * x;
     y_cosine = cosine * y;
     y_sine = sine * y;
-    *a1 = (x_sine + y_cosine) >> 12;
+    *y_ptr = (x_sine + y_cosine) >> 12;
     *x_ptr = (x_cosine - y_sine) >> 12;
 }
 

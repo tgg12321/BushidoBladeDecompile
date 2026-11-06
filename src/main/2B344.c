@@ -341,11 +341,11 @@ void fight_QueueFixedFighterCommandDescriptorPlayback(s32 arg0) {
 
 void fight_RunCommandStream(void) {
     s32 var_0;
-    u8 *var_1;
+    u8 *fighter1_setup;
 
     snd_ResetVoicesAndQueue();
     var_0 = 0;
-    var_1 = &g_fight_config.fighter_setup[1];
+    fighter1_setup = &g_fight_config.fighter_setup[1];
 
     do {
         u8 *ptr = g_fight_command_stream_cursor;
@@ -374,8 +374,8 @@ void fight_RunCommandStream(void) {
             g_fight_command_stream_cursor = p + 1;
             byte0 = p[0];
             g_fight_command_stream_cursor = p + 2;
-            var_1[0] = byte0;
-            var_1[2] = p[1];
+            fighter1_setup[0] = byte0;
+            fighter1_setup[2] = p[1];
             if ((s8)byte0 == g_fight_displaced_first_fighter_selection) {
                 slot_RequestTimGroupsAndMarkReloadOnChange(
                     1, g_fight_displaced_bone_group_tim_requests);

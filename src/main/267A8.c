@@ -29,10 +29,10 @@ void cdrom_FlushInit(void) {
     VSync(4);
 }
 
-void cdrom_ReadyCallback(u8 arg0, u8 *result) {
+void cdrom_ReadyCallback(u8 intr, u8 *result) {
     s32 sp[4];
 
-    if (arg0 == CdlDataReady) {
+    if (intr == CdlDataReady) {
         g_cdrom_state.rec.read_timeout = 0;
         if (g_cdrom_state.rec.cd20 <= 0) {
             return;

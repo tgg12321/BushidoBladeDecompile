@@ -1116,7 +1116,7 @@ void gpu_LoadTimGroupOffset(
     volatile u32 pre_pad[8];
     s32 base_addr;
     s32 count;
-    s32 new_var;
+    s32 tim_addr;
     base_addr = (s32)p;
     p += (s16)group_index;
     p = (u32 *)(base_addr + (((*p) >> 2) << 2));
@@ -1139,13 +1139,14 @@ void gpu_LoadTimGroupOffset(
             p = (u32 *)(((s32)p) + 2);
             image_y = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            new_var = base_addr + (((u32)word >> 2) << 2);
+            tim_addr = base_addr + (((u32)word >> 2) << 2);
             clut_x = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
             clut_y = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            gpu_LoadTim(new_var, (s32)image_x + sx_arg2, (s32)image_y + sx_arg3,
-                        (s32)clut_x + sx_arg2, (s32)clut_y + sx_arg3);
+            gpu_LoadTim(
+                tim_addr, (s32)image_x + sx_arg2, (s32)image_y + sx_arg3,
+                (s32)clut_x + sx_arg2, (s32)clut_y + sx_arg3);
         } while ((count--) != 0);
     }
 }
