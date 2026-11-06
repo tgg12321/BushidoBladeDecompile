@@ -279,7 +279,7 @@ class Fight:
         u86 = r.u84 if reset else r.u86  # paired start: other's variant_index = default_variant_index
         if 0x7FF5 <= mid <= 0x7FFF:
             i = m.u16(buf + 0x66 + ((mid - 0x7FF5) * 3 + u86) * 2)
-            return f00 + 2 * i, r.slot, f"f66[{mid - 0x7FF5}][{u86}]"
+            return f00 + 2 * i, r.slot, f"variant_move_script_index_by_move_id[{mid - 0x7FF5}][{u86}]"
         f14 = m.s16(buf + 0x14)
         if mid in (0x7FF0, 0x7FF1, 0x7FF2, 0x7FF4):
             k = r.u84 if mid == 0x7FF0 else \

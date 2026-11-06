@@ -822,7 +822,8 @@ typedef struct {
  * variant_move_script_index[rec+0x84] (id 0x7FF0) /
  * variant_move_script_index[rec+0x86] (ids 0x7FF1/2/4),
  * next_variant_move_script_index[rec+0x86][t] (id 0x7FF3), and
- * f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). common_move_script_index
+ * variant_move_script_index_by_move_id[id - 0x7FF5][rec+0x86] (ids
+ * 0x7FF5..0x7FFF). common_move_script_index
  * (motion_GetCommonScriptAtFighterBufferOffset) and
  * common_move_script_index_by_character[character_data_index]
  * (motion_GetCommonScriptAtFighterBufferIndexedOffset;
@@ -856,12 +857,12 @@ typedef struct {
  * move_scripts = file + 0x14, the others file + its header words 1 / 2 / 4;
  * cpu_script_table unset). move_scripts: halfword streams
  * motion_ResolveMoveData indexes (the variant_move_script_index /
- * next_variant_move_script_index / f66 / common_move_script_index /
- * common_move_script_index_by_character entries); motion_entries: 4-byte
- * entries whose second halfword offsets motion_metadata_base
- * (fighter_StartMoveScript, replay_PlayFrame); cpu_script_table:
- * fighter_InitCpuControl's table; motion_bitstream: motion_InitStream's motion
- * bitstream. */
+ * next_variant_move_script_index / variant_move_script_index_by_move_id /
+ * common_move_script_index / common_move_script_index_by_character entries);
+ * motion_entries: 4-byte entries whose second halfword offsets
+ * motion_metadata_base (fighter_StartMoveScript, replay_PlayFrame);
+ * cpu_script_table: fighter_InitCpuControl's table; motion_bitstream:
+ * motion_InitStream's motion bitstream. */
 typedef struct Unk801027B0Rec {
     u16 *move_scripts;
     u16 *motion_entries;
