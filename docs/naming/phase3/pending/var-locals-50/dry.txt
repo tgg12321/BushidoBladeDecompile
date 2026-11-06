@@ -1,0 +1,21 @@
+var-locals-50 (naming-b 2026-11-06): 4 local / parameter bindings in 4 files (32D04.c y_ptr; 368E4.c tim_addr; 2B344.c fighter1_setup; 267A8.c intr).
+Tree: ln-naming-b = main eca9efa7a (clean). Run in WSL via a script file (tmp/vl50/dry.py in the main repo; NAMING_KEYCHECK_ROOT = the worktree, venv active).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (same tool result as var-locals-43 .. -49). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree (base = naming_keycheck.read_working_tree()) accepted all 4 pairs (12 token substitutions: 2B344.c 4, 32D04.c 3, 368E4.c 3, 267A8.c 2; no include/ file touched; no comment edits needed, see notes.txt). Each pair was also run alone: all 4 accepted (alone counts sum to 12, equal to the together total) and every pair's alone line list equals the drafter's independent token scan (4/4).
+fighter_Init:arg3=weapon_id was also run and REJECTED by scoped_plan ("destination weapon_id already occurs in f": the member token p->weapon_id counts as an occurrence), so that research row was dropped (see notes.txt); it is not in pairs.txt and not in the SET below.
+Per-pair substitutions (function:old=new count (lines)):
+  math_Rotate2D:a1=y_ptr 3 (420,427,432)
+  gpu_LoadTimGroupOffset:new_var=tim_addr 3 (1119,1142,1147)
+  fight_RunCommandStream:var_1=fighter1_setup 4 (344,348,377,378)
+  cdrom_ReadyCallback:arg0=intr 2 (32,35)
+
+Line widths after substitution (over 80; python tools/format.py reflows them in the naming commit; token-preserving): 368E4.c 1147 (80->81), a call argument of gpu_LoadTim (not a function-like macro, so the var-locals-40 sentinel limit does not apply). No other line goes over 80. 0 rows flagged.
+
+Raw driver output (HEAD, scoped_plan alone per pair with the drafter's token-scan lines and definition range (start,end), then the set):
+HEAD eca9efa7a
+ALONE math_Rotate2D:a1=y_ptr {'32D04.c': 3} ACCEPT | token scan [('32D04.c', [420, 427, 432], 420, 434)]
+ALONE gpu_LoadTimGroupOffset:new_var=tim_addr {'368E4.c': 3} ACCEPT | token scan [('368E4.c', [1119, 1142, 1147], 1111, 1151)]
+  WIDTH 368E4.c 1147 80 -> 81
+ALONE fight_RunCommandStream:var_1=fighter1_setup {'2B344.c': 4} ACCEPT | token scan [('2B344.c', [344, 348, 377, 378], 342, 445)]
+ALONE cdrom_ReadyCallback:arg0=intr {'267A8.c': 2} ACCEPT | token scan [('267A8.c', [32, 35], 32, 57)]
+ALONE fighter_Init:arg3=weapon_id REJECT fighter_Init:arg3: destination weapon_id already occurs in f | token scan [('9F9C.c', [3942, 3960], 3941, 4179)]
+SET 4 pairs ACCEPT {'267A8.c': 2, '2B344.c': 4, '32D04.c': 3, '368E4.c': 3} total 12

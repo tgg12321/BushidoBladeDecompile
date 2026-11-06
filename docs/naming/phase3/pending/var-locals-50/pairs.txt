@@ -1,0 +1,4 @@
+math_Rotate2D:a1=y_ptr
+gpu_LoadTimGroupOffset:new_var=tim_addr
+fight_RunCommandStream:var_1=fighter1_setup
+cdrom_ReadyCallback:arg0=intr
