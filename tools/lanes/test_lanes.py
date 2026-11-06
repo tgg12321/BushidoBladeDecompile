@@ -1770,6 +1770,160 @@ class LaneTest(unittest.TestCase):
             self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
         self.assertEqual(self.main_file("shared.txt"), "changed\n")
 
+    def _const_commit(self, lane, wave, path, text):
+        d = self.wt(lane)
+        (d / "docs/naming/phase3/pending" / wave).mkdir(parents=True, exist_ok=True)
+        (d / "docs/naming/phase3/pending" / wave / "const.tsv").write_text(
+            "kind\twhere\tliteral\tname\trole\tevidence\n"
+            f"define\tinclude/k.h\t1\tK_{wave[6:]}\tr\te\n", newline="\n")
+        self.commit(lane, path, text, f"naming: {wave}")  # the rule's spelling: no ` -- `
+
+    def test_replayed_const_wave_is_rechecked(self):
+        from unittest.mock import patch
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        self._wave_commit("a", "wa", "shared.txt",
+                          "".join(f"line{i}{'A' if i == 2 else ''}\n" for i in range(20)))
+        self._const_commit("b", "const-x", "shared.txt",
+                           "".join(f"line{i}{'B' if i == 15 else ''}\n" for i in range(20)))
+        calls = []
+
+        def cc(ctx, ld, rev, manifest, log, loose=True, checker_rev=None):
+            self.assertEqual(checker_rev, sh("rev-parse", "main", cwd=self.main))
+            # strict on the lane's own commit, then loose on the replayed one
+            calls.append((rev == b_sha, loose, sh("log", "-1", "--format=%s", rev, cwd=ld),
+                          manifest))
+            return "ok"
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        tip = sh("rev-parse", "main", cwd=self.main)
+        b_sha = sh("rev-parse", "lanes/b", cwd=self.main)
+        with patch.object(lanes, "_keycheck", side_effect=AssertionError("not a pairs wave")):
+            with patch.object(lanes, "_constcheck", return_value="fail"):
+                self.assertEqual(self.L("s2", "land", "b"), 3, self.last)
+            self.assertIn("does not prove as committed", self.last)
+            with patch.object(lanes, "_constcheck",
+                              side_effect=lambda *a, loose=True, **k: "fail" if loose else "ok"):
+                self.assertEqual(self.L("s2", "land", "b"), 3, self.last)
+            self.assertIn("no longer proves", self.last)
+            self.assertIn(f"drop b {b_sha[:9]}", self.last)
+            with patch.object(lanes, "_constcheck", return_value="error"):
+                self.assertEqual(self.L("s2", "land", "b"), 4, self.last)
+            self.assertEqual(sh("rev-parse", "main", cwd=self.main), tip)
+            with patch.object(lanes, "_constcheck", side_effect=cc):
+                self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        m = "kind\twhere\tliteral\tname\trole\tevidence\ndefine\tinclude/k.h\t1\tK_x\tr\te\n"
+        self.assertEqual(calls, [(True, False, "naming: const-x", m),
+                                 (False, True, "naming: const-x", m)])
+
+    def test_replayed_const_wave_without_manifest_fails_closed(self):
+        from unittest.mock import patch
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        self._wave_commit("a", "wa", "shared.txt", "a\n")
+        self.commit("b", "other.txt", "b\n", "naming: const-y: no manifest")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        tip = sh("rev-parse", "main", cwd=self.main)
+        with patch.object(lanes, "_constcheck", side_effect=AssertionError("must not run")):
+            self.assertEqual(self.L("s2", "land", "b"), 4, self.last)
+        self.assertIn("no manifest rows", self.last)
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main), tip)
+
+    def test_unmoved_const_wave_is_checked_strictly(self):
+        from unittest.mock import patch
+        self.L("s2", "open", "b")
+        self._const_commit("b", "const-x", "shared.txt", "x\n")
+        tip = sh("rev-parse", "main", cwd=self.main)
+        seen = []
+
+        def cc(ctx, ld, rev, manifest, log, loose=True, checker_rev=None):
+            self.assertEqual(checker_rev, sh("rev-parse", "main", cwd=self.main))
+            seen.append(loose)
+            return "fail"
+        with patch.object(lanes, "_constcheck", side_effect=cc):
+            self.assertEqual(self.L("s2", "land", "b"), 3, self.last)
+        self.assertEqual(seen, [False])
+        self.assertIn("does not prove", self.last)
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main), tip)
+
+    def test_const_subject_spellings(self):
+        from unittest.mock import patch
+        self.L("s2", "open", "b")
+        ld = self.wt("b")
+        for subject, want in (("naming: var-x + const-y -- z", "mixes"),
+                              ("naming: var-x+const-y", "mixes"),
+                              ("naming:const-y: z", "no manifest rows"),
+                              ("naming: var-const-tables -- z", None),
+                              ("docs: const-y", None)):
+            with self.subTest(subject):
+                with patch.object(lanes, "git", return_value=subject):
+                    if want is None:
+                        self.assertIsNone(lanes.wave_const_manifest(ld, "HEAD"))
+                    else:
+                        with self.assertRaises(lanes.Refuse) as e:
+                            lanes.wave_const_manifest(ld, "HEAD")
+                        self.assertIn(want, str(e.exception))
+
+    def test_constcheck_verdict_parsing(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        ctx = SimpleNamespace(cfg={"runner": "local"})
+        ld = self.tmp / "ld"
+        (ld / "tmp" / "lanes").mkdir(parents=True)
+        for rc, out, want in ((0, "OK: every change is a manifest constant and K3 holds\n", "ok"),
+                              (1, "  x\nFAIL: 2 problem(s) in the constants wave\n", "fail"),
+                              (2, "ERROR: toolchain missing: cpp\n", "error"),
+                              (0, "", "error"), (1, "Traceback\n", "error")):
+            def fake(c, wt, cmd, log, rc=rc, out=out):
+                self.assertEqual(cmd, lanes.constcheck_cmd(
+                    "base", "abc", "tmp/lanes/constcheck-abc.tsv",
+                    "tmp/lanes/constcheck-abc.out", True))
+                (wt / "tmp" / "lanes" / "constcheck-abc.out").write_text(out, newline="\n")
+                return rc
+            with patch.object(lanes, "run_shell", side_effect=fake):
+                self.assertEqual(lanes._constcheck(ctx, ld, "abc", "h\n", io.StringIO(),
+                                                   checker_rev="base"), want)
+        # no base given: no verdict, the shell never runs
+        with patch.object(lanes, "run_shell", side_effect=AssertionError("must not run")):
+            self.assertEqual(lanes._constcheck(ctx, ld, "abc", "h\n", io.StringIO()), "error")
+        self.assertEqual(list((ld / "tmp" / "lanes").iterdir()), [])
+
+    def test_constcheck_cmd_runs_mains_checker_isolated(self):
+        cmd = lanes.constcheck_cmd("b4se", "r3v", "tmp/lanes/m.tsv", "tmp/lanes/o.out", False)
+        # main's whole tools/ + engine/ in a fresh dir outside the tree, python -I, cleaned up
+        self.assertIn("d=$(mktemp -d)", cmd)
+        self.assertIn("git archive --format=tar b4se tools engine | tar -x -C \"$d\"", cmd)
+        self.assertIn('python3 -I "$d/tools/const_wave.py" check tmp/lanes/m.tsv '
+                      "--base 'r3v^' --new r3v >", cmd)
+        self.assertNotIn("--loose-lines", cmd)
+        self.assertNotIn("tools/const_wave.py check", cmd.replace('"$d/tools/const_wave.py"', ""))
+        self.assertIn('rm -rf "$d"; cat', cmd)
+        self.assertIn("--loose-lines", lanes.constcheck_cmd("b", "r", "m", "o", True))
+
+    def test_const_wave_rerun_by_lane_replay_bounces(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        ctx = SimpleNamespace(replayed={"a" * 40: "b" * 40}, replay_how={"a" * 40: "replayed"},
+                              land_base="c" * 40)
+        with patch.object(lanes, "wave_const_manifest", return_value="h\n"), \
+                patch.object(lanes, "git", side_effect=lambda *a, **k: a[-1]), \
+                patch.object(lanes, "_constcheck", side_effect=AssertionError("must not run")):
+            with self.assertRaises(lanes.Refuse) as e:
+                lanes.replay_keychecks(ctx, "b", self.tmp, io.StringIO())
+        self.assertEqual(e.exception.code, 3)
+        self.assertIn("re-ran its Lane-Replay", str(e.exception))
+
+    def test_const_manifest_needs_const_subject(self):
+        from unittest.mock import patch
+        self.L("s2", "open", "b")
+        d = self.wt("b")
+        (d / "docs/naming/phase3/pending/const-z").mkdir(parents=True)
+        (d / "docs/naming/phase3/pending/const-z/const.tsv").write_text(
+            "kind\twhere\tliteral\tname\trole\tevidence\n", newline="\n")
+        self.commit("b", "shared.txt", "z\n", "Naming: const-z -- spelled otherwise")
+        tip = sh("rev-parse", "main", cwd=self.main)
+        with patch.object(lanes, "_constcheck", side_effect=AssertionError("must not run")):
+            self.assertEqual(self.L("s2", "land", "b"), 4, self.last)
+        self.assertIn("is not `naming: const-<wave>`", self.last)
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main), tip)
+
     def test_keycheck_verdict_parsing(self):
         from types import SimpleNamespace
         from unittest.mock import patch

@@ -1895,6 +1895,104 @@ def wave_pairs(ld: Path, rev: str) -> str | None:
     return "\n".join(texts)
 
 
+CONST_MANIFEST = "docs/naming/phase3/pending/{}/const.tsv"
+CONST_MANIFEST_PATH = re.compile(r"docs/naming/phase3/pending/[^/]+/const\.tsv")
+CONST_SUBJECT = re.compile(r"^naming:\s*([\w.+-]+?)(?=$|[\s:])")
+
+
+def wave_const_manifest(ld: Path, rev: str) -> str | None:
+    """The manifest a constants wave commit applies (subject `naming: const-<wave>[+...] --`,
+    each id's const.tsv in that commit's tree, one header kept), or None if no id is `const-*`.
+    A const id without a manifest with rows, or mixed with other ids, fails closed (exit 4):
+    such a commit cannot be re-proved, so it never lands unchecked."""
+    subject = git("log", "-1", "--format=%s", rev, cwd=ld)
+    # ids may be spelled `a+b` or `a + b`; any separator after them counts (`naming: const-x`,
+    # `naming: const-x: ...`, `-- ...`). A const id is one that starts with `const-`.
+    head = "naming: " + re.sub(r"\s*\+\s*", "+", subject[len("naming:"):].strip())
+    first = (head.split()[1:] or [""])[0]
+    if not subject.startswith("naming:") or not any(
+            rid.startswith("const-") for rid in re.split(r"[+:]", first)):
+        # the gate keys on content too: a commit that adds or edits a constants manifest is a
+        # constants wave whatever its subject says, and must be spelled so to be checked
+        touched = [p for p in run(["git", "diff-tree", "-z", "--no-commit-id", "-r", "--root",
+                                   "--name-only", "--no-renames", "--diff-filter=AM", rev],
+                                  cwd=ld).stdout.split("\0")
+                   if CONST_MANIFEST_PATH.fullmatch(p)]
+        if touched:
+            raise Refuse(f"commit {rev[:9]} changes {touched[0].strip()} but its subject "
+                         f"{subject!r} is not `naming: const-<wave>`; a constants wave lands only "
+                         "under that subject, where its check runs. main was not changed", 4)
+        return None
+    subject = head
+    m = CONST_SUBJECT.match(subject)
+    ids = m.group(1).split("+") if m else []
+    if not ids or not any(rid.startswith("const-") for rid in ids):
+        raise Refuse(f"commit {rev[:9]} names a constants wave but its ids cannot be parsed "
+                     f"from {subject!r}; main was not changed", 4)
+    if not all(rid.startswith("const-") for rid in ids):
+        raise Refuse(f"commit {rev[:9]} mixes constants waves with other waves in one subject "
+                     "(one `naming: const-<wave>` commit per wave); main was not changed", 4)
+    header, body = None, []
+    for rid in ids:
+        r = run(["git", "show", f"{rev}:{CONST_MANIFEST.format(rid)}"], cwd=ld, check=False)
+        lines = [l for l in r.stdout.splitlines() if l.strip() and not l.lstrip().startswith("#")]
+        if r.returncode != 0 or len(lines) < 2:
+            raise Refuse(f"constants wave {rid} ({rev[:9]}) has no manifest rows at "
+                         f"{CONST_MANIFEST.format(rid)}, so its replay cannot be re-proved; "
+                         "main was not changed", 4)
+        header = header or lines[0]
+        body += lines[1:]
+    return "\n".join([header, *body]) + "\n"
+
+
+CONSTCHECK_OK = re.compile(r"^OK: every change is a manifest constant and K3 holds\s*$", re.M)
+CONSTCHECK_FAIL = re.compile(r"^FAIL: \d+ problem\(s\) in the constants wave\s*$", re.M)
+
+
+def constcheck_cmd(checker_rev: str, rev: str, manifest_rel: str, out_rel: str,
+                   loose: bool) -> str:
+    """The shell line `land` runs (at the land tree's root, venv active) to judge constants
+    wave `rev` with main's checker: the base's whole tools/ and engine/ (const_wave.py imports
+    naming_keycheck, which imports engine and naming_wave) extracted into a fresh mktemp
+    directory outside the candidate tree, run with `python3 -I` so nothing of the lane's tree
+    is importable. Exit 0 OK / 1 FAIL / anything else no verdict."""
+    q = shlex.quote
+    return ("d=$(mktemp -d) || exit 2; rc=0; "
+            f"git archive --format=tar {q(checker_rev)} tools engine | tar -x -C \"$d\" "
+            "&& test -f \"$d/tools/const_wave.py\" || { rm -rf \"$d\"; exit 2; }; "
+            "CONST_WAVE_ROOT=\"$PWD\" NAMING_KEYCHECK_ROOT=\"$PWD\" python3 -I "
+            f"\"$d/tools/const_wave.py\" check {q(manifest_rel)} --base {q(rev + '^')} "
+            f"--new {q(rev)}{' --loose-lines' if loose else ''} > {q(out_rel)} 2>&1 || rc=$?; "
+            f"rm -rf \"$d\"; cat {q(out_rel)}; exit $rc")
+
+
+def _constcheck(ctx: Ctx, ld: Path, rev: str, manifest: str, log, loose: bool = True,
+                checker_rev: str | None = None) -> str:
+    """'ok' | 'fail' | 'error', as _keycheck, for tools/const_wave.py check (--loose-lines for
+    a wave replayed onto a moved parent; strict, every site at its manifest line, otherwise).
+    The checker run is main's (`checker_rev`, the land's base; constcheck_cmd), so a lane
+    cannot judge its own wave with an edited checker; none on main is no verdict."""
+    if not checker_rev:
+        return "error"
+    d = ld / "tmp" / "lanes"
+    d.mkdir(parents=True, exist_ok=True)
+    mf, of = d / f"constcheck-{rev[:12]}.tsv", d / f"constcheck-{rev[:12]}.out"
+    mf.write_text(manifest, encoding="utf-8", newline="\n")
+    of.unlink(missing_ok=True)
+    try:
+        rc = run_shell(ctx, ld, constcheck_cmd(checker_rev, rev, f"tmp/lanes/{mf.name}",
+                                               f"tmp/lanes/{of.name}", loose), log)
+        out = of.read_text(encoding="utf-8", errors="replace") if of.is_file() else ""
+    finally:
+        mf.unlink(missing_ok=True)
+        of.unlink(missing_ok=True)
+    if rc == 0 and CONSTCHECK_OK.search(out):
+        return "ok"
+    if rc == 1 and CONSTCHECK_FAIL.search(out):
+        return "fail"
+    return "error"
+
+
 KEYCHECK_OK = re.compile(r"^OK: every change is explained by the pairs\s*$", re.M)
 KEYCHECK_FAIL = re.compile(r"^FAIL: \d+ change\(s\) the pairs do not explain\s*$", re.M)
 
@@ -1926,16 +2024,52 @@ def _keycheck(ctx: Ctx, ld: Path, rev: str, pairs: str, log) -> str:
 def replay_keychecks(ctx: Ctx, lane: str, ld: Path, log):
     """Re-prove every naming wave the replay moved onto a different parent: its replayed diff
     must still be explained by its own pairs (tools/naming_keycheck.py --new), now that waves
-    claim symbols rather than whole TUs and another wave may have landed in the same TU.
+    claim symbols rather than whole TUs and another wave may have landed in the same TU. A
+    `naming: const-*` wave always runs tools/const_wave.py check on its const.tsv: strict when
+    its parent did not move (the land's own proof of the wave), --loose-lines when it did.
     Its FAIL verdict bounces the commit (exit 3); no verdict at all fails the gate (exit 4)."""
     for sha, new in ctx.replayed.items():
         if ctx.replay_how.get(sha) == "empty":
             continue  # already in main: nothing of it lands
-        if new == sha or git("rev-parse", f"{new}^", cwd=ld) == git("rev-parse", f"{sha}^", cwd=ld):
+        moved = not (new == sha or git("rev-parse", f"{new}^", cwd=ld)
+                     == git("rev-parse", f"{sha}^", cwd=ld))
+        manifest = wave_const_manifest(ld, new)  # a constants wave first, pairs.txt or not
+        if manifest is None and not moved:
             continue  # not moved: the pre-land keycheck still holds
-        pairs = wave_pairs(ld, new)
+        pairs = None if manifest is not None else wave_pairs(ld, new)
         if pairs is None:
-            continue
+            if manifest is None:
+                continue
+            print(f"lanes: const_wave check{' --loose-lines' if moved else ''} on constants "
+                  f"wave {sha[:9]} -> {new[:9]}", flush=True)
+            if ctx.replay_how.get(sha) == "replayed":
+                # a re-run Lane-Replay command re-applies the manifest at its stale file:line,
+                # which --loose-lines cannot pin: the wave is redone and reviewed on new main
+                raise Refuse(f"constants wave {sha[:9]} conflicted and re-ran its Lane-Replay "
+                             "command; a re-applied wave is not the reviewed one\n  Drop just "
+                             "this commit (later commits are kept) and redo it on the new main: "
+                             f"python tools/lanes/lanes.py drop {lane} {sha[:9]}", 3)
+            base_rev = getattr(ctx, "land_base", None)
+            # strict on the lane's own commit (every site at its reviewed file:line), then,
+            # if the replay moved it, --loose-lines on the replayed commit
+            verdict = _constcheck(ctx, ld, sha, manifest, log, loose=False, checker_rev=base_rev)
+            replay_failed = verdict == "ok" and moved
+            if replay_failed:
+                verdict = _constcheck(ctx, ld, new, manifest, log, loose=True,
+                                      checker_rev=base_rev)
+            if verdict == "ok":
+                continue
+            if verdict == "error":
+                raise Refuse(f"const_wave check gave no verdict on constants wave {sha[:9]} (a "
+                             f"crash or a broken toolchain; log {log.name}); main was not "
+                             "changed", 4)
+            raise Refuse(f"constants wave {sha[:9]} "
+                         + ("no longer proves after the replay onto main (const_wave check; "
+                            f"log {log.name}): another change touched its sites or headers"
+                            if replay_failed else
+                            f"does not prove as committed (strict const_wave check; log {log.name})")
+                         + f"\n  Drop just this commit (later commits are kept) and redo "
+                         f"it on the new main: python tools/lanes/lanes.py drop {lane} {sha[:9]}", 3)
         print(f"lanes: keycheck on replayed naming wave {sha[:9]} -> {new[:9]}", flush=True)
         verdict = _keycheck(ctx, ld, new, pairs, log)
         if verdict == "ok":
@@ -1967,6 +2101,7 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
     ctx.replay_how = {}  # lane sha -> replay_commit's result
     ctx.gated, ctx.cand_paths = "full", set()
     ctx.mirror_gated = ctx.mirror_tip = None
+    ctx.land_base = base  # main's tip: its const_wave.py judges the lane's constants waves
     hows = []
     for sha in commits:
         try:

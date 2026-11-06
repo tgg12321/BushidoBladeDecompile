@@ -34,7 +34,7 @@ Lacking evidence, the literal stays (N2: a literal claims nothing).
 
 ## K3 — byte-neutral, proved per TU
 
-Scope: every TU with a changed site or including a changed header.
+Scope: every TU of the tree (cpp decides what each one reads).
 - Bit masks, commands and sizes: `#define`. Proof: cpp output identical to base apart from
   line markers, when the macro body is the site's own token and no `#include` is added.
 - Otherwise (an `enum` for a closed set of codes stored in one variable or member, a body
@@ -42,7 +42,15 @@ Scope: every TU with a changed site or including a changed header.
   output `.s` identical to base. Do not retype the variable in the same wave.
 - Never a site in a string literal, an `__asm__` template or a `.s` / `.inc` file.
 - Then `verify-oracle --rebuild` (SHA1 == oracle) and the usual foundation gates.
-`tools/const_wave.py` is the applier and checker; until it lands, no constants wave applies.
+`tools/const_wave.py` is the applier and checker: `apply <manifest>`, then
+`check <manifest> --base <rev>` before committing (in WSL; refuses literals that are not one
+token, unique on the line, outside directives, strings and `__asm__`; a wave never touches a
+comment, and a site whose trailing comment `tools/format.py` would hoist; move that comment in
+its own commit first). One `naming: const-<wave>` commit holds the manifest
+(`docs/naming/phase3/pending/const-<wave>/const.tsv`) and the applied edits; a manifest under
+any other subject, or a wave whose replay needs its `Lane-Replay` re-run, fails `land`.
+`land` runs main's `check` on every such commit: strict, plus `--loose-lines` on the replay
+when main moved.
 
 ## K4 — placement
 
@@ -54,7 +62,9 @@ One definition per value-role; never a second name for the same role.
 
 ## K5 — the wave
 
-Manifest rows `site, literal, name, role, evidence` (file:line for every site); a fresh
+Manifest `docs/naming/phase3/pending/const-<wave>/const.tsv`, rows
+`kind where literal name role evidence` (`site` file:line, `define` / `enum` file; format in
+the tool's docstring); a fresh
 `naming-reviewer` CONFIRMs only the rows it PASSes against K1-K4; the applied diff gets the
 post-apply pass. Commit `naming: const-<wave>`, one per wave. A completed body whose layer-2 key
 moved only by the wave's sites needs no new cheat review: the K3 proof and the post-apply pass
