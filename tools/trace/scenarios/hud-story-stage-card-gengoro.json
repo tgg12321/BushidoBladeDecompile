@@ -1,0 +1,26 @@
+{
+  "description": "story-gengoro-stage-0e's run (Story Mode, GENGORO, character id 15) cut at 8790, screenshots over its first stage card (stage 0x02; story-concede's card, hud-story-stage-card, is stage 0x08) (gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells, gpu_DrawSpriteAtPackedTablePosition); hud-story-stage-card-gengoro-1's poked variants move one sprite cell's y (g_gpu_stage_card_map_marker_cell 0x800A328C, g_gpu_stage_card_map_cell 0x8009B7D0, g_gpu_stage_card_stage_picture_cells 0x8009B800, g_gpu_stage_card_stage_strip_cells 0x8009B820, g_gpu_red_tinted_line_segment_cells 0x8009B840) by the same amounts as hud-story-stage-card-1, so each cell's piece on a second stage's card can be told apart",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/hud-story-stage-card-gengoro-1/baseline/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-gengoro-1/328C-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-gengoro-1/B7D0-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-gengoro-1/B800-0-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-gengoro-1/B800-1-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-gengoro-1/B800-2-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-gengoro-1/B800-3-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-gengoro-1/B820-0-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-gengoro-1/B820-1-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-gengoro-1/B820-2-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-gengoro-1/B820-3-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-gengoro-1/B840-0-y/spec.json",
+    "docs/naming/runtime/hud-story-stage-card-gengoro-1/B840-1-y/spec.json"
+  ],
+  "extends": "story-gengoro-stage-0e",
+  "end_frame": 8790,
+  "shots": [
+    "8450:stage_02.8450",
+    "8600:stage_02.8600",
+    "8750:stage_02.8750"
+  ]
+}

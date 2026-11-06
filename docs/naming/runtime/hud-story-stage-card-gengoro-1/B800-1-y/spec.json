@@ -1,0 +1,208 @@
+{
+  "max_events": 20000,
+  "duration_s": 3600,
+  "breakpoints": [
+    {
+      "at": "gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells",
+      "max_hits": 6
+    },
+    {
+      "at": "gpu_DrawSpriteAtPackedTablePosition",
+      "max_hits": 6
+    }
+  ],
+  "pokes": [
+    {
+      "at": "0x8009B80A",
+      "hex": "7000",
+      "phase": "t_stage"
+    }
+  ],
+  "script": {
+    "end_frame": 8790,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6060,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6100,
+        "name": "t_story"
+      },
+      {
+        "frame": 6810,
+        "name": "story_text"
+      },
+      {
+        "frame": 6910,
+        "name": "t_char"
+      },
+      {
+        "frame": 6950,
+        "name": "char_select"
+      },
+      {
+        "frame": 7300,
+        "name": "t_weapon"
+      },
+      {
+        "frame": 7360,
+        "name": "weapon_select"
+      },
+      {
+        "frame": 7900,
+        "name": "t_stage"
+      },
+      {
+        "frame": 8320,
+        "name": "stage_02"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6100,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6400,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6700,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6960,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6980,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7000,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7300,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7600,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7900,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6060,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6950,
+        "name": "char_select.first"
+      },
+      {
+        "frame": 7299,
+        "name": "char_select.last"
+      },
+      {
+        "frame": 7360,
+        "name": "weapon_select.first"
+      },
+      {
+        "frame": 8360,
+        "name": "stage_02.card"
+      },
+      {
+        "frame": 8450,
+        "name": "stage_02.8450"
+      },
+      {
+        "frame": 8600,
+        "name": "stage_02.8600"
+      },
+      {
+        "frame": 8750,
+        "name": "stage_02.8750"
+      }
+    ]
+  }
+}
