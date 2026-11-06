@@ -1,0 +1,23 @@
+{
+  "description": "versus-cpu-tatsumi's run (Vs. CPU, TATSUMI) cut at 9200, over the screen after P1 beats the first opponent: gpu_DrawDisplayModeOnLocalOtAndSync draws gpu_DrawSheetPairSelectedByDrawMode with draw_mode 1 in t_load (7650-8320) and draw_mode 2 from 8862 (g_local_ot_draw_mode = 2 at 9F9C.c:2435), which reads g_gpu_draw_mode_sheet_header_rows[1] (0x8009B304); hud-versus-cpu-next-opponent-1 breaks on that draw under a read watch on row [1], and its poked variants raise one row [1] header's ubase by 0x10 when opp1 starts (8350)",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/hud-versus-cpu-next-opponent-1/baseline/spec.json",
+    "docs/naming/runtime/hud-versus-cpu-next-opponent-1/B304-0-ubase/spec.json",
+    "docs/naming/runtime/hud-versus-cpu-next-opponent-1/B304-1-ubase/spec.json",
+    "docs/naming/runtime/hud-versus-cpu-next-opponent-1/B304-2-ubase/spec.json",
+    "docs/naming/runtime/hud-versus-cpu-next-opponent-1/B304-3-ubase/spec.json",
+    "docs/naming/runtime/hud-versus-cpu-next-opponent-1/B304-4-ubase/spec.json"
+  ],
+  "extends": "versus-cpu-tatsumi",
+  "end_frame": 9200,
+  "shots": [
+    "8860:opp1.8860",
+    "8880:opp1.8880",
+    "8920:opp2.8920",
+    "8960:opp2.8960",
+    "9000:opp2.9000",
+    "9100:opp2.9100",
+    "9199:opp2.last"
+  ]
+}
