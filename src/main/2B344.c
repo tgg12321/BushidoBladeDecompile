@@ -219,7 +219,7 @@ void fight_RequestOneFighterEntriesAndReloadOnChange(s32 fighter_index) {
     resource_RequestEntryWithLinkedEntriesAndLatchCategory(
         g_fighter_records[fighter_index].weapon_entry_id);
 
-    if (g_fight_mode_selector == 5) {
+    if (g_fight_mode_selector == FIGHT_MODE_TEAM) {
         resource_SetPairSelectionSlotWithBoundChecks(
             fighter_index,
             g_resource_alternate_pair_selections
@@ -592,7 +592,7 @@ void fight_HandleDescriptorPlaybackCompletion(void) {
     }
     cdrom_PauseAndWait();
     motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock();
-    if (g_fight_mode_selector != 0) {
+    if (g_fight_mode_selector != FIGHT_MODE_STORY) {
         return;
     }
     if (g_fight_first_fighter_substitution_command_operands != 0) {
@@ -1014,7 +1014,7 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
 
     cdrom_PauseAndWait();
     if (g_fight_choice_menu_cursor == 0) {
-        if (g_fight_mode_selector == 5) {
+        if (g_fight_mode_selector == FIGHT_MODE_TEAM) {
             gpu_ResetGraphMode1();
             motion_InvalidateMarkedNdataPackAndResetLoadCaches();
             g_fight_match_cursor = 0;
@@ -1191,7 +1191,8 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
     }
     if (flag != 0 || (g_pad_state.pressed & 0x400040) != 0) {
         motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock();
-        if (g_fight_mode_selector == 4 || g_fight_mode_selector == 6) {
+        if (g_fight_mode_selector == FIGHT_MODE_VS ||
+            g_fight_mode_selector == FIGHT_MODE_NETWORK) {
             /* FAKE: indexes past g_fight_first_fighter_win_count into
              * g_fight_second_fighter_win_count by player number (Q63, this byte
              * pair only); no single array or struct gives the target's
@@ -1204,7 +1205,7 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
         motion_InitStream(0, g_motion_common_sections.motion_bitstream);
         motion_InitStream(1, g_motion_fighter_sections[0].motion_bitstream);
         motion_InitStream(2, g_motion_fighter_sections[1].motion_bitstream);
-        if (g_fight_mode_selector == 0 &&
+        if (g_fight_mode_selector == FIGHT_MODE_STORY &&
             (u8)g_fight_saved_first_fighter_selection != 0xFF) {
             snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
             fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields();

@@ -15,6 +15,7 @@
 #include "bb2.h"
 #include "include_asm.h"
 #include <psxsdk/libgte.h>
+#include "bb2_const.h"
 
 /* 43500.c's collision API */
 extern s32 collision_TestSegmentWithWork(
@@ -294,13 +295,13 @@ void fighter_InitCpuControl(
     p->cpu_profile = p->character_data_index;
     p->cpu_level = p->cpu_base_level;
     switch (g_fight_mode_selector) {
-    case 1:
+    case FIGHT_MODE_VSCPU:
         p->cpu_level = (g_fight_opponent_order_cursor - 1) / 5 * 0x300 + 0x400;
         if (p->cpu_level > 0xD00) {
             p->cpu_level = 0xD00;
         }
         break;
-    case 0:
+    case FIGHT_MODE_STORY:
         if (g_fight_second_fighter_defeats_left ==
             g_fight_second_fighter_initial_defeats_left) {
             fighter_ClearCpuTally(p->index);
@@ -313,7 +314,7 @@ void fighter_InitCpuControl(
             p->cpu_script_wait_limit = src->script_wait_limit;
         }
         break;
-    case 2:
+    case FIGHT_MODE_PRACTICE:
         if (D_800A389A) {
             temp = g_fight_first_fighter_win_count / 5;
             p->cpu_level = temp * 0x180 + 0x280;
@@ -336,7 +337,7 @@ void fighter_InitCpuControl(
             p->cpu_script_wait_limit = 0x3C - temp * 15;
         }
         break;
-    case 3:
+    case FIGHT_MODE_CHANBARA:
         p->cpu_profile =
             g_fight_step_table[g_fight_step_table_next_row - 1][0] + 0x1B;
         base = g_fight_step_table_next_row / 10;
@@ -359,7 +360,8 @@ void fighter_InitCpuControl(
         p->cpu_script_wait_limit = var_2[1];
         break;
     }
-    if (fighter_GetSavedCpuBehaviorAdjustFlag() && g_fight_mode_selector != 3) {
+    if (fighter_GetSavedCpuBehaviorAdjustFlag() &&
+        g_fight_mode_selector != FIGHT_MODE_CHANBARA) {
         p->cpu_level = p->cpu_level * 11 >> 4;
     }
     if (!(g_cpu_profiles[p->cpu_profile].flags & 0xFF00)) {
@@ -769,7 +771,7 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
         if (rec->cpu_tracked_move_key != -1) {
             if (rec->cpu_tracked_move_tally_threshold != 0 &&
                 (fighter_GetSavedCpuBehaviorAdjustFlag() == 0 ||
-                 g_fight_mode_selector == 3)) {
+                 g_fight_mode_selector == FIGHT_MODE_CHANBARA)) {
                 s32 lowest_count_tally_index;
                 s32 matching_tally_index;
 
@@ -1852,7 +1854,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                       (!(g_cpu_profiles[p->cpu_profile].flags & 0xFF00) ||
                        (f & 0x40))) ||
                     (fighter_GetSavedCpuBehaviorAdjustFlag() &&
-                     g_fight_mode_selector != 3)) {
+                     g_fight_mode_selector != FIGHT_MODE_CHANBARA)) {
                     work3 = !work3;
                 }
                 threat_response_script = tbl[work3];
@@ -2020,8 +2022,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                      : p->collision_pos.vy - p->ground_y) < 200 &&
                 !(g_cpu_profiles[p->cpu_profile].flags & 0x8C00) &&
                 ((!fighter_GetSavedCpuBehaviorAdjustFlag() &&
-                  g_fight_mode_selector != 3) ||
-                 g_fight_mode_selector == 3)) {
+                  g_fight_mode_selector != FIGHT_MODE_CHANBARA) ||
+                 g_fight_mode_selector == FIGHT_MODE_CHANBARA)) {
                 work3 = 0;
                 if ((p->incoming_attack_state == 1 ||
                      p->incoming_projectile_state == 2) &&
@@ -2695,7 +2697,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         q = entry_cursor;
                         if (g_cpu_profiles[p->cpu_profile].flags & 0xFF00) {
                             switch (g_fight_mode_selector) {
-                            case 3:
+                            case FIGHT_MODE_CHANBARA:
                                 if (g_fight_step_table_next_row < 0x5B) {
                                     work3 =
                                         g_fight_step_table_next_row / 10 * 2;
@@ -2716,7 +2718,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                 work3 = D_8009A928
                                     [p->latched_motion_metadata_nibble][work3];
                                 break;
-                            case 2:
+                            case FIGHT_MODE_PRACTICE:
                                 work1 = D_8009A9F0
                                     [D_8009A9DC
                                          [p->weapon_id]
@@ -2882,14 +2884,14 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         p->chosen_script_radius = chosen_script_max_distance;
                     }
                 }
-            } else if (
-                state == 0x15 && p->hit_record_group_6_9_intact != 0 &&
-                p->latched_motion_metadata_nibble != 4 &&
-                /* Q76: as above, 4.12 factor 0x100; target lh; sra 4 at
-                   0x8005ACCC. */
-                p->opponent_angle_from_orientation_abs <
-                    0x200 - ((p->cpu_level * 0x100) >> 12) &&
-                !(g_fight_mode_selector == 2 || g_fight_mode_selector == 3)) {
+            } else if (state == 0x15 && p->hit_record_group_6_9_intact != 0 &&
+                       p->latched_motion_metadata_nibble != 4 &&
+                       /* Q76: as above, 4.12 factor 0x100; target lh; sra 4 at
+                          0x8005ACCC. */
+                       p->opponent_angle_from_orientation_abs <
+                           0x200 - ((p->cpu_level * 0x100) >> 12) &&
+                       !(g_fight_mode_selector == FIGHT_MODE_PRACTICE ||
+                         g_fight_mode_selector == FIGHT_MODE_CHANBARA)) {
                 stock_or_ballistic_script = 0;
                 if ((rand() & 0xFF) <
                         (g_cpu_profiles[p->cpu_profile].script_kind_weight[5] >>

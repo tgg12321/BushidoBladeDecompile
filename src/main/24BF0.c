@@ -44,26 +44,26 @@ void ApplyPendingConfigAndInitializeMode(void) {
     ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests();
 
     switch (g_fight_mode_selector) {
-    case 6:
+    case FIGHT_MODE_NETWORK:
         g_fight_config.pending_view_setting = 1;
         g_local_ot_draw_mode = LOCAL_OT_DRAW_LOADING_SCREEN;
         g_main_loop_handler_index = 0;
         g_fight_tracked_fighter_index = (g_comb_local_side != 0);
         break;
-    case 0:
+    case FIGHT_MODE_STORY:
         fight_InitCommandStream(
             g_fight_config_id_data_rows[(s8)g_fight_config.fighter_setup[0]]);
         g_fight_config.fighter_setup[1] = 0;
         fight_RunCommandStream();
         fighter_ClearCpuTally(1);
         break;
-    case 1:
+    case FIGHT_MODE_VSCPU:
         g_fight_config.fighter_setup[5] = 1;
         fight_BuildOpponentOrder();
         g_local_ot_draw_mode = LOCAL_OT_DRAW_LOADING_SCREEN;
         fight_AdvanceOpponentOrder();
         break;
-    case 3:
+    case FIGHT_MODE_CHANBARA:
         g_fight_config.fighter_setup[5] = 1;
         g_fight_config.fighter_setup[3] = 0;
         g_fight_config.fighter_setup[2] = 0;
@@ -76,14 +76,14 @@ void ApplyPendingConfigAndInitializeMode(void) {
         g_local_ot_draw_mode = LOCAL_OT_DRAW_LOADING_SCREEN;
         g_main_loop_handler_index = 0;
         break;
-    case 5:
+    case FIGHT_MODE_TEAM:
         g_fight_stage_index = (D_800A38E1 & 1) ? 0x21 : 0x20;
         g_fight_match_cursor = 0;
         gpu_ResetGraphMode1();
         eff_Init();
         fight_AdvanceMatch();
         break;
-    case 2:
+    case FIGHT_MODE_PRACTICE:
         g_fight_auto_pause_countdown = (D_800A389A == 0) << 1;
         g_fight_stage_index = (D_800A389A != 0) ? 0x24 : 0x23;
         g_fight_config.fighter_setup[5] = 1;
@@ -96,7 +96,7 @@ void ApplyPendingConfigAndInitializeMode(void) {
         }
         g_main_loop_handler_index = 0;
         break;
-    case 4:
+    case FIGHT_MODE_VS:
         g_local_ot_draw_mode = LOCAL_OT_DRAW_LOADING_SCREEN;
         g_main_loop_handler_index = 0;
         break;

@@ -324,7 +324,7 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
        score 4; removed with the do-while wrapper: score 25
        (pointer-alias-fake-exception) */
     var_7 = arg0;
-    if (g_fight_mode_selector == 2) {
+    if (g_fight_mode_selector == FIGHT_MODE_PRACTICE) {
         has_toggle_rows = D_800A389A < 1;
     }
     limit = 3;
@@ -513,7 +513,7 @@ void main(void) {
         if (present_skip_frames != 0)
             continue;
         if (!(g_pad_state.pressed & 0x08000800u)) {
-            if (g_fight_mode_selector != 2)
+            if (g_fight_mode_selector != FIGHT_MODE_PRACTICE)
                 continue;
             if (g_fight_auto_pause_countdown == 0)
                 continue;

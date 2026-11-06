@@ -50,7 +50,7 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
         g_fight_config.fighter_setup[i] = roster_index;
         if ((u32)(roster_index - 3) < 2 || (s8)roster_index == new_var ||
             (u32)(roster_index - 18) < 2 || (s8)roster_index == new_var2) {
-            if ((s8)g_fight_config.pending_mode_selector == 0) {
+            if ((s8)g_fight_config.pending_mode_selector == FIGHT_MODE_STORY) {
                 g_fight_config.fighter_setup[i] =
                     g_fight_config.fighter_setup[i] - 3;
             }
@@ -67,10 +67,10 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
     g_fight_tracked_fighter_index = 0;
     mode_selector = g_fight_config.pending_mode_selector;
 
-    if (mode_selector == 2) {
+    if (mode_selector == FIGHT_MODE_PRACTICE) {
         D_800A389A = p->unk14_17;
         g_fight_toggle_option_bits = p->unk14_18;
-    } else if (mode_selector == 5) {
+    } else if (mode_selector == FIGHT_MODE_TEAM) {
         s32 win_target;
 
         g_fight_match_count = p->match_count_index + 3;

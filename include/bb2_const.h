@@ -9,4 +9,14 @@ enum LocalOtDrawMode {
     LOCAL_OT_DRAW_NONE = 0xFF,
 };
 
+enum FightMode {
+    FIGHT_MODE_STORY = 0,
+    FIGHT_MODE_VSCPU = 1,
+    FIGHT_MODE_PRACTICE = 2,
+    FIGHT_MODE_CHANBARA = 3,
+    FIGHT_MODE_VS = 4,
+    FIGHT_MODE_TEAM = 5,
+    FIGHT_MODE_NETWORK = 6,
+};
+
 #endif /* BB2_CONST_H */

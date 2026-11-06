@@ -77,7 +77,7 @@ void motion_SetFixedChannelBlock(MotionFrame *motion_frame) {
  * were reported at 12 / 16 (not banked). */
 void fighter_AccumulateBoneGroupFlagWhenGameModeZero(
     s32 a0, s32 hit_record_index) {
-    if (g_fight_mode_selector != 0) {
+    if (g_fight_mode_selector != FIGHT_MODE_STORY) {
         return;
     }
     switch (hit_record_index) {
@@ -120,7 +120,7 @@ void fighter_AccumulateOrClearByBoneGroup(
     Unk80101EC8Record *fighter_record, s32 hit_record_index, s16 increment) {
     s16 fight_mode;
     fight_mode = g_fight_mode_selector;
-    if (fight_mode == 5) {
+    if (fight_mode == FIGHT_MODE_TEAM) {
         return;
     }
     if ((u32)hit_record_index >= 0x16) {
@@ -362,7 +362,7 @@ static inline s32 fighter_ResolveBoneHitTail(
     if (arg0 == 1 && var_0->unkD == 2) {
         fighter_record->power_scale_tally++;
     }
-    if (g_fight_mode_selector != 5) {
+    if (g_fight_mode_selector != FIGHT_MODE_TEAM) {
         fighter_record->power_scale_tally++;
     }
     fighter_record->pending_move_event = 5;
@@ -597,7 +597,7 @@ s32 fighter_ResolveBoneHit(
     case 7:
     case 8:
     case 9:
-        if (g_fight_mode_selector != 5) {
+        if (g_fight_mode_selector != FIGHT_MODE_TEAM) {
             fighter_record->hit_record_group_6_9_intact = 0;
         }
         fighter_record->pending_move_event = 4;
@@ -611,7 +611,7 @@ s32 fighter_ResolveBoneHit(
     case 11:
     case 12:
     case 13:
-        if (g_fight_mode_selector != 5) {
+        if (g_fight_mode_selector != FIGHT_MODE_TEAM) {
             fighter_record->hit_record_group_10_13_hit_tally++;
         }
         fighter_record->pending_move_event = 5;
@@ -627,7 +627,7 @@ s32 fighter_ResolveBoneHit(
     case 19:
     case 20:
     case 21:
-        if (g_fight_mode_selector != 5) {
+        if (g_fight_mode_selector != FIGHT_MODE_TEAM) {
             fighter_record->hit_record_group_14_21_hit_tally++;
         }
         fighter_record->pending_move_event = 3;
@@ -4506,7 +4506,7 @@ void object_UpdatePool(void) {
         if (obj->vel.y >= -15 && obj->vel.y <= 15 && obj->vel.x >= -3 &&
             obj->vel.x <= 3 && obj->vel.z >= -3 && obj->vel.z <= 3) {
             if (temp != 0) {
-                if (g_fight_mode_selector == 3) {
+                if (g_fight_mode_selector == FIGHT_MODE_CHANBARA) {
                     obj->kind = -1;
                 } else {
                     obj->is_moving = 0;
@@ -5023,7 +5023,7 @@ void fight_RecordReplayEventAndDispatchSoundOrEffect(
     s32 sound_offset;
     s32 second_sound_offset;
 
-    if (g_fight_mode_selector == 3 && arg0 == 1 &&
+    if (g_fight_mode_selector == FIGHT_MODE_CHANBARA && arg0 == 1 &&
         ((u32)(event_kind - 0x22) < 2 || (u32)(event_kind - 0x24) < 2 ||
          (u32)(event_kind - 0x26) < 2 || (u32)(event_kind - 0x28) < 2)) {
         second_sound_offset = 0;
@@ -5033,7 +5033,7 @@ void fight_RecordReplayEventAndDispatchSoundOrEffect(
         second_sound_offset = 0x28;
     }
 
-    if (g_fight_mode_selector == 3 && arg0 == 1 &&
+    if (g_fight_mode_selector == FIGHT_MODE_CHANBARA && arg0 == 1 &&
         (u32)(event_kind - 0x2D) < 2) {
         sound_offset += g_fight_step_row_sound_offsets[g_fight_step_row_column];
     }
@@ -5042,11 +5042,11 @@ void fight_RecordReplayEventAndDispatchSoundOrEffect(
 
     switch (event_kind) {
     case 4:
-        if (g_fight_mode_selector == 2 && D_800A389A == 0) {
+        if (g_fight_mode_selector == FIGHT_MODE_PRACTICE && D_800A389A == 0) {
             eff_StartRecycledCommandWithOrangeLight(src_position);
             break;
         }
-        if (g_fight_mode_selector == 5) {
+        if (g_fight_mode_selector == FIGHT_MODE_TEAM) {
             eff_StartRecycledCommandWithOrangeLight(src_position);
             break;
         }
@@ -5188,7 +5188,8 @@ void fighter_DispatchFrameEvent(
     s32 hit_class_offset;
     s32 other_hit_class_offset;
 
-    if (g_fight_mode_selector == 3 && fighter_record->index == 1 &&
+    if (g_fight_mode_selector == FIGHT_MODE_CHANBARA &&
+        fighter_record->index == 1 &&
         ((u32)(frame_event - 7) < 2 || (u32)(frame_event - 9) < 2 ||
          (u32)(frame_event - 11) < 2 || (u32)(frame_event - 13) < 2 ||
          (u32)(frame_event - 15) < 2 || frame_event == 17)) {
@@ -5199,7 +5200,7 @@ void fighter_DispatchFrameEvent(
         other_sound_offset = fighter_record->other->index * 40;
     }
 
-    if (g_fight_mode_selector == 3 &&
+    if (g_fight_mode_selector == FIGHT_MODE_CHANBARA &&
         ((u32)(frame_event - 0x15) < 2 || (u32)(frame_event - 0x17) < 2 ||
          (u32)(frame_event - 0x19) < 2 || frame_event == 0x26 ||
          (u32)(frame_event - 0x36) < 2 || (u32)(frame_event - 0x38) < 2 ||

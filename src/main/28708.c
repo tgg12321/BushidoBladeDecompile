@@ -1550,7 +1550,7 @@ void replay_PlayFrame(void) {
              : g_replay_playback_frame == g_replay_write_frame) ||
         (g_pad_state.pressed & 0x400040)) {
         switch (g_fight_mode_selector) {
-        case 0:
+        case FIGHT_MODE_STORY:
             if (g_fighter_records[0].is_defeated == 0) {
                 s32 var_19 = g_fight_saved_first_fighter_selection != 0xFF;
                 if (D_800A3712 != 0) {
@@ -1596,7 +1596,7 @@ void replay_PlayFrame(void) {
                 fight_QueueSubstitutionCommandDescriptorPlayback(4);
             }
             return;
-        case 3:
+        case FIGHT_MODE_CHANBARA:
             if (g_fighter_records[0].is_defeated == 0) {
                 g_main_loop_handler_index = 0x1E;
             } else {

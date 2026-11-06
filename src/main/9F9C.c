@@ -1103,8 +1103,8 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
     s32 mapped_buttons;
 
     g_fighter_records[fighter_index == 0].unk_34E =
-        g_fight_mode_selector == 2 && D_800A389A == 0 && fighter_index == 0 &&
-        ((g_pad_state.pressed >> 8) & 1);
+        g_fight_mode_selector == FIGHT_MODE_PRACTICE && D_800A389A == 0 &&
+        fighter_index == 0 && ((g_pad_state.pressed >> 8) & 1);
     if (g_fighter_records[fighter_index].cpu_controlled != 0) {
         fighter_BuildCpuPad(fighter_index, pad_out);
         return;
@@ -1115,13 +1115,14 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
     pad_words[1] = (g_pad_state.pressed >> temp) & 0xFFFF;
     pad_words[2] = (g_pad_state.released >> temp) & 0xFFFF;
     pad_words[3] = (g_pad_state.unheld >> temp) & 0xFFFF;
-    if (g_fight_mode_selector == 6) {
+    if (g_fight_mode_selector == FIGHT_MODE_NETWORK) {
         temp = 0;
     } else {
         temp = fighter_index * 4;
     }
     for (i = 0; i < 4; i++) {
-        if (g_fight_mode_selector == 6 && fighter_index != g_comb_local_side) {
+        if (g_fight_mode_selector == FIGHT_MODE_NETWORK &&
+            fighter_index != g_comb_local_side) {
             mapped_buttons = pad_words[i] & ~0xF0;
             {
                 u8 r = g_pad_remote_button_mapping_20;
@@ -1192,7 +1193,7 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
     pad_out->pressed = pad_words[1];
     pad_out->released = pad_words[2];
     pad_out->unheld = pad_words[3];
-    if (g_fight_mode_selector == 5 &&
+    if (g_fight_mode_selector == FIGHT_MODE_TEAM &&
         (g_fight_time_up_phase_timer != 0 || g_fight_reinit_phase_timer != 0 ||
          g_fight_out_of_bounds_phase_timer != 0 ||
          g_fight_mark_tally_phase_timer != 0 ||
@@ -1200,7 +1201,7 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
          g_fight_match_result_timer != 0)) {
         pad_ClearStateBits(pad_out);
     }
-    if (fighter_index == 1 && g_fight_mode_selector != 6) {
+    if (fighter_index == 1 && g_fight_mode_selector != FIGHT_MODE_NETWORK) {
         pad_out->held =
             (pad_out->held & 0xFFF) | ((pad_out->held & PADLleft) >> 2) |
             ((pad_out->held & PADLright) << 2) |
@@ -1234,7 +1235,7 @@ void fight_InitSettings(void) {
     g_fight_config.fighter_setup[3] = 0;
     g_fight_config.fighter_setup[5] = 0;
     g_fight_config.fighter_setup[4] = 0;
-    g_fight_config.pending_mode_selector = 4;
+    g_fight_config.pending_mode_selector = FIGHT_MODE_VS;
     g_fight_config.pending_view_setting = 0;
     g_fight_config.pending_force_weapon_inner_bone_hits = 0;
 }
@@ -1254,7 +1255,7 @@ void fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11(void) {
 void fight_StartNextSecondFighter(void) {
     MoveScript *default_script;
     fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11();
-    if (g_fight_mode_selector == 3 &&
+    if (g_fight_mode_selector == FIGHT_MODE_CHANBARA &&
         g_fight_start_position_pair_changed != 0) {
         fighter_Init(1, (s8)g_fight_config.fighter_setup[5],
                      (s8)g_fight_config.fighter_setup[1],
@@ -1334,7 +1335,7 @@ void fight_QueuePositionalSoundWithRandomAlternate(void) {
         if (g_fight_stage_command_count == 1)
             return;
     }
-    if (g_fight_mode_selector != 0)
+    if (g_fight_mode_selector != FIGHT_MODE_STORY)
         return;
     if (D_800A3712 != 0)
         return;
@@ -1371,7 +1372,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
         goto end;
 
     switch (g_fight_mode_selector) {
-    case 0:
+    case FIGHT_MODE_STORY:
         if (g_fighter_records[0].is_defeated != 0)
             break;
         if (g_fight_second_fighter_defeats_left != 0) {
@@ -1403,7 +1404,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
             break;
         fight_QueueFixedFighterCommandDescriptorPlayback(2);
         goto end;
-    case 3:
+    case FIGHT_MODE_CHANBARA:
         if (g_fighter_records[0].is_defeated != 0)
             break;
         if (fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags() == 0)
@@ -1441,7 +1442,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
                 g_fight_step_row_tint_blue);
         }
         goto end;
-    case 2: {
+    case FIGHT_MODE_PRACTICE: {
         s16 t;
         u8 *p;
         if ((t = g_fighter_records[0].is_defeated) == 0 ||
@@ -1465,8 +1466,8 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
             &g_fighter_records[g_fight_followup_fighter_index].world_pos);
         g_main_loop_handler_index = 0;
         goto end;
-    case 4:
-    case 6: {
+    case FIGHT_MODE_VS:
+    case FIGHT_MODE_NETWORK: {
         s16 t;
         u8 *p;
         if ((t = g_fighter_records[0].is_defeated) == 0 ||
@@ -1480,7 +1481,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
             p[t != 0]++;
         }
     } break;
-    case 5:
+    case FIGHT_MODE_TEAM:
         goto end;
     }
     g_main_loop_handler_index = 4;
@@ -1535,12 +1536,12 @@ extern u8 D_800A38AA[2];
 void fight_UpdateModeDisplaysAndMatchProgress(void) {
     Unk8001CD68Rec time_fields;
 
-    if (g_fight_mode_selector == 1) {
+    if (g_fight_mode_selector == FIGHT_MODE_VSCPU) {
         g_prim_buf_cursor +=
             gpu_DrawDecrementedSingleSideCounter(
                 g_fight_opponent_order_cursor, (s32)g_prim_buf_cursor, 1) /
             4;
-    } else if (g_fight_mode_selector == 3) {
+    } else if (g_fight_mode_selector == FIGHT_MODE_CHANBARA) {
         if (g_fighter_records[0].is_defeated == 0 &&
             (g_fighter_records[1].is_defeated == 0 ||
              g_fight_step_table_next_row != 100)) {
@@ -1555,14 +1556,15 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                 &time_fields, g_fight_step_table_next_row,
                 (s32)g_prim_buf_cursor, 1) /
             4;
-    } else if ((g_fight_mode_selector == 2 && D_800A389A == 1) ||
-               g_fight_mode_selector == 4) {
+    } else if (
+        (g_fight_mode_selector == FIGHT_MODE_PRACTICE && D_800A389A == 1) ||
+        g_fight_mode_selector == FIGHT_MODE_VS) {
         g_prim_buf_cursor +=
             gpu_DrawTwoDigitCounterWithOptionalSecondSide(
                 g_fight_first_fighter_win_count,
                 g_fight_second_fighter_win_count, (s32)g_prim_buf_cursor, 1) /
             4;
-    } else if (g_fight_mode_selector == 5) {
+    } else if (g_fight_mode_selector == FIGHT_MODE_TEAM) {
         /* temp holds two values (Ruling 11, ordinary-c-judge-decidable): the
          * announcement length in frames (0x50 after a draw, 0x64 otherwise),
          * then the match clock's frames left for the on-screen timer. */
@@ -1812,10 +1814,10 @@ void snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVabs8And4(void) {
 void snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode(void) {
     snd_ResetVoicesAndQueue();
     snd_StopVoicesAndReverb();
-    if (g_fight_mode_selector == 5) {
+    if (g_fight_mode_selector == FIGHT_MODE_TEAM) {
         snd_StopAllVoicesAndCloseSingleFileVab();
     }
-    if (g_fight_mode_selector == 3) {
+    if (g_fight_mode_selector == FIGHT_MODE_CHANBARA) {
         snd_StopAllVoicesAndClosePairedFileVabs();
     }
 }
@@ -1826,15 +1828,15 @@ void snd_StartFightCdAudio(void) {
         return;
     }
     switch (g_fight_mode_selector) {
-    case 0:
-    case 1:
+    case FIGHT_MODE_STORY:
+    case FIGHT_MODE_VSCPU:
     default:
         break;
-    case 4:
+    case FIGHT_MODE_VS:
         cdrom_StartAudioEntry(
             (&g_snd_stage_cd_audio_entry_indices)[g_fight_stage_index]);
         break;
-    case 3:
+    case FIGHT_MODE_CHANBARA:
         if (g_fighter_group_flags[g_fighter_records[0].character_data_index] !=
             0) {
             cdrom_StartAudioEntry(9);
@@ -1842,14 +1844,14 @@ void snd_StartFightCdAudio(void) {
             cdrom_StartAudioEntry(8);
         }
         break;
-    case 2:
+    case FIGHT_MODE_PRACTICE:
         if (D_800A389A != 0) {
             cdrom_StartAudioEntry(0xA);
         } else {
             cdrom_StartAudioEntry(0xB);
         }
         break;
-    case 5:
+    case FIGHT_MODE_TEAM:
         break;
     }
     cdrom_SetAudioRepeat(1);
@@ -1925,7 +1927,7 @@ void fight_Init(void) {
     SetGeomScreen(
         math_FovToScreenDist(g_fight_tracked_view_setting != 0 ? 0x50 : 0x2D));
     for (i = 0; i < 2; i++) {
-        if (g_fight_mode_selector != 0) {
+        if (g_fight_mode_selector != FIGHT_MODE_STORY) {
             slot_RequestTimGroupsAndMarkReloadOnChange(0, 0);
         }
         fighter_Init(i, (s8)g_fight_config.fighter_setup[4 + i],
@@ -1951,7 +1953,7 @@ void fight_Init(void) {
                                                      .fighter_setup[i]],
                     addr);
                 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(i);
-            } else if (g_fight_mode_selector == 3 && i == 1) {
+            } else if (g_fight_mode_selector == FIGHT_MODE_CHANBARA && i == 1) {
                 slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
                     1, g_fight_step_row_object_id, 0);
             } else {
@@ -1963,9 +1965,10 @@ void fight_Init(void) {
             }
             resource_RequestEntryWithLinkedEntriesAndLatchCategory(
                 g_fighter_records[i].weapon_entry_id);
-            if (g_fight_mode_selector != 3 || i != 1) {
-                if ((g_fight_mode_selector == 2 && D_800A389A == 0) ||
-                    g_fight_mode_selector == 5) {
+            if (g_fight_mode_selector != FIGHT_MODE_CHANBARA || i != 1) {
+                if ((g_fight_mode_selector == FIGHT_MODE_PRACTICE &&
+                     D_800A389A == 0) ||
+                    g_fight_mode_selector == FIGHT_MODE_TEAM) {
                     resource_SetPairSelectionSlotWithBoundChecks(
                         i, g_resource_alternate_pair_selections
                                [g_fighter_records[i].character_data_index]
@@ -1994,11 +1997,11 @@ void fight_Init(void) {
             gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels(
                 g_fight_operand_tint_red, g_fight_operand_tint_green,
                 g_fight_operand_tint_blue);
-        } else if (g_fight_mode_selector == 3) {
+        } else if (g_fight_mode_selector == FIGHT_MODE_CHANBARA) {
             gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels(
                 g_fight_step_row_tint_red, g_fight_step_row_tint_green,
                 g_fight_step_row_tint_blue);
-        } else if (g_fight_mode_selector == 2) {
+        } else if (g_fight_mode_selector == FIGHT_MODE_PRACTICE) {
             u8 *tint_color = g_fight_group_tint_colors
                 [g_fighter_group_flags[g_fighter_records[0]
                                            .character_data_index]];
@@ -2008,10 +2011,10 @@ void fight_Init(void) {
             }
         }
         fight_ResetGraphAndReloadResourcesOnCachedKeyChange();
-        if (g_fight_mode_selector == 5) {
+        if (g_fight_mode_selector == FIGHT_MODE_TEAM) {
             snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVab9();
         }
-        if (g_fight_mode_selector == 3) {
+        if (g_fight_mode_selector == FIGHT_MODE_CHANBARA) {
             snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVabs8And4();
             motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id();
         }
@@ -2020,14 +2023,15 @@ void fight_Init(void) {
             (s8)g_fight_config.fighter_setup[2],
             g_fight_config_id_data_rows[(s8)g_fight_config.fighter_setup[1]],
             (s8)g_fight_config.fighter_setup[3]);
-    } else if (g_fight_mode_selector == 5) {
+    } else if (g_fight_mode_selector == FIGHT_MODE_TEAM) {
         g_fight_sound_cue_countdown = 1;
     }
     motion_InitStreams();
     fighter_AssignMotionSlotAndScanDataIdNibbles(0);
     fighter_AssignMotionSlotAndScanDataIdNibbles(1);
     fighter_ConfigureCpuControl();
-    if (g_fight_mode_selector == 2 || g_fight_mode_selector == 5) {
+    if (g_fight_mode_selector == FIGHT_MODE_PRACTICE ||
+        g_fight_mode_selector == FIGHT_MODE_TEAM) {
         if (g_fight_reinit_reuses_assets != 0) {
             motion_ResetVariantIndex(0);
             {
@@ -2035,7 +2039,8 @@ void fight_Init(void) {
                 g_fighter_records[0].move_is_common = 0;
                 fighter_StartMoveScript(0, v, 0);
             }
-            if (g_fight_mode_selector == 2 && D_800A389A == 0) {
+            if (g_fight_mode_selector == FIGHT_MODE_PRACTICE &&
+                D_800A389A == 0) {
                 MoveScript *v = motion_GetCurrentVariantScript(1);
                 g_fighter_records[1].move_is_common = 0;
                 fighter_StartMoveScript(1, v, 0);
@@ -2093,7 +2098,7 @@ void fight_Init(void) {
     snd_StartFightCdAudio();
     snd_ResetStageSoundState();
     snd_SetReverb(g_fight_stage_index);
-    if (g_fight_mode_selector == 6) {
+    if (g_fight_mode_selector == FIGHT_MODE_NETWORK) {
         rng_SetSeed(g_fight_rng_seed);
     }
 }
@@ -2306,7 +2311,7 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
     replay_AdvanceFrame();
     gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(1);
     snd_UpdateStageSounds();
-    if (g_fight_mode_selector == 3) {
+    if (g_fight_mode_selector == FIGHT_MODE_CHANBARA) {
         fight_SplitFrameCounterIntoMinutesSecondsHundredths(&time_fields);
         g_prim_buf_cursor +=
             gpu_DrawTimeFieldsAndDecimalCounter(
@@ -2343,7 +2348,7 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
                 return;
             g_fighter_records[g_fight_followup_fighter_index == 0]
                 .draw_move_set = 0;
-            if (g_fight_mode_selector == 3) {
+            if (g_fight_mode_selector == FIGHT_MODE_CHANBARA) {
                 g_fight_timer_frames = g_fight_timer_frames + 0x384;
                 if (g_fight_timer_frames > 0x2BF20) {
                     g_fight_timer_frames = 0x2BF20;
@@ -2436,16 +2441,16 @@ void fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPr
     snd_UpdateStageSounds();
 
     if (g_fighter_records[g_fight_followup_fighter_index].is_defeated != 0 &&
-        g_fight_mode_selector == 1) {
+        g_fight_mode_selector == FIGHT_MODE_VSCPU) {
         g_handler_frame_counter = 0x69;
     }
 
     if (g_handler_frame_counter >= 0x69 || (g_pad_state.pressed & 0x400040)) {
         switch (g_fight_mode_selector) {
-        case 4:
+        case FIGHT_MODE_VS:
             next_handler_index = 0xC;
             break;
-        case 1:
+        case FIGHT_MODE_VSCPU:
             if (g_fight_followup_fighter_index == 0) {
                 snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
                 g_local_ot_draw_mode = LOCAL_OT_DRAW_NEXT_OPPONENT_SCREEN;
@@ -2454,7 +2459,7 @@ void fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPr
             }
             next_handler_index = 0xC;
             break;
-        case 6:
+        case FIGHT_MODE_NETWORK:
             next_handler_index = 0xC;
             break;
         default:
@@ -2835,8 +2840,9 @@ Unk8001FAE4Entry *motion_FindPairedMoveEntry(MoveScript *move_script) {
 
 s32 fighter_PassesPairedMoveEntryGates(
     Unk80101EC8Record *fighter_record, s32 arg1) {
-    if (g_fight_mode_selector == 2 || g_fight_mode_selector == 5 ||
-        g_fight_mode_selector == 3) {
+    if (g_fight_mode_selector == FIGHT_MODE_PRACTICE ||
+        g_fight_mode_selector == FIGHT_MODE_TEAM ||
+        g_fight_mode_selector == FIGHT_MODE_CHANBARA) {
         return 0;
     }
     if (g_fight_mode_selector == 0 && D_800A385C != 0) {
@@ -2980,7 +2986,7 @@ s32 fight_UpdateSeparationAndPairedMoves(void) {
     s32 v = g_fight_mode_selector;
     g_fighter_horizontal_separation = separation;
     D_800A38F0 = separation - previous_separation;
-    if (v != 5 && v != 2) {
+    if (v != FIGHT_MODE_TEAM && v != FIGHT_MODE_PRACTICE) {
         fight_UpdatePairedMoves();
     }
     g_fight_mash_contest_start_requested = 0;
@@ -3334,8 +3340,9 @@ void motion_LoadFighterData(
         motion_LoadCommonData();
     }
 
-    if (g_fight_mode_selector == 1 || g_fight_mode_selector == 4 ||
-        g_fight_mode_selector == 6) {
+    if (g_fight_mode_selector == FIGHT_MODE_VSCPU ||
+        g_fight_mode_selector == FIGHT_MODE_VS ||
+        g_fight_mode_selector == FIGHT_MODE_NETWORK) {
         for (i = 0; i < 2; i++) {
             j = arg0;
             if (i != 0) {
@@ -3357,7 +3364,7 @@ void motion_LoadFighterData(
                   (fighter0_weapon_id << 12);
         u16 id1;
 
-        if (g_fight_mode_selector == 3) {
+        if (g_fight_mode_selector == FIGHT_MODE_CHANBARA) {
             id1 = id0;
         } else {
             id1 = g_fighter_motion_data_ids[arg2][fighter1_weapon_id] |
@@ -3453,8 +3460,8 @@ void fighter_AssignMotionSlotAndScanDataIdNibbles(s32 fighter_index) {
             s32 nibble = (rec->motion_data_id >> (i << 2)) & 0xF;
             if (nibble == 4) {
                 rec->object_variant_index = i;
-                if (g_fight_mode_selector != 3 || fighter_index != 1 ||
-                    g_fight_step_row_column == nibble) {
+                if (g_fight_mode_selector != FIGHT_MODE_CHANBARA ||
+                    fighter_index != 1 || g_fight_step_row_column == nibble) {
                     rec->object_variant_enabled =
                         rec->hit_record_group_6_9_intact;
                 }
@@ -3539,7 +3546,8 @@ void *motion_ResolveMoveData(
             rec->variant_index =
                 (rec->variant_index + 1) %
                 g_motion_fighter_buffers[rec->motion_slot]->variant_count;
-        } else if (g_fight_mode_selector == 3 && rec->cpu_controlled != 0) {
+        } else if (g_fight_mode_selector == FIGHT_MODE_CHANBARA &&
+                   rec->cpu_controlled != 0) {
             motion_AdvanceVariantIfAtNibble4Or5Position(rec);
         }
         return &g_motion_fighter_sections[rec->motion_slot].move_scripts
@@ -3554,7 +3562,8 @@ void *motion_ResolveMoveData(
              rec->nibble5_variant_enabled == 0)) {
             t = (t + 1) %
                 g_motion_fighter_buffers[rec->motion_slot]->variant_count;
-        } else if (g_fight_mode_selector == 3 && rec->cpu_controlled != 0 &&
+        } else if (g_fight_mode_selector == FIGHT_MODE_CHANBARA &&
+                   rec->cpu_controlled != 0 &&
                    (t == rec->object_variant_index ||
                     t == rec->nibble5_variant_index)) {
             t = (t + 1) %
@@ -3817,7 +3826,7 @@ void fight_SearchRadialFlatSurfacePointOrUseStartPositionPair(
             cur.y = segment_end.y;
         }
     }
-    if (g_fight_mode_selector == 3) {
+    if (g_fight_mode_selector == FIGHT_MODE_CHANBARA) {
         temp = g_fight_start_position_pair_index;
     } else {
         best = 0x7FFFFFFF;
@@ -3964,10 +3973,11 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
     p->character_data_index = g_fight_config_id_data_rows[roster_index];
     p->weapon_id = weapon;
 
-    if (g_fight_mode_selector == 5 ||
-        (g_fight_mode_selector == 2 && D_800A389A == 0)) {
+    if (g_fight_mode_selector == FIGHT_MODE_TEAM ||
+        (g_fight_mode_selector == FIGHT_MODE_PRACTICE && D_800A389A == 0)) {
         p->weapon_entry_id = D_8008EB38[p->weapon_id];
-    } else if (fighter_index == 1 && g_fight_mode_selector == 3) {
+    } else if (
+        fighter_index == 1 && g_fight_mode_selector == FIGHT_MODE_CHANBARA) {
         p->weapon_entry_id = g_fighter_weapon_entry_ids_by_group_flag
             [p->weapon_id]
             [g_fighter_group_flags[p->other->character_data_index] == 0];
@@ -3979,7 +3989,7 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
             [p->weapon_id][g_fighter_group_flags[p->character_data_index]];
     }
 
-    if (fighter_index == 1 && g_fight_mode_selector == 3) {
+    if (fighter_index == 1 && g_fight_mode_selector == FIGHT_MODE_CHANBARA) {
         p->size_scale = g_object_scale_factors[g_fight_step_row_object_id];
     } else {
         p->size_scale = g_object_scale_factors
@@ -3992,7 +4002,7 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
     p->power = p->base_power;
     p->cpu_base_level = 0x1000;
 
-    if (g_fight_mode_selector == 3 && fighter_index == 1) {
+    if (g_fight_mode_selector == FIGHT_MODE_CHANBARA && fighter_index == 1) {
         p->default_variant_index =
             motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue(
                 p);
@@ -4023,7 +4033,7 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
                      : 0;
 
     switch (g_fight_mode_selector) {
-    case 0:
+    case FIGHT_MODE_STORY:
         if (place_from_other_position != 0) {
             other_position = p->other->base_pos;
             fight_PickRandomStartPositionExcludingNearestAndFarthest(
@@ -4034,8 +4044,8 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
                 fighter_index == 0, &other_position.x, pair_index);
         }
         break;
-    case 2:
-    case 3:
+    case FIGHT_MODE_PRACTICE:
+    case FIGHT_MODE_CHANBARA:
         if (place_from_other_position != 0) {
             other_position = p->other->base_pos;
             fight_SearchRadialFlatSurfacePointOrUseStartPositionPair(
@@ -4136,8 +4146,8 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
     p->reposition_count = 0;
     object_InitKindQueue(p);
     p->wielded_object_kind = p->carried_object_kinds[0];
-    if (g_fight_mode_selector == 5 ||
-        (g_fight_mode_selector == 2 && D_800A389A == 0)) {
+    if (g_fight_mode_selector == FIGHT_MODE_TEAM ||
+        (g_fight_mode_selector == FIGHT_MODE_PRACTICE && D_800A389A == 0)) {
         if (p->character_data_index == 1 || p->character_data_index == 3 ||
             p->character_data_index == 4 || p->character_data_index == 9 ||
             p->character_data_index == 0x11) {
@@ -4146,12 +4156,12 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
             p->wielded_object_kind = -1;
             p->carried_object_count = 0;
         }
-    } else if (g_fight_mode_selector == 3 && fighter_index == 1 &&
-               g_fight_step_row_column != 4) {
+    } else if (g_fight_mode_selector == FIGHT_MODE_CHANBARA &&
+               fighter_index == 1 && g_fight_step_row_column != 4) {
         p->wielded_object_kind = -1;
         p->carried_object_count = 0;
-    } else if (g_fight_mode_selector == 3 && fighter_index == 1 &&
-               g_fight_step_row_column == 4) {
+    } else if (g_fight_mode_selector == FIGHT_MODE_CHANBARA &&
+               fighter_index == 1 && g_fight_step_row_column == 4) {
         if (p->other->character_data_index == 1 ||
             p->other->character_data_index == 3 ||
             p->other->character_data_index == 4 ||
@@ -4173,8 +4183,9 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
         }
         p->weapon_refills_left = 9;
     }
-    if (g_fight_mode_selector == 5 || g_fight_mode_selector == 2 ||
-        g_fight_mode_selector == 3 ||
+    if (g_fight_mode_selector == FIGHT_MODE_TEAM ||
+        g_fight_mode_selector == FIGHT_MODE_PRACTICE ||
+        g_fight_mode_selector == FIGHT_MODE_CHANBARA ||
         (g_fight_mode_selector == 0 && D_800A385C != 0)) {
         p->throw_charges_left = 0;
     } else {
@@ -4195,16 +4206,16 @@ void fighter_ConfigureCpuControl(void) {
         if (rec->cpu_controlled != 0) {
 
             switch (g_fight_mode_selector) {
-            case 0:
+            case FIGHT_MODE_STORY:
                 rec->cpu_base_level =
                     g_fight_config.operand_cpu_base_levels[i] << 4;
                 break;
-            case 1:
-            case 2:
+            case FIGHT_MODE_VSCPU:
+            case FIGHT_MODE_PRACTICE:
             default:
                 rec->cpu_base_level = *cpu_base_level_cursor;
                 break;
-            case 3:
+            case FIGHT_MODE_CHANBARA:
                 break;
             }
 
@@ -4765,8 +4776,9 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
             ((fighter_record->pad_input.unheld & 0x8000) >> 3) |
             ((fighter_record->pad_input.unheld & 0x7000) << 1);
     }
-    if (g_fight_mode_selector == 2 || g_fight_mode_selector == 5 ||
-        g_fight_mode_selector == 3 ||
+    if (g_fight_mode_selector == FIGHT_MODE_PRACTICE ||
+        g_fight_mode_selector == FIGHT_MODE_TEAM ||
+        g_fight_mode_selector == FIGHT_MODE_CHANBARA ||
         (g_fight_mode_selector == 0 && D_800A385C != 0)) {
         fighter_record->pad_input.pressed &= ~0x100;
     }
@@ -5530,11 +5542,11 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
         fighter_record->weapon_live_state != 0) {
         fighter_record->frame_flags = 1;
     }
-    if ((g_fight_mode_selector != 3 || fighter_index != 1 ||
+    if ((g_fight_mode_selector != FIGHT_MODE_CHANBARA || fighter_index != 1 ||
          g_fight_step_row_column == 4) &&
         (fighter_record->weapon_id == 0 || fighter_record->weapon_id == 1) &&
-        (g_fight_mode_selector != 2 || D_800A389A != 0) &&
-        g_fight_mode_selector != 5) {
+        (g_fight_mode_selector != FIGHT_MODE_PRACTICE || D_800A389A != 0) &&
+        g_fight_mode_selector != FIGHT_MODE_TEAM) {
         fighter_record->frame_flags |= 2;
     }
     if (fighter_record->variant_index == fighter_record->object_variant_index &&
@@ -5568,10 +5580,10 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
     } else {
         fighter_record->wielded_object_live_state = 0;
     }
-    if (g_fight_mode_selector != 3 || fighter_index != 1 ||
+    if (g_fight_mode_selector != FIGHT_MODE_CHANBARA || fighter_index != 1 ||
         g_fight_step_row_column == 4) {
-        if (g_fight_mode_selector == 3 && fighter_index == 1 &&
-            g_fight_step_row_column == 4) {
+        if (g_fight_mode_selector == FIGHT_MODE_CHANBARA &&
+            fighter_index == 1 && g_fight_step_row_column == 4) {
             if (fighter_record->other->character_data_index == 1 ||
                 fighter_record->other->character_data_index == 3 ||
                 fighter_record->other->character_data_index == 4 ||
@@ -5579,8 +5591,9 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
                 fighter_record->other->character_data_index == 0x11) {
                 fighter_record->frame_flags |= 8;
             }
-        } else if ((g_fight_mode_selector != 2 || D_800A389A != 0) &&
-                   g_fight_mode_selector != 5) {
+        } else if (
+            (g_fight_mode_selector != FIGHT_MODE_PRACTICE || D_800A389A != 0) &&
+            g_fight_mode_selector != FIGHT_MODE_TEAM) {
             if (fighter_record->character_data_index == 1 ||
                 fighter_record->character_data_index == 3 ||
                 fighter_record->character_data_index == 4 ||
@@ -5604,8 +5617,8 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
         }
     }
 skip_62:
-    if ((g_fight_mode_selector == 2 && D_800A389A == 0) ||
-        g_fight_mode_selector == 5) {
+    if ((g_fight_mode_selector == FIGHT_MODE_PRACTICE && D_800A389A == 0) ||
+        g_fight_mode_selector == FIGHT_MODE_TEAM) {
         if ((fighter_record->weapon_id == 0 ||
              fighter_record->weapon_id == 1) &&
             fighter_record->move_kind != 4 &&
@@ -5791,7 +5804,7 @@ skip_62:
           fighter_record->paired_move_hit_frame ==
               fighter_record->move_frame))) {
         MATRIX **bone_matrices = node_GetSlotMatrixPointerArray(fighter_index);
-        if (g_fight_mode_selector != 0 ||
+        if (g_fight_mode_selector != FIGHT_MODE_STORY ||
             g_fighter_group_flags[g_fighter_records[0].character_data_index] ==
                 0 ||
             g_fight_stage_command_count != 1 ||
@@ -5820,8 +5833,9 @@ skip_62:
         fighter_record->pending_move_event = 0x1F;
     }
     if (fighter_record->move_frame_unchanged == 0) {
-        if (g_fight_mode_selector != 5 && g_fight_mode_selector != 2 &&
-            g_fight_mode_selector != 3 &&
+        if (g_fight_mode_selector != FIGHT_MODE_TEAM &&
+            g_fight_mode_selector != FIGHT_MODE_PRACTICE &&
+            g_fight_mode_selector != FIGHT_MODE_CHANBARA &&
             (g_fight_mode_selector != 0 || D_800A385C == 0)) {
             if (fighter_record->move_kind == 0xB &&
                 fighter_record->move_frame ==

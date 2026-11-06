@@ -1,0 +1,157 @@
+kind	where	literal	name	role	evidence
+enum	include/bb2_const.h	0	FightMode.FIGHT_MODE_STORY	g_fight_mode_selector value: story mode: case 0 of ApplyPendingConfigAndInitializeMode starts the story command stream (fight_InitCommandStream on g_fight_config_id_data_rows[fighter_setup[0]], fight_RunCommandStream)	24BF0.c:53-58; runtime: matrix/values.tsv reads 0 for the whole run of story-values-1, story-concede-1 and story-substitute-concede-1 (story text, stage card, fight, concede); 9F9C.c story-only paths test D_800A385C / D_800A3712 (substitution / rematch) only under 0; name: index 0 of g_fight_mode_names (d_7D920.c:716-721), the binary's 7-entry mode-name table in selector order STORY VSCPU PRACTICE CHANBARA VS TEAM NETWORK, string "STORY"
+enum	include/bb2_const.h	1	FightMode.FIGHT_MODE_VSCPU	g_fight_mode_selector value: versus CPU: case 1 builds and advances the CPU opponent order	24BF0.c:60-64 fight_BuildOpponentOrder / fight_AdvanceOpponentOrder; 9F9C.c:2439-2449 next-opponent screen only for 1; runtime: matrix/values.tsv reads 1 from the fight on in versus-cpu-values-1, versus-cpu-clear-1, versus-cpu-clear-retail-1 (opp1 .. opp5, clear) and versus-cpu-ending-1; name: index 1 of g_fight_mode_names (d_7D920.c:716-721), the binary's 7-entry mode-name table in selector order STORY VSCPU PRACTICE CHANBARA VS TEAM NETWORK, string "VSCPU"
+enum	include/bb2_const.h	2	FightMode.FIGHT_MODE_PRACTICE	g_fight_mode_selector value: training mode: case 2 picks the training stages 0x23 / 0x24 by the training sub-mode D_800A389A and, for sub-mode 0, the ninja partner (fighter_setup[1] 0xE / 0x1D)	24BF0.c:86-97; 25788.c:69-71 loads D_800A389A and g_fight_toggle_option_bits from the training record only for 2; 6CF8.c:327 the pause menu's toggle rows only for 2 (training-practice-ko-1 phase pause_menu: Frontal Attack / Reverse Attack / Dash); g_fight_auto_pause_countdown (6CF8.c:516, docs/engine/main_loop.md:58); runtime: training-practice-ko-1 (Training Mode > Practice, Train with the Ninja) hits ApplyPendingConfigAndInitializeMode in t_load; no capture records the value itself; name: index 2 of g_fight_mode_names (d_7D920.c:716-721), the binary's 7-entry mode-name table in selector order STORY VSCPU PRACTICE CHANBARA VS TEAM NETWORK, string "PRACTICE"
+enum	include/bb2_const.h	3	FightMode.FIGHT_MODE_CHANBARA	g_fight_mode_selector value: Slash Mode (100 Kills Time Trial): case 3 clears the timer and step-table row, stage 0x22, and runs fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags	24BF0.c:66-78; fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags is called only from the mode-3 arms (24BF0.c:75, 9F9C.c:1406-1409); fighter 1 is the CPU stream of opponents (9F9C.c:3542 / 3557 cpu_controlled); runtime: slash-mode-1 (top-menu row Slash Mode: 100 Kills Time Trial) hits ApplyPendingConfigAndInitializeMode and func_80033DF4 (= fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags) in t_load / fight; name: index 3 of g_fight_mode_names (d_7D920.c:716-721), the binary's 7-entry mode-name table in selector order STORY VSCPU PRACTICE CHANBARA VS TEAM NETWORK, string "CHANBARA"
+enum	include/bb2_const.h	4	FightMode.FIGHT_MODE_VS	g_fight_mode_selector value: versus 2P: two local pads	87A0.c:680-692 checks pad 1 too only for 4 and 5; runtime: matrix/values.tsv reads 4 in versus-2p-concede-1 (fight .. rematch_menu_2), versus-2p-blade-contact-1, versus-2p-kimigaura-throw-1, versus-2p-wound-moves-1 and versus-2p-link-mode-poke-1 t_load; name: index 4 of g_fight_mode_names (d_7D920.c:716-721), the binary's 7-entry mode-name table in selector order STORY VSCPU PRACTICE CHANBARA VS TEAM NETWORK, string "VS"
+enum	include/bb2_const.h	5	FightMode.FIGHT_MODE_TEAM	g_fight_mode_selector value: group battle: case 5 starts the team match sequence (fight_AdvanceMatch, g_fight_match_cursor)	24BF0.c:79-85; 25788.c:72-80 loads match count, time limit and win target only for 5; runtime: matrix/values.tsv reads 5 from roster to the end in group-battle-draw-1 and group-battle-shainto-wins-1 (phases.tsv roster: D_800A38DC reads 5, g_fight_match_count 3); name: index 5 of g_fight_mode_names (d_7D920.c:716-721), the binary's 7-entry mode-name table in selector order STORY VSCPU PRACTICE CHANBARA VS TEAM NETWORK, string "TEAM"
+enum	include/bb2_const.h	6	FightMode.FIGHT_MODE_NETWORK	g_fight_mode_selector value: Link Mode (2 Player Link Battle over SIO): the local fighter is g_comb_local_side	24BF0.c:47-52 g_fight_tracked_fighter_index = (g_comb_local_side != 0) (set by comb_ReadCtsSetRts 28708.c:1659); 9F9C.c:1118-1124 the remote fighter's pad words take the remote button mapping, pad offset 0 for both; 9F9C.c:2096 rng_SetSeed(g_fight_rng_seed) (shared seed); 87A0.c one local pad; no capture reaches a link fight (frontier-link-* abort in the handshake); name: index 6 of g_fight_mode_names (d_7D920.c:716-721), the binary's 7-entry mode-name table in selector order STORY VSCPU PRACTICE CHANBARA VS TEAM NETWORK, string "NETWORK"
+site	src/main/2B344.c:222	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/2B344.c:595	0	FIGHT_MODE_STORY	g_fight_mode_selector != test	see the enum row
+site	src/main/2B344.c:1017	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/2B344.c:1194	4	FIGHT_MODE_VS	g_fight_mode_selector == test	see the enum row
+site	src/main/2B344.c:1194	6	FIGHT_MODE_NETWORK	g_fight_mode_selector == test	see the enum row
+site	src/main/2B344.c:1207	0	FIGHT_MODE_STORY	g_fight_mode_selector == test	see the enum row
+site	src/main/6CF8.c:327	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/6CF8.c:516	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:1106	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1118	6	FIGHT_MODE_NETWORK	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1124	6	FIGHT_MODE_NETWORK	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1195	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1203	6	FIGHT_MODE_NETWORK	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:1237	4	FIGHT_MODE_VS	g_fight_config.pending_mode_selector store (copied to g_fight_mode_selector at 24BF0.c:22)	see the enum row
+site	src/main/9F9C.c:1257	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1337	0	FIGHT_MODE_STORY	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:1374	0	FIGHT_MODE_STORY	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:1406	3	FIGHT_MODE_CHANBARA	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:1444	2	FIGHT_MODE_PRACTICE	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:1468	4	FIGHT_MODE_VS	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:1469	6	FIGHT_MODE_NETWORK	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:1483	5	FIGHT_MODE_TEAM	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:1538	1	FIGHT_MODE_VSCPU	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1543	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1558	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1559	4	FIGHT_MODE_VS	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1565	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1815	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1818	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1829	0	FIGHT_MODE_STORY	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:1830	1	FIGHT_MODE_VSCPU	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:1833	4	FIGHT_MODE_VS	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:1837	3	FIGHT_MODE_CHANBARA	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:1845	2	FIGHT_MODE_PRACTICE	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:1852	5	FIGHT_MODE_TEAM	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:1928	0	FIGHT_MODE_STORY	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:1954	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1966	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:1967	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1968	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:1997	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2001	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2011	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2014	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2023	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2030	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2030	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2038	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2096	6	FIGHT_MODE_NETWORK	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2309	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2346	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2439	1	FIGHT_MODE_VSCPU	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2445	4	FIGHT_MODE_VS	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:2448	1	FIGHT_MODE_VSCPU	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:2457	6	FIGHT_MODE_NETWORK	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:2838	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2838	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2839	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:2983	2	FIGHT_MODE_PRACTICE	v != test	see the enum row
+site	src/main/9F9C.c:2983	5	FIGHT_MODE_TEAM	v != test	see the enum row
+site	src/main/9F9C.c:3337	1	FIGHT_MODE_VSCPU	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:3337	4	FIGHT_MODE_VS	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:3338	6	FIGHT_MODE_NETWORK	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:3360	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:3456	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:3542	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:3557	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:3820	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:3967	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:3968	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:3970	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:3982	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:3995	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:4026	0	FIGHT_MODE_STORY	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:4037	2	FIGHT_MODE_PRACTICE	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:4038	3	FIGHT_MODE_CHANBARA	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:4139	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:4140	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:4149	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:4153	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:4176	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:4176	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:4177	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:4198	0	FIGHT_MODE_STORY	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:4202	1	FIGHT_MODE_VSCPU	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:4203	2	FIGHT_MODE_PRACTICE	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:4207	3	FIGHT_MODE_CHANBARA	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/9F9C.c:4768	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:4768	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:4769	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:5533	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:5536	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:5537	5	FIGHT_MODE_TEAM	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:5571	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:5573	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:5582	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:5583	5	FIGHT_MODE_TEAM	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:5607	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:5608	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/9F9C.c:5794	0	FIGHT_MODE_STORY	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:5823	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:5823	5	FIGHT_MODE_TEAM	g_fight_mode_selector != test	see the enum row
+site	src/main/9F9C.c:5824	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector != test	see the enum row
+site	src/main/17AFC.c:80	0	FIGHT_MODE_STORY	g_fight_mode_selector != test	see the enum row
+site	src/main/17AFC.c:123	5	FIGHT_MODE_TEAM	fight_mode == test	see the enum row
+site	src/main/17AFC.c:365	5	FIGHT_MODE_TEAM	g_fight_mode_selector != test	see the enum row
+site	src/main/17AFC.c:600	5	FIGHT_MODE_TEAM	g_fight_mode_selector != test	see the enum row
+site	src/main/17AFC.c:614	5	FIGHT_MODE_TEAM	g_fight_mode_selector != test	see the enum row
+site	src/main/17AFC.c:630	5	FIGHT_MODE_TEAM	g_fight_mode_selector != test	see the enum row
+site	src/main/17AFC.c:4509	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/17AFC.c:5026	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/17AFC.c:5036	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/17AFC.c:5045	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/17AFC.c:5049	5	FIGHT_MODE_TEAM	g_fight_mode_selector == test	see the enum row
+site	src/main/17AFC.c:5191	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/17AFC.c:5202	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/24BF0.c:47	6	FIGHT_MODE_NETWORK	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/24BF0.c:53	0	FIGHT_MODE_STORY	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/24BF0.c:60	1	FIGHT_MODE_VSCPU	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/24BF0.c:66	3	FIGHT_MODE_CHANBARA	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/24BF0.c:79	5	FIGHT_MODE_TEAM	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/24BF0.c:86	2	FIGHT_MODE_PRACTICE	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/24BF0.c:99	4	FIGHT_MODE_VS	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/87A0.c:681	4	FIGHT_MODE_VS	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/87A0.c:682	5	FIGHT_MODE_TEAM	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/87A0.c:686	0	FIGHT_MODE_STORY	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/87A0.c:687	1	FIGHT_MODE_VSCPU	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/87A0.c:688	2	FIGHT_MODE_PRACTICE	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/87A0.c:689	3	FIGHT_MODE_CHANBARA	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/87A0.c:690	6	FIGHT_MODE_NETWORK	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/368E4.c:183	0	FIGHT_MODE_STORY	g_fight_mode_selector != test	see the enum row
+site	src/main/4510C.c:297	1	FIGHT_MODE_VSCPU	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/4510C.c:303	0	FIGHT_MODE_STORY	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/4510C.c:316	2	FIGHT_MODE_PRACTICE	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/4510C.c:339	3	FIGHT_MODE_CHANBARA	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/4510C.c:362	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector != test	see the enum row
+site	src/main/4510C.c:772	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/4510C.c:1855	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector != test	see the enum row
+site	src/main/4510C.c:2023	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector != test	see the enum row
+site	src/main/4510C.c:2024	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/4510C.c:2698	3	FIGHT_MODE_CHANBARA	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/4510C.c:2719	2	FIGHT_MODE_PRACTICE	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/4510C.c:2892	2	FIGHT_MODE_PRACTICE	g_fight_mode_selector == test	see the enum row
+site	src/main/4510C.c:2892	3	FIGHT_MODE_CHANBARA	g_fight_mode_selector == test	see the enum row
+site	src/main/25788.c:53	0	FIGHT_MODE_STORY	g_fight_config.pending_mode_selector == test (copied to g_fight_mode_selector at 24BF0.c:22)	see the enum row
+site	src/main/25788.c:70	2	FIGHT_MODE_PRACTICE	mode_selector == test	see the enum row
+site	src/main/25788.c:73	5	FIGHT_MODE_TEAM	mode_selector == test	see the enum row
+site	src/main/28708.c:1553	0	FIGHT_MODE_STORY	case label of switch (g_fight_mode_selector)	see the enum row
+site	src/main/28708.c:1599	3	FIGHT_MODE_CHANBARA	case label of switch (g_fight_mode_selector)	see the enum row

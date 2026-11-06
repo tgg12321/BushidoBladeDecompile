@@ -6,6 +6,7 @@
 #include "bb2.h"
 #include "include_asm.h"
 #include <psxsdk/libgte.h>
+#include "bb2_const.h"
 
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern void wave_SetCellBuffer(s32);
@@ -180,7 +181,7 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
     arena_SetBlockEnd(s7, (s32)s1);
     arena_SetMoveCallback(s7, (s32)resource_RebaseLoadedBlockSections);
     resource_InvokeLoadedSelectorInitCallback();
-    if (g_fight_mode_selector != 0) {
+    if (g_fight_mode_selector != FIGHT_MODE_STORY) {
         if (selector != 0x22) {
             resource_SelectRetainedSubblockOrApplyHeaderSections(-1);
         }

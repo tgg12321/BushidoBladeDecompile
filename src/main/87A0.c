@@ -678,16 +678,16 @@ void pad_Update(s32 arg0) {
     if (g_main_loop_handler_index == 1 && arg0 == 0) {
 
         switch (g_fight_mode_selector) {
-        case 4:
-        case 5:
+        case FIGHT_MODE_VS:
+        case FIGHT_MODE_TEAM:
             if (g_pad_state.valid[1] == 0) {
                 pad.held |= 0x08000800;
             }
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 6:
+        case FIGHT_MODE_STORY:
+        case FIGHT_MODE_VSCPU:
+        case FIGHT_MODE_PRACTICE:
+        case FIGHT_MODE_CHANBARA:
+        case FIGHT_MODE_NETWORK:
             if (g_pad_state.valid[0] == 0) {
                 pad.held |= 0x08000800;
             }
