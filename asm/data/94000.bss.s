@@ -177,9 +177,9 @@ dlabel g_fight_match_cursor
 enddlabel g_fight_match_cursor
 
 /* 800A3876 */
-dlabel D_800A3876
+dlabel g_fight_mash_contest_preset_fighter_index
     .space 0x2
-enddlabel D_800A3876
+enddlabel g_fight_mash_contest_preset_fighter_index
 
 /* 800A3878 */
 dlabel g_fight_active_playback_descriptor
@@ -254,9 +254,9 @@ dlabel g_fight_presentation_index
 enddlabel g_fight_presentation_index
 
 /* 800A38A8 */
-dlabel D_800A38A8
+dlabel g_fight_mash_contest_start_requested
     .space 0x2
-enddlabel D_800A38A8
+enddlabel g_fight_mash_contest_start_requested
 
 /* 800A38AA */
 dlabel D_800A38AA

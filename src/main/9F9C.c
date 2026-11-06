@@ -2963,7 +2963,7 @@ s32 fight_UpdateSeparationAndPairedMoves(void) {
     if (v != 5 && v != 2) {
         fight_UpdatePairedMoves();
     }
-    D_800A38A8 = 0;
+    g_fight_mash_contest_start_requested = 0;
 }
 
 void math_ComputeBallisticVelocityXZ(

@@ -90,8 +90,8 @@ glabel fight_UpdateFighterInteractionsAndPointCaches
     /* 1CF64 8002C764 03004228 */  slti       $v0, $v0, 0x3
     /* 1CF68 8002C768 28004014 */  bnez       $v0, .L8002C80C
     /* 1CF6C 8002C76C 00000000 */   nop
-    /* 1CF70 8002C770 0A80023C */  lui        $v0, %hi(D_800A38A8)
-    /* 1CF74 8002C774 A8384284 */  lh         $v0, %lo(D_800A38A8)($v0)
+    /* 1CF70 8002C770 0A80023C */  lui        $v0, %hi(g_fight_mash_contest_start_requested)
+    /* 1CF74 8002C774 A8384284 */  lh         $v0, %lo(g_fight_mash_contest_start_requested)($v0)
     /* 1CF78 8002C778 00000000 */  nop
     /* 1CF7C 8002C77C 23004010 */  beqz       $v0, .L8002C80C
     /* 1CF80 8002C780 FFFF0224 */   addiu     $v0, $zero, -0x1

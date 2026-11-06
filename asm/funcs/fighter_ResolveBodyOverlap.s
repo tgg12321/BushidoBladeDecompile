@@ -416,10 +416,10 @@ glabel fighter_ResolveBodyOverlap
     /* 196D8 80028ED8 F7A30008 */  j          .L80028FDC
     /* 196DC 80028EDC 00000000 */   nop
   .L80028EE0:
-    /* 196E0 80028EE0 0A80013C */  lui        $at, %hi(D_800A38A8)
-    /* 196E4 80028EE4 A83822A4 */  sh         $v0, %lo(D_800A38A8)($at)
-    /* 196E8 80028EE8 0A80013C */  lui        $at, %hi(D_800A3876)
-    /* 196EC 80028EEC 763820A4 */  sh         $zero, %lo(D_800A3876)($at)
+    /* 196E0 80028EE0 0A80013C */  lui        $at, %hi(g_fight_mash_contest_start_requested)
+    /* 196E4 80028EE4 A83822A4 */  sh         $v0, %lo(g_fight_mash_contest_start_requested)($at)
+    /* 196E8 80028EE8 0A80013C */  lui        $at, %hi(g_fight_mash_contest_preset_fighter_index)
+    /* 196EC 80028EEC 763820A4 */  sh         $zero, %lo(g_fight_mash_contest_preset_fighter_index)($at)
     /* 196F0 80028EF0 F7A30008 */  j          .L80028FDC
     /* 196F4 80028EF4 00000000 */   nop
   .L80028EF8:
@@ -480,10 +480,10 @@ glabel fighter_ResolveBodyOverlap
     /* 197C4 80028FC4 F7A30008 */  j          .L80028FDC
     /* 197C8 80028FC8 00000000 */   nop
   .L80028FCC:
-    /* 197CC 80028FCC 0A80013C */  lui        $at, %hi(D_800A38A8)
-    /* 197D0 80028FD0 A83822A4 */  sh         $v0, %lo(D_800A38A8)($at)
-    /* 197D4 80028FD4 0A80013C */  lui        $at, %hi(D_800A3876)
-    /* 197D8 80028FD8 763822A4 */  sh         $v0, %lo(D_800A3876)($at)
+    /* 197CC 80028FCC 0A80013C */  lui        $at, %hi(g_fight_mash_contest_start_requested)
+    /* 197D0 80028FD0 A83822A4 */  sh         $v0, %lo(g_fight_mash_contest_start_requested)($at)
+    /* 197D4 80028FD4 0A80013C */  lui        $at, %hi(g_fight_mash_contest_preset_fighter_index)
+    /* 197D8 80028FD8 763822A4 */  sh         $v0, %lo(g_fight_mash_contest_preset_fighter_index)($at)
   .L80028FDC:
     /* 197DC 80028FDC 16006012 */  beqz       $s3, .L80029038
     /* 197E0 80028FE0 00000000 */   nop

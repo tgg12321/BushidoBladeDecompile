@@ -1085,10 +1085,10 @@ glabel fighter_ProcessWeaponBodyHits
     /* 1C2C0 8002BAC0 00000000 */   nop
   .L8002BAC4:
     /* 1C2C4 8002BAC4 01000B24 */  addiu      $t3, $zero, 0x1
-    /* 1C2C8 8002BAC8 0A80013C */  lui        $at, %hi(D_800A38A8)
-    /* 1C2CC 8002BACC A8382BA4 */  sh         $t3, %lo(D_800A38A8)($at)
-    /* 1C2D0 8002BAD0 0A80013C */  lui        $at, %hi(D_800A3876)
-    /* 1C2D4 8002BAD4 763836A4 */  sh         $s6, %lo(D_800A3876)($at)
+    /* 1C2C8 8002BAC8 0A80013C */  lui        $at, %hi(g_fight_mash_contest_start_requested)
+    /* 1C2CC 8002BACC A8382BA4 */  sh         $t3, %lo(g_fight_mash_contest_start_requested)($at)
+    /* 1C2D0 8002BAD0 0A80013C */  lui        $at, %hi(g_fight_mash_contest_preset_fighter_index)
+    /* 1C2D4 8002BAD4 763836A4 */  sh         $s6, %lo(g_fight_mash_contest_preset_fighter_index)($at)
   .L8002BAD8:
     /* 1C2D8 8002BAD8 3000AC8F */  lw         $t4, 0x30($sp)
     /* 1C2DC 8002BADC CA016386 */  lh         $v1, 0x1CA($s3)

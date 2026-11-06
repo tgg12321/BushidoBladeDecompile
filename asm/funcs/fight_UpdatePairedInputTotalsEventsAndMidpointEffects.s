@@ -22,8 +22,8 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 175F4 80026DF4 04000224 */  addiu      $v0, $zero, 0x4
     /* 175F8 80026DF8 CC006214 */  bne        $v1, $v0, .L8002712C
     /* 175FC 80026DFC FFFF0224 */   addiu     $v0, $zero, -0x1
-    /* 17600 80026E00 0A80043C */  lui        $a0, %hi(D_800A3876)
-    /* 17604 80026E04 76388484 */  lh         $a0, %lo(D_800A3876)($a0)
+    /* 17600 80026E00 0A80043C */  lui        $a0, %hi(g_fight_mash_contest_preset_fighter_index)
+    /* 17604 80026E04 76388484 */  lh         $a0, %lo(g_fight_mash_contest_preset_fighter_index)($a0)
     /* 17608 80026E08 00000000 */  nop
     /* 1760C 80026E0C C7008210 */  beq        $a0, $v0, .L8002712C
     /* 17610 80026E10 00110400 */   sll       $v0, $a0, 4

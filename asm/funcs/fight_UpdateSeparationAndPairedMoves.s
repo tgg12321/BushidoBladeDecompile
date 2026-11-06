@@ -21,8 +21,8 @@ glabel fight_UpdateSeparationAndPairedMoves
     /* 108B8 800200B8 FA7E000C */  jal        fight_UpdatePairedMoves
     /* 108BC 800200BC 00000000 */   nop
   .L800200C0:
-    /* 108C0 800200C0 0A80013C */  lui        $at, %hi(D_800A38A8)
-    /* 108C4 800200C4 A83820A4 */  sh         $zero, %lo(D_800A38A8)($at)
+    /* 108C0 800200C0 0A80013C */  lui        $at, %hi(g_fight_mash_contest_start_requested)
+    /* 108C4 800200C4 A83820A4 */  sh         $zero, %lo(g_fight_mash_contest_start_requested)($at)
     /* 108C8 800200C8 1400BF8F */  lw         $ra, 0x14($sp)
     /* 108CC 800200CC 1000B08F */  lw         $s0, 0x10($sp)
     /* 108D0 800200D0 1800BD27 */  addiu      $sp, $sp, 0x18

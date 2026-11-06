@@ -141,11 +141,11 @@ glabel fighter_ResolveWeaponContact
     /* 18DD4 800285D4 BEA10008 */  j          .L800286F8
     /* 18DD8 800285D8 0B000224 */   addiu     $v0, $zero, 0xB
   .L800285DC:
-    /* 18DDC 800285DC 0A80013C */  lui        $at, %hi(D_800A38A8)
-    /* 18DE0 800285E0 A83822A4 */  sh         $v0, %lo(D_800A38A8)($at)
+    /* 18DDC 800285DC 0A80013C */  lui        $at, %hi(g_fight_mash_contest_start_requested)
+    /* 18DE0 800285E0 A83822A4 */  sh         $v0, %lo(g_fight_mash_contest_start_requested)($at)
     /* 18DE4 800285E4 FFFF0224 */  addiu      $v0, $zero, -0x1
-    /* 18DE8 800285E8 0A80013C */  lui        $at, %hi(D_800A3876)
-    /* 18DEC 800285EC 763822A4 */  sh         $v0, %lo(D_800A3876)($at)
+    /* 18DE8 800285E8 0A80013C */  lui        $at, %hi(g_fight_mash_contest_preset_fighter_index)
+    /* 18DEC 800285EC 763822A4 */  sh         $v0, %lo(g_fight_mash_contest_preset_fighter_index)($at)
     /* 18DF0 800285F0 C0A10008 */  j          .L80028700
     /* 18DF4 800285F4 2110C002 */   addu      $v0, $s6, $zero
   .L800285F8:

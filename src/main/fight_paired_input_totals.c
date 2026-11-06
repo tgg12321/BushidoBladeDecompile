@@ -37,7 +37,7 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
     if ((u16)D_80101EC8[0].move_kind == 0x1C) {
         if (D_80101EC8[0].move_frame != 4)
             goto tail;
-        selected_fighter_index = D_800A3876;
+        selected_fighter_index = g_fight_mash_contest_preset_fighter_index;
         if (selected_fighter_index == -1)
             goto tail;
         /* `record` holds the selected record and `var_1` its partner, then

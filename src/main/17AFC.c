@@ -742,8 +742,8 @@ s32 fighter_ResolveWeaponContact(
                             fighter_record->pending_move_event = 0x19;
                             goto block_49;
                         }
-                        D_800A38A8 = 1;
-                        D_800A3876 = -1;
+                        g_fight_mash_contest_start_requested = 1;
+                        g_fight_mash_contest_preset_fighter_index = -1;
                         goto block_49;
                     }
                     {
@@ -891,8 +891,9 @@ static inline s32 math_SqrtLut(s32 x) {
  * g_fighter_body_overlap_radii[0..1]; an overlap (at most 0x80) pushes the
  * characters apart along x/z, scaled by the distance. After an overlap, the
  * move_kind states and the orientation.vy difference (folded to 0..0x800) pick
- * the reaction (pending_move_event, D_800A38A8 / D_800A3876). The push is added
- * to decaying_velocity.vx / .vz. */
+ * the reaction (pending_move_event, g_fight_mash_contest_start_requested /
+ * g_fight_mash_contest_preset_fighter_index). The push is added to
+ * decaying_velocity.vx / .vz. */
 void fighter_ResolveBodyOverlap(void) {
     s32 var_1;
     s32 i;
@@ -1029,8 +1030,8 @@ void fighter_ResolveBodyOverlap(void) {
                         1, 0x2D, &D_80101EC8[1].world_pos.x, 0);
                     D_80101EC8[1].pending_move_event = 5;
                 } else {
-                    D_800A38A8 = 1;
-                    D_800A3876 = 0;
+                    g_fight_mash_contest_start_requested = 1;
+                    g_fight_mash_contest_preset_fighter_index = 0;
                 }
             }
         }
@@ -1048,8 +1049,8 @@ void fighter_ResolveBodyOverlap(void) {
                     0, 0x2D, &D_80101EC8[0].world_pos.x, 0);
                 D_80101EC8[0].pending_move_event = 5;
             } else {
-                D_800A38A8 = 1;
-                D_800A3876 = 1;
+                g_fight_mash_contest_start_requested = 1;
+                g_fight_mash_contest_preset_fighter_index = 1;
             }
         }
     }
@@ -2174,8 +2175,8 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                                    : &D_80101EC8[0].world_pos.x,
                             0);
                     } else {
-                        D_800A38A8 = 1;
-                        D_800A3876 = i;
+                        g_fight_mash_contest_start_requested = 1;
+                        g_fight_mash_contest_preset_fighter_index = i;
                     }
                 }
             }
@@ -2505,7 +2506,8 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
             fighter_ProcessWeaponBodyHits(0);
         }
         if (firstPlayer->update_count >= 3 && secondPlayer->update_count >= 3 &&
-            D_800A38A8 != 0 && firstPlayer->pending_move_event == -1 &&
+            g_fight_mash_contest_start_requested != 0 &&
+            firstPlayer->pending_move_event == -1 &&
             secondPlayer->pending_move_event == -1 &&
             firstPlayer->character_roster_index != 0x1F &&
             secondPlayer->character_roster_index != 0x1F) {
