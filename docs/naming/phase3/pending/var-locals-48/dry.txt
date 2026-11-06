@@ -1,0 +1,58 @@
+var-locals-48 (naming-b 2026-11-06): 21 local bindings in 6 files (32D04.c math_RotMatrix* products, math_Rotate2D, depth shift; 368E4.c tim_addr; 35000.c frame-entry copies; 2B344.c fog selector; 31548.c slot_UpdateObjectFrame; 17AFC.c object / hit locals).
+Tree: ln-naming-b = main 448a2ae25 (clean). Research: tmp/codex/var-locals-48-research.md (21 RENAME rows; every definition re-read at 448a2ae25, no line moved).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (same tool result as var-locals-43 .. -45). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(base = naming_keycheck.read_working_tree() of the lane worktree ln-naming-b, HEAD 448a2ae25; NAMING_KEYCHECK_ROOT = the worktree; Windows Python scratch driver, removed after the run)
+accepted all 21 pairs (121 token substitutions: 17AFC.c 38, 32D04.c 35, 31548.c 26, 35000.c 15, 2B344.c 4, 368E4.c 3; no include/ file touched; comment edits needed, see notes.txt R6 WATCH). Each pair was also run alone: all 21 accepted, none rejected (alone-counts sum to 121, equal to the together total, and every pair's alone line list equals the drafter's independent token scan, 21/21).
+Per-pair substitutions (function:old=new count (lines)):
+  math_RotMatrixXYZ:var_11=sinA_sinB 3 (344,369,371)
+  math_RotMatrixXYZ:var_12=sinA_sinB_12 4 (344,371,372,374)
+  math_RotMatrixXYZ:var_13=sinA_sinB_12_cosC 3 (345,372,390)
+  math_RotMatrixXYZ:var_14=sinA_sinB_12_negsinC 3 (345,374,391)
+  math_RotMatrixXYZ:var_19=cosA_negsinB_12 3 (349,378,379)
+  math_RotMatrixXYZ:var_20=cosA_negsinB_12_cosC 3 (349,379,392)
+  math_RotMatrixXYZ:var_23=cosA_sinB_12_sinC 3 (352,382,393)
+  math_RotMatrixYXZ:var_19=sinAxcosB_12_sinC 3 (279,320,333)
+  math_RotMatrixYXZ:var_21=sinAxcosB_12_cosC 3 (280,323,336)
+  gpu_LoadTimGroupSplitOffset:new_var=tim_addr 3 (1161,1188,1193)
+  node_AdvanceFrameAnimatedEntriesAndQueueDraws:var_5=progress 9 (17,33,34,36,41,62,63,66,80)
+  node_AdvanceFrameAnimatedEntriesAndQueueDraws:var_15=next_fade_scale 6 (27,95,96,97,99,103)
+  gpu_LatchFogDepthOnTransitionAndQueueMoves:arg0=selector 4 (1471,1481,1513,1519)
+  slot_UpdateObjectFrame:s4=slot_object 20 (12,22,24,25,26,28,31,32,33,34,36,118,133,158,172,173,184,185,186,187)
+  slot_UpdateObjectFrame:arg4=decoded_motion_frame 2 (11,48)
+  slot_UpdateObjectFrame:arg5=ground_y 4 (11,184,185,186)
+  object_AttachToOpponentBone:arg0=obj 26 (3899,3905,3906,3907,3908,3909,3912,3913,3914,3915,3916,3917,3918,3919,3920,3921,3922,3923,3928,3929,3930,3933,3935,3938,3939,3940)
+  object_SubmitAttachedTransform:arg0=obj 7 (3949,3957,3958,3961,3970,3973,3975)
+  gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift:t0=depth_shift 4 (491,493,494,512)
+  math_Rotate2D:a0=x_ptr 3 (420,425,433)
+  fighter_ProcessWeaponBodyHits:var_31=inner_hit 5 (1798,2212,2214,2217,2224)
+
+Line widths after substitution (over 80; python tools/format.py reflows them in the naming commit; token-preserving), all 21 pairs applied together:
+  31548.c 11 (80->100, signature: arg4 / arg5); 31548.c 118 (77->86); 35000.c 41 (80->83); 368E4.c 1193 (80->81). All other substituted lines stay within 80.
+None of the four is a function-like macro call or continues one (11 a signature, 118 a shift expression, 41 an argument of (s16 *) cast sum, 1193 a call of the function gpu_LoadTim), so the var-locals-40 sentinel limit does not apply. 0 rows flagged.
+
+Raw driver output (HEAD, scoped_plan alone per pair, token-scan lines, definition range, new-name hits inside the target definition; then the set):
+HEAD 448a2ae25
+ALONE math_RotMatrixXYZ:var_11=sinA_sinB -> {'32D04.c': 3} ACCEPT | token scan lines [344, 369, 371] (def 339-394) | new-name hits in src/include inside target def: []
+ALONE math_RotMatrixXYZ:var_12=sinA_sinB_12 -> {'32D04.c': 4} ACCEPT | token scan lines [344, 371, 372, 374] (def 339-394) | new-name hits in src/include inside target def: []
+ALONE math_RotMatrixXYZ:var_13=sinA_sinB_12_cosC -> {'32D04.c': 3} ACCEPT | token scan lines [345, 372, 390] (def 339-394) | new-name hits in src/include inside target def: []
+ALONE math_RotMatrixXYZ:var_14=sinA_sinB_12_negsinC -> {'32D04.c': 3} ACCEPT | token scan lines [345, 374, 391] (def 339-394) | new-name hits in src/include inside target def: []
+ALONE math_RotMatrixXYZ:var_19=cosA_negsinB_12 -> {'32D04.c': 3} ACCEPT | token scan lines [349, 378, 379] (def 339-394) | new-name hits in src/include inside target def: []
+ALONE math_RotMatrixXYZ:var_20=cosA_negsinB_12_cosC -> {'32D04.c': 3} ACCEPT | token scan lines [349, 379, 392] (def 339-394) | new-name hits in src/include inside target def: []
+ALONE math_RotMatrixXYZ:var_23=cosA_sinB_12_sinC -> {'32D04.c': 3} ACCEPT | token scan lines [352, 382, 393] (def 339-394) | new-name hits in src/include inside target def: []
+ALONE math_RotMatrixYXZ:var_19=sinAxcosB_12_sinC -> {'32D04.c': 3} ACCEPT | token scan lines [279, 320, 333] (def 268-337) | new-name hits in src/include inside target def: []
+ALONE math_RotMatrixYXZ:var_21=sinAxcosB_12_cosC -> {'32D04.c': 3} ACCEPT | token scan lines [280, 323, 336] (def 268-337) | new-name hits in src/include inside target def: []
+ALONE gpu_LoadTimGroupSplitOffset:new_var=tim_addr -> {'368E4.c': 3} ACCEPT | token scan lines [1161, 1188, 1193] (def 1153-1197) | new-name hits in src/include inside target def: []
+ALONE node_AdvanceFrameAnimatedEntriesAndQueueDraws:var_5=progress -> {'35000.c': 9} ACCEPT | token scan lines [17, 33, 34, 36, 41, 62, 63, 66, 80] (def 11-109) | new-name hits in src/include inside target def: []
+ALONE node_AdvanceFrameAnimatedEntriesAndQueueDraws:var_15=next_fade_scale -> {'35000.c': 6} ACCEPT | token scan lines [27, 95, 96, 97, 99, 103] (def 11-109) | new-name hits in src/include inside target def: []
+ALONE gpu_LatchFogDepthOnTransitionAndQueueMoves:arg0=selector -> {'2B344.c': 4} ACCEPT | token scan lines [1471, 1481, 1513, 1519] (def 1471-1528) | new-name hits in src/include inside target def: []
+ALONE slot_UpdateObjectFrame:s4=slot_object -> {'31548.c': 20} ACCEPT | token scan lines [12, 22, 24, 25, 26, 28, 31, 32, 33, 34, 36, 118, 133, 158, 172, 173, 184, 185, 186, 187] (def 10-189) | new-name hits in src/include inside target def: []
+ALONE slot_UpdateObjectFrame:arg4=decoded_motion_frame -> {'31548.c': 2} ACCEPT | token scan lines [11, 48] (def 10-189) | new-name hits in src/include inside target def: []
+ALONE slot_UpdateObjectFrame:arg5=ground_y -> {'31548.c': 4} ACCEPT | token scan lines [11, 184, 185, 186] (def 10-189) | new-name hits in src/include inside target def: []
+ALONE object_AttachToOpponentBone:arg0=obj -> {'17AFC.c': 26} ACCEPT | token scan lines [3899, 3905, 3906, 3907, 3908, 3909, 3912, 3913, 3914, 3915, 3916, 3917, 3918, 3919, 3920, 3921, 3922, 3923, 3928, 3929, 3930, 3933, 3935, 3938, 3939, 3940] (def 3899-3941) | new-name hits in src/include inside target def: []
+ALONE object_SubmitAttachedTransform:arg0=obj -> {'17AFC.c': 7} ACCEPT | token scan lines [3949, 3957, 3958, 3961, 3970, 3973, 3975] (def 3949-3976) | new-name hits in src/include inside target def: []
+ALONE gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift:t0=depth_shift -> {'32D04.c': 4} ACCEPT | token scan lines [491, 493, 494, 512] (def 488-515) | new-name hits in src/include inside target def: []
+ALONE math_Rotate2D:a0=x_ptr -> {'32D04.c': 3} ACCEPT | token scan lines [420, 425, 433] (def 420-434) | new-name hits in src/include inside target def: []
+ALONE fighter_ProcessWeaponBodyHits:var_31=inner_hit -> {'17AFC.c': 5} ACCEPT | token scan lines [1798, 2212, 2214, 2217, 2224] (def 1738-2228) | new-name hits in src/include inside target def: []
+SET (all 21): ACCEPT 121 {'17AFC.c': 38, '2B344.c': 4, '31548.c': 26, '32D04.c': 35, '35000.c': 15, '368E4.c': 3}
+ALONE SUM 121
+WIDTH_OVER_80 [('31548.c', 11, 80, 100, 's32 slot_index, s32 a1, s32 *position, s16 *rotation, s16 *arg4, s32 arg5) {'), ('31548.c', 118, 77, 86, 's3->node.work.t[1] = (s3->node.work.t[1] * s4->position_scale) >> 12;'), ('35000.c', 41, 80, 83, '(s16 *)(g_node_frame_animation_context.frame_data + var_5 * 12);'), ('368E4.c', 1193, 80, 81, 'gpu_LoadTim(new_var, (s32)image_x + sx_arg2, (s32)image_y + sx_arg3,')]
