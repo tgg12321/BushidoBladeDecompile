@@ -4,8 +4,8 @@
  * 1. One run: 596CC.o(.data) ends at 0x8009BC1C and 5ED34.o(.data) is empty;
  *    the next .data is 63D2C.c's g_gpu_rotated_sprite_quad_scale. No
  * uninitialized objects.
- * 2. Small objects in .data: D_8009BC38 (u8[6], indexed by
- * g_entry_menu_row_phase_choice_cursors[i], 0..5 like
+ * 2. Small objects in .data: g_entry_menu_row_picks_by_choice_cursor (u8[6],
+ * indexed by g_entry_menu_row_phase_choice_cursors[i], 0..5 like
  * g_entry_menu_row_choice_positions[i]; the 2 zero bytes after it are the word
  * alignment of g_entry_menu_grid_entries, another type with other readers) and
  * g_entry_menu_transition_offsets (s16[2], scroll state menu_UpdateChoiceGrid
@@ -15,9 +15,9 @@
  *    and 5ED34.c (its own .sdata / .sbss, gp accesses), both -G8 code
  *    modules with adjacent .text, so neither owns these objects.
  * Readers: g_entry_menu_handlers
- * (StepSlideBuildFrameRecordAndDispatchStateHandler), D_8009BC38
- * (menu_UpdateRowCursors), g_entry_menu_grid_entries
- * (InitDisplayStateLoadPackAndSetEntryFlags,
+ * (StepSlideBuildFrameRecordAndDispatchStateHandler),
+ * g_entry_menu_row_picks_by_choice_cursor (menu_UpdateRowCursors),
+ * g_entry_menu_grid_entries (InitDisplayStateLoadPackAndSetEntryFlags,
  * gpu_UploadAndDrawSelectedEntryQuads, menu_UpdateEntryGrid,
  * menu_UpdateEntryGridCursors), g_entry_menu_entry_flags (those,
  * DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection,
@@ -53,7 +53,7 @@ void (*g_entry_menu_handlers[7])(Unk8006EACCRec *) = {
     menu_UpdateChoiceGridPage3,
 };
 
-u8 D_8009BC38[6] = {4, 3, 0, 2, 1, 5};
+u8 g_entry_menu_row_picks_by_choice_cursor[6] = {4, 3, 0, 2, 1, 5};
 
 SelectEntryE534 g_entry_menu_grid_entries[5][6] = {
     {{0x00, 0x00},

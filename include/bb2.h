@@ -76,7 +76,7 @@ extern Unk8009BC94Record g_entry_menu_row_choice_positions[][6];
  * update handlers (StepSlideBuildFrameRecordAndDispatchStateHandler),
  * menu_UpdateRowCursors' row values, the entry grid and its per-value flags. */
 extern void (*g_entry_menu_handlers[7])(Unk8006EACCRec *);
-extern u8 D_8009BC38[];
+extern u8 g_entry_menu_row_picks_by_choice_cursor[];
 extern SelectEntryE534 g_entry_menu_grid_entries[][6];
 extern u8 g_entry_menu_entry_flags[];
 /* Table of 4 sprite-sheet headers, 12 bytes each

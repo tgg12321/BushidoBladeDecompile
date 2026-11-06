@@ -289,9 +289,9 @@ glabel menu_UpdateRowCursors
     /* 61BAC 800713AC 90352925 */  addiu      $t1, $t1, %lo(g_entry_menu_row_phase_choice_cursors)
     /* 61BB0 800713B0 21100902 */  addu       $v0, $s0, $t1
     /* 61BB4 800713B4 00004284 */  lh         $v0, 0x0($v0)
-    /* 61BB8 800713B8 0A80013C */  lui        $at, %hi(D_8009BC38)
+    /* 61BB8 800713B8 0A80013C */  lui        $at, %hi(g_entry_menu_row_picks_by_choice_cursor)
     /* 61BBC 800713BC 21082200 */  addu       $at, $at, $v0
-    /* 61BC0 800713C0 38BC2390 */  lbu        $v1, %lo(D_8009BC38)($at)
+    /* 61BC0 800713C0 38BC2390 */  lbu        $v1, %lo(g_entry_menu_row_picks_by_choice_cursor)($at)
     /* 61BC4 800713C4 21101202 */  addu       $v0, $s0, $s2
     /* 61BC8 800713C8 0A80013C */  lui        $at, %hi(g_entry_menu_slot_records + 0x2)
     /* 61BCC 800713CC 21082200 */  addu       $at, $at, $v0

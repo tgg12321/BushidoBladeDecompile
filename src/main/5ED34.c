@@ -1408,7 +1408,8 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
 
                     snd_QueueSound(1, 0x7F, 0x7F);
                     g_entry_menu_slot_records.rec[i].row_pick =
-                        D_8009BC38[g_entry_menu_row_phase_choice_cursors[i]];
+                        g_entry_menu_row_picks_by_choice_cursor
+                            [g_entry_menu_row_phase_choice_cursors[i]];
                     sel = 1;
                     if (g_entry_menu_mode == 2 &&
                         !(g_entry_menu_working_record_ptr->unk14_17) &&
