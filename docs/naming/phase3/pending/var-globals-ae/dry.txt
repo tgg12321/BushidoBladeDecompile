@@ -1,0 +1,41 @@
+==============================================================================
+DATA WAVE — 7 addresses, 8 identifiers remapped
+  0x800a35a4: D_800A35A4 -> g_entry_menu_current_prim_buffer
+  0x800a3520: D_800A3520 -> g_row_menu_current_prim_buffer
+  0x800a3890: D_800A3890, g_memcard_op_completion_code -> g_memcard_info_load_result
+  0x800a36d4: D_800A36D4 -> g_comb_prev_send_payload_check_word
+  0x800a38d0: D_800A38D0 -> g_comb_received_check_mismatch_count
+  0x800a38fc: D_800A38FC -> g_comb_received_button_bit_count
+  0x800a3908: D_800A3908 -> g_comb_sent_button_bit_count
+
+-- file edits (14) --
+  asm/data/93E18.data.s  (3)
+  asm/data/94000.bss.s  (10)
+  asm/funcs/StepSlideBuildFrameRecordAndDispatchStateHandler.s  (1)
+  asm/funcs/comb_Connect.s  (3)
+  asm/funcs/comb_ExchangePad.s  (8)
+  asm/funcs/comb_WaitRead8.s  (2)
+  asm/funcs/gpu_AdvanceBufferCounterAndBuildDrawContext.s  (1)
+  include/bb2.h  (4)
+  src/main/28708.c  (8)
+  src/main/2B344.c  (6)
+  src/main/596CC.c  (2)
+  src/main/5ED34.c  (2)
+  src/main/memcard_info_load.c  (5)
+  symbol_addrs.txt  (12)
+
+-- registry lines --
+  symbol_addrs.txt:344 D_800A36D4 -> g_comb_prev_send_payload_check_word
+  symbol_addrs.txt:820 D_800A36D4 -> g_comb_prev_send_payload_check_word
+  symbol_addrs.txt:1459 D_800A3520 -> g_row_menu_current_prim_buffer
+  symbol_addrs.txt:1465 D_800A35A4 -> g_entry_menu_current_prim_buffer
+  symbol_addrs.txt:1515 D_800A3890 -> g_memcard_info_load_result
+  symbol_addrs.txt:1535 D_800A38D0 -> g_comb_received_check_mismatch_count
+  symbol_addrs.txt:1554 D_800A38FC -> g_comb_received_button_bit_count
+  symbol_addrs.txt:1559 D_800A3908 -> g_comb_sent_button_bit_count
+  symbol_addrs.txt:2068 D_800A3908 -> g_comb_sent_button_bit_count
+  symbol_addrs.txt:2069 D_800A38FC -> g_comb_received_button_bit_count
+  symbol_addrs.txt:2070 D_800A38D0 -> g_comb_received_check_mismatch_count
+  symbol_addrs.txt:2073 g_memcard_op_completion_code -> g_memcard_info_load_result
+
+DRY RUN — nothing written. Re-run with --apply.
