@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-bamboo re-run unchanged with g_fight_config.unk_4 / D_800A36F9 watches (write and read 0x8010277C/4 and 0x80102780/2 = unk_4[0..5]; access 0x800A36F9/1; breakpoint fighter_Init with a0..a3 and ra; 0x8010277C/8 and 0x800A36F9/1 read at every phase start): trace-data-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/data-lead-g_fight_config-unk_4-versus-2p-bamboo-1/spec.json"
+  ],
+  "extends": "versus-2p-bamboo",
+  "refines": "versus-2p-bamboo"
+}
