@@ -1,0 +1,23 @@
+# var-globals-x notes (cites at ffb9b5af45ddc0dad00f7ea3443e725465d31249; worktree ln-naming-a; research tmp/codex/var-globals-x-research.md; every target re-enumerated by the drafter with git grep -w over src include asm symbol_addrs.txt named_syms.txt undefined_syms_auto.txt and compared with the research's site lists (all matched, no row dropped); each proposed name re-checked fresh (git grep -w over src include asm symbol_addrs.txt named_syms.txt undefined_syms_auto.txt docs tools engine: zero identifier hits; g_fight_paired_move_is_common, g_fight_followup_playback_other_fighter_sound_frame and g_hollow_2bit_cell_pattern appear only as dropped-proposal text in earlier pending notes / backlog.tsv); verdicts left empty for the reviewer)
+0x800A37E1: PROPOSED g_fight_out_of_bounds_phase_timer (current D_800A37E1). Confidence medium-high. Fallback keep D_800A37E1.
+0x800A381C: PROPOSED g_fight_paired_move_is_common (current D_800A381C). Confidence medium. Fallback keep D_800A381C.
+0x800A30FC: PROPOSED g_fight_loaded_first_fighter_vab_and_ground_quad_class (current D_800A30FC). Confidence medium-high. Fallback keep D_800A30FC.
+0x800A30FD: PROPOSED g_fight_loaded_second_fighter_vab_and_ground_quad_class (current D_800A30FD). Confidence medium-high. Fallback keep D_800A30FD.
+0x80090740: PROPOSED g_gpu_grid_yaw_cell_masks (current D_80090740). Confidence medium-high. Fallback keep D_80090740.
+0x800927C0: PROPOSED g_gpu_tracked_fighter_view_yaw_cell_masks (current D_800927C0). Confidence medium-high. Fallback keep D_800927C0.
+0x80094840: PROPOSED g_gpu_grid_disc_cell_mask (current D_80094840). Confidence medium. Fallback g_gpu_grid_normal_view_cell_mask.
+0x800A37E8: PROPOSED g_fight_strike_reverse_direction_x (current D_800A37E8). Confidence medium-high. Fallback keep D_800A37E8.
+0x800A37EA: PROPOSED g_fight_strike_reverse_direction_y (current D_800A37EA). Confidence medium-high. Fallback keep D_800A37EA.
+0x800A37EC: PROPOSED g_fight_strike_reverse_direction_z (current D_800A37EC). Confidence medium-high. Fallback keep D_800A37EC.
+0x8008EB08: PROPOSED g_fight_followup_playback_other_fighter_sound_frame (current D_8008EB08). Confidence medium-high. Fallback keep D_8008EB08.
+0x8008EAC0: PROPOSED g_fight_followup_playback_own_character_sound_frames (current D_8008EAC0). Confidence medium. Fallback keep D_8008EAC0.
+0x800949EC: PROPOSED g_hollow_2bit_cell_pattern (current D_800949EC). Confidence medium. Fallback keep D_800949EC.
+0x8008EB28: PROPOSED g_fighter_weapon_entry_ids_by_group_flag (current D_8008EB28). Confidence medium-high. Fallback keep D_8008EB28.
+0x8008EB04: PROPOSED g_fight_followup_playback_own_first_sound_frame (current D_8008EB04). Confidence medium-low. Fallback keep D_8008EB04 (drop with EB06).
+0x8008EB06: PROPOSED g_fight_followup_playback_own_second_sound_frame (current D_8008EB06). Confidence medium-low. Fallback keep D_8008EB06 (drop with EB04).
+0x800A36F9: PROPOSED g_config_menu_m_option (current D_800A36F9). Confidence low-medium. Fallback keep D_800A36F9 (drop with 0x800A31C8).
+0x800A31C8: PROPOSED g_config_menu_m_option_fmt (current D_800A31C8; g_str_m4d_n_800A31C8_fmt). Confidence low-medium. Fallback keep D_800A31C8 (drop with 0x800A36F9).
+0x80099B9C: NO_NAME (current D_80099B9C). No new evidence since var-globals-w; stays neutral.
+0x800A36C6: NO_NAME (current D_800A36C6). No new evidence since var-globals-w; stays neutral.
+DRY RUN: dry.txt is the data_wave dry run over data_manifest.csv (18 rename rows; the two NO_NAME targets are listed above only, as in var-globals-w, since data_wave accepts only rename / reset / retire-alias rows).
+PRE-APPLY (naming-reviewer 2026-11-06): 16/18 PASS. DROPPED 0x8008EB04 / 0x8008EB06 (own_first / own_second): FAIL R4/N1, the ordinal is declaration order and is false against the family (the D_8008EAC0 own-character cue fires at frame 130, before 155 / 159); keep both neutral, return only with a code-derived word separating them (sound offset 0x31 vs 0x36 is the sole difference). R6 must check: the stale 'per-stage' comment at d_7D920.c:614 on D_8008EAC0 is corrected, and the d_7D920.c:10 comment range 'D_8008EB04 ..' still reads correctly.

@@ -1,0 +1,75 @@
+==============================================================================
+DATA WAVE — 18 addresses, 19 identifiers remapped
+  0x800a37e1: D_800A37E1 -> g_fight_out_of_bounds_phase_timer
+  0x800a381c: D_800A381C -> g_fight_paired_move_is_common
+  0x800a30fc: D_800A30FC -> g_fight_loaded_first_fighter_vab_and_ground_quad_class
+  0x800a30fd: D_800A30FD -> g_fight_loaded_second_fighter_vab_and_ground_quad_class
+  0x80090740: D_80090740 -> g_gpu_grid_yaw_cell_masks
+  0x800927c0: D_800927C0 -> g_gpu_tracked_fighter_view_yaw_cell_masks
+  0x80094840: D_80094840 -> g_gpu_grid_disc_cell_mask
+  0x800a37e8: D_800A37E8 -> g_fight_strike_reverse_direction_x
+  0x800a37ea: D_800A37EA -> g_fight_strike_reverse_direction_y
+  0x800a37ec: D_800A37EC -> g_fight_strike_reverse_direction_z
+  0x8008eb08: D_8008EB08 -> g_fight_followup_playback_other_fighter_sound_frame
+  0x8008eac0: D_8008EAC0 -> g_fight_followup_playback_own_character_sound_frames
+  0x800949ec: D_800949EC -> g_hollow_2bit_cell_pattern
+  0x8008eb28: D_8008EB28 -> g_fighter_weapon_entry_ids_by_group_flag
+  0x8008eb04: D_8008EB04 -> g_fight_followup_playback_own_first_sound_frame
+  0x8008eb06: D_8008EB06 -> g_fight_followup_playback_own_second_sound_frame
+  0x800a36f9: D_800A36F9 -> g_config_menu_m_option
+  0x800a31c8: D_800A31C8, g_str_m4d_n_800A31C8_fmt -> g_config_menu_m_option_fmt
+
+-- file edits (26) --
+  asm/data/93E18.data.s  (15)
+  asm/data/94000.bss.s  (2)
+  asm/funcs/fight_AdvanceMatch.s  (2)
+  asm/funcs/fight_ResetGraphAndReloadResourcesOnCachedKeyChange.s  (4)
+  asm/funcs/fight_UpdateModeDisplaysAndMatchProgress.s  (12)
+  asm/funcs/fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams.s  (8)
+  asm/funcs/fight_UpdatePairedMoves.s  (4)
+  asm/funcs/fighter_BuildCpuOrMappedPadState.s  (2)
+  asm/funcs/fighter_CastWeaponSegment.s  (6)
+  asm/funcs/fighter_Init.s  (4)
+  asm/funcs/fighter_ProcessWeaponBodyHits.s  (6)
+  asm/funcs/fighter_ResolveBoneHit.s  (8)
+  asm/funcs/fighter_Update.s  (4)
+  asm/funcs/gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards.s  (8)
+  asm/funcs/menu_PrintEditAndApplyConfigWithPerPadCursors.s  (16)
+  asm/funcs/object_ResolveFighterHits.s  (4)
+  asm/funcs/sys_InitAtBoot.s  (1)
+  include/bb2.h  (11)
+  src/main/17AFC.c  (11)
+  src/main/2B344.c  (11)
+  src/main/6CF8.c  (2)
+  src/main/9F9C.c  (20)
+  src/main/d_7D920.c  (5)
+  src/main/d_80DF8.c  (4)
+  src/main/menu_config.c  (8)
+  symbol_addrs.txt  (23)
+
+-- registry lines --
+  symbol_addrs.txt:250 D_8008EB06 -> g_fight_followup_playback_own_second_sound_frame
+  symbol_addrs.txt:279 D_800A36F9 -> g_config_menu_m_option
+  symbol_addrs.txt:296 D_800A37E1 -> g_fight_out_of_bounds_phase_timer
+  symbol_addrs.txt:297 D_800A37EA -> g_fight_strike_reverse_direction_y
+  symbol_addrs.txt:314 D_800A31C8 -> g_config_menu_m_option_fmt
+  symbol_addrs.txt:374 D_800A37E8 -> g_fight_strike_reverse_direction_x
+  symbol_addrs.txt:375 D_800A37EC -> g_fight_strike_reverse_direction_z
+  symbol_addrs.txt:761 D_8008EB28 -> g_fighter_weapon_entry_ids_by_group_flag
+  symbol_addrs.txt:779 D_80090740 -> g_gpu_grid_yaw_cell_masks
+  symbol_addrs.txt:875 D_800A30FC -> g_fight_loaded_first_fighter_vab_and_ground_quad_class
+  symbol_addrs.txt:903 D_800A30FD -> g_fight_loaded_second_fighter_vab_and_ground_quad_class
+  symbol_addrs.txt:929 D_800A36F9 -> g_config_menu_m_option
+  symbol_addrs.txt:1034 D_800A37E1 -> g_fight_out_of_bounds_phase_timer
+  symbol_addrs.txt:1130 D_8008EAC0 -> g_fight_followup_playback_own_character_sound_frames
+  symbol_addrs.txt:1131 D_8008EB04 -> g_fight_followup_playback_own_first_sound_frame
+  symbol_addrs.txt:1132 D_8008EB06 -> g_fight_followup_playback_own_second_sound_frame
+  symbol_addrs.txt:1133 D_8008EB08 -> g_fight_followup_playback_other_fighter_sound_frame
+  symbol_addrs.txt:1180 D_800A37E8 -> g_fight_strike_reverse_direction_x
+  symbol_addrs.txt:1181 D_800A37EA -> g_fight_strike_reverse_direction_y
+  symbol_addrs.txt:1182 D_800A37EC -> g_fight_strike_reverse_direction_z
+  symbol_addrs.txt:1219 g_str_m4d_n_800A31C8_fmt -> g_config_menu_m_option_fmt
+  symbol_addrs.txt:1494 D_800A381C -> g_fight_paired_move_is_common
+  symbol_addrs.txt:2273 D_800A381C -> g_fight_paired_move_is_common
+
+DRY RUN — nothing written. Re-run with --apply.
