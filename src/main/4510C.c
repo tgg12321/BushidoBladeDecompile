@@ -246,7 +246,7 @@ s32 *node_GetRootNodeMatrixTranslation(void) {
 
 void fighter_ClearCpuTally(s32 fighter_index) {
     s32 tally_index;
-    Unk80101EC8Record *fighter_record = &D_80101EC8[fighter_index];
+    Unk80101EC8Record *fighter_record = &g_fighter_records[fighter_index];
     tally_index = 0;
     do {
         fighter_record->cpu_tracked_move_tallies[tally_index][1] = 0;
@@ -256,7 +256,7 @@ void fighter_ClearCpuTally(s32 fighter_index) {
 
 void fighter_HalveCpuTally(s32 fighter_index) {
     s32 tally_index;
-    Unk80101EC8Record *fighter_record = &D_80101EC8[fighter_index];
+    Unk80101EC8Record *fighter_record = &g_fighter_records[fighter_index];
     tally_index = 0;
     do {
         fighter_record->cpu_tracked_move_tallies[tally_index][1] =
@@ -266,7 +266,7 @@ void fighter_HalveCpuTally(s32 fighter_index) {
 
 void fighter_InitCpuControl(
     s32 fighter_index, u16 *script_table, u16 *other_script_table) {
-    Unk80101EC8Record *p = &D_80101EC8[fighter_index];
+    Unk80101EC8Record *p = &g_fighter_records[fighter_index];
     Unk8009A8C8Entry *src;
     u8 *var_2;
     u8 base;
@@ -628,7 +628,7 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
        SOTN's AddToInventory reuses i for its two loops (Q51) */
     s32 i; /* SOTN: src/dra/5D5BC.c:173 @aa53500 */
 
-    rec = &D_80101EC8[fighter_index];
+    rec = &g_fighter_records[fighter_index];
     rec->cpu_pad_decision_result = 0;
     if (rec->cpu_pad_build_count & 1) {
         var_2 = rec->other;

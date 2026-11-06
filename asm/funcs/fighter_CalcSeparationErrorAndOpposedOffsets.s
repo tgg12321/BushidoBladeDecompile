@@ -15,8 +15,8 @@ glabel fighter_CalcSeparationErrorAndOpposedOffsets
     /* 1C6D4 8002BED4 00000000 */  nop
     /* 1C6D8 8002BED8 18002901 */  mult       $t1, $t1
     /* 1C6DC 8002BEDC F8FFBD27 */  addiu      $sp, $sp, -0x8
-    /* 1C6E0 8002BEE0 10800A3C */  lui        $t2, %hi(D_80101EC8)
-    /* 1C6E4 8002BEE4 C81E4A25 */  addiu      $t2, $t2, %lo(D_80101EC8)
+    /* 1C6E0 8002BEE0 10800A3C */  lui        $t2, %hi(g_fighter_records)
+    /* 1C6E4 8002BEE4 C81E4A25 */  addiu      $t2, $t2, %lo(g_fighter_records)
     /* 1C6E8 8002BEE8 12180000 */  mflo       $v1
     /* 1C6EC 8002BEEC 21208300 */  addu       $a0, $a0, $v1
     /* 1C6F0 8002BEF0 0004822C */  sltiu      $v0, $a0, 0x400

@@ -89,10 +89,10 @@ glabel memcard_BuildFileHeader
     /* 28AAC 800382AC 00004290 */  lbu        $v0, 0x0($v0)
     /* 28AB0 800382B0 1100601A */  blez       $s3, .L800382F8
     /* 28AB4 800382B4 3D0002A2 */   sb        $v0, 0x3D($s0)
-    /* 28AB8 800382B8 34018293 */  lbu        $v0, %gp_rel(D_800A3200)($gp)
+    /* 28AB8 800382B8 34018293 */  lbu        $v0, %gp_rel(g_memcard_title_plus_sign_sjis_lead_byte)($gp)
     /* 28ABC 800382BC 00000000 */  nop
     /* 28AC0 800382C0 400002A2 */  sb         $v0, 0x40($s0)
-    /* 28AC4 800382C4 35018293 */  lbu        $v0, %gp_rel(D_800A3201)($gp)
+    /* 28AC4 800382C4 35018293 */  lbu        $v0, %gp_rel(g_memcard_title_plus_sign_sjis_trail_byte)($gp)
     /* 28AC8 800382C8 40181300 */  sll        $v1, $s3, 1
     /* 28ACC 800382CC 410002A2 */  sb         $v0, 0x41($s0)
     /* 28AD0 800382D0 0980013C */  lui        $at, %hi(g_memcard_title_sjis_digits_0_to_4)
@@ -114,8 +114,8 @@ glabel memcard_BuildFileHeader
     /* 28B08 80038308 FDFFE104 */  bgez       $a3, .L80038300
     /* 28B0C 8003830C FFFF4224 */   addiu     $v0, $v0, -0x1
     /* 28B10 80038310 21380000 */  addu       $a3, $zero, $zero
-    /* 28B14 80038314 0180043C */  lui        $a0, %hi(D_800109EC)
-    /* 28B18 80038318 EC098424 */  addiu      $a0, $a0, %lo(D_800109EC)
+    /* 28B14 80038314 0180043C */  lui        $a0, %hi(g_memcard_icon_clut)
+    /* 28B18 80038318 EC098424 */  addiu      $a0, $a0, %lo(g_memcard_icon_clut)
     /* 28B1C 8003831C 21180002 */  addu       $v1, $s0, $zero
   .L80038320:
     /* 28B20 80038320 00008294 */  lhu        $v0, 0x0($a0)
@@ -126,8 +126,8 @@ glabel memcard_BuildFileHeader
     /* 28B34 80038334 FAFF4014 */  bnez       $v0, .L80038320
     /* 28B38 80038338 02006324 */   addiu     $v1, $v1, 0x2
     /* 28B3C 8003833C 21380000 */  addu       $a3, $zero, $zero
-    /* 28B40 80038340 0180083C */  lui        $t0, %hi(D_80010A2C)
-    /* 28B44 80038344 2C0A0825 */  addiu      $t0, $t0, %lo(D_80010A2C)
+    /* 28B40 80038340 0180083C */  lui        $t0, %hi(g_memcard_icon_image)
+    /* 28B44 80038344 2C0A0825 */  addiu      $t0, $t0, %lo(g_memcard_icon_image)
     /* 28B48 80038348 21200002 */  addu       $a0, $s0, $zero
   .L8003834C:
     /* 28B4C 8003834C 21300000 */  addu       $a2, $zero, $zero

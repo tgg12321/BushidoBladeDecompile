@@ -2,8 +2,8 @@ glabel fighter_Init
     /* 12D80 80022580 B0FFBD27 */  addiu      $sp, $sp, -0x50
     /* 12D84 80022584 4000B2AF */  sw         $s2, 0x40($sp)
     /* 12D88 80022588 21908000 */  addu       $s2, $a0, $zero
-    /* 12D8C 8002258C 1080023C */  lui        $v0, %hi(D_80101EC8)
-    /* 12D90 80022590 C81E4224 */  addiu      $v0, $v0, %lo(D_80101EC8)
+    /* 12D8C 8002258C 1080023C */  lui        $v0, %hi(g_fighter_records)
+    /* 12D90 80022590 C81E4224 */  addiu      $v0, $v0, %lo(g_fighter_records)
     /* 12D94 80022594 21184000 */  addu       $v1, $v0, $zero
     /* 12D98 80022598 4400B3AF */  sw         $s3, 0x44($sp)
     /* 12D9C 8002259C 6000B38F */  lw         $s3, 0x60($sp)

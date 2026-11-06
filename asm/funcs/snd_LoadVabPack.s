@@ -103,8 +103,8 @@ glabel snd_LoadVabPack
     /* 4CC24 8005C424 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 4CC28 8005C428 07000216 */  bne        $s0, $v0, .L8005C448
     /* 4CC2C 8005C42C 80101000 */   sll       $v0, $s0, 2
-    /* 4CC30 8005C430 0180043C */  lui        $a0, %hi(D_800158CC)
-    /* 4CC34 8005C434 CC588424 */  addiu      $a0, $a0, %lo(D_800158CC)
+    /* 4CC30 8005C430 0180043C */  lui        $a0, %hi(g_str_vab_id_error_fmt)
+    /* 4CC34 8005C434 CC588424 */  addiu      $a0, $a0, %lo(g_str_vab_id_error_fmt)
     /* 4CC38 8005C438 82E4010C */  jal        printf
     /* 4CC3C 8005C43C 21284002 */   addu      $a1, $s2, $zero
     /* 4CC40 8005C440 25710108 */  j          .L8005C494

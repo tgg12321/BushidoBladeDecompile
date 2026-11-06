@@ -7,8 +7,8 @@ glabel fighter_StartMoveScript
     /* 122AC 80021AAC 80100200 */  sll        $v0, $v0, 2
     /* 122B0 80021AB0 23104400 */  subu       $v0, $v0, $a0
     /* 122B4 80021AB4 80100200 */  sll        $v0, $v0, 2
-    /* 122B8 80021AB8 1080033C */  lui        $v1, %hi(D_80101EC8)
-    /* 122BC 80021ABC C81E6324 */  addiu      $v1, $v1, %lo(D_80101EC8)
+    /* 122B8 80021AB8 1080033C */  lui        $v1, %hi(g_fighter_records)
+    /* 122BC 80021ABC C81E6324 */  addiu      $v1, $v1, %lo(g_fighter_records)
     /* 122C0 80021AC0 1000B0AF */  sw         $s0, 0x10($sp)
     /* 122C4 80021AC4 21804300 */  addu       $s0, $v0, $v1
     /* 122C8 80021AC8 1400BFAF */  sw         $ra, 0x14($sp)

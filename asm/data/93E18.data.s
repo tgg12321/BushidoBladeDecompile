@@ -669,11 +669,11 @@ dlabel g_memcard_fd
     /* 93F94 800A3794 00000000 */ .word 0x00000000
 enddlabel g_memcard_fd
 
-nonmatching D_800A3798
+nonmatching g_gpu_prim_buffer_span
 
-dlabel D_800A3798
+dlabel g_gpu_prim_buffer_span
     /* 93F98 800A3798 00000000 */ .word 0x00000000
-enddlabel D_800A3798
+enddlabel g_gpu_prim_buffer_span
 
 nonmatching g_replay_event_search_cursor
 

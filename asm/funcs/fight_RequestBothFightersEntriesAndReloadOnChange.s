@@ -15,20 +15,20 @@ glabel fight_RequestBothFightersEntriesAndReloadOnChange
     /* 2B830 8003B030 21800000 */   addu      $s0, $zero, $zero
     /* 2B834 8003B034 0980143C */  lui        $s4, %hi(g_resource_default_pair_selections)
     /* 2B838 8003B038 CCE59426 */  addiu      $s4, $s4, %lo(g_resource_default_pair_selections)
-    /* 2B83C 8003B03C 1080113C */  lui        $s1, %hi(D_80101EC8 + 0x14)
-    /* 2B840 8003B040 DC1E3126 */  addiu      $s1, $s1, %lo(D_80101EC8 + 0x14)
+    /* 2B83C 8003B03C 1080113C */  lui        $s1, %hi(g_fighter_records + 0x14)
+    /* 2B840 8003B040 DC1E3126 */  addiu      $s1, $s1, %lo(g_fighter_records + 0x14)
   .L8003B044:
-    /* 2B844 8003B044 1080013C */  lui        $at, %hi(D_80101EC8 + 0x12)
+    /* 2B844 8003B044 1080013C */  lui        $at, %hi(g_fighter_records + 0x12)
     /* 2B848 8003B048 21083000 */  addu       $at, $at, $s0
-    /* 2B84C 8003B04C DA1E2484 */  lh         $a0, %lo(D_80101EC8 + 0x12)($at)
+    /* 2B84C 8003B04C DA1E2484 */  lh         $a0, %lo(g_fighter_records + 0x12)($at)
     /* 2B850 8003B050 F924010C */  jal        resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* 2B854 8003B054 00000000 */   nop
-    /* 2B858 8003B058 1080013C */  lui        $at, %hi(D_80101EC8 + 0xA)
+    /* 2B858 8003B058 1080013C */  lui        $at, %hi(g_fighter_records + 0xA)
     /* 2B85C 8003B05C 21083000 */  addu       $at, $at, $s0
-    /* 2B860 8003B060 D21E2284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($at)
-    /* 2B864 8003B064 1080013C */  lui        $at, %hi(D_80101EC8 + 0xE)
+    /* 2B860 8003B060 D21E2284 */  lh         $v0, %lo(g_fighter_records + 0xA)($at)
+    /* 2B864 8003B064 1080013C */  lui        $at, %hi(g_fighter_records + 0xE)
     /* 2B868 8003B068 21083000 */  addu       $at, $at, $s0
-    /* 2B86C 8003B06C D61E2384 */  lh         $v1, %lo(D_80101EC8 + 0xE)($at)
+    /* 2B86C 8003B06C D61E2384 */  lh         $v1, %lo(g_fighter_records + 0xE)($at)
     /* 2B870 8003B070 C0100200 */  sll        $v0, $v0, 3
     /* 2B874 8003B074 21105400 */  addu       $v0, $v0, $s4
     /* 2B878 8003B078 21104300 */  addu       $v0, $v0, $v1

@@ -1818,9 +1818,9 @@ dlabel g_cdrom_state
 enddlabel g_cdrom_state
 
 /* 80101EC8 */
-dlabel D_80101EC8
+dlabel g_fighter_records
     .space 0x38
-enddlabel D_80101EC8
+enddlabel g_fighter_records
 
 /* 80101F00 */
 dlabel D_80101F00

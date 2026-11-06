@@ -7,8 +7,8 @@ glabel fighter_TriggerOpponentResponseOnMoveFrame
     /* 18F40 80028740 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* 18F44 80028744 1000B0AF */  sw         $s0, 0x10($sp)
   .L80028748:
-    /* 18F48 80028748 1080023C */  lui        $v0, %hi(D_80101EC8)
-    /* 18F4C 8002874C C81E4224 */  addiu      $v0, $v0, %lo(D_80101EC8)
+    /* 18F48 80028748 1080023C */  lui        $v0, %hi(g_fighter_records)
+    /* 18F4C 8002874C C81E4224 */  addiu      $v0, $v0, %lo(g_fighter_records)
     /* 18F50 80028750 21802202 */  addu       $s0, $s1, $v0
     /* 18F54 80028754 0C000586 */  lh         $a1, 0xC($s0)
     /* 18F58 80028758 1B000224 */  addiu      $v0, $zero, 0x1B

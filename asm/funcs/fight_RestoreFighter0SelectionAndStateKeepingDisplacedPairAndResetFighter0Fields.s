@@ -22,8 +22,8 @@ glabel fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter
     /* 2BB78 8003B378 6A3725A0 */  sb         $a1, %lo(g_fight_bone_group_tim_requests)($at)
     /* 2BB7C 8003B37C 8105010C */  jal        slot_RequestTimGroupsAndMarkReloadOnChange
     /* 2BB80 8003B380 21200000 */   addu      $a0, $zero, $zero
-    /* 2BB84 8003B384 1080043C */  lui        $a0, %hi(D_80101EC8)
-    /* 2BB88 8003B388 C81E8424 */  addiu      $a0, $a0, %lo(D_80101EC8)
+    /* 2BB84 8003B384 1080043C */  lui        $a0, %hi(g_fighter_records)
+    /* 2BB88 8003B388 C81E8424 */  addiu      $a0, $a0, %lo(g_fighter_records)
     /* 2BB8C 8003B38C 5A89000C */  jal        fighter_ResetBoneGroupHitState
     /* 2BB90 8003B390 00000000 */   nop
     /* 2BB94 8003B394 1000BF8F */  lw         $ra, 0x10($sp)

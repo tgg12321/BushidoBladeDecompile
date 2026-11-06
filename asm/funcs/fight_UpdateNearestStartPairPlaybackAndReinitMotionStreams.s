@@ -14,9 +14,9 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2D7B4 8003CFB4 80100200 */  sll        $v0, $v0, 2
     /* 2D7B8 8003CFB8 23104500 */  subu       $v0, $v0, $a1
     /* 2D7BC 8003CFBC 80100200 */  sll        $v0, $v0, 2
-    /* 2D7C0 8003CFC0 1080013C */  lui        $at, %hi(D_80101EC8 + 0xA)
+    /* 2D7C0 8003CFC0 1080013C */  lui        $at, %hi(g_fighter_records + 0xA)
     /* 2D7C4 8003CFC4 21082200 */  addu       $at, $at, $v0
-    /* 2D7C8 8003CFC8 D21E2284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($at)
+    /* 2D7C8 8003CFC8 D21E2284 */  lh         $v0, %lo(g_fighter_records + 0xA)($at)
     /* 2D7CC 8003CFCC 00000000 */  nop
     /* 2D7D0 8003CFD0 40100200 */  sll        $v0, $v0, 1
     /* 2D7D4 8003CFD4 0980013C */  lui        $at, %hi(D_8008EAC0)
@@ -85,8 +85,8 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2D8C0 8003D0C0 9471010C */  jal        snd_QueueSound
     /* 2D8C4 8003D0C4 7F000624 */   addiu     $a2, $zero, 0x7F
   .L8003D0C8:
-    /* 2D8C8 8003D0C8 0980033C */  lui        $v1, %hi(D_8008EB0A)
-    /* 2D8CC 8003D0CC 0AEB6384 */  lh         $v1, %lo(D_8008EB0A)($v1)
+    /* 2D8C8 8003D0C8 0980033C */  lui        $v1, %hi(g_fight_followup_playback_common_sound_frame)
+    /* 2D8CC 8003D0CC 0AEB6384 */  lh         $v1, %lo(g_fight_followup_playback_common_sound_frame)($v1)
     /* 2D8D0 8003D0D0 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
     /* 2D8D4 8003D0D4 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2D8D8 8003D0D8 00000000 */  nop
@@ -96,8 +96,8 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2D8E8 8003D0E8 9471010C */  jal        snd_QueueSound
     /* 2D8EC 8003D0EC 7F000624 */   addiu     $a2, $zero, 0x7F
   .L8003D0F0:
-    /* 2D8F0 8003D0F0 0980033C */  lui        $v1, %hi(D_8008EB0C)
-    /* 2D8F4 8003D0F4 0CEB6384 */  lh         $v1, %lo(D_8008EB0C)($v1)
+    /* 2D8F0 8003D0F0 0980033C */  lui        $v1, %hi(g_fight_followup_playback_red_light_effect_frame)
+    /* 2D8F4 8003D0F4 0CEB6384 */  lh         $v1, %lo(g_fight_followup_playback_red_light_effect_frame)($v1)
     /* 2D8F8 8003D0F8 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
     /* 2D8FC 8003D0FC B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2D900 8003D100 00000000 */  nop
@@ -111,12 +111,12 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2D920 8003D120 0A80053C */  lui        $a1, %hi(D_800A312C)
     /* 2D924 8003D124 2C31A524 */  addiu      $a1, $a1, %lo(D_800A312C)
     /* 2D928 8003D128 2000A28F */  lw         $v0, 0x20($sp)
-    /* 2D92C 8003D12C 0980033C */  lui        $v1, %hi(D_8008EB10)
-    /* 2D930 8003D130 10EB638C */  lw         $v1, %lo(D_8008EB10)($v1)
-    /* 2D934 8003D134 0980063C */  lui        $a2, %hi(D_8008EB14)
-    /* 2D938 8003D138 14EBC68C */  lw         $a2, %lo(D_8008EB14)($a2)
-    /* 2D93C 8003D13C 0980073C */  lui        $a3, %hi(D_8008EB18)
-    /* 2D940 8003D140 18EBE78C */  lw         $a3, %lo(D_8008EB18)($a3)
+    /* 2D92C 8003D12C 0980033C */  lui        $v1, %hi(g_fight_followup_playback_red_light_effect_offset_x)
+    /* 2D930 8003D130 10EB638C */  lw         $v1, %lo(g_fight_followup_playback_red_light_effect_offset_x)($v1)
+    /* 2D934 8003D134 0980063C */  lui        $a2, %hi(g_fight_followup_playback_red_light_effect_offset_y)
+    /* 2D938 8003D138 14EBC68C */  lw         $a2, %lo(g_fight_followup_playback_red_light_effect_offset_y)($a2)
+    /* 2D93C 8003D13C 0980073C */  lui        $a3, %hi(g_fight_followup_playback_red_light_effect_offset_z)
+    /* 2D940 8003D140 18EBE78C */  lw         $a3, %lo(g_fight_followup_playback_red_light_effect_offset_z)($a3)
     /* 2D944 8003D144 21104300 */  addu       $v0, $v0, $v1
     /* 2D948 8003D148 2000A2AF */  sw         $v0, 0x20($sp)
     /* 2D94C 8003D14C 2400A28F */  lw         $v0, 0x24($sp)

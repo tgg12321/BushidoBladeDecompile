@@ -71,8 +71,8 @@ glabel fighter_CastWeaponSegment
     /* 1AD68 8002A568 23284300 */  subu       $a1, $v0, $v1
     /* 1AD6C 8002A56C 0700A104 */  bgez       $a1, .L8002A58C
     /* 1AD70 8002A570 0004A22C */   sltiu     $v0, $a1, 0x400
-    /* 1AD74 8002A574 0180043C */  lui        $a0, %hi(D_80010478)
-    /* 1AD78 8002A578 78048424 */  addiu      $a0, $a0, %lo(D_80010478)
+    /* 1AD74 8002A574 0180043C */  lui        $a0, %hi(g_str_illegal_gun_motion_fmt)
+    /* 1AD78 8002A578 78048424 */  addiu      $a0, $a0, %lo(g_str_illegal_gun_motion_fmt)
     /* 1AD7C 8002A57C 82E4010C */  jal        printf
     /* 1AD80 8002A580 00000000 */   nop
     /* 1AD84 8002A584 B5AA0008 */  j          .L8002AAD4

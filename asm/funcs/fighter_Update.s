@@ -9,8 +9,8 @@ glabel fighter_Update
     /* 14724 80023F24 80100200 */  sll        $v0, $v0, 2
     /* 14728 80023F28 23105300 */  subu       $v0, $v0, $s3
     /* 1472C 80023F2C 80100200 */  sll        $v0, $v0, 2
-    /* 14730 80023F30 1080033C */  lui        $v1, %hi(D_80101EC8)
-    /* 14734 80023F34 C81E6324 */  addiu      $v1, $v1, %lo(D_80101EC8)
+    /* 14730 80023F30 1080033C */  lui        $v1, %hi(g_fighter_records)
+    /* 14734 80023F34 C81E6324 */  addiu      $v1, $v1, %lo(g_fighter_records)
     /* 14738 80023F38 3C02B1AF */  sw         $s1, 0x23C($sp)
     /* 1473C 80023F3C 21884300 */  addu       $s1, $v0, $v1
     /* 14740 80023F40 4802BFAF */  sw         $ra, 0x248($sp)
@@ -716,9 +716,9 @@ glabel fighter_Update
     /* 1513C 8002493C 0980013C */  lui        $at, %hi(Judge)
     /* 15140 80024940 21082200 */  addu       $at, $at, $v0
     /* 15144 80024944 FC732484 */  lh         $a0, %lo(Judge)($at)
-    /* 15148 80024948 0980013C */  lui        $at, %hi(D_8008DA94)
+    /* 15148 80024948 0980013C */  lui        $at, %hi(g_fighter_forward_jump_speeds)
     /* 1514C 8002494C 21082300 */  addu       $at, $at, $v1
-    /* 15150 80024950 94DA2284 */  lh         $v0, %lo(D_8008DA94)($at)
+    /* 15150 80024950 94DA2284 */  lh         $v0, %lo(g_fighter_forward_jump_speeds)($at)
     /* 15154 80024954 00000000 */  nop
     /* 15158 80024958 18008200 */  mult       $a0, $v0
     /* 1515C 8002495C CA012286 */  lh         $v0, 0x1CA($s1)
@@ -735,9 +735,9 @@ glabel fighter_Update
     /* 15188 80024988 21082200 */  addu       $at, $at, $v0
     /* 1518C 8002498C FC732484 */  lh         $a0, %lo(Judge)($at)
     /* 15190 80024990 40180300 */  sll        $v1, $v1, 1
-    /* 15194 80024994 0980013C */  lui        $at, %hi(D_8008DA94)
+    /* 15194 80024994 0980013C */  lui        $at, %hi(g_fighter_forward_jump_speeds)
     /* 15198 80024998 21082300 */  addu       $at, $at, $v1
-    /* 1519C 8002499C 94DA2284 */  lh         $v0, %lo(D_8008DA94)($at)
+    /* 1519C 8002499C 94DA2284 */  lh         $v0, %lo(g_fighter_forward_jump_speeds)($at)
     /* 151A0 800249A0 00000000 */  nop
     /* 151A4 800249A4 18008200 */  mult       $a0, $v0
     /* 151A8 800249A8 0A002386 */  lh         $v1, 0xA($s1)
@@ -748,9 +748,9 @@ glabel fighter_Update
     /* 151BC 800249BC 03230A00 */  sra        $a0, $t2, 12
     /* 151C0 800249C0 21104400 */  addu       $v0, $v0, $a0
     /* 151C4 800249C4 0C0122AE */  sw         $v0, 0x10C($s1)
-    /* 151C8 800249C8 0980013C */  lui        $at, %hi(D_8008DA50)
+    /* 151C8 800249C8 0980013C */  lui        $at, %hi(g_fighter_forward_jump_vertical_velocities)
     /* 151CC 800249CC 21082300 */  addu       $at, $at, $v1
-    /* 151D0 800249D0 50DA2484 */  lh         $a0, %lo(D_8008DA50)($at)
+    /* 151D0 800249D0 50DA2484 */  lh         $a0, %lo(g_fighter_forward_jump_vertical_velocities)($at)
     /* 151D4 800249D4 0801228E */  lw         $v0, 0x108($s1)
     /* 151D8 800249D8 BC00238E */  lw         $v1, 0xBC($s1)
     /* 151DC 800249DC 21104400 */  addu       $v0, $v0, $a0
@@ -772,9 +772,9 @@ glabel fighter_Update
     /* 15218 80024A18 0A002286 */  lh         $v0, 0xA($s1)
     /* 1521C 80024A1C BC00238E */  lw         $v1, 0xBC($s1)
     /* 15220 80024A20 40100200 */  sll        $v0, $v0, 1
-    /* 15224 80024A24 0980013C */  lui        $at, %hi(D_8008DAD8)
+    /* 15224 80024A24 0980013C */  lui        $at, %hi(g_fighter_vertical_jump_velocities)
     /* 15228 80024A28 21082200 */  addu       $at, $at, $v0
-    /* 1522C 80024A2C D8DA2484 */  lh         $a0, %lo(D_8008DAD8)($at)
+    /* 1522C 80024A2C D8DA2484 */  lh         $a0, %lo(g_fighter_vertical_jump_velocities)($at)
     /* 15230 80024A30 0801228E */  lw         $v0, 0x108($s1)
     /* 15234 80024A34 740023AE */  sw         $v1, 0x74($s1)
     /* 15238 80024A38 21104400 */  addu       $v0, $v0, $a0
@@ -2922,8 +2922,8 @@ glabel fighter_Update
     /* 1717C 8002697C 00000000 */  nop
     /* 17180 80026980 10006014 */  bnez       $v1, .L800269C4
     /* 17184 80026984 21804000 */   addu      $s0, $v0, $zero
-    /* 17188 80026988 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
-    /* 1718C 8002698C D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
+    /* 17188 80026988 1080023C */  lui        $v0, %hi(g_fighter_records + 0xA)
+    /* 1718C 8002698C D21E4284 */  lh         $v0, %lo(g_fighter_records + 0xA)($v0)
     /* 17190 80026990 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 17194 80026994 21082200 */  addu       $at, $at, $v0
     /* 17198 80026998 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)

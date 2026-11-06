@@ -6,8 +6,8 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 175B4 80026DB4 3400B1AF */  sw         $s1, 0x34($sp)
     /* 175B8 80026DB8 A8AF000C */  jal        fighter_CalcSeparationErrorAndOpposedOffsets
     /* 175BC 80026DBC 3000B0AF */   sw        $s0, 0x30($sp)
-    /* 175C0 80026DC0 1080103C */  lui        $s0, %hi(D_80101EC8)
-    /* 175C4 80026DC4 C81E1026 */  addiu      $s0, $s0, %lo(D_80101EC8)
+    /* 175C0 80026DC0 1080103C */  lui        $s0, %hi(g_fighter_records)
+    /* 175C4 80026DC4 C81E1026 */  addiu      $s0, $s0, %lo(g_fighter_records)
     /* 175C8 80026DC8 FFFF0324 */  addiu      $v1, $zero, -0x1
     /* 175CC 80026DCC 21984000 */  addu       $s3, $v0, $zero
     /* 175D0 80026DD0 0A80013C */  lui        $at, %hi(g_fight_weapon_contact_result)
@@ -17,8 +17,8 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 175E0 80026DE0 1C000224 */  addiu      $v0, $zero, 0x1C
     /* 175E4 80026DE4 1A006214 */  bne        $v1, $v0, .L80026E50
     /* 175E8 80026DE8 0F000224 */   addiu     $v0, $zero, 0xF
-    /* 175EC 80026DEC 1080033C */  lui        $v1, %hi(D_80101EC8 + 0x40)
-    /* 175F0 80026DF0 081F6384 */  lh         $v1, %lo(D_80101EC8 + 0x40)($v1)
+    /* 175EC 80026DEC 1080033C */  lui        $v1, %hi(g_fighter_records + 0x40)
+    /* 175F0 80026DF0 081F6384 */  lh         $v1, %lo(g_fighter_records + 0x40)($v1)
     /* 175F4 80026DF4 04000224 */  addiu      $v0, $zero, 0x4
     /* 175F8 80026DF8 CC006214 */  bne        $v1, $v0, .L8002712C
     /* 175FC 80026DFC FFFF0224 */   addiu     $v0, $zero, -0x1
@@ -130,8 +130,8 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 1777C 80026F7C 0200E228 */  slti       $v0, $a3, 0x2
     /* 17780 80026F80 B8FF4014 */  bnez       $v0, .L80026E64
     /* 17784 80026F84 4C04C624 */   addiu     $a2, $a2, 0x44C
-    /* 17788 80026F88 1080103C */  lui        $s0, %hi(D_80101EC8)
-    /* 1778C 80026F8C C81E1026 */  addiu      $s0, $s0, %lo(D_80101EC8)
+    /* 17788 80026F88 1080103C */  lui        $s0, %hi(g_fighter_records)
+    /* 1778C 80026F8C C81E1026 */  addiu      $s0, $s0, %lo(g_fighter_records)
     /* 17790 80026F90 0A80023C */  lui        $v0, %hi(g_fight_paired_input_tally_update_count)
     /* 17794 80026F94 9C384294 */  lhu        $v0, %lo(g_fight_paired_input_tally_update_count)($v0)
     /* 17798 80026F98 00000000 */  nop
@@ -143,10 +143,10 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 177B0 80026FB0 2B004228 */  slti       $v0, $v0, 0x2B
     /* 177B4 80026FB4 31004014 */  bnez       $v0, .L8002707C
     /* 177B8 80026FB8 4C041126 */   addiu     $s1, $s0, 0x44C
-    /* 177BC 80026FBC 1080043C */  lui        $a0, %hi(D_80101EC8 + 0x28C)
-    /* 177C0 80026FC0 5421848C */  lw         $a0, %lo(D_80101EC8 + 0x28C)($a0)
-    /* 177C4 80026FC4 1080033C */  lui        $v1, %hi(D_80101EC8 + 0x6D8)
-    /* 177C8 80026FC8 A025638C */  lw         $v1, %lo(D_80101EC8 + 0x6D8)($v1)
+    /* 177BC 80026FBC 1080043C */  lui        $a0, %hi(g_fighter_records + 0x28C)
+    /* 177C0 80026FC0 5421848C */  lw         $a0, %lo(g_fighter_records + 0x28C)($a0)
+    /* 177C4 80026FC4 1080033C */  lui        $v1, %hi(g_fighter_records + 0x6D8)
+    /* 177C8 80026FC8 A025638C */  lw         $v1, %lo(g_fighter_records + 0x6D8)($v1)
     /* 177CC 80026FCC 00000000 */  nop
     /* 177D0 80026FD0 2A106400 */  slt        $v0, $v1, $a0
     /* 177D4 80026FD4 11004010 */  beqz       $v0, .L8002701C
@@ -246,8 +246,8 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
   .L80027120:
     /* 17920 80027120 860222A6 */  sh         $v0, 0x286($s1)
   .L80027124:
-    /* 17924 80027124 1080103C */  lui        $s0, %hi(D_80101EC8)
-    /* 17928 80027128 C81E1026 */  addiu      $s0, $s0, %lo(D_80101EC8)
+    /* 17924 80027124 1080103C */  lui        $s0, %hi(g_fighter_records)
+    /* 17928 80027128 C81E1026 */  addiu      $s0, $s0, %lo(g_fighter_records)
   .L8002712C:
     /* 1792C 8002712C 0A80023C */  lui        $v0, %hi(g_fight_midpoint_effect_delay)
     /* 17930 80027130 10394284 */  lh         $v0, %lo(g_fight_midpoint_effect_delay)($v0)

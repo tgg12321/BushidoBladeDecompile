@@ -7,7 +7,7 @@ glabel memcard_StepRequest
     /* 28BB8 800383B8 2400B1AF */  sw         $s1, 0x24($sp)
     /* 28BBC 800383BC 34007214 */  bne        $v1, $s2, .L80038490
     /* 28BC0 800383C0 2000B0AF */   sw        $s0, 0x20($sp)
-    /* 28BC4 800383C4 2C01838F */  lw         $v1, %gp_rel(D_800A31F8)($gp)
+    /* 28BC4 800383C4 2C01838F */  lw         $v1, %gp_rel(g_memcard_polled_info_load_result)($gp)
     /* 28BC8 800383C8 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 28BCC 800383CC 25006210 */  beq        $v1, $v0, .L80038464
     /* 28BD0 800383D0 00000000 */   nop

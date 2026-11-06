@@ -25,7 +25,7 @@ extern s32 g_comb_event_error;
 extern s32 g_comb_event_ioer;
 extern u8 g_comb_events_enabled;
 
-extern s32 D_800A31F8;
+extern s32 g_memcard_polled_info_load_result;
 extern u8 g_replay_write_frame;
 extern Rec1C (*g_replay_fighter_frames)[2];
 extern u8 g_replay_ring_wrapped;
@@ -43,7 +43,7 @@ extern s32 g_memcard_save_file_name;
 
 s32 memcard_Format(s32 port, s32 card) {
     char buf[8];
-    sprintf(buf, (char *)D_800109C8, port, card);
+    sprintf(buf, (char *)g_str_memcard_device_fmt, port, card);
     return format(buf);
 }
 
@@ -147,19 +147,20 @@ void memcard_ClearBuffer(void) {
 }
 
 extern u8 g_memcard_save_title[];
-/* memcard_BuildFileHeader copies D_800109EC's first 16 halfwords to +0x60 of
- * its buffer and D_80010A2C's 128 bytes to +0x80: the memory-card file header's
- * icon CLUT (16 RGB555 colours; the 16 halfwords after them are zero) and its
- * 16x16 4-bit icon image. D_80010AAC is the save-file id
- * (g_memcard_save_file_name holds its address), then 3 bytes of rodata padding.
+/* memcard_BuildFileHeader copies g_memcard_icon_clut's first 16 halfwords to
+ * +0x60 of its buffer and g_memcard_icon_image's 128 bytes to +0x80: the
+ * memory-card file header's icon CLUT (16 RGB555 colours; the 16 halfwords
+ * after them are zero) and its 16x16 4-bit icon image.
+ * g_str_memcard_save_file_name is the save-file id (g_memcard_save_file_name
+ * holds its address), then 3 bytes of rodata padding.
  */
-const u16 D_800109EC[32] = {
+const u16 g_memcard_icon_clut[32] = {
     0x7FFF, 0x77DF, 0x6B9F, 0x635E, 0x5B1E, 0x56FD, 0x4ABD, 0x427C,
     0x323C, 0x2DFB, 0x21BB, 0x199B, 0x115A, 0x0D3A, 0x051A, 0x8000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 };
-const u8 D_80010A2C[128] = {
+const u8 g_memcard_icon_image[128] = {
     0x00, 0x00, 0x00, 0x00, 0x10, 0x51, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00,
     0xA3, 0xC5, 0x3E, 0x00, 0x00, 0x10, 0x53, 0x38, 0xEA, 0x58, 0x29, 0x00,
     0x00, 0x84, 0xBA, 0x7D, 0xDC, 0x8D, 0x03, 0x00, 0x00, 0x10, 0x41, 0xB7,
@@ -172,9 +173,9 @@ const u8 D_80010A2C[128] = {
     0x20, 0xEA, 0x7E, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0xB2, 0x8E, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00,
 };
-const char D_80010AAC[] = "BASLUS-00663BUSHIDO2";
-extern u8 D_800A3200;
-extern u8 D_800A3201;
+const char g_str_memcard_save_file_name[] = "BASLUS-00663BUSHIDO2";
+extern u8 g_memcard_title_plus_sign_sjis_lead_byte;
+extern u8 g_memcard_title_plus_sign_sjis_trail_byte;
 
 void memcard_BuildFileHeader(u8 *out) {
     s32 first_class_count, second_class_count, third_class_count;
@@ -228,8 +229,8 @@ void memcard_BuildFileHeader(u8 *out) {
     out[0x3D] = g_memcard_title_sjis_digits[second_class_count * 2 + 1];
 
     if (third_class_count > 0) {
-        out[0x40] = D_800A3200;
-        out[0x41] = D_800A3201;
+        out[0x40] = g_memcard_title_plus_sign_sjis_lead_byte;
+        out[0x41] = g_memcard_title_plus_sign_sjis_trail_byte;
         out[0x42] =
             g_memcard_title_sjis_digits_0_to_4[third_class_count * 2 + 0];
         out[0x43] =
@@ -248,7 +249,7 @@ void memcard_BuildFileHeader(u8 *out) {
 
     i = 0;
     {
-        const u16 *src = D_800109EC;
+        const u16 *src = g_memcard_icon_clut;
         u8 *dst = out;
         do {
             *(u16 *)(dst + 0x60) = *src;
@@ -260,7 +261,7 @@ void memcard_BuildFileHeader(u8 *out) {
 
     i = 0;
     {
-        const u8 *src_icon_cursor = D_80010A2C;
+        const u8 *src_icon_cursor = g_memcard_icon_image;
         u8 *icon_out_cursor = out;
         do {
             s32 j = 0;
@@ -290,7 +291,7 @@ void memcard_StepRequest(void) {
     if (var_v1 != 1)
         goto state_other;
 
-    var_v1 = D_800A31F8;
+    var_v1 = g_memcard_polled_info_load_result;
     if (var_v1 == -1)
         goto sub_inc;
 
@@ -461,7 +462,7 @@ fail_store:
 
 s32 memcard_Update(void) {
     if ((u32)g_memcard_request_state < 2) {
-        D_800A31F8 = memcard_StepCardInfoAndLoad(0, 0);
+        g_memcard_polled_info_load_result = memcard_StepCardInfoAndLoad(0, 0);
     }
     memcard_StepRequest();
     memcard_PollFileCompletion();
@@ -1094,7 +1095,7 @@ sel_dispatch:
         goto end;
     }
 d_check:
-    if (D_800A31F8 == -1) {
+    if (g_memcard_polled_info_load_result == -1) {
         D_800A3354 = 1;
         g_memcard_message_countdown = 0x5A;
     }
@@ -1423,7 +1424,7 @@ void replay_PlayFrame(void) {
         u16 *entry;
 
         fighter_frame = &g_replay_fighter_frames[frame_index][i];
-        fighter_record = &D_80101EC8[i];
+        fighter_record = &g_fighter_records[i];
         motion_DecodeFrame(
             (fighter_frame->replay_blend_src_frame_code >> 14) & 3,
             fighter_frame->replay_blend_src_frame_code & 0x3FFF, &work[0],
@@ -1550,7 +1551,7 @@ void replay_PlayFrame(void) {
         (g_pad_state.pressed & 0x400040)) {
         switch (g_fight_mode_selector) {
         case 0:
-            if (D_80101EC8[0].is_defeated == 0) {
+            if (g_fighter_records[0].is_defeated == 0) {
                 s32 var_19 = g_fight_saved_first_fighter_selection != 0xFF;
                 if (D_800A3712 != 0) {
                     D_800A38D4 = 2;
@@ -1588,22 +1589,22 @@ void replay_PlayFrame(void) {
             fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields();
             fight_FillMissingConfigInitFighterAndLoadObject(0);
             fight_RequestBothFightersEntriesAndReloadOnChange();
-            if (D_800A3712 != 0 && D_80101EC8[1].is_defeated != 0) {
+            if (D_800A3712 != 0 && g_fighter_records[1].is_defeated != 0) {
                 fight_QueueSubstitutionCommandDescriptorPlayback(6);
             } else {
                 fight_QueueSubstitutionCommandDescriptorPlayback(4);
             }
             return;
         case 3:
-            if (D_80101EC8[0].is_defeated == 0) {
+            if (g_fighter_records[0].is_defeated == 0) {
                 g_main_loop_handler_index = 0x1E;
             } else {
                 g_main_loop_handler_index = 0xC;
             }
             break;
         default:
-            if (D_80101EC8[0].is_defeated == 0 ||
-                D_80101EC8[1].is_defeated == 0) {
+            if (g_fighter_records[0].is_defeated == 0 ||
+                g_fighter_records[1].is_defeated == 0) {
                 g_main_loop_handler_index = 0x10;
             } else {
                 g_main_loop_handler_index = 0xC;
@@ -2005,14 +2006,14 @@ u8 g_memcard_title_count_class_by_unlock_bit[28] = {
 };
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
-s32 g_memcard_save_file_name = (s32)D_80010AAC;
+s32 g_memcard_save_file_name = (s32)g_str_memcard_save_file_name;
 s32 g_memcard_request_state = 0;
-s32 D_800A31F8 = 0;
+s32 g_memcard_polled_info_load_result = 0;
 u8 g_memcard_validation_load_active = 0;
 u8 D_800A31FD = 0;  /* not named by any code or data: size from the gap */
 s16 D_800A31FE = 0; /* not named by any code or data: size from the gap */
-u8 D_800A3200 = 0x81;
-u8 D_800A3201 = 0x7b;
+u8 g_memcard_title_plus_sign_sjis_lead_byte = 0x81;
+u8 g_memcard_title_plus_sign_sjis_trail_byte = 0x7b;
 u8 D_800A3202 = 0; /* not named by any code or data: size from the gap */
 u8 g_memcard_load_request_armed = 1;
 u8 g_menu_prompt_rearm = 1;

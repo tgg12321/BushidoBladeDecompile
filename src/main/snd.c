@@ -3,7 +3,8 @@
  * 0x8005B43C (ROM 0x4BC3C). Start boundary: SEAM (owner ruling 2026-10-17;
  * Codex seam #108): no direct call crosses the cut; the sound statics
  * D_800A3400..g_vab_pack_base_sbaddr follow 43500.c's in .sbss, and the strings
- * D_800158B4 / D_800158CC follow 4510C.c's jump tables in .rodata. */
+ * g_str_common_vab_start_fmt / g_str_vab_id_error_fmt follow 4510C.c's jump
+ * tables in .rodata. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "bb2.h"
@@ -146,7 +147,7 @@ void snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb(void) {
     snd_ResetVoicesAndQueue();
 }
 
-const char D_800158B4[24] = "common_vab start:%08x\n";
+const char g_str_common_vab_start_fmt[24] = "common_vab start:%08x\n";
 
 s32 snd_LoadCommonVab(s32 load_addr) {
     s32 file_index;
@@ -154,7 +155,7 @@ s32 snd_LoadCommonVab(s32 load_addr) {
     s32 body_offset;
 
     func_800858D0(0);
-    printf(&D_800158B4, load_addr);
+    printf(&g_str_common_vab_start_fmt, load_addr);
     cdrom_WaitIdle();
     file_index = cdrom_GetFileIndex(2, 1);
     cdrom_StartRead(file_index, load_addr);
@@ -447,7 +448,7 @@ s32 snd_CompactVabBodies(s16 arg0, s32 base) {
 
 extern s32 snd_VabOpen(Unk8005C2A8Pack *, s16);
 
-const char D_800158CC[20] = "vab id:%d mistake\n";
+const char g_str_vab_id_error_fmt[20] = "vab id:%d mistake\n";
 
 s32 snd_LoadVabPack(
     Unk8005C2A8Pack *vab_pack, s16 vab_id, s32 ram_buffer_addr) {
@@ -487,7 +488,7 @@ s32 snd_LoadVabPack(
         g_vab_vb_sbaddr[vab_id] = SsUtGetVBaddrInSB(vab_id);
         return vab_pack->vab_body - (s32)vab_pack;
     }
-    printf(D_800158CC, vab_id);
+    printf(g_str_vab_id_error_fmt, vab_id);
     return 0;
 }
 

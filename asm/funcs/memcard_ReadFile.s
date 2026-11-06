@@ -3,8 +3,8 @@ glabel memcard_ReadFile
     /* 28394 80037B94 21108000 */  addu       $v0, $a0, $zero
     /* 28398 80037B98 2118A000 */  addu       $v1, $a1, $zero
     /* 2839C 80037B9C 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 283A0 80037BA0 0180053C */  lui        $a1, %hi(D_800109BC)
-    /* 283A4 80037BA4 BC09A524 */  addiu      $a1, $a1, %lo(D_800109BC)
+    /* 283A0 80037BA0 0180053C */  lui        $a1, %hi(g_str_memcard_file_path_fmt)
+    /* 283A4 80037BA4 BC09A524 */  addiu      $a1, $a1, %lo(g_str_memcard_file_path_fmt)
     /* 283A8 80037BA8 1000A6AF */  sw         $a2, 0x10($sp)
     /* 283AC 80037BAC 21304000 */  addu       $a2, $v0, $zero
     /* 283B0 80037BB0 3C00B1AF */  sw         $s1, 0x3C($sp)

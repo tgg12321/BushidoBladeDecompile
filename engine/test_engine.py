@@ -5307,7 +5307,7 @@ def test_queue_non_function_labels() -> None:
     labels = {
         "main/3AB48": ("D_800521AC", "D_800521FC", "D_80052344",
                         "D_80052394"),
-        "main/43500": ("D_800545F8", "D_800545FC", "D_80054600"),
+        "main/43500": ("g_color_immediate_patch_first_ori_template", "g_color_immediate_patch_second_lui_template", "g_color_immediate_patch_second_ori_template"),
         "main/d_7D870": ("g_data_start", "g_main_loop_handlers"),
     }
     texts = {stem: Path(f"src/{stem}.c").read_text(encoding="utf-8")

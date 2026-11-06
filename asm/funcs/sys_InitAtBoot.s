@@ -19,7 +19,7 @@ glabel sys_InitAtBoot
     /* 75BC 80016DBC A40684AF */  sw         $a0, %gp_rel(D_800A3770)($gp)
     /* 75C0 80016DC0 0A80013C */  lui        $at, %hi(D_800A3770 + 0x4)
     /* 75C4 80016DC4 743723AC */  sw         $v1, %lo(D_800A3770 + 0x4)($at)
-    /* 75C8 80016DC8 CC0682AF */  sw         $v0, %gp_rel(D_800A3798)($gp)
+    /* 75C8 80016DC8 CC0682AF */  sw         $v0, %gp_rel(g_gpu_prim_buffer_span)($gp)
     /* 75CC 80016DCC 4A0680A3 */  sb         $zero, %gp_rel(g_eff_initialized)($gp)
     /* 75D0 80016DD0 3A0880A3 */  sb         $zero, %gp_rel(g_snd_initialized)($gp)
     /* 75D4 80016DD4 3E5B000C */  jal        snd_InitAndLoadCommonVab

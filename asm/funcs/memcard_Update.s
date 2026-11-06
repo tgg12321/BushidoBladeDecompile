@@ -7,7 +7,7 @@ glabel memcard_Update
     /* 28F48 80038748 21200000 */  addu       $a0, $zero, $zero
     /* 28F4C 8003874C 45DF000C */  jal        memcard_StepCardInfoAndLoad
     /* 28F50 80038750 21280000 */   addu      $a1, $zero, $zero
-    /* 28F54 80038754 2C0182AF */  sw         $v0, %gp_rel(D_800A31F8)($gp)
+    /* 28F54 80038754 2C0182AF */  sw         $v0, %gp_rel(g_memcard_polled_info_load_result)($gp)
   .L80038758:
     /* 28F58 80038758 E9E0000C */  jal        memcard_StepRequest
     /* 28F5C 8003875C 00000000 */   nop

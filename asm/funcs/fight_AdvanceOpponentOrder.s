@@ -14,8 +14,8 @@ glabel fight_AdvanceOpponentOrder
     /* 243F0 80033BF0 A83620A0 */  sb         $zero, %lo(g_gpu_jitter_burst_enabled)($at)
     /* 243F4 80033BF4 11006214 */  bne        $v1, $v0, .L80033C3C
     /* 243F8 80033BF8 20000224 */   addiu     $v0, $zero, 0x20
-    /* 243FC 80033BFC 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
-    /* 24400 80033C00 D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
+    /* 243FC 80033BFC 1080023C */  lui        $v0, %hi(g_fighter_records + 0xA)
+    /* 24400 80033C00 D21E4284 */  lh         $v0, %lo(g_fighter_records + 0xA)($v0)
     /* 24404 80033C04 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 24408 80033C08 21082200 */  addu       $at, $at, $v0
     /* 2440C 80033C0C ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)

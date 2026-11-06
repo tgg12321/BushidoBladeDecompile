@@ -62,8 +62,8 @@ glabel eff_UpdateCommands
     /* 51944 80061144 C201A228 */  slti       $v0, $a1, 0x1C2
     /* 51948 80061148 05004014 */  bnez       $v0, .L80061160
     /* 5194C 8006114C 00000000 */   nop
-    /* 51950 80061150 0180043C */  lui        $a0, %hi(D_800158E0)
-    /* 51954 80061154 E0588424 */  addiu      $a0, $a0, %lo(D_800158E0)
+    /* 51950 80061150 0180043C */  lui        $a0, %hi(g_str_eff_prim_overflow_fmt)
+    /* 51954 80061154 E0588424 */  addiu      $a0, $a0, %lo(g_str_eff_prim_overflow_fmt)
     /* 51958 80061158 82E4010C */  jal        printf
     /* 5195C 8006115C 3EFEA524 */   addiu     $a1, $a1, -0x1C2
   .L80061160:

@@ -10,7 +10,7 @@
 
 /* This file's .rodata: the memory-card path formats. */
 const char g_str_memcard_fmt[12] = "bu%1d%1d:*";
-const char D_800109BC[12] = "bu%1d%1d:%s";
+const char g_str_memcard_file_path_fmt[12] = "bu%1d%1d:%s";
 
 extern s32 g_memcard_sw_event_ioe;
 extern s32 g_memcard_sw_event_err;
@@ -244,7 +244,8 @@ s32 memcard_ReadFile(
     char file_path[32];
     s32 fd;
 
-    sprintf(file_path, (char *)D_800109BC, port, card, filename);
+    sprintf(
+        file_path, (char *)g_str_memcard_file_path_fmt, port, card, filename);
     fd = open(file_path, 0x8001);
     if (fd == -1) {
         return -1;
@@ -263,7 +264,8 @@ s32 memcard_WriteFile(s32 port, s32 card, s32 filename, void *write_src,
     char file_path[32];
     s32 fd;
 
-    sprintf(file_path, (char *)D_800109BC, port, card, filename);
+    sprintf(
+        file_path, (char *)g_str_memcard_file_path_fmt, port, card, filename);
     if (create_first != 0) {
         fd = open(file_path, (block_count << 16) | 0x200);
         if (fd == -1) {

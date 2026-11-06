@@ -176,8 +176,8 @@ extern Vec3i32 g_eff_rotated_quad_cluster_positions[6];
 extern SVec4i16 g_eff_rotated_quad_cluster_rotations[6];
 extern s16 g_eff_rotated_quad_cluster_ages[6];
 extern Unk800EFB78Entry g_snd_queue[24];
-extern Unk80101EC8Record D_80101EC8[];
-extern const char D_800109C8[];
+extern Unk80101EC8Record g_fighter_records[];
+extern const char g_str_memcard_device_fmt[];
 extern u8 g_snd_stage_cd_audio_entry_indices;
 extern u8 g_fight_config_id_data_rows[];
 extern u8 D_8008D55C;
@@ -196,9 +196,12 @@ extern SVec4i16 D_8008D774[2];
 extern SVec4i16 g_unit_y_vector;
 extern u8 g_fighter_group_flags[];
 extern u8 g_fighter_forward_move_rate_limit_indices[0x48];
-extern s16 D_8008DA50[]; /* [character_data_index] (fighter_Update) */
-extern s16 D_8008DA94[]; /* [character_data_index] (fighter_Update) */
-extern s16 D_8008DAD8[]; /* [character_data_index] (fighter_Update) */
+/* [character_data_index] (fighter_Update) */
+extern s16 g_fighter_forward_jump_vertical_velocities[];
+/* [character_data_index] (fighter_Update) */
+extern s16 g_fighter_forward_jump_speeds[];
+/* [character_data_index] (fighter_Update) */
+extern s16 g_fighter_vertical_jump_velocities[];
 /* [character_data_index][weapon_id] -> Unk80101EC8Record.motion_data_id
  * (motion_LoadFighterData) */
 extern u16 g_fighter_motion_data_ids[27][8];
@@ -230,9 +233,9 @@ extern u16 D_8008E3F8[27][4];
 /* [character_data_index][i] -> Unk80101EC8Record.summed_tally_step_scales[i] */
 extern u16 g_fighter_summed_tally_step_scales[27][4];
 extern u8 g_fight_character_vab_and_ground_quad_classes[];
-/* [character_data_index][weapon_id] of D_80101EC8 */
+/* [character_data_index][weapon_id] of g_fighter_records */
 extern u8 g_resource_default_pair_selections[][8];
-/* [character_data_index][weapon_id] of D_80101EC8 */
+/* [character_data_index][weapon_id] of g_fighter_records */
 extern u8 g_resource_alternate_pair_selections[][6];
 extern u8 D_8008E748;
 extern u8 g_fight_opponent_stage_indices;
@@ -244,11 +247,11 @@ extern s16 D_8008EAC0[34];
 extern s16 D_8008EB04;
 extern s16 D_8008EB06;
 extern s16 D_8008EB08;
-extern s16 D_8008EB0A;
-extern s16 D_8008EB0C;
-extern s32 D_8008EB10;
-extern s32 D_8008EB14;
-extern s32 D_8008EB18;
+extern s16 g_fight_followup_playback_common_sound_frame;
+extern s16 g_fight_followup_playback_red_light_effect_frame;
+extern s32 g_fight_followup_playback_red_light_effect_offset_x;
+extern s32 g_fight_followup_playback_red_light_effect_offset_y;
+extern s32 g_fight_followup_playback_red_light_effect_offset_z;
 extern u8 g_motion_preferred_variant_nibble_pairs[][2];
 /* [weapon_id][flag] -> Unk80101EC8Record.weapon_entry_id */
 extern u8 D_8008EB28[8][2];
@@ -604,13 +607,13 @@ extern TexRec g_eff_spinning_quad_near_tex_rec[1];
 extern TexRec D_8009B8E0[1];
 extern TexRec g_eff_jittered_billboard_tex_recs[7];
 extern TexRec g_eff_yawed_slot_quad_tex_recs[4];
-extern TexRec D_8009B940[1];
-extern TexRec D_8009B948[1];
-extern TexRec D_8009B950[1];
-extern TexRec D_8009B958[1];
-extern TexRec D_8009B960[1];
-extern TexRec D_8009B968[1];
-extern TexRec D_8009B970[1];
+extern TexRec g_eff_billboard_pair_first_tex_rec[1];
+extern TexRec g_eff_billboard_pair_second_early_tex_rec[1];
+extern TexRec g_eff_billboard_pair_second_late_tex_rec[1];
+extern TexRec g_eff_rotated_quad_cluster_first_early_tex_rec[1];
+extern TexRec g_eff_rotated_quad_cluster_other_early_tex_rec[1];
+extern TexRec g_eff_rotated_quad_cluster_first_late_tex_rec[1];
+extern TexRec g_eff_rotated_quad_cluster_other_late_tex_rec[1];
 extern TexRec g_eff_growing_quad_and_quad_pair_second_late_tex_rec[1];
 extern TexRec g_eff_growing_quad_and_quad_pair_second_early_tex_rec[1];
 extern TexRec g_eff_quad_pair_first_early_strip_tex_rec[1];

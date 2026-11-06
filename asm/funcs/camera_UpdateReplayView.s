@@ -21,8 +21,8 @@ glabel camera_UpdateReplayView
     /* BF94 8001B794 80100200 */  sll        $v0, $v0, 2
     /* BF98 8001B798 23104300 */  subu       $v0, $v0, $v1
     /* BF9C 8001B79C 80100200 */  sll        $v0, $v0, 2
-    /* BFA0 8001B7A0 1080033C */  lui        $v1, %hi(D_80101EC8)
-    /* BFA4 8001B7A4 C81E6324 */  addiu      $v1, $v1, %lo(D_80101EC8)
+    /* BFA0 8001B7A0 1080033C */  lui        $v1, %hi(g_fighter_records)
+    /* BFA4 8001B7A4 C81E6324 */  addiu      $v1, $v1, %lo(g_fighter_records)
     /* BFA8 8001B7A8 21204300 */  addu       $a0, $v0, $v1
     /* BFAC 8001B7AC 1F000292 */  lbu        $v0, 0x1F($s0)
     /* BFB0 8001B7B0 3C00B48F */  lw         $s4, 0x3C($sp)

@@ -237,8 +237,8 @@ glabel softbody_CreateForNode
     /* 30588 8003FD88 00000000 */  nop
     /* 3058C 8003FD8C 05004010 */  beqz       $v0, .L8003FDA4
     /* 30590 8003FD90 00000000 */   nop
-    /* 30594 8003FD94 0180043C */  lui        $a0, %hi(D_80010D8C)
-    /* 30598 8003FD98 8C0D8424 */  addiu      $a0, $a0, %lo(D_80010D8C)
+    /* 30594 8003FD94 0180043C */  lui        $a0, %hi(g_str_multiple_model_error)
+    /* 30598 8003FD98 8C0D8424 */  addiu      $a0, $a0, %lo(g_str_multiple_model_error)
     /* 3059C 8003FD9C 044B010C */  jal        sys_StoreZeroPastScratchpadOnFailedCheck
     /* 305A0 8003FDA0 00000000 */   nop
   .L8003FDA4:

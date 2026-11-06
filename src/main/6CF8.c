@@ -20,7 +20,7 @@ const char g_str_overflow[12] = "OVER FLOW\n";
 const char g_str_eff_init[28] = "eff_init:%08x size:%08x\n";
 const char g_str_limit[12] = "LIMIT:%08x\n";
 const char g_str_prim_overflow[24] = "common prim over flow\n";
-const char D_8001004C[28] = "Fri Aug  7 22:26:32 1998\n";
+const char g_str_date_time_stamp[28] = "Fri Aug  7 22:26:32 1998\n";
 
 extern void sys_PollHost10000Times(void);
 
@@ -274,7 +274,7 @@ void snd_InitAndLoadCommonVab(void) {
     g_snd_initialized = 1;
 }
 
-extern u32 D_800A3798;
+extern u32 g_gpu_prim_buffer_span;
 extern u8 D_800A3744;
 extern u8 D_800A3745;
 extern u8 D_800A3746;
@@ -286,7 +286,7 @@ void sys_InitAtBoot(void) {
     motion_InitBuffers();
     D_800A3770[0] = 0x801D8800;
     D_800A3770[1] = 0x801EBC00;
-    D_800A3798 = 0x13400;
+    g_gpu_prim_buffer_span = 0x13400;
     g_eff_initialized = 0;
     g_snd_initialized = 0;
     snd_InitAndLoadCommonVab();
@@ -823,7 +823,7 @@ RECT g_gpu_clear_rect = {0, 0, 640, 480};
 RECT g_gpu_cd_file_image_rect = {32, 96, 256, 48};
 s32 g_main_prim_buffer_min_remaining = 0x13400;
 /* not named by any code or data: size from the gap */
-s32 D_800A30E0[2] = {(s32)D_8001004C, 0x190};
+s32 D_800A30E0[2] = {(s32)g_str_date_time_stamp, 0x190};
 u8 g_softbody_slot_high_water = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
@@ -842,7 +842,7 @@ u8 g_local_ot_draw_mode;
 u32 D_800A3770[2];
 s32 g_fight_packed_match_scores;
 u8 g_fight_toggle_option_bits;
-u32 D_800A3798;
+u32 g_gpu_prim_buffer_span;
 u8 g_fight_stage_command_count;
 s32 g_fight_stage_list_step_timer;
 s16 g_main_loop_handler_index;

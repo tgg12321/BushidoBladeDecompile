@@ -263,7 +263,7 @@ void eff_ResetCommands(void);
 void eff_BindScratchpad(s16 *arg0, s32 *arg1);
 
 /* the message, alignment and an empty trailing string */
-const char D_800158E0[24] = "eff prim over :%d \n";
+const char g_str_eff_prim_overflow_fmt[24] = "eff prim over :%d \n";
 
 void eff_UpdateCommands(s16 *src_rotation, s32 *src_position) {
     s32 quad_count;
@@ -289,7 +289,7 @@ void eff_UpdateCommands(s16 *src_rotation, s32 *src_position) {
     }
     quad_count = g_eff_quad_cursor - g_eff_quad_buffer_base;
     if (quad_count >= 0x1C2) {
-        printf(&D_800158E0, quad_count - 0x1C2);
+        printf(&g_str_eff_prim_overflow_fmt, quad_count - 0x1C2);
     }
 }
 
@@ -1005,9 +1005,13 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
                 *(s32 *)&var_9->r0 = c + (c << 8) + (c << 16);
             }
             if (g_eff_rotated_quad_cluster_ages[slot_index] < 3) {
-                g_eff_current_tex_rec = quad_index ? D_8009B960 : D_8009B958;
+                g_eff_current_tex_rec =
+                    quad_index ? g_eff_rotated_quad_cluster_other_early_tex_rec
+                               : g_eff_rotated_quad_cluster_first_early_tex_rec;
             } else {
-                g_eff_current_tex_rec = quad_index ? D_8009B970 : D_8009B968;
+                g_eff_current_tex_rec =
+                    quad_index ? g_eff_rotated_quad_cluster_other_late_tex_rec
+                               : g_eff_rotated_quad_cluster_first_late_tex_rec;
             }
             if (quad_index) {
                 *g_eff_tex_right_u = g_eff_current_tex_rec->u + 0x3F;
@@ -1192,11 +1196,13 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                 RotTransPers(v, g_eff_screen_xy, depth_cue_out, g_eff_rtp_flag);
                 gte_stsz(g_eff_depth_work);
                 if (billboard_index == 0) {
-                    g_eff_current_tex_rec = D_8009B940;
+                    g_eff_current_tex_rec = g_eff_billboard_pair_first_tex_rec;
                 } else if (g_eff_billboard_pair_ages[slot_index] < 11) {
-                    g_eff_current_tex_rec = D_8009B948;
+                    g_eff_current_tex_rec =
+                        g_eff_billboard_pair_second_early_tex_rec;
                 } else {
-                    g_eff_current_tex_rec = D_8009B950;
+                    g_eff_current_tex_rec =
+                        g_eff_billboard_pair_second_late_tex_rec;
                 }
                 *g_eff_clut_word =
                     (((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +

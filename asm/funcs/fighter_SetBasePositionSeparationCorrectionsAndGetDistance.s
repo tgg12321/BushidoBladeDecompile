@@ -16,8 +16,8 @@ glabel fighter_SetBasePositionSeparationCorrectionsAndGetDistance
     /* 1C4A0 8002BCA0 00000000 */  nop
     /* 1C4A4 8002BCA4 18002901 */  mult       $t1, $t1
     /* 1C4A8 8002BCA8 F8FFBD27 */  addiu      $sp, $sp, -0x8
-    /* 1C4AC 8002BCAC 10800A3C */  lui        $t2, %hi(D_80101EC8)
-    /* 1C4B0 8002BCB0 C81E4A25 */  addiu      $t2, $t2, %lo(D_80101EC8)
+    /* 1C4AC 8002BCAC 10800A3C */  lui        $t2, %hi(g_fighter_records)
+    /* 1C4B0 8002BCB0 C81E4A25 */  addiu      $t2, $t2, %lo(g_fighter_records)
     /* 1C4B4 8002BCB4 12180000 */  mflo       $v1
     /* 1C4B8 8002BCB8 21208300 */  addu       $a0, $a0, $v1
     /* 1C4BC 8002BCBC 0004822C */  sltiu      $v0, $a0, 0x400

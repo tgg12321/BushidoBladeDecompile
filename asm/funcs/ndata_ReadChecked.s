@@ -33,8 +33,8 @@ glabel ndata_ReadChecked
     /* 35814 80045014 2A107000 */  slt        $v0, $v1, $s0
     /* 35818 80045018 0E004010 */  beqz       $v0, .L80045054
     /* 3581C 8004501C 21282002 */   addu      $a1, $s1, $zero
-    /* 35820 80045020 0180043C */  lui        $a0, %hi(D_8001528C)
-    /* 35824 80045024 8C528424 */  addiu      $a0, $a0, %lo(D_8001528C)
+    /* 35820 80045020 0180043C */  lui        $a0, %hi(g_str_marionation_overflow_fmt)
+    /* 35824 80045024 8C528424 */  addiu      $a0, $a0, %lo(g_str_marionation_overflow_fmt)
     /* 35828 80045028 82E4010C */  jal        printf
     /* 3582C 8004502C 23300302 */   subu      $a2, $s0, $v1
   .L80045030:

@@ -142,25 +142,25 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 5337C 80062B7C 00000000 */   nop
     /* 53380 80062B80 05004012 */  beqz       $s2, .L80062B98
     /* 53384 80062B84 00000000 */   nop
-    /* 53388 80062B88 0A80023C */  lui        $v0, %hi(D_8009B960)
-    /* 5338C 80062B8C 60B94224 */  addiu      $v0, $v0, %lo(D_8009B960)
+    /* 53388 80062B88 0A80023C */  lui        $v0, %hi(g_eff_rotated_quad_cluster_other_early_tex_rec)
+    /* 5338C 80062B8C 60B94224 */  addiu      $v0, $v0, %lo(g_eff_rotated_quad_cluster_other_early_tex_rec)
     /* 53390 80062B90 F28A0108 */  j          .L80062BC8
     /* 53394 80062B94 00000000 */   nop
   .L80062B98:
-    /* 53398 80062B98 0A80023C */  lui        $v0, %hi(D_8009B958)
-    /* 5339C 80062B9C 58B94224 */  addiu      $v0, $v0, %lo(D_8009B958)
+    /* 53398 80062B98 0A80023C */  lui        $v0, %hi(g_eff_rotated_quad_cluster_first_early_tex_rec)
+    /* 5339C 80062B9C 58B94224 */  addiu      $v0, $v0, %lo(g_eff_rotated_quad_cluster_first_early_tex_rec)
     /* 533A0 80062BA0 F28A0108 */  j          .L80062BC8
     /* 533A4 80062BA4 00000000 */   nop
   .L80062BA8:
     /* 533A8 80062BA8 05004012 */  beqz       $s2, .L80062BC0
     /* 533AC 80062BAC 00000000 */   nop
-    /* 533B0 80062BB0 0A80023C */  lui        $v0, %hi(D_8009B970)
-    /* 533B4 80062BB4 70B94224 */  addiu      $v0, $v0, %lo(D_8009B970)
+    /* 533B0 80062BB0 0A80023C */  lui        $v0, %hi(g_eff_rotated_quad_cluster_other_late_tex_rec)
+    /* 533B4 80062BB4 70B94224 */  addiu      $v0, $v0, %lo(g_eff_rotated_quad_cluster_other_late_tex_rec)
     /* 533B8 80062BB8 F28A0108 */  j          .L80062BC8
     /* 533BC 80062BBC 00000000 */   nop
   .L80062BC0:
-    /* 533C0 80062BC0 0A80023C */  lui        $v0, %hi(D_8009B968)
-    /* 533C4 80062BC4 68B94224 */  addiu      $v0, $v0, %lo(D_8009B968)
+    /* 533C0 80062BC0 0A80023C */  lui        $v0, %hi(g_eff_rotated_quad_cluster_first_late_tex_rec)
+    /* 533C4 80062BC4 68B94224 */  addiu      $v0, $v0, %lo(g_eff_rotated_quad_cluster_first_late_tex_rec)
   .L80062BC8:
     /* 533C8 80062BC8 BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 533CC 80062BCC 07004012 */  beqz       $s2, .L80062BEC

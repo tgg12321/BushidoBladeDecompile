@@ -81,8 +81,8 @@ glabel fight_InitImageAndPlaybackPresentation
     /* 2C958 8003C158 04000224 */  addiu      $v0, $zero, 0x4
     /* 2C95C 8003C15C 09006214 */  bne        $v1, $v0, .L8003C184
     /* 2C960 8003C160 05000224 */   addiu     $v0, $zero, 0x5
-    /* 2C964 8003C164 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
-    /* 2C968 8003C168 D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
+    /* 2C964 8003C164 1080023C */  lui        $v0, %hi(g_fighter_records + 0xA)
+    /* 2C968 8003C168 D21E4284 */  lh         $v0, %lo(g_fighter_records + 0xA)($v0)
     /* 2C96C 8003C16C 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 2C970 8003C170 21082200 */  addu       $at, $at, $v0
     /* 2C974 8003C174 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
@@ -92,8 +92,8 @@ glabel fight_InitImageAndPlaybackPresentation
   .L8003C184:
     /* 2C984 8003C184 15006214 */  bne        $v1, $v0, .L8003C1DC
     /* 2C988 8003C188 00000000 */   nop
-    /* 2C98C 8003C18C 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
-    /* 2C990 8003C190 D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
+    /* 2C98C 8003C18C 1080023C */  lui        $v0, %hi(g_fighter_records + 0xA)
+    /* 2C990 8003C190 D21E4284 */  lh         $v0, %lo(g_fighter_records + 0xA)($v0)
     /* 2C994 8003C194 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 2C998 8003C198 21082200 */  addu       $at, $at, $v0
     /* 2C99C 8003C19C ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
@@ -121,8 +121,8 @@ glabel fight_InitImageAndPlaybackPresentation
     /* 2C9E8 8003C1E8 21300000 */  addu       $a2, $zero, $zero
     /* 2C9EC 8003C1EC 0A80023C */  lui        $v0, %hi(g_fight_presentation_index)
     /* 2C9F0 8003C1F0 A4384290 */  lbu        $v0, %lo(g_fight_presentation_index)($v0)
-    /* 2C9F4 8003C1F4 1080073C */  lui        $a3, %hi(D_80101EC8 + 0x12)
-    /* 2C9F8 8003C1F8 DA1EE784 */  lh         $a3, %lo(D_80101EC8 + 0x12)($a3)
+    /* 2C9F4 8003C1F4 1080073C */  lui        $a3, %hi(g_fighter_records + 0x12)
+    /* 2C9F8 8003C1F8 DA1EE784 */  lh         $a3, %lo(g_fighter_records + 0x12)($a3)
     /* 2C9FC 8003C1FC 0980013C */  lui        $at, %hi(g_fight_presentation_playback_file_id_offsets)
     /* 2CA00 8003C200 21082200 */  addu       $at, $at, $v0
     /* 2CA04 8003C204 6C012590 */  lbu        $a1, %lo(g_fight_presentation_playback_file_id_offsets)($at)

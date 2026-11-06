@@ -434,7 +434,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29A64 80039264 08002216 */  bne        $s1, $v0, .L80039288
     /* 29A68 80039268 00000000 */   nop
   .L8003926C:
-    /* 29A6C 8003926C 2C01838F */  lw         $v1, %gp_rel(D_800A31F8)($gp)
+    /* 29A6C 8003926C 2C01838F */  lw         $v1, %gp_rel(g_memcard_polled_info_load_result)($gp)
     /* 29A70 80039270 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 29A74 80039274 04006214 */  bne        $v1, $v0, .L80039288
     /* 29A78 80039278 01000224 */   addiu     $v0, $zero, 0x1

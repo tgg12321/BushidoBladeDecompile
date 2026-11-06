@@ -22,8 +22,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 24F58 80034758 0A80113C */  lui        $s1, %hi(g_config_menu_selected_color_code)
     /* 24F5C 8003475C 80313126 */  addiu      $s1, $s1, %lo(g_config_menu_selected_color_code)
     /* 24F60 80034760 A8008287 */  lh         $v0, %gp_rel(g_config_menu_cursors)($gp)
-    /* 24F64 80034764 0A80143C */  lui        $s4, %hi(D_800A3188)
-    /* 24F68 80034768 88319426 */  addiu      $s4, $s4, %lo(D_800A3188)
+    /* 24F64 80034764 0A80143C */  lui        $s4, %hi(g_config_menu_left_roster_and_weapon_fmt)
+    /* 24F68 80034768 88319426 */  addiu      $s4, $s4, %lo(g_config_menu_left_roster_and_weapon_fmt)
     /* 24F6C 8003476C 02004014 */  bnez       $v0, .L80034778
     /* 24F70 80034770 21280002 */   addu      $a1, $s0, $zero
     /* 24F74 80034774 21282002 */  addu       $a1, $s1, $zero
@@ -72,8 +72,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
   .L80034810:
     /* 25010 80034810 1080063C */  lui        $a2, %hi(g_fight_config + 0x8)
     /* 25014 80034814 8027C680 */  lb         $a2, %lo(g_fight_config + 0x8)($a2)
-    /* 25018 80034818 0A80043C */  lui        $a0, %hi(D_800A3198)
-    /* 2501C 8003481C 98318424 */  addiu      $a0, $a0, %lo(D_800A3198)
+    /* 25018 80034818 0A80043C */  lui        $a0, %hi(g_config_menu_left_cpu_controlled_fmt)
+    /* 2501C 8003481C 98318424 */  addiu      $a0, $a0, %lo(g_config_menu_left_cpu_controlled_fmt)
     /* 25020 80034820 4BF5000C */  jal        font_Printf
     /* 25024 80034824 00000000 */   nop
     /* 25028 80034828 AA008287 */  lh         $v0, %gp_rel(D_800A3176)($gp)

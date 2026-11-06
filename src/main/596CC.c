@@ -5,7 +5,7 @@
  * SEAM (owner ruling 2026-10-17; Codex seam #99): no direct call or static
  * crosses the cut; eff.c's .sbss ends at D_800A34F4 and these functions own
  * g_menu_packed_cursors..g_menu_confirm_cursor; .rodata 0x80015988+0x28
- * (menu_HandleOptionMenuChoices's table, D_800159A0) follows eff.o's. */
+ * (menu_HandleOptionMenuChoices's table, g_str_warning) follows eff.o's. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -1484,7 +1484,7 @@ s32 menu_HandleOptionMenuChoices(s32 *arg0, u32 *pressed_buttons) {
 
 /* Keeps the original .rodata run contiguous around the compiler-generated
  * switch tables. */
-const u8 D_800159A0[16] = "warning\n";
+const u8 g_str_warning[16] = "warning\n";
 
 s32 menu_UpdateOptionMenuChoices(s32 arg0, u32 pressed_buttons) {
     s32 sp10[10];

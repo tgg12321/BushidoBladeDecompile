@@ -13,9 +13,9 @@
 extern s16 g_config_menu_cursors[2];
 extern u8 g_config_menu_unselected_color_code[];
 extern u8 g_config_menu_selected_color_code[];
-extern u8 D_800A3188[];
+extern u8 g_config_menu_left_roster_and_weapon_fmt[];
 extern u8 g_config_menu_right_pad_value_fmt[];
-extern u8 D_800A3198[];
+extern u8 g_config_menu_left_cpu_controlled_fmt[];
 extern u8 g_config_menu_left_cpu_base_level_fmt[];
 extern u8 g_config_menu_right_cpu_base_level_fmt[];
 extern u8 g_config_menu_pending_stage_and_mode_fmt[];
@@ -35,7 +35,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
     rand();
     unselected_prefix = g_config_menu_unselected_color_code;
     selected_prefix = g_config_menu_selected_color_code;
-    font_Printf(D_800A3188,
+    font_Printf(g_config_menu_left_roster_and_weapon_fmt,
                 (s32)(g_config_menu_cursors[0] == 0 ? selected_prefix
                                                     : unselected_prefix),
                 (s8)g_fight_config.fighter_setup[0]);
@@ -43,7 +43,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 (s32)(g_config_menu_cursors[1] == 0 ? selected_prefix
                                                     : unselected_prefix),
                 (s8)g_fight_config.fighter_setup[1]);
-    font_Printf(D_800A3188,
+    font_Printf(g_config_menu_left_roster_and_weapon_fmt,
                 (s32)(g_config_menu_cursors[0] == 1 ? selected_prefix
                                                     : unselected_prefix),
                 (s8)g_fight_config.fighter_setup[2]);
@@ -51,7 +51,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 (s32)(g_config_menu_cursors[1] == 1 ? selected_prefix
                                                     : unselected_prefix),
                 (s8)g_fight_config.fighter_setup[3]);
-    font_Printf(D_800A3198,
+    font_Printf(g_config_menu_left_cpu_controlled_fmt,
                 (s32)(g_config_menu_cursors[0] == 2 ? selected_prefix
                                                     : unselected_prefix),
                 (s8)g_fight_config.fighter_setup[4]);
@@ -222,9 +222,9 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
 s16 g_config_menu_cursors[2] = {0, 0};
 u8 g_config_menu_unselected_color_code[] = "~c777";
 u8 g_config_menu_selected_color_code[] = "~c737";
-u8 D_800A3188[] = "%s%5d";
+u8 g_config_menu_left_roster_and_weapon_fmt[] = "%s%5d";
 u8 g_config_menu_right_pad_value_fmt[] = "%s%3d\n";
-u8 D_800A3198[] = "%sC%4d";
+u8 g_config_menu_left_cpu_controlled_fmt[] = "%sC%4d";
 u8 g_config_menu_left_cpu_base_level_fmt[] = "%sCL%3x";
 u8 g_config_menu_right_cpu_base_level_fmt[] = "%s%3x\n";
 u8 g_config_menu_pending_stage_and_mode_fmt[] = "%s%5d\n";

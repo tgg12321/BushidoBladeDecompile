@@ -22,26 +22,26 @@ dlabel g_fighter_forward_move_rate_limits
     /* 93912 800A3112 */ .short 0x0000
 enddlabel g_fighter_forward_move_rate_limits
 
-nonmatching D_800A3114
+nonmatching g_str_motion_file_on
 
-dlabel D_800A3114
+dlabel g_str_motion_file_on
     /* 93914 800A3114 */ .asciz "ON.BBM"
     .space 1
-enddlabel D_800A3114
+enddlabel g_str_motion_file_on
 
-nonmatching D_800A311C
+nonmatching g_str_motion_file_gs
 
-dlabel D_800A311C
+dlabel g_str_motion_file_gs
     /* 9391C 800A311C */ .asciz "GS.BBM"
     .space 1
-enddlabel D_800A311C
+enddlabel g_str_motion_file_gs
 
-nonmatching D_800A3124
+nonmatching g_str_motion_file_gn
 
-dlabel D_800A3124
+dlabel g_str_motion_file_gn
     /* 93924 800A3124 */ .asciz "GN.BBM"
     .space 1
-enddlabel D_800A3124
+enddlabel g_str_motion_file_gn
 
 nonmatching D_800A312C
 

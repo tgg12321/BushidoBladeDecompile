@@ -265,9 +265,9 @@ loop2:
 
 extern s32 *g_color_immediate_patch_sites[];
 extern s32 func_800545F4;
-extern s32 D_800545F8;
-extern s32 D_800545FC;
-extern s32 D_80054600;
+extern s32 g_color_immediate_patch_first_ori_template;
+extern s32 g_color_immediate_patch_second_lui_template;
+extern s32 g_color_immediate_patch_second_ori_template;
 
 void PatchColorImmediatesAtListedCodeSites(s32 color) {
     s32 **site_cursor = g_color_immediate_patch_sites;
@@ -277,9 +277,11 @@ void PatchColorImmediatesAtListedCodeSites(s32 color) {
     s32 mask16 = (s32)0xFFFF0000;
     s32 color_low_half = color & 0xFFFF;
     s32 t3 = (func_800545F4 & mask8) | a1;
-    s32 t2 = (D_800545F8 & mask16) | color_low_half;
-    s32 v1 = (D_800545FC & mask8) | a1;
-    s32 a4 = (D_80054600 & mask16) | color_low_half;
+    s32 t2 =
+        (g_color_immediate_patch_first_ori_template & mask16) | color_low_half;
+    s32 v1 = (g_color_immediate_patch_second_lui_template & mask8) | a1;
+    s32 a4 =
+        (g_color_immediate_patch_second_ori_template & mask16) | color_low_half;
     do {
         s32 *v0 = *site_cursor;
         site_cursor++;

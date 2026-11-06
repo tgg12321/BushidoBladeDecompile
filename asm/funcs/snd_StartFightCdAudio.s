@@ -28,8 +28,8 @@ glabel snd_StartFightCdAudio
     /* E2F0 8001DAF0 CE760008 */  j          .L8001DB38
     /* E2F4 8001DAF4 00000000 */   nop
   jlabel .L8001DAF8
-    /* E2F8 8001DAF8 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
-    /* E2FC 8001DAFC D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
+    /* E2F8 8001DAF8 1080023C */  lui        $v0, %hi(g_fighter_records + 0xA)
+    /* E2FC 8001DAFC D21E4284 */  lh         $v0, %lo(g_fighter_records + 0xA)($v0)
     /* E300 8001DB00 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* E304 8001DB04 21082200 */  addu       $at, $at, $v0
     /* E308 8001DB08 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)

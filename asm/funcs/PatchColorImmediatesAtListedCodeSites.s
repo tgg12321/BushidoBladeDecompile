@@ -9,17 +9,17 @@ glabel PatchColorImmediatesAtListedCodeSites
     /* 31BB4 800413B4 FFFF8430 */  andi       $a0, $a0, 0xFFFF
     /* 31BB8 800413B8 0580023C */  lui        $v0, %hi(func_800545F4)
     /* 31BBC 800413BC F445428C */  lw         $v0, %lo(func_800545F4)($v0)
-    /* 31BC0 800413C0 0580033C */  lui        $v1, %hi(D_800545FC)
-    /* 31BC4 800413C4 FC45638C */  lw         $v1, %lo(D_800545FC)($v1)
+    /* 31BC0 800413C0 0580033C */  lui        $v1, %hi(g_color_immediate_patch_second_lui_template)
+    /* 31BC4 800413C4 FC45638C */  lw         $v1, %lo(g_color_immediate_patch_second_lui_template)($v1)
     /* 31BC8 800413C8 24104700 */  and        $v0, $v0, $a3
     /* 31BCC 800413CC 25584500 */  or         $t3, $v0, $a1
-    /* 31BD0 800413D0 0580023C */  lui        $v0, %hi(D_800545F8)
-    /* 31BD4 800413D4 F845428C */  lw         $v0, %lo(D_800545F8)($v0)
+    /* 31BD0 800413D0 0580023C */  lui        $v0, %hi(g_color_immediate_patch_first_ori_template)
+    /* 31BD4 800413D4 F845428C */  lw         $v0, %lo(g_color_immediate_patch_first_ori_template)($v0)
     /* 31BD8 800413D8 24186700 */  and        $v1, $v1, $a3
     /* 31BDC 800413DC 24104600 */  and        $v0, $v0, $a2
     /* 31BE0 800413E0 25504400 */  or         $t2, $v0, $a0
-    /* 31BE4 800413E4 0580023C */  lui        $v0, %hi(D_80054600)
-    /* 31BE8 800413E8 0046428C */  lw         $v0, %lo(D_80054600)($v0)
+    /* 31BE4 800413E4 0580023C */  lui        $v0, %hi(g_color_immediate_patch_second_ori_template)
+    /* 31BE8 800413E8 0046428C */  lw         $v0, %lo(g_color_immediate_patch_second_ori_template)($v0)
     /* 31BEC 800413EC 25186500 */  or         $v1, $v1, $a1
     /* 31BF0 800413F0 24104600 */  and        $v0, $v0, $a2
     /* 31BF4 800413F4 25204400 */  or         $a0, $v0, $a0

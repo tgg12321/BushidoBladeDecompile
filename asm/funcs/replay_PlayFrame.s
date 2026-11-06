@@ -111,8 +111,8 @@ glabel replay_PlayFrame
     /* 2A2D4 80039AD4 23105302 */  subu       $v0, $s2, $s3
     /* 2A2D8 80039AD8 80100200 */  sll        $v0, $v0, 2
     /* 2A2DC 80039ADC 21806200 */  addu       $s0, $v1, $v0
-    /* 2A2E0 80039AE0 1080023C */  lui        $v0, %hi(D_80101EC8)
-    /* 2A2E4 80039AE4 C81E4224 */  addiu      $v0, $v0, %lo(D_80101EC8)
+    /* 2A2E0 80039AE0 1080023C */  lui        $v0, %hi(g_fighter_records)
+    /* 2A2E4 80039AE4 C81E4224 */  addiu      $v0, $v0, %lo(g_fighter_records)
     /* 2A2E8 80039AE8 0E000596 */  lhu        $a1, 0xE($s0)
     /* 2A2EC 80039AEC 2188C203 */  addu       $s1, $fp, $v0
     /* 2A2F0 80039AF0 82230500 */  srl        $a0, $a1, 14

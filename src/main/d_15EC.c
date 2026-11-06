@@ -2,8 +2,8 @@
  * D_80010DEC: 899 4-byte-padded asset paths, pointed to by the .data pointer
  * array D_800955E0 (35000.c's .data, by subsystem), which no code reads
  * (docs/formats/NDATA.md); 32D04.o(.rodata) ends and 35000.o(.rodata) is empty
- * right before it, so either could own it. D_8001528C: the "Marionation
- * over flow" debug message (read by ndata_ReadChecked). */
+ * right before it, so either could own it. g_str_marionation_overflow_fmt: the
+ * "Marionation over flow" debug message (read by ndata_ReadChecked). */
 const char D_80010DEC[17568] =
     "DATA1\\HAND.DAT\0\0DATA7\\MAR22_13.D"
     "AT\0\0DATA7\\MAR22_12.DAT\0\0DATA7\\MA"
@@ -555,4 +555,5 @@ const char D_80010DEC[17568] =
     "DATA0\\M100.DAT\0\0DATA0\\M002.DAT\0\0"
     "DATA0\\M001.DAT\0\0DATA0\\M000.DAT\0\0";
 
-const char D_8001528C[40] = "Marionation over flow. No.%d (-%dbyte)\n";
+const char g_str_marionation_overflow_fmt[40] =
+    "Marionation over flow. No.%d (-%dbyte)\n";

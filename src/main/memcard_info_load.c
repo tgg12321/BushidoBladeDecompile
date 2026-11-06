@@ -8,7 +8,7 @@
 /* memcard_Format's (28708.c) path format. It sits in this file's .rodata,
  * before memcard_StepCardInfoAndLoad's jump table, whose .align 3 supplies the
  * zero bytes after it. */
-const char D_800109C8[] = "bu%1d%1d:";
+const char g_str_memcard_device_fmt[] = "bu%1d%1d:";
 
 extern s32 g_memcard_card_loaded;
 extern s32 g_memcard_info_load_state;

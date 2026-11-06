@@ -7,8 +7,8 @@ glabel fighter_ClearCpuTally
     /* 458B0 800550B0 80100200 */  sll        $v0, $v0, 2
     /* 458B4 800550B4 23104400 */  subu       $v0, $v0, $a0
     /* 458B8 800550B8 80100200 */  sll        $v0, $v0, 2
-    /* 458BC 800550BC 1080033C */  lui        $v1, %hi(D_80101EC8)
-    /* 458C0 800550C0 C81E6324 */  addiu      $v1, $v1, %lo(D_80101EC8)
+    /* 458BC 800550BC 1080033C */  lui        $v1, %hi(g_fighter_records)
+    /* 458C0 800550C0 C81E6324 */  addiu      $v1, $v1, %lo(g_fighter_records)
     /* 458C4 800550C4 21184300 */  addu       $v1, $v0, $v1
   .L800550C8:
     /* 458C8 800550C8 150460A0 */  sb         $zero, 0x415($v1)

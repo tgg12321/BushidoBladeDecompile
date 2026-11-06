@@ -6,7 +6,7 @@
 #include "bb2.h"
 
 extern void AddPrim(void *, void *);
-extern const u8 D_800159A0[16];
+extern const u8 g_str_warning[16];
 
 s32 gpu_AddSpriteCells(Unk8007352CRec *draw_desc) {
     Unk8009B0E0Record *sheet_header = draw_desc->header;
@@ -43,7 +43,7 @@ s32 gpu_AddSpriteCells(Unk8007352CRec *draw_desc) {
             SetSemiTrans(sprt_cursor, draw_desc->semi);
             if (draw_desc->ot_idx >= 0x1006) {
                 draw_desc->ot_idx = 1;
-                ((void (*)())font_Printf)(D_800159A0);
+                ((void (*)())font_Printf)(g_str_warning);
             }
             AddPrim(g_gpu_ot_ptr + draw_desc->ot_idx, sprt_cursor);
             sprt_cursor++;

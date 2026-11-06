@@ -248,7 +248,7 @@ void ndata_ReadIndexInRangeSelectedByFlag(s32 a0, s32 a1, s32 dest_addr) {
 void func_80044F80(s32 a0, s32 dest_addr) { ndata_Read(a0 + 0x4D, dest_addr); }
 
 extern s32 D_800A3240;
-extern char D_8001528C[];
+extern char g_str_marionation_overflow_fmt[];
 
 s32 ndata_ReadChecked(s32 ndata_index, s32 dest_addr) {
     s32 var_0;
@@ -263,7 +263,7 @@ s32 ndata_ReadChecked(s32 ndata_index, s32 dest_addr) {
         }
         len = arena_GetFreeSize();
         if (len < var_0) {
-            printf(D_8001528C, ndata_index, var_0 - len);
+            printf(g_str_marionation_overflow_fmt, ndata_index, var_0 - len);
             while (1) {
                 sys_PollHost10000Times();
             }

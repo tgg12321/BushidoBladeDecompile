@@ -32,8 +32,8 @@ glabel fighter_ProcessWeaponBodyHits
     /* 1B37C 8002AB7C 27045610 */  beq        $v0, $s6, .L8002BC1C
     /* 1B380 8002AB80 00000000 */   nop
   .L8002AB84:
-    /* 1B384 8002AB84 1080023C */  lui        $v0, %hi(D_80101EC8)
-    /* 1B388 8002AB88 C81E4224 */  addiu      $v0, $v0, %lo(D_80101EC8)
+    /* 1B384 8002AB84 1080023C */  lui        $v0, %hi(g_fighter_records)
+    /* 1B388 8002AB88 C81E4224 */  addiu      $v0, $v0, %lo(g_fighter_records)
     /* 1B38C 8002AB8C 21984000 */  addu       $s3, $v0, $zero
     /* 1B390 8002AB90 00111600 */  sll        $v0, $s6, 4
     /* 1B394 8002AB94 21105600 */  addu       $v0, $v0, $s6

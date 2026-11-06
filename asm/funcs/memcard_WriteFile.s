@@ -7,8 +7,8 @@ glabel memcard_WriteFile
     /* 28448 80037C48 1800A427 */  addiu      $a0, $sp, 0x18
     /* 2844C 80037C4C 3800B0AF */  sw         $s0, 0x38($sp)
     /* 28450 80037C50 6000B08F */  lw         $s0, 0x60($sp)
-    /* 28454 80037C54 0180053C */  lui        $a1, %hi(D_800109BC)
-    /* 28458 80037C58 BC09A524 */  addiu      $a1, $a1, %lo(D_800109BC)
+    /* 28454 80037C54 0180053C */  lui        $a1, %hi(g_str_memcard_file_path_fmt)
+    /* 28458 80037C58 BC09A524 */  addiu      $a1, $a1, %lo(g_str_memcard_file_path_fmt)
     /* 2845C 80037C5C 1000A6AF */  sw         $a2, 0x10($sp)
     /* 28460 80037C60 21304000 */  addu       $a2, $v0, $zero
     /* 28464 80037C64 3C00B1AF */  sw         $s1, 0x3C($sp)

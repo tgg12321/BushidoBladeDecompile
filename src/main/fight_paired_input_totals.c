@@ -32,10 +32,10 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
     s32 effect_position[3];
 
     separation_error = fighter_CalcSeparationErrorAndOpposedOffsets();
-    record = D_80101EC8;
+    record = g_fighter_records;
     g_fight_weapon_contact_result = -1;
-    if ((u16)D_80101EC8[0].move_kind == 0x1C) {
-        if (D_80101EC8[0].move_frame != 4)
+    if ((u16)g_fighter_records[0].move_kind == 0x1C) {
+        if (g_fighter_records[0].move_frame != 4)
             goto tail;
         selected_fighter_index = g_fight_mash_contest_preset_fighter_index;
         if (selected_fighter_index == -1)
@@ -45,14 +45,14 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
            between entities and returns to entity zero at the join (Q51) */
         /* SOTN: src/st/lib/unk_3B53C.c:41-55
          * @db41b28eee52969244a52cc269c8163d1ed8826a */
-        record = &D_80101EC8[selected_fighter_index];
-        var_1 = D_80101EC8;
+        record = &g_fighter_records[selected_fighter_index];
+        var_1 = g_fighter_records;
         if (selected_fighter_index == 0) {
             var_1++;
         }
         record->pending_move_event = 3;
         var_1->pending_move_event = 4;
-    } else if ((u16)D_80101EC8[0].move_kind != 0xF) {
+    } else if ((u16)g_fighter_records[0].move_kind != 0xF) {
         for (fighter_index = 0; fighter_index < 2; fighter_index++) {
             fighter_record = record + fighter_index;
             if (fighter_record->pad_input.pressed & 0x20) {
@@ -86,24 +86,24 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
          * without it: score 61 */
         /* SOTN: src/weapon/w_011.c:343-348
          * @db41b28eee52969244a52cc269c8163d1ed8826a */
-        record = D_80101EC8;
+        record = g_fighter_records;
         var_1 = record + 1;
         g_fight_paired_input_tally_update_count++;
         if ((s16)g_fight_paired_input_tally_update_count >= 0x2B) {
-            if (D_80101EC8[0].mash_contest_score >
-                D_80101EC8[1].mash_contest_score) {
-                D_80101EC8[0].pending_move_event = 3;
-                D_80101EC8[1].pending_move_event = 4;
-                if ((u16)D_80101EC8[1].move_kind == 0x21) {
+            if (g_fighter_records[0].mash_contest_score >
+                g_fighter_records[1].mash_contest_score) {
+                g_fighter_records[0].pending_move_event = 3;
+                g_fighter_records[1].pending_move_event = 4;
+                if ((u16)g_fighter_records[1].move_kind == 0x21) {
                     fighter_TryDropQueuedHeadAtBone(var_1);
                 }
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
                     1, 0x2D, &var_1->world_pos.x, (s16 *)0);
-            } else if (D_80101EC8[1].mash_contest_score >
-                       D_80101EC8[0].mash_contest_score) {
-                D_80101EC8[1].pending_move_event = 3;
-                D_80101EC8[0].pending_move_event = 4;
-                if ((u16)D_80101EC8[0].move_kind == 0x21) {
+            } else if (g_fighter_records[1].mash_contest_score >
+                       g_fighter_records[0].mash_contest_score) {
+                g_fighter_records[1].pending_move_event = 3;
+                g_fighter_records[0].pending_move_event = 4;
+                if ((u16)g_fighter_records[0].move_kind == 0x21) {
                     fighter_TryDropQueuedHeadAtBone(record);
                 }
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -145,16 +145,16 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
        together with that reuse: score 18 (Q129) */
     /* SOTN: src/st/lib/unk_3B53C.c:41-55
      * @db41b28eee52969244a52cc269c8163d1ed8826a */
-    record = D_80101EC8;
+    record = g_fighter_records;
 tail:
     /* FAKE: sets the second fixed record from `record` at this join (a
        restore after the selected pair, the first write on the goto-tail
-       paths); D_80101EC8[1] direct in the tail: score 7 (Q129) */
+       paths); g_fighter_records[1] direct in the tail: score 7 (Q129) */
     /* SOTN: src/st/lib/unk_3B53C.c:41-55
      * @db41b28eee52969244a52cc269c8163d1ed8826a */
     var_1 = record + 1;
     if (g_fight_midpoint_effect_delay == 0) {
-        switch ((u16)D_80101EC8[0].move_kind) {
+        switch ((u16)g_fighter_records[0].move_kind) {
         case 0xF:
             midpoint_effect_index = -1;
             break;

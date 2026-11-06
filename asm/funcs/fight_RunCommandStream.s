@@ -78,8 +78,8 @@ glabel fight_RunCommandStream
     /* 2BEBC 8003B6BC 14EE0008 */  j          .L8003B850
     /* 2BEC0 8003B6C0 00000000 */   nop
   jlabel .L8003B6C4
-    /* 2BEC4 8003B6C4 1080043C */  lui        $a0, %hi(D_80101EC8)
-    /* 2BEC8 8003B6C8 C81E8424 */  addiu      $a0, $a0, %lo(D_80101EC8)
+    /* 2BEC4 8003B6C4 1080043C */  lui        $a0, %hi(g_fighter_records)
+    /* 2BEC8 8003B6C8 C81E8424 */  addiu      $a0, $a0, %lo(g_fighter_records)
     /* 2BECC 8003B6CC 0A80053C */  lui        $a1, %hi(g_fight_command_stream_cursor)
     /* 2BED0 8003B6D0 4438A58C */  lw         $a1, %lo(g_fight_command_stream_cursor)($a1)
     /* 2BED4 8003B6D4 0A80033C */  lui        $v1, %hi(g_fight_stage_command_count)
@@ -112,8 +112,8 @@ glabel fight_RunCommandStream
     /* 2BF3C 8003B73C 00000000 */  nop
     /* 2BF40 8003B740 0E004014 */  bnez       $v0, .L8003B77C
     /* 2BF44 8003B744 0A000224 */   addiu     $v0, $zero, 0xA
-    /* 2BF48 8003B748 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
-    /* 2BF4C 8003B74C D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
+    /* 2BF48 8003B748 1080023C */  lui        $v0, %hi(g_fighter_records + 0xA)
+    /* 2BF4C 8003B74C D21E4284 */  lh         $v0, %lo(g_fighter_records + 0xA)($v0)
     /* 2BF50 8003B750 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 2BF54 8003B754 21082200 */  addu       $at, $at, $v0
     /* 2BF58 8003B758 ECD92390 */  lbu        $v1, %lo(g_fighter_group_flags)($at)

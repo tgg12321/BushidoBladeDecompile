@@ -9,8 +9,8 @@ glabel fighter_ConfigureCpuControl
     /* 13750 80022F50 21880000 */  addu       $s1, $zero, $zero
     /* 13754 80022F54 1C00BFAF */  sw         $ra, 0x1C($sp)
   .L80022F58:
-    /* 13758 80022F58 1080023C */  lui        $v0, %hi(D_80101EC8)
-    /* 1375C 80022F5C C81E4224 */  addiu      $v0, $v0, %lo(D_80101EC8)
+    /* 13758 80022F58 1080023C */  lui        $v0, %hi(g_fighter_records)
+    /* 1375C 80022F5C C81E4224 */  addiu      $v0, $v0, %lo(g_fighter_records)
     /* 13760 80022F60 21202202 */  addu       $a0, $s1, $v0
     /* 13764 80022F64 06008284 */  lh         $v0, 0x6($a0)
     /* 13768 80022F68 00000000 */  nop

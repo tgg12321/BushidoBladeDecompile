@@ -97,8 +97,8 @@ glabel gpu_AddSpriteCells
     /* 63E9C 8007369C 07004014 */  bnez       $v0, .L800736BC
     /* 63EA0 800736A0 2128A002 */   addu      $a1, $s5, $zero
     /* 63EA4 800736A4 01000224 */  addiu      $v0, $zero, 0x1
-    /* 63EA8 800736A8 0180043C */  lui        $a0, %hi(D_800159A0)
-    /* 63EAC 800736AC A0598424 */  addiu      $a0, $a0, %lo(D_800159A0)
+    /* 63EA8 800736A8 0180043C */  lui        $a0, %hi(g_str_warning)
+    /* 63EAC 800736AC A0598424 */  addiu      $a0, $a0, %lo(g_str_warning)
     /* 63EB0 800736B0 4BF5000C */  jal        font_Printf
     /* 63EB4 800736B4 140082AE */   sw        $v0, 0x14($s4)
     /* 63EB8 800736B8 2128A002 */  addu       $a1, $s5, $zero

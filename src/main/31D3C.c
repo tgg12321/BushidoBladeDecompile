@@ -517,9 +517,10 @@ void gpu_SetBackgroundClearColorAndFarColor(s32 color) {
 }
 
 /* .data 0x80094D40..0x800951D8, this file's whole .data (31548.c's
- * g_node_pose_rotation_indices ends at 0x80094D40; 32D04.c's D_800951D8
- * follows), in address order: gpu_LoadRequestedMaskedTimGroupsForSlot's
- * per-index 5-bit mask table, the six VRAM row lists
+ * g_node_pose_rotation_indices ends at 0x80094D40; 32D04.c's
+ * g_gpu_table_color_textured_primitive_handlers follows), in address order:
+ * gpu_LoadRequestedMaskedTimGroupsForSlot's per-index 5-bit mask table, the six
+ * VRAM row lists
  * ({x, y} pairs ending in {-1, 0}) that g_gpu_vram_row_lists points at, the id
  * -> list index map g_gpu_vram_row_list_map (0xFF: none), and
  * ApplyLightPresetRowBackgroundClearAndFarColor's 38 light rows. Defined after

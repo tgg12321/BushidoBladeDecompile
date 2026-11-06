@@ -3,8 +3,8 @@ glabel memcard_Format
     /* 2870C 80037F0C 1800BFAF */  sw         $ra, 0x18($sp)
     /* 28710 80037F10 21308000 */  addu       $a2, $a0, $zero
     /* 28714 80037F14 2138A000 */  addu       $a3, $a1, $zero
-    /* 28718 80037F18 0180053C */  lui        $a1, %hi(D_800109C8)
-    /* 2871C 80037F1C C809A524 */  addiu      $a1, $a1, %lo(D_800109C8)
+    /* 28718 80037F18 0180053C */  lui        $a1, %hi(g_str_memcard_device_fmt)
+    /* 2871C 80037F1C C809A524 */  addiu      $a1, $a1, %lo(g_str_memcard_device_fmt)
     /* 28720 80037F20 8CE6010C */  jal        sprintf
     /* 28724 80037F24 1000A427 */   addiu     $a0, $sp, 0x10
     /* 28728 80037F28 8AE2010C */  jal        format

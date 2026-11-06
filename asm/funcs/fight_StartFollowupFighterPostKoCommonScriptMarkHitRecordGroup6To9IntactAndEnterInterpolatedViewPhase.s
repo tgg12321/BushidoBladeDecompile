@@ -2,8 +2,8 @@ glabel fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactA
     /* F6B4 8001EEB4 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* F6B8 8001EEB8 0A80043C */  lui        $a0, %hi(g_fight_followup_fighter_index)
     /* F6BC 8001EEBC 48378480 */  lb         $a0, %lo(g_fight_followup_fighter_index)($a0)
-    /* F6C0 8001EEC0 1080033C */  lui        $v1, %hi(D_80101EC8)
-    /* F6C4 8001EEC4 C81E6324 */  addiu      $v1, $v1, %lo(D_80101EC8)
+    /* F6C0 8001EEC0 1080033C */  lui        $v1, %hi(g_fighter_records)
+    /* F6C4 8001EEC4 C81E6324 */  addiu      $v1, $v1, %lo(g_fighter_records)
     /* F6C8 8001EEC8 1800BFAF */  sw         $ra, 0x18($sp)
     /* F6CC 8001EECC 1400B1AF */  sw         $s1, 0x14($sp)
     /* F6D0 8001EED0 1000B0AF */  sw         $s0, 0x10($sp)

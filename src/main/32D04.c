@@ -480,8 +480,8 @@ extern void
     gpu_ColorNormalsAndProjectPerMatrixSectionVerticesAndDispatchPackets(
         s32, s32, s32, s32);
 extern MATRIX g_gpu_flush_view_matrix;
-extern void (*D_800951D8[])();
-extern void (*D_80095280[])();
+extern void (*g_gpu_table_color_textured_primitive_handlers[])();
+extern void (*g_gpu_outline_primitive_handlers[])();
 extern void (*g_gpu_default_primitive_handlers[])();
 extern Unk800F62E0Rec *g_light_selected_setup;
 
@@ -503,9 +503,10 @@ void gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift(
     dst->t[1] >>= 1;
 
     if (arg3[1] & 1) {
-        *(s32 *)0x1F80001C = (s32)&D_80095280;
+        *(s32 *)0x1F80001C = (s32)&g_gpu_outline_primitive_handlers;
     } else {
-        *(s32 *)0x1F80001C = (s32)&D_800951D8;
+        *(s32 *)0x1F80001C =
+            (s32)&g_gpu_table_color_textured_primitive_handlers;
     }
 
     gpu_ColorNormalsAndProjectPerMatrixSectionVerticesAndDispatchPackets(
@@ -1265,7 +1266,7 @@ void gpu_EmitPatchedColorTriangleOutlinesFromWideRecords();
 void gpu_EmitPatchedColorQuadOutlinesFromWideRecords();
 void gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedTrianglePacketsToOt256();
 void gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedQuadPacketsToOt256();
-void (*D_800951D8[42])() = {
+void (*g_gpu_table_color_textured_primitive_handlers[42])() = {
     gpu_FailCheckOnUnhandledPrimitiveType,
     gpu_FailCheckOnUnhandledPrimitiveType,
     gpu_FailCheckOnUnhandledPrimitiveType,
@@ -1309,7 +1310,7 @@ void (*D_800951D8[42])() = {
     gpu_EmitTableColorGouraudTexturedTriangles,
     gpu_EmitTableColorGouraudTexturedQuads,
 };
-void (*D_80095280[42])() = {
+void (*g_gpu_outline_primitive_handlers[42])() = {
     gpu_FailCheckOnUnhandledPrimitiveType,
     gpu_FailCheckOnUnhandledPrimitiveType,
     gpu_FailCheckOnUnhandledPrimitiveType,

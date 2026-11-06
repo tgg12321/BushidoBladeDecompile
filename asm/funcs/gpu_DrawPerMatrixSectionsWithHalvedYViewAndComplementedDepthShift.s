@@ -66,13 +66,13 @@ glabel gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift
     /* 339E4 800431E4 01004230 */  andi       $v0, $v0, 0x1
     /* 339E8 800431E8 05004010 */  beqz       $v0, .L80043200
     /* 339EC 800431EC 00000000 */   nop
-    /* 339F0 800431F0 0980023C */  lui        $v0, %hi(D_80095280)
-    /* 339F4 800431F4 80524224 */  addiu      $v0, $v0, %lo(D_80095280)
+    /* 339F0 800431F0 0980023C */  lui        $v0, %hi(g_gpu_outline_primitive_handlers)
+    /* 339F4 800431F4 80524224 */  addiu      $v0, $v0, %lo(g_gpu_outline_primitive_handlers)
     /* 339F8 800431F8 820C0108 */  j          .L80043208
     /* 339FC 800431FC 00000000 */   nop
   .L80043200:
-    /* 33A00 80043200 0980023C */  lui        $v0, %hi(D_800951D8)
-    /* 33A04 80043204 D8514224 */  addiu      $v0, $v0, %lo(D_800951D8)
+    /* 33A00 80043200 0980023C */  lui        $v0, %hi(g_gpu_table_color_textured_primitive_handlers)
+    /* 33A04 80043204 D8514224 */  addiu      $v0, $v0, %lo(g_gpu_table_color_textured_primitive_handlers)
   .L80043208:
     /* 33A08 80043208 801F013C */  lui        $at, (0x1F80001C >> 16)
     /* 33A0C 8004320C 1C0022AC */  sw         $v0, (0x1F80001C & 0xFFFF)($at)

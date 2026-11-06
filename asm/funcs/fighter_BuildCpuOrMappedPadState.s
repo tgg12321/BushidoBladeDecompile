@@ -34,12 +34,12 @@ glabel fighter_BuildCpuOrMappedPadState
     /* C694 8001BE94 80100200 */  sll        $v0, $v0, 2
     /* C698 8001BE98 23105100 */  subu       $v0, $v0, $s1
     /* C69C 8001BE9C 80100200 */  sll        $v0, $v0, 2
-    /* C6A0 8001BEA0 1080013C */  lui        $at, %hi(D_80101EC8 + 0x34E)
+    /* C6A0 8001BEA0 1080013C */  lui        $at, %hi(g_fighter_records + 0x34E)
     /* C6A4 8001BEA4 21082500 */  addu       $at, $at, $a1
-    /* C6A8 8001BEA8 162224A0 */  sb         $a0, %lo(D_80101EC8 + 0x34E)($at)
-    /* C6AC 8001BEAC 1080013C */  lui        $at, %hi(D_80101EC8 + 0x6)
+    /* C6A8 8001BEA8 162224A0 */  sb         $a0, %lo(g_fighter_records + 0x34E)($at)
+    /* C6AC 8001BEAC 1080013C */  lui        $at, %hi(g_fighter_records + 0x6)
     /* C6B0 8001BEB0 21082200 */  addu       $at, $at, $v0
-    /* C6B4 8001BEB4 CE1E2284 */  lh         $v0, %lo(D_80101EC8 + 0x6)($at)
+    /* C6B4 8001BEB4 CE1E2284 */  lh         $v0, %lo(g_fighter_records + 0x6)($at)
     /* C6B8 8001BEB8 00000000 */  nop
     /* C6BC 8001BEBC 05004010 */  beqz       $v0, .L8001BED4
     /* C6C0 8001BEC0 21202002 */   addu      $a0, $s1, $zero

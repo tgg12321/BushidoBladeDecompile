@@ -7,10 +7,12 @@
  *    this one is empty) and ends where cdrom.c's .data starts, 0x8008EC34.
  *    No uninitialized objects.
  * 2. Small objects in .data: D_8008D864 (u8[8]: one point count per
- *    D_8008D86C set), D_8008EB04 .. D_8008EB0C (s16) and D_8008EB10 ..
- *    D_8008EB18 (s32), each with its own reader in
- * fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams, D_8008EB38
- * (u8[8], fighter_Init), g_fight_midpoint_effect_event_ids (u8[6],
+ *    D_8008D86C set), D_8008EB04 ..
+ * g_fight_followup_playback_red_light_effect_frame (s16) and
+ * g_fight_followup_playback_red_light_effect_offset_x ..
+ *    g_fight_followup_playback_red_light_effect_offset_z (s32), each with its
+ * own reader in fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams,
+ * D_8008EB38 (u8[8], fighter_Init), g_fight_midpoint_effect_event_ids (u8[6],
  * fight_UpdatePairedInputTotalsEventsAndMidpointEffects, after
  * g_fight_midpoint_effect_offsets's 6 rows), g_snd_stage_sequence_base_sounds
  * (u8[6], snd_UpdateStageSounds, before g_snd_stage_sequence_cue_ticks's 6
@@ -33,14 +35,14 @@
 extern const char D_800100FC[66][12];
 extern const char g_str_chanbara[];
 extern const char g_str_practice[];
-extern char D_800A3114[];
-extern char D_800A311C[];
-extern char D_800A3124[];
-extern char D_800A3150[];
-extern char D_800A3158[];
-extern char D_800A3160[];
-extern char D_800A3164[];
-extern char D_800A316C[];
+extern char g_str_motion_file_on[];
+extern char g_str_motion_file_gs[];
+extern char g_str_motion_file_gn[];
+extern char g_str_network[];
+extern char g_str_team[];
+extern char g_str_vs[];
+extern char g_str_vscpu[];
+extern char g_str_story[];
 
 /* g_sqrt_table_u8[i] = floor(8 * sqrt(i)), i = 0..0x3FF (17AFC.c's distance and
  * length helpers). */
@@ -224,7 +226,7 @@ u8 D_8008D90C[2][8] = {{0x12, 0x14, 0x16, 0x18, 0x1A, 0x1A, 0x1C, 0x1C},
 
 /* No reader: D_800100FC's first 52 names, last to first (the word at
  * 0x8008D9E8 points at its first name). */
-const char *D_8008D91C[52] = {
+const char *g_fighter_move_kind_names[52] = {
     D_800100FC[51], D_800100FC[50], D_800100FC[49], D_800100FC[48],
     D_800100FC[47], D_800100FC[46], D_800100FC[45], D_800100FC[44],
     D_800100FC[43], D_800100FC[42], D_800100FC[41], D_800100FC[40],
@@ -249,19 +251,20 @@ u8 g_fighter_forward_move_rate_limit_indices[72] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 0, 0, 2, 1, 1, 2,
     0, 1, 2, 0, 1, 1, 2, 0, 2, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-/* [character_data_index] (fighter_Update); D_8008DA50 .. D_8008DAD8 sized from
- * the gaps. */
-s16 D_8008DA50[34] = {
+/* [character_data_index] (fighter_Update);
+ * g_fighter_forward_jump_vertical_velocities ..
+ * g_fighter_vertical_jump_velocities sized from the gaps. */
+s16 g_fighter_forward_jump_vertical_velocities[34] = {
     -330, -350, -365, -330, -370, -350, -330, -330, -365, -350, -350, -365,
     -330, -350, -365, -330, -350, -350, -365, -330, -365, -350, -350, -365,
     -365, -320, -320, -320, -320, -320, -320, -320, -320, 0};
 
-s16 D_8008DA94[34] = {
+s16 g_fighter_forward_jump_speeds[34] = {
     200, 220, 250, 200, 250, 220, 200, 200, 250, 220, 220, 250,
     200, 220, 250, 200, 220, 220, 250, 200, 250, 220, 220, 250,
     250, 256, 256, 256, 256, 256, 256, 256, 256, 0};
 
-s16 D_8008DAD8[34] = {
+s16 g_fighter_vertical_jump_velocities[34] = {
     -320, -330, -340, -320, -340, -330, -320, -320, -340, -330, -330, -340,
     -320, -330, -340, -320, -330, -330, -340, -320, -340, -330, -330, -340,
     -340, -320, -320, -320, -320, -320, -320, -320, -320, 0};
@@ -300,15 +303,15 @@ u16 g_fighter_motion_data_ids[27][8] = {
 /* Motion data id + BBM file-name string, ended by a zero id (the names are
  * never read: motion_LoadFighterData uses the entry index). */
 Unk8008DCCCEntry g_motion_fighter_data_files[18] = {
-    {0x321, D_800100FC[65]},  {0x421, D_800100FC[64]},
-    {0x521, D_800100FC[63]},  {0x431, D_800100FC[62]},
-    {0x531, D_800100FC[61]},  {0x532, D_800100FC[60]},
-    {0x1321, D_800100FC[59]}, {0x1421, D_800100FC[58]},
-    {0x1521, D_800100FC[57]}, {0x1432, D_800100FC[56]},
-    {0x2321, D_800100FC[55]}, {0x3321, D_800100FC[54]},
-    {0x4321, D_800100FC[53]}, {0x5321, D_800100FC[52]},
-    {0x6321, D_800A3124},     {0x7321, D_800A311C},
-    {0x666, D_800A3114},      {0x0, NULL}};
+    {0x321, D_800100FC[65]},        {0x421, D_800100FC[64]},
+    {0x521, D_800100FC[63]},        {0x431, D_800100FC[62]},
+    {0x531, D_800100FC[61]},        {0x532, D_800100FC[60]},
+    {0x1321, D_800100FC[59]},       {0x1421, D_800100FC[58]},
+    {0x1521, D_800100FC[57]},       {0x1432, D_800100FC[56]},
+    {0x2321, D_800100FC[55]},       {0x3321, D_800100FC[54]},
+    {0x4321, D_800100FC[53]},       {0x5321, D_800100FC[52]},
+    {0x6321, g_str_motion_file_gn}, {0x7321, g_str_motion_file_gs},
+    {0x666, g_str_motion_file_on},  {0x0, NULL}};
 
 /* [character_data_index][weapon_id] -> Unk80101EC8Record.default_variant_index
  */
@@ -476,7 +479,7 @@ u8 g_fight_character_vab_and_ground_quad_classes[36] = {
     0, 0, 0, 1, 3, 1, 2, 2, 0, 3, 2, 2, 2, 4, 2, 0, 0, 0,
     2, 2, 2, 1, 0, 3, 1, 0, 0, 0, 2, 0, 2, 0, 2, 0, 0, 0};
 
-/* [character_data_index][weapon_id] of D_80101EC8 */
+/* [character_data_index][weapon_id] of g_fighter_records */
 u8 g_resource_default_pair_selections[27][8] = {
     {0, 3, 7, 9, 10, 12, 14, 15},     {2, 5, 6, 8, 10, 12, 14, 15},
     {0, 3, 6, 8, 11, 12, 14, 15},     {2, 5, 7, 8, 10, 12, 14, 15},
@@ -493,7 +496,7 @@ u8 g_resource_default_pair_selections[27][8] = {
     {1, 4, 7, 9, 11, 13, 14, 15},     {1, 1, 1, 1, 1, 1, 14, 15},
     {1, 4, 7, 9, 11, 13, 14, 15}};
 
-/* [character_data_index][weapon_id] of D_80101EC8 */
+/* [character_data_index][weapon_id] of g_fighter_records */
 u8 g_resource_alternate_pair_selections[27][6] = {
     {0, 2, 4, 5, 6, 7}, {1, 3, 4, 5, 6, 7}, {0, 2, 4, 5, 6, 7},
     {1, 3, 4, 5, 6, 7}, {1, 3, 4, 5, 6, 7}, {1, 2, 4, 5, 6, 7},
@@ -622,15 +625,15 @@ s16 D_8008EB06 = 159;
 
 s16 D_8008EB08 = 160;
 
-s16 D_8008EB0A = 198;
+s16 g_fight_followup_playback_common_sound_frame = 198;
 
-s16 D_8008EB0C = 159;
+s16 g_fight_followup_playback_red_light_effect_frame = 159;
 
-s32 D_8008EB10 = 0;
+s32 g_fight_followup_playback_red_light_effect_offset_x = 0;
 
-s32 D_8008EB14 = -800;
+s32 g_fight_followup_playback_red_light_effect_offset_y = -800;
 
-s32 D_8008EB18 = 0;
+s32 g_fight_followup_playback_red_light_effect_offset_z = 0;
 
 /* [g_fight_step_row_column]
  * (motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue);
@@ -652,7 +655,7 @@ s16 g_fighter_dpad_angle_offsets[3][3] = {
     {-512, 0, 512}, {-1024, 0, 1024}, {-1536, 2048, 1536}};
 
 /* fight_UpdatePairedInputTotalsEventsAndMidpointEffects's 6 rows
- * (D_80101EC8[0].move_kind mode). */
+ * (g_fighter_records[0].move_kind mode). */
 Tbl8008EB54Entry g_fight_midpoint_effect_offsets[6] = {
     {0, -1280}, {-149, -680}, {-112, -1280},
     {0, -1280}, {112, -1280}, {149, -680}};
@@ -698,9 +701,9 @@ Unk8008EA44Entry g_snd_stage_sequence_cue_ticks[6] = {
 
 /* No reader: seven pointers to the mode name strings (STORY, VSCPU,
  * PRACTICE, CHANBARA, VS, TEAM, NETWORK). */
-const char *D_8008EC08[7] = {
-    D_800A316C, D_800A3164, g_str_practice, g_str_chanbara,
-    D_800A3160, D_800A3158, D_800A3150};
+const char *g_fight_mode_names[7] = {
+    g_str_story, g_str_vscpu, g_str_practice, g_str_chanbara,
+    g_str_vs,    g_str_team,  g_str_network};
 
 /* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags's rank rows. */
 u8 g_fight_step_row_object_ids[2][5] = {

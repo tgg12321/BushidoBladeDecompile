@@ -113,7 +113,7 @@ RAM0, RAMSZ = 0x80000000, 0x200000
 COMMON_SECTIONS = 0x80102760  # g_motion_common_sections
 FIGHTER_SECTIONS = 0x801027B0  # g_motion_fighter_sections[slot]
 FIGHTER_BUFFERS = 0x800A3860  # g_motion_fighter_buffers[slot]
-RECORDS, REC_SIZE = 0x80101EC8, 0x44C  # D_80101EC8[2]
+RECORDS, REC_SIZE = 0x80101EC8, 0x44C  # g_fighter_records[2]
 SECTIONS_SIZE = 0x14
 KEY_CONFIG = 0x80106A70  # D_80106A50.frec20[3]
 MODE = 0x800A38DC  # D_800A38DC (s16)
@@ -125,7 +125,7 @@ PAIRED_STARTER = 0x800A38AE  # D_800A38AE (s16)
 # 0x80148800 / 0x80190800, 0x48000 apart.
 SPEC_VALUES = [
     {"at": "g_motion_fighter_buffers", "len": 8},
-    {"at": "D_80101EC8", "len": 2 * REC_SIZE},
+    {"at": "g_fighter_records", "len": 2 * REC_SIZE},
     {"at": "g_motion_common_sections", "len": FIGHTER_SECTIONS + 2 * SECTIONS_SIZE
      - COMMON_SECTIONS},
     {"at": "0x80106A70", "len": 4},
@@ -202,7 +202,7 @@ def load_dump(path: str, phase: str) -> Ram:
 
 
 class Rec:
-    """One D_80101EC8 record as read."""
+    """One g_fighter_records record as read."""
 
     def __init__(self, m: Ram, idx: int):
         b = RECORDS + idx * REC_SIZE
@@ -552,7 +552,7 @@ def main(argv=None):
     ap.add_argument("--move", help="list one move's edges: ADDR[:SLOT|:common] "
                     "(the file it was read from; default the record's own)")
     ap.add_argument("--record", type=int, choices=(0, 1),
-                    help="only this D_80101EC8 record (default both; "
+                    help="only this g_fighter_records record (default both; "
                     "--move: 0)")
     args = ap.parse_args(argv)
     if args.spec_values:

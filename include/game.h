@@ -1940,8 +1940,8 @@ typedef struct {
 } Unk8008EA44Entry;
 
 /* 6-row tables fight_UpdatePairedInputTotalsEventsAndMidpointEffects selects by
- * D_80101EC8[0].move_kind mode (row 0..5): bearing_distance scales the Judge
- * sin/cos offset, height_offset is added to y;
+ * g_fighter_records[0].move_kind mode (row 0..5): bearing_distance scales the
+ * Judge sin/cos offset, height_offset is added to y;
  * g_fight_midpoint_effect_event_ids[row] is passed
  * as fight_RecordReplayEventAndDispatchSoundOrEffect's event_kind. */
 typedef struct {

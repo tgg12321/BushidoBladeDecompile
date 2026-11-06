@@ -38,8 +38,8 @@ glabel object_ResolveFighterHits
     /* 223B0 80031BB0 0D014010 */  beqz       $v0, .L80031FE8
     /* 223B4 80031BB4 00000000 */   nop
     /* 223B8 80031BB8 02006292 */  lbu        $v0, 0x2($s3)
-    /* 223BC 80031BBC 1080033C */  lui        $v1, %hi(D_80101EC8)
-    /* 223C0 80031BC0 C81E6324 */  addiu      $v1, $v1, %lo(D_80101EC8)
+    /* 223BC 80031BBC 1080033C */  lui        $v1, %hi(g_fighter_records)
+    /* 223C0 80031BC0 C81E6324 */  addiu      $v1, $v1, %lo(g_fighter_records)
     /* 223C4 80031BC4 0100542C */  sltiu      $s4, $v0, 0x1
     /* 223C8 80031BC8 00111400 */  sll        $v0, $s4, 4
     /* 223CC 80031BCC 21105400 */  addu       $v0, $v0, $s4

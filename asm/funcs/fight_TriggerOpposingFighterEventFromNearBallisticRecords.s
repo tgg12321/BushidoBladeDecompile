@@ -19,8 +19,8 @@ glabel fight_TriggerOpposingFighterEventFromNearBallisticRecords
     /* 22B54 80032354 80100200 */  sll        $v0, $v0, 2
     /* 22B58 80032358 23104300 */  subu       $v0, $v0, $v1
     /* 22B5C 8003235C 80100200 */  sll        $v0, $v0, 2
-    /* 22B60 80032360 1080033C */  lui        $v1, %hi(D_80101EC8)
-    /* 22B64 80032364 C81E6324 */  addiu      $v1, $v1, %lo(D_80101EC8)
+    /* 22B60 80032360 1080033C */  lui        $v1, %hi(g_fighter_records)
+    /* 22B64 80032364 C81E6324 */  addiu      $v1, $v1, %lo(g_fighter_records)
     /* 22B68 80032368 21304300 */  addu       $a2, $v0, $v1
     /* 22B6C 8003236C 6A00C394 */  lhu        $v1, 0x6A($a2)
     /* 22B70 80032370 04000224 */  addiu      $v0, $zero, 0x4

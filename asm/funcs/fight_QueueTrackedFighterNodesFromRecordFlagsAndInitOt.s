@@ -10,8 +10,8 @@ glabel fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt
     /* F020 8001E820 80100200 */  sll        $v0, $v0, 2
     /* F024 8001E824 23104300 */  subu       $v0, $v0, $v1
     /* F028 8001E828 80100200 */  sll        $v0, $v0, 2
-    /* F02C 8001E82C 1080033C */  lui        $v1, %hi(D_80101EC8)
-    /* F030 8001E830 C81E6324 */  addiu      $v1, $v1, %lo(D_80101EC8)
+    /* F02C 8001E82C 1080033C */  lui        $v1, %hi(g_fighter_records)
+    /* F030 8001E830 C81E6324 */  addiu      $v1, $v1, %lo(g_fighter_records)
     /* F034 8001E834 21184300 */  addu       $v1, $v0, $v1
     /* F038 8001E838 62006290 */  lbu        $v0, 0x62($v1)
     /* F03C 8001E83C 00000000 */  nop
