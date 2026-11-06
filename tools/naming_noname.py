@@ -33,7 +33,10 @@ every placeholder not final is OPEN.
       census functions; D_8 tokens in game C and headers; unk / field / fXX
       members of game types; placeholder locals and parameters (var_N, temp,
       new_var, spXX, argN, register-style sN / tN / vN / aN) of game
-      functions. Game code is src/main without psxsdk, plus include/*.h.
+      functions. Game code is src/main without psxsdk, plus include/*.h,
+      as git lists them (an ignored file such as the generated
+      include/m2c_context.h does not count); a typedef name used only as a
+      type (s8) is no local.
 
 add and prune also fill each `-` commit from git: the `naming: waveNN` commit of
 the row's last wave, else a commit whose body cites `wNN-research.md`. Lane
@@ -45,6 +48,7 @@ import argparse
 import csv
 import glob
 import io
+import os
 import re
 import subprocess
 import sys
@@ -177,8 +181,21 @@ def unnamed(c):
 # --- tree census of the non-function placeholders -----------------------------
 
 def game_files():
-    c = sorted(f.replace('\\', '/') for f in glob.glob('src/main/**/*.c', recursive=True))
-    return sorted(glob.glob('include/*.h')) + [f for f in c if '/psxsdk/' not in f]
+    """Game C files and top-level headers that git tracks or would track: an
+    ignored generated file (include/m2c_context.h, tools/gen_m2c_context.py
+    output, never built) repeats the tree's declarations and must not count.
+    Outside a git checkout every file on disk counts."""
+    try:
+        out = subprocess.run(['git', 'ls-files', '--cached', '--others', '--exclude-standard',
+                              '--', 'src/main', 'include'],
+                             capture_output=True, text=True, check=True).stdout.split('\n')
+        files = {f for f in out if f and os.path.exists(f)}
+    except (OSError, subprocess.CalledProcessError):
+        files = {f.replace('\\', '/') for f in
+                 glob.glob('src/main/**/*.c', recursive=True) + glob.glob('include/*.h')}
+    h = sorted(f for f in files if re.fullmatch(r'include/[^/]+\.h', f))
+    c = sorted(f for f in files if re.fullmatch(r'src/main/.+\.c', f) and '/psxsdk/' not in f)
+    return h + c
 
 
 def blank(text):
@@ -213,12 +230,30 @@ def flat(body):
     return ''.join(out)
 
 
+def as_type(region, t):
+    """The token is a type here: it starts a declaration (`s8 x`, `s8 *p`) or
+    is a cast (`(s8)`), not a value (`s8 = 0`, `f(s8)`). A real binding with a
+    typedef's name still counts through its declaration (`s32 s8;`)."""
+    after = region[t.end():].lstrip()
+    if re.match(r'[A-Za-z_*]', after):
+        return True
+    before = region[:t.start()].rstrip()
+    return after[:1] == ')' and before.endswith('(') and not re.search(r'\w\s*\($', before)
+
+
 def tree_census(files=None):
-    """{'data': {D_ name}, 'member': {Type.member}, 'local': {func:binding}}."""
+    """{'data': {D_ name}, 'member': {Type.member}, 'local': {func:binding}}.
+    A placeholder-shaped typedef name (s8) is a local only where used as a value."""
     data, members, locals_ = set(), set(), set()
-    for f in files or game_files():
+    files = files or game_files()
+    texts = {}
+    for f in files:
         with io.open(f, encoding='utf-8') as fh:
-            text = blank(fh.read())
+            texts[f] = blank(fh.read())
+    types = {m.group(1) for text in texts.values()
+             for m in re.finditer(r'\btypedef\b[^;{}]*?\b(\w+)\s*;', text)}
+    for f in files:
+        text = texts[f]
         data |= set(D_SYM.findall(text))
         for m in re.finditer(r'\b(typedef\s+)?(struct|union)\s*(\w*)\s*\{', text):
             end = closing(text, m.end())
@@ -243,7 +278,8 @@ def tree_census(files=None):
                 if fn and not re.search(r'=\s*$|\b(struct|union|enum)\s*\w*\s*$', sig):
                     region = sig[fn.start():] + text[i:end]
                     for t in re.finditer(r'(?<![\w.>])(\w+)\b', region):
-                        if PLACEHOLDER.match(t.group(1)) and region[:t.start()][-2:] != '->':
+                        if (PLACEHOLDER.match(t.group(1)) and region[:t.start()][-2:] != '->'
+                                and not (t.group(1) in types and as_type(region, t))):
                             locals_.add(f'{fn.group(1)}:{t.group(1)}')
                 i, start = end, end
                 continue

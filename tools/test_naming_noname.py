@@ -8,6 +8,7 @@ the tree census finds globals, members and locals.
 import contextlib
 import io
 import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -80,6 +81,34 @@ class NoNameTest(unittest.TestCase):
         self.assertEqual(tree['data'], {'D_80090000'})
         self.assertEqual(tree['member'], {'Rec.unk_04', 'Rec.unk06'})
         self.assertEqual(tree['local'], {'f:arg0', 'f:var_1'})
+
+    def test_typedef_name_is_no_local(self):
+        with open('include/types.h', 'w', newline='\n') as f:
+            f.write('typedef signed char s8;\n')
+        with open('src/main/b.c', 'w', newline='\n') as f:
+            f.write('void g(s32 x) {\n    s8 c = (s8)x;\n    s8 *p = (s8 *)&c;\n}\n'
+                    'void h(void) {\n    s32 s8;\n    s8 = 1;\n}\n'
+                    'void k(s32 v) {\n    v = (s8)v + (s8) v;\n}\n')
+        tree = nn.tree_census()
+        self.assertNotIn('g:s8', tree['local'])
+        self.assertNotIn('k:s8', tree['local'])
+        self.assertIn('h:s8', tree['local'])
+
+    def test_ignored_files_do_not_count(self):
+        def git(*a):
+            subprocess.run(['git', *a], check=True, capture_output=True)
+        git('init', '-q')
+        with open('.gitignore', 'w', newline='\n') as f:
+            f.write('include/gen.h\n')
+        with open('include/gen.h', 'w', newline='\n') as f:
+            f.write('extern s32 D_800A0000;\ntypedef struct { s32 field_04; } Gen;\n')
+        with open('include/new.h', 'w', newline='\n') as f:
+            f.write('extern s32 D_800B0000;\n')
+        git('add', 'src')  # include/new.h stays untracked but not ignored: it counts
+        self.assertEqual(nn.game_files(), ['include/new.h', 'src/main/a.c'])
+        tree = nn.tree_census()
+        self.assertEqual(tree['data'], {'D_80090000', 'D_800B0000'})
+        self.assertNotIn('Gen.field_04', tree['member'])
 
     def test_free_never_offers_final(self):
         code, out, err = self.run_cmd('free', 'src/main/a.c')
