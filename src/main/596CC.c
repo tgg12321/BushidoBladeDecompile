@@ -300,10 +300,10 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 pressed_buttons) {
     extern void menu_DrawModeBit1Sheets(s32 *, s32);
     extern void menu_DrawModeBit0Sheets(s32 *, s32);
     /* FAKE: frame layout. gpu_AdvanceBufferCounterAndBuildDrawContext fills
-     * words 1..9 (siblings: s32 sp10[10]); the folded `arg1` word sits at word
-     * 12 and the saved row mask at word 14 only to reproduce the target's 0x60
-     * frame (sp+0x40 / sp+0x48); separate locals give the wrong frame:
-     * score 11. */
+     * words 1..9 (siblings: s32 sp10[10]); the folded `pressed_buttons` word
+     * sits at word 12 and the saved row mask at word 14 only to reproduce the
+     * target's 0x60 frame (sp+0x40 / sp+0x48); separate locals give the wrong
+     * frame: score 11. */
     s32 var_0[15];
     s32 direction_events;
     GpuDb *gpu_db;
