@@ -1,0 +1,3 @@
+D_800A36B0=g_fight_pause_menu_opened
+D_800A31D9=g_row_menu_boot_memcard_load_pending
+D_800A3778=g_camera_halved_row_view_matrix_ptr
