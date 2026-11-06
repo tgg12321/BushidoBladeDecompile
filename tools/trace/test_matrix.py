@@ -400,6 +400,26 @@ class MatrixTest(unittest.TestCase):
         with self.assertRaisesRegex(matrix.InvalidCapture, "duplicate capture ID"):
             matrix.render([self.a, self.a])
 
+    def test_baseline_holding_directory_is_a_family(self):
+        # A set-and-observe family named without an infix (hud-*): leaf IDs keep the
+        # family directory, so equal leaf names in two families do not collide.
+        one = self.capture("docs/naming/runtime/hud-a-1/baseline", 40)
+        two = self.capture("docs/naming/runtime/hud-b-1/baseline", 41)
+        leaf = self.capture("docs/naming/runtime/hud-a-1/B8C8-u", 42)
+        outputs = matrix.render([one, two, leaf])
+        self.assertIn("hud-a-1/baseline\tstub\ttrue", outputs["sources.tsv"])
+        self.assertIn("hud-b-1/baseline\tstub\ttrue", outputs["sources.tsv"])
+        self.assertIn("hud-a-1/B8C8-u\tstub\ttrue", outputs["sources.tsv"])
+        # A set with no baseline/ and no infix (its base leaf is poked itself).
+        rose = self.capture("docs/naming/runtime/hud-c-1/B8C8-u", 43)
+        events = [json.loads(line) for line in (rose / "capture.jsonl").read_text().splitlines()]
+        events[0]["spec"] = {"pokes": [{"at": "0x8009B8CC", "hex": "80", "phase": "fight"}]}
+        self.write(rose / "capture.jsonl", "".join(json.dumps(e) + "\n" for e in events))
+        outputs = matrix.render([leaf, rose])
+        self.assertIn("hud-c-1/B8C8-u\tstub\ttrue", outputs["sources.tsv"])
+        self.assertEqual(outputs["coverage.tsv"],
+                         "addr\tcapture_name\tother_capture_names\tno_name\tcaptures_hit\n")
+
     def test_poke_capture_is_sources_only_like_a_stub(self):
         path = self.capture("poked", 45)
         events = [json.loads(line) for line in (path / "capture.jsonl").read_text().splitlines()]

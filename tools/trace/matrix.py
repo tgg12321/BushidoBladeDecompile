@@ -18,9 +18,10 @@ Poll rows (polls.tsv) restate every gdbtrace poll event in JSONL order: the
 wall-clock t since arming (not a frame), the phase when the run had a script,
 and len from the first spec poll with the same `at` (gdbtrace's default 4 when
 it sets none), else len(hex_string)//2. Polls never touch coverage.
-Stub leaf IDs include their parent directory to distinguish baseline captures.
+Nested capture IDs include their parent directory (leaf names repeat across sets).
 A capture that is not q124_complete is refused, except a non-baseline leaf of
-a -stub-, -poke- or -knockout- family whose manifest records q124_complete:
+a family (a -stub-, -poke- or -knockout- directory, or one holding a
+baseline/ capture beside its leaves) whose manifest records q124_complete:
 false (a compare set keeps its failed runs, reported NOT COMPARABLE): it adds
 sources rows only, q124_complete false, and no values, polls or coverage. A
 family baseline must be complete.
@@ -137,8 +138,12 @@ def tree_names(root):
     return names
 
 
-def family(part):
-    return "-stub-" in part or "-poke-" in part or "-knockout-" in part
+def family(directory):
+    """A compare set: named -stub-, -poke- or -knockout-, or holding a baseline/ capture
+    beside its leaves (the hud-* set-and-observe families carry no such infix)."""
+    part = directory.name
+    return ("-stub-" in part or "-poke-" in part or "-knockout-" in part
+            or (directory / "baseline" / "capture.manifest.json").is_file())
 
 
 def load_capture(path):
@@ -157,9 +162,11 @@ def load_capture(path):
         relative = path.relative_to(REPO_ROOT / "docs/naming/runtime")
     except ValueError:
         relative = Path()
-    in_family = any(family(part) for part in relative.parts)
+    runtime = REPO_ROOT / "docs/naming/runtime"
+    dirs = [runtime.joinpath(*relative.parts[:i + 1]) for i in range(len(relative.parts))]
+    in_family = any(family(d) for d in dirs)
     complete = manifest.get("q124_complete") is True
-    failed_leaf = (any(family(part) for part in relative.parts[:-1])
+    failed_leaf = (any(family(d) for d in dirs[:-1])
                    and path.name != "baseline"
                    and manifest.get("q124_complete") is False)
     if not complete and not failed_leaf:
@@ -172,8 +179,7 @@ def load_capture(path):
         raise InvalidCapture("expected exactly one JSONL start event")
     spec = starts[0].get("spec", {})
     # Poked captures are modified games too: sources only, like stubs. A
-    # -stub-, -poke- or -knockout- family (its baseline included) is a
-    # compare set.
+    # family (its baseline included) is a compare set.
     is_stub = in_family or any(
         e["ev"] in ("stub", "poke") for e in events) or bool(
         spec.get("stubs") or spec.get("pokes"))
@@ -184,8 +190,9 @@ def load_capture(path):
     is_events = not declares_map and any(spec.get(k) for k in ("breakpoints", "watch", "polls"))
     kind = ("stub" if is_stub else "hitmap" if has_map else "values" if is_values
             else "events" if is_events else "other")
-    ident = (path.parent.name + "/" + path.name
-             if len(relative.parts) > 1 and family(relative.parts[-2]) else path.name)
+    # A nested capture keeps its set directory in its ID: compare sets reuse leaf
+    # names (baseline, slot2, B8C8-u), with or without a baseline/ or an infix.
+    ident = "/".join(relative.parts) if len(relative.parts) > 1 else path.name
     start_context = manifest.get("start", {})
     when = (start_context.get("time") if isinstance(start_context, dict) else None)
     if when is None:
