@@ -1,0 +1,39 @@
+==============================================================================
+DATA WAVE — 7 addresses, 7 identifiers remapped
+  0x8008e748: D_8008E748 -> g_fight_opponent_weapon_ids
+  0x800a37bc: D_800A37BC -> g_fight_opponent_weapon_cursor
+  0x801027a0: D_801027A0 -> g_fight_match_roster_indices
+  0x801027d8: D_801027D8 -> g_fight_match_weapon_ids
+  0x8008d55c: D_8008D55C -> g_fight_roster_indices_by_character_data_index
+  0x8008e908: D_8008E908 -> g_fight_step_row_second_fighter_roster_indices
+  0x8008d90c: D_8008D90C -> g_fighter_weapon_object_kinds_by_group_flag
+
+-- file edits (14) --
+  asm/data/93E18.data.s  (3)
+  asm/data/94000.bss.s  (4)
+  asm/funcs/ApplyWorkingRecordToPendingConfigAndInitializeMode.s  (8)
+  asm/funcs/fight_AdvanceMatch.s  (4)
+  asm/funcs/fight_AdvanceOpponentOrder.s  (8)
+  asm/funcs/fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags.s  (2)
+  asm/funcs/fight_BuildOpponentOrder.s  (2)
+  asm/funcs/fighter_Update.s  (2)
+  include/bb2.h  (6)
+  src/main/17AFC.c  (8)
+  src/main/25788.c  (4)
+  src/main/9F9C.c  (2)
+  src/main/d_7D920.c  (4)
+  symbol_addrs.txt  (10)
+
+-- registry lines --
+  symbol_addrs.txt:372 D_800A37BC -> g_fight_opponent_weapon_cursor
+  symbol_addrs.txt:449 D_8008E908 -> g_fight_step_row_second_fighter_roster_indices
+  symbol_addrs.txt:861 D_8008D55C -> g_fight_roster_indices_by_character_data_index
+  symbol_addrs.txt:914 D_800A37BC -> g_fight_opponent_weapon_cursor
+  symbol_addrs.txt:916 D_8008E748 -> g_fight_opponent_weapon_ids
+  symbol_addrs.txt:1128 D_8008E908 -> g_fight_step_row_second_fighter_roster_indices
+  symbol_addrs.txt:1768 D_801027A0 -> g_fight_match_roster_indices
+  symbol_addrs.txt:1769 D_801027D8 -> g_fight_match_weapon_ids
+  symbol_addrs.txt:2040 D_801027A0 -> g_fight_match_roster_indices
+  symbol_addrs.txt:2041 D_801027D8 -> g_fight_match_weapon_ids
+
+DRY RUN — nothing written. Re-run with --apply.

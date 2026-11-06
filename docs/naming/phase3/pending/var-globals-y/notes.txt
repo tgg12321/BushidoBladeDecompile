@@ -1,0 +1,13 @@
+# var-globals-y notes (cites at db043c39606c27721f3051e88b89a8cdf759d726; worktree ln-naming-a; research tmp/codex/var-globals-y-research.md; every target re-enumerated by the drafter with git grep -w over src include asm symbol_addrs.txt named_syms.txt undefined_syms_auto.txt and compared with the research's site lists (all matched except the d_7D920.c definition lines of the NO_NAME rows D_8008EB04/D_8008EB06, corrected to :627/:629; no rename row dropped); the D_8008D55C inverse claim checked by script against g_fight_config_id_data_rows; object_SpawnScatteredAt / fighter_Init / fight_AdvanceOpponentOrder / fight_AdvanceMatch / ApplyWorkingRecord bodies re-read; each proposed name re-checked fresh (git grep -w over src include asm symbol_addrs.txt named_syms.txt undefined_syms_auto.txt docs tools engine: zero hits); verdicts left empty for the reviewer)
+0x8008E748: PROPOSED g_fight_opponent_weapon_ids (current D_8008E748). Confidence medium-high. Fallback keep D_8008E748.
+0x800A37BC: PROPOSED g_fight_opponent_weapon_cursor (current D_800A37BC). Confidence medium-high. Fallback keep D_800A37BC.
+0x801027A0: PROPOSED g_fight_match_roster_indices (current D_801027A0). Confidence medium-high. Fallback keep D_801027A0.
+0x801027D8: PROPOSED g_fight_match_weapon_ids (current D_801027D8). Confidence medium. Fallback keep D_801027D8.
+0x8008D55C: PROPOSED g_fight_roster_indices_by_character_data_index (current D_8008D55C). Confidence medium. Fallback keep D_8008D55C.
+0x8008E908: PROPOSED g_fight_step_row_second_fighter_roster_indices (current D_8008E908). Confidence medium-high. Fallback keep D_8008E908.
+0x8008D90C: PROPOSED g_fighter_weapon_object_kinds_by_group_flag (current D_8008D90C). Confidence medium-high. Fallback keep D_8008D90C.
+0x8008EB04: NO_NAME (D_8008EB04) kept neutral; no code-derived separating word / no newer evidence (see manifest).
+0x8008EB06: NO_NAME (D_8008EB06) kept neutral; no code-derived separating word / no newer evidence (see manifest).
+0x80099B9C: NO_NAME (D_80099B9C) kept neutral; no code-derived separating word / no newer evidence (see manifest).
+0x800A36C6: NO_NAME (D_800A36C6) kept neutral; no code-derived separating word / no newer evidence (see manifest).
+# dry run: tools/data_wave.py --manifest-csv data_manifest.csv --only <the 7 rename addrs> (the tool rejects NO_NAME rows without --only); output in dry.txt
