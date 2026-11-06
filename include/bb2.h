@@ -413,7 +413,7 @@ extern s32 g_fight_stage_list_step_timer;
 extern u8 g_fight_skip_first_defeats_left_expiry;
 extern u8 g_fight_first_fighter_win_count;
 extern u8 g_fight_second_fighter_win_count;
-extern u8 D_800A37E0;
+extern u8 g_camera_distance_chord_used;
 extern u8 g_fight_out_of_bounds_phase_timer;
 extern s16 g_fight_strike_reverse_direction_x;
 extern s16 g_fight_strike_reverse_direction_y;

@@ -824,11 +824,11 @@ dlabel g_memcard_sw_event_ioe
     /* 93FDC 800A37DC 00000000 */ .word 0x00000000
 enddlabel g_memcard_sw_event_ioe
 
-nonmatching D_800A37E0
+nonmatching g_camera_distance_chord_used
 
-dlabel D_800A37E0
+dlabel g_camera_distance_chord_used
     /* 93FE0 800A37E0 */ .byte 0x00
-enddlabel D_800A37E0
+enddlabel g_camera_distance_chord_used
 
 nonmatching g_fight_out_of_bounds_phase_timer
 

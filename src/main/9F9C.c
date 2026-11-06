@@ -702,7 +702,7 @@ void camera_UpdatePadOffset(s32 *held_bits) {
     g_camera_view_offset.eye_distance_offset = 0;
     if (g_fight_tracked_view_setting != 0 && g_main_loop_handler_index == 1) {
         if (*held_bits & PADL2) {
-            D_800A37E0 = 1;
+            g_camera_distance_chord_used = 1;
             if (*held_bits & PADR1) {
                 g_camera_distance_offset = g_camera_distance_offset + 0x4CC;
             }
