@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-rematch re-run unchanged with breakpoint gpu_DrawSelectedStretchedSheetPair (a0 = sheet_index, a1, a2, ra), read watches on D_8009B610[3] (0x8009B610/36) and its cell D_8009B634 (0x8009B634/8), a write watch on D_8009B634, D_8009B634 and g_fight_mode_selector read at every phase start: trace-noname-leads runtime evidence (which panel draws the D_8009B610 / D_8009B634 sheet)",
+  "evidence": [
+    "docs/naming/runtime/noname-lead-D_8009B634-versus-2p-rematch-1/spec.json"
+  ],
+  "extends": "versus-2p-rematch",
+  "refines": "versus-2p-rematch"
+}

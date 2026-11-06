@@ -1,0 +1,16 @@
+{
+  "description": "group-battle-3-0 re-run unchanged with breakpoint gpu_DrawSelectedStretchedSheetPair (a0 = sheet_index, a1, a2, ra), read watches on D_8009B610[3] (0x8009B610/36) and its cell D_8009B634 (0x8009B634/8), a write watch on D_8009B634, D_8009B634 and g_fight_mode_selector read at every phase start; screenshots of the draft run's OUT OF BOUNDS frames: trace-noname-leads runtime evidence (which panel draws the D_8009B610 / D_8009B634 sheet)",
+  "evidence": [
+    "docs/naming/runtime/noname-lead-D_8009B634-group-battle-3-0-1/spec.json"
+  ],
+  "extends": "group-battle-3-0",
+  "refines": "group-battle-3-0",
+  "shots": [
+    "11740:banner_11740",
+    "12950:banner_12950",
+    "14240:banner_14240",
+    "20000:banner_20000",
+    "23400:banner_23400",
+    "24890:banner_24890"
+  ]
+}
