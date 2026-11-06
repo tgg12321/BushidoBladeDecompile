@@ -1,0 +1,16 @@
+{
+  "description": "group-battle-3-0 re-run unchanged (Group Battle, g_fight_mode_selector 5; bout 1 has an OUT OF BOUNDS) with D_800A37E1 and D_800A37E8..EC watches (write 0x800A37E1/1, write and read 0x800A37E8/6; both read at every phase start; write watch g_fight_result_subject_index; screenshots 18-22 frames after each D_800A37E1 = 1 store of the draft run): trace-noname-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/noname-lead-D_800A37E1-group-battle-3-0-1/spec.json"
+  ],
+  "extends": "group-battle-3-0",
+  "refines": "group-battle-3-0",
+  "shots": [
+    "11740:banner_11740",
+    "12950:banner_12950",
+    "14240:banner_14240",
+    "20000:banner_20000",
+    "23400:banner_23400",
+    "24890:banner_24890"
+  ]
+}

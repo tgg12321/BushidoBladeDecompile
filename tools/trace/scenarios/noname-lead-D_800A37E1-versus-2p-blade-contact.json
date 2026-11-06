@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-blade-contact re-run unchanged (2P Vs. Mode, three blade contacts, a KO at 12513) with D_800A37E1 and D_800A37E8..EC watches (write 0x800A37E1/1, write and read 0x800A37E8/6; both read at every phase start; write watch g_fight_result_subject_index): trace-noname-leads runtime evidence",
+  "evidence": [
+    "docs/naming/runtime/noname-lead-D_800A37E1-versus-2p-blade-contact-1/spec.json"
+  ],
+  "extends": "versus-2p-blade-contact",
+  "refines": "versus-2p-blade-contact"
+}
