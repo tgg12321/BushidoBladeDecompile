@@ -1,0 +1,24 @@
+var-members-rest-33 -- draft notes (research: tmp/codex/var-members-rest-33-research.md, hints only; re-derived at 718b9281f with git grep -nw over src include tools asm, a scan of the 137 live INCLUDE_ASM bodies, and the compiler-driven dry run).
+
+BASIS: 2 RENAME rows. Unk1F800000Rec.unk8C -> rtp_flag (storage behind g_eff_rtp_flag, the RotTransPers flag word; var-globals-e PASS 4ead0c0b1 answered the eff.c:3036-3037 store-then-test that rest-9 rejected). Unk80045878Obj.unk_18F4 -> section_matrix_ptrs (the kind-0xA node's unk58 hands this table to the INCLUDE_ASM section-loop consumers, one MATRIX * per section pass; the name makes no claim about the order).
+
+FALLBACKS: if a reviewer reads eff.c:3036-3037 as a second role, drop rtp_flag (and the same objection then hits the landed g_eff_rtp_flag). If 'section' is judged unsupported, drop section_matrix_ptrs to NO_NAME; do not swap in an ordering or body-part name.
+
+COMMENT PASS (apply): include/game.h:2282 ' * - unk_18F4[] / node_matrix_ptrs[]: ...' -> section_matrix_ptrs[]. include/game.h:1229 trailing /* g_eff_rtp_flag */ can stay. No FAKE comment names unk_18F4 or unk8C (31548.c:133-134 names unk58, which stays). Apply touches include/game.h, src/main/eff.c:242, src/main/309CC.c:369-388, src/main/31548.c:137; run tools/format.py on 309CC.c (longer name may re-wrap).
+
+NO_NAME rows (unchanged, not renamed):
+- Unk80045878Node.unk58: three roles (plane Y, matrix-pointer table, duplicate source node); rest-12/21/22/26 stand.
+- CamScratch.unk0, unk6: declared only, never accessed through the type (9F9C.c:436/439).
+- MotionFrame.unk_06/08/0A: rotation-angle triple; which node (transform_nodes[12], not 11) rests on template geometry, a hip/pelvis name would be a guess. All three or none.
+- NavVertexChainSet.unk1, unk8: zero padding, declared only (game.h:1492/1494).
+- ScrPad.unk2B8: mixed scratch (collision work, math scratch, gpu table overlap).
+- Unk1F8002B8Rec.unkA8, unkB8: mixed (segment start, point sums, edge vectors, 2D vertices); rest-5/22 stand.
+- Unk1F8002B8_8005344C.unk10: rotated velocity, then hit point; two roles.
+- Unk800469C4Hdr.unk0: only the read at 368E4.c:395 (index unk0 + 1 = end offset); offset_count would need a disc read.
+- Unk8006E49CRec.unk_20: only copied into Unk8006EACCRec.unk_24 (neutral); unk_24 never accessed.
+- Unk80099D88Rec.unk4: 8-bit chance of one press in move kind 0x1D (4510C.c:1976), kind/action unnamed. unk6: per-frame chance and countdown scale (4510C.c:2506, 2594); no single name.
+- Unk80101BF0Rec.unk_1: records arg0 of replay_RecordEvent, which is still arg0 with mixed callers.
+- Unk80104E88Rec.unk_01: write-only constant 1 (17AFC.c:4748).
+- Unk80101EC8Record.unk_E4: read only as the 4th word of a VECTOR copy (43500.c:309-310); owner-gated, no new lead.
+
+PRE-APPLY RESULT (naming-reviewer 2026-11-06): rtp_flag PASS -> CONFIRM. Unk80045878Obj.unk_18F4 -> section_matrix_ptrs FAILED and is dropped (stays unk_18F4): the section loop of gpu_ColorNormalsAndProjectPerMatrixSectionVerticesAndDispatchPackets runs a fixed 13 passes (asm .s:17, :452, :497), reading entries 0..12 only, while 309CC.c:369-388 writes 20; the other reader, gte_ColorGroupedNormalStreamWithSelectedMatrices (.s:23-26, :100), indexes the table by a per-group index from the model stream. The table is a matrix palette of the kind-0xA model draw; a mechanical palette name (set apart from node_matrix_ptrs) may return as a new row for fresh review. The COMMENT PASS line for game.h:2282 above is void (that row did not survive); the wave touches include/game.h:1229 and src/main/eff.c:242 only.
