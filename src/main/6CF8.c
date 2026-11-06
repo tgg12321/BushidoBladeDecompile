@@ -356,8 +356,9 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
         snd_FlushSoundQueue();
         DrawSync(0);
         VSync(2);
-        /* FAKE: do-while(0) raises var_1's loop-depth weight above var_2's,
-           seating var_1 in $s0 and var_2 in $s1; unwrapped: score 21.
+        /* FAKE: do-while(0) raises var_1's loop-depth weight above
+           selected_row's, seating var_1 in $s0 and selected_row in $s1;
+           unwrapped: score 21.
            Unwrapped trials: buffer-first/inline idx/pointer base/for: 21;
            cursor if/else: 23; preincrement/decrement wrap: 24;
            post-loop switch: 28; buffer-derived indices: 45; var_1 as
