@@ -1,0 +1,12 @@
+# var-globals-z notes (cites at 3930a921ef6affa12d9dd1e7848d9b1ed9f54b31; worktree ln-naming-a; research tmp/codex/var-globals-z-research.md; every target re-enumerated by the drafter with git grep -w over src include asm symbol_addrs.txt named_syms.txt undefined_syms_auto.txt and compared with the research's site lists (all matched; only the eff.c cites of D_800A312C and the 17AFC.c range of the weapon-table row were tightened); the weapon-table and consumer bodies re-read (fighter_UpdateBoneWorldData, fighter_HandleMissingSupportWhileDescending, fight_UpdatePairedMoves, fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams, fighter_ProcessWeaponContacts, eff_StartRecycledVectorCommandWithRedLight); each proposed name re-checked fresh (git grep -l -w over src include asm symbol_addrs.txt named_syms.txt undefined_syms_auto.txt docs tools engine: zero files); verdicts left empty for the reviewer)
+0x800A312C: PROPOSED g_fight_followup_playback_red_light_effect_vector (current D_800A312C). Confidence medium. Fallback keep D_800A312C.
+0x800A3769: PROPOSED g_fight_missing_support_fighter_falls_forward (current D_800A3769). Confidence medium. Fallback keep D_800A3769.
+0x8008D86C: PROPOSED g_fighter_weapon_point_sets (current D_8008D86C). Confidence medium. Fallback keep D_8008D86C.
+0x8008D864: PROPOSED g_fighter_weapon_point_counts (current D_8008D864). Confidence medium-high. Fallback keep D_8008D864.
+0x8008D88C: PROPOSED g_fighter_wielded_object_point_pairs (current D_8008D88C). Confidence medium. Fallback keep D_8008D88C.
+0x8008D774: NO_NAME (D_8008D774) kept neutral; no code-derived separating word / no newer evidence (see manifest).
+0x8008EB04: NO_NAME (D_8008EB04) kept neutral; no code-derived separating word / no newer evidence (see manifest).
+0x8008EB06: NO_NAME (D_8008EB06) kept neutral; no code-derived separating word / no newer evidence (see manifest).
+0x80099B9C: NO_NAME (D_80099B9C) kept neutral; no code-derived separating word / no newer evidence (see manifest).
+0x800A36C6: NO_NAME (D_800A36C6) kept neutral; no code-derived separating word / no newer evidence (see manifest).
+# dry run: tools/data_wave.py --manifest-csv data_manifest.csv --only <the 5 rename addrs> (the tool rejects NO_NAME rows without --only); output in dry.txt

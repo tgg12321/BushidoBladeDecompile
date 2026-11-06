@@ -1,0 +1,29 @@
+==============================================================================
+DATA WAVE — 5 addresses, 5 identifiers remapped
+  0x800a312c: D_800A312C -> g_fight_followup_playback_red_light_effect_vector
+  0x800a3769: D_800A3769 -> g_fight_missing_support_fighter_falls_forward
+  0x8008d86c: D_8008D86C -> g_fighter_weapon_point_sets
+  0x8008d864: D_8008D864 -> g_fighter_weapon_point_counts
+  0x8008d88c: D_8008D88C -> g_fighter_wielded_object_point_pairs
+
+-- file edits (11) --
+  asm/data/938FE.data.s  (3)
+  asm/data/93E18.data.s  (3)
+  asm/funcs/fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams.s  (2)
+  asm/funcs/fight_UpdatePairedMoves.s  (2)
+  asm/funcs/fighter_HandleMissingSupportWhileDescending.s  (2)
+  asm/funcs/fighter_UpdateBoneWorldData.s  (8)
+  include/bb2.h  (4)
+  src/main/2B344.c  (2)
+  src/main/9F9C.c  (5)
+  src/main/d_7D920.c  (3)
+  symbol_addrs.txt  (5)
+
+-- registry lines --
+  symbol_addrs.txt:284 D_800A3769 -> g_fight_missing_support_fighter_falls_forward
+  symbol_addrs.txt:301 D_800A312C -> g_fight_followup_playback_red_light_effect_vector
+  symbol_addrs.txt:758 D_8008D86C -> g_fighter_weapon_point_sets
+  symbol_addrs.txt:815 D_800A3769 -> g_fight_missing_support_fighter_falls_forward
+  symbol_addrs.txt:1007 D_800A312C -> g_fight_followup_playback_red_light_effect_vector
+
+DRY RUN — nothing written. Re-run with --apply.

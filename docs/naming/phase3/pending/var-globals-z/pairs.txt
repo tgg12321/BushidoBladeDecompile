@@ -1,0 +1,5 @@
+D_800A312C=g_fight_followup_playback_red_light_effect_vector
+D_800A3769=g_fight_missing_support_fighter_falls_forward
+D_8008D86C=g_fighter_weapon_point_sets
+D_8008D864=g_fighter_weapon_point_counts
+D_8008D88C=g_fighter_wielded_object_point_pairs
