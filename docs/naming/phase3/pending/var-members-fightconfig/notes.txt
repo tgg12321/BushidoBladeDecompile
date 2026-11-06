@@ -1,0 +1,25 @@
+var-members-fightconfig -- draft notes (research: tmp/var-members-fightconfig-research.md; re-derived in ln-naming-a)
+
+Scope: Unk80102778Rec.unk_4 (include/game.h:2410, u8 unk_4[6], global g_fight_config), reopened by the trace-b data-lead captures (backlog row var-members-fightconfig). Result: 1 RENAME pair (pairs.txt). Dry run dry.txt (WSL python3; the Windows python lacks the mipsel cpp): exit 0, "OK: every member access renamed", 8 files (include/game.h, 17AFC.c, 24BF0.c, 25788.c, 28708.c, 2B344.c, 9F9C.c, menu_config.c), 103 lines = 1 declaration + 102 uses, all on g_fight_config. No other struct has a unk_4 member in src/include. The renamed lines will exceed 80 columns in places: tools/format.py must re-wrap them.
+
+Left out: no split of the three [2k+player] pairs (rename-only tool). D_800A36F9 / 0x800A3188 / 0x800A3198 / 0x800A31C8 stay for the globals track and can come back now that the member is named.
+
+Comment pass (hand edit after the rename; the tool renames identifiers only):
+- include/game.h:2399-2406 struct comment: replace with
+    /* The parameter block 0x80102778..0x80102787 (fight_InitSettings sets
+     * every byte of it except 0x82/0x83): two u16 values, the per-player fighter
+     * setup bytes every fighter_Init call takes its arguments from, kept as one
+     * array (fighter_setup[2 * k + player], [0] = P1, [1] = P2; k = 0 roster
+     * index, 1 weapon id (0xFF: take the other fighter's), 2 cpu-controlled
+     * flag), a fourth per-player pair only other functions touch
+     * (operand_cpu_base_levels, indexed by player in fighter_ConfigureCpuControl)
+     * and four single bytes. One object:
+     * menu_PrintEditAndApplyConfigWithPerPadCursors reaches fighter_setup and
+     * pending_view_setting as offsets from the address of pending_stage_index.
+     */
+  (re-wrap to 80 columns; the existing lines 2402 and 2405 are the two that name unk_4).
+- src/main/d_7D920.c:124 `/* [g_fight_config.unk_4[i] / fighter_Init's roster_index] ->` -> fighter_setup
+- src/main/d_7D920.c:134 `/* [g_fight_config.unk_4[i]] -> slot_LoadObjectBuildNodesSoftbodyAndFogLevels's` -> fighter_setup
+- src/main/d_7D920.c:471 `/* [g_fight_config.unk_4[i]] (9F9C.c: D_800A30FC / D_800A30FD,` -> fighter_setup
+No other comment in src/ or include/ names unk_4 for this member (git grep -n -w unk_4: 3 game.h lines, 3 d_7D920.c lines are the only non-code hits).
+- symbol_addrs.txt:858 (g_fight_character_vab_and_ground_quad_classes comment) `g_fight_config.unk_4[0] / [1]` -> fighter_setup (pre-apply reviewer).

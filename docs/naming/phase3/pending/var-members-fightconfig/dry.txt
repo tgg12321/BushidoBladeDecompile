@@ -1,0 +1,403 @@
+PASS Unk80102778Rec.unk_4=fighter_setup
+decl Unk80102778Rec.unk_4 -> fighter_setup  include/game.h:2410
+  round 0: 102 member error line(s)
+    src/main/17AFC.c:5753 unk_4 x1
+    src/main/17AFC.c:5840 unk_4 x1
+    src/main/17AFC.c:5887 unk_4 x1
+    src/main/17AFC.c:5889 unk_4 x1
+    src/main/17AFC.c:5891 unk_4 x1
+    src/main/17AFC.c:5897 unk_4 x1
+    src/main/17AFC.c:5901 unk_4 x1
+    src/main/17AFC.c:5964 unk_4 x1
+    src/main/17AFC.c:5980 unk_4 x1
+    src/main/17AFC.c:6004 unk_4 x1
+    src/main/17AFC.c:6011 unk_4 x1
+    src/main/17AFC.c:6139 unk_4 x1
+    src/main/17AFC.c:6141 unk_4 x1
+    src/main/24BF0.c:55 unk_4 x1
+    src/main/24BF0.c:56 unk_4 x1
+    src/main/24BF0.c:61 unk_4 x1
+    src/main/24BF0.c:67 unk_4 x1
+    src/main/24BF0.c:68 unk_4 x1
+    src/main/24BF0.c:69 unk_4 x1
+    src/main/24BF0.c:89 unk_4 x1
+    src/main/24BF0.c:91 unk_4 x1
+    src/main/24BF0.c:93 unk_4 x1
+    src/main/24BF0.c:107 unk_4 x1
+    src/main/25788.c:49 unk_4 x1
+    src/main/25788.c:53 unk_4 x2
+    src/main/25788.c:58 unk_4 x1
+    src/main/25788.c:59 unk_4 x1
+    src/main/28708.c:1560 unk_4 x1
+    src/main/2B344.c:165 unk_4 x1
+    src/main/2B344.c:166 unk_4 x1
+    src/main/2B344.c:167 unk_4 x1
+    src/main/2B344.c:169 unk_4 x1
+    src/main/2B344.c:170 unk_4 x1
+    src/main/2B344.c:171 unk_4 x1
+    src/main/2B344.c:176 unk_4 x1
+    src/main/2B344.c:233 unk_4 x1
+    src/main/2B344.c:234 unk_4 x1
+    src/main/2B344.c:247 unk_4 x1
+    src/main/2B344.c:252 unk_4 x1
+    src/main/2B344.c:259 unk_4 x1
+    src/main/2B344.c:266 unk_4 x1
+    src/main/2B344.c:273 unk_4 x1
+    src/main/2B344.c:283 unk_4 x1
+    src/main/2B344.c:288 unk_4 x1
+    src/main/2B344.c:289 unk_4 x1
+    src/main/2B344.c:306 unk_4 x1
+    src/main/2B344.c:307 unk_4 x1
+    src/main/2B344.c:316 unk_4 x1
+    src/main/2B344.c:317 unk_4 x1
+    src/main/2B344.c:318 unk_4 x1
+    src/main/2B344.c:342 unk_4 x1
+    src/main/2B344.c:559 unk_4 x1
+    src/main/2B344.c:560 unk_4 x1
+    src/main/2B344.c:707 unk_4 x1
+    src/main/2B344.c:708 unk_4 x1
+    src/main/2B344.c:712 unk_4 x1
+    src/main/2B344.c:713 unk_4 x1
+    src/main/2B344.c:717 unk_4 x1
+    src/main/2B344.c:718 unk_4 x1
+    src/main/2B344.c:722 unk_4 x1
+    src/main/2B344.c:723 unk_4 x1
+    src/main/2B344.c:738 unk_4 x2
+    src/main/2B344.c:739 unk_4 x2
+    src/main/9F9C.c:1227 unk_4 x1
+    src/main/9F9C.c:1228 unk_4 x1
+    src/main/9F9C.c:1230 unk_4 x1
+    src/main/9F9C.c:1231 unk_4 x1
+    src/main/9F9C.c:1232 unk_4 x1
+    src/main/9F9C.c:1233 unk_4 x1
+    src/main/9F9C.c:1257 unk_4 x2
+    src/main/9F9C.c:1258 unk_4 x1
+    src/main/9F9C.c:1261 unk_4 x2
+    src/main/9F9C.c:1262 unk_4 x1
+    src/main/9F9C.c:1735 unk_4 x1
+    src/main/9F9C.c:1738 unk_4 x1
+    src/main/9F9C.c:1749 unk_4 x1
+    src/main/9F9C.c:1751 unk_4 x1
+    src/main/9F9C.c:1756 unk_4 x1
+    src/main/9F9C.c:1759 unk_4 x1
+    src/main/9F9C.c:1923 unk_4 x2
+    src/main/9F9C.c:1924 unk_4 x1
+    src/main/9F9C.c:1941 unk_4 x1
+    src/main/9F9C.c:1950 unk_4 x1
+    src/main/9F9C.c:2007 unk_4 x1
+    src/main/9F9C.c:2008 unk_4 x1
+    src/main/9F9C.c:2009 unk_4 x1
+    src/main/9F9C.c:2010 unk_4 x1
+    src/main/menu_config.c:41 unk_4 x1
+    src/main/menu_config.c:45 unk_4 x1
+    src/main/menu_config.c:49 unk_4 x1
+    src/main/menu_config.c:53 unk_4 x1
+    src/main/menu_config.c:57 unk_4 x1
+    src/main/menu_config.c:61 unk_4 x1
+    src/main/menu_config.c:122 unk_4 x1
+    src/main/menu_config.c:125 unk_4 x1
+    src/main/menu_config.c:128 unk_4 x1
+    src/main/menu_config.c:162 unk_4 x1
+    src/main/menu_config.c:165 unk_4 x1
+    src/main/menu_config.c:168 unk_4 x1
+    src/main/menu_config.c:199 unk_4 x2
+    src/main/menu_config.c:200 unk_4 x2
+    src/main/menu_config.c:201 unk_4 x2
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -2410 +2410 @@
+-    u8 unk_4[6];
++    u8 fighter_setup[6];
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -5753 +5753 @@
+-            ~(1 << g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]]) &
++            ~(1 << g_fight_config_id_data_rows[(s8)g_fight_config.fighter_setup[0]]) &
+@@ -5840 +5840 @@
+-            [g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]]];
++            [g_fight_config_id_data_rows[(s8)g_fight_config.fighter_setup[0]]];
+@@ -5887 +5887 @@
+-        g_fight_config.unk_4[1] = (&D_8008D55C)[opponent_character_index];
++        g_fight_config.fighter_setup[1] = (&D_8008D55C)[opponent_character_index];
+@@ -5889 +5889 @@
+-            g_fight_config.unk_4[3] = 6;
++            g_fight_config.fighter_setup[3] = 6;
+@@ -5891 +5891 @@
+-            g_fight_config.unk_4[3] = 7;
++            g_fight_config.fighter_setup[3] = 7;
+@@ -5897 +5897 @@
+-            g_fight_config.unk_4[3] = opponent_weapon_id;
++            g_fight_config.fighter_setup[3] = opponent_weapon_id;
+@@ -5901 +5901 @@
+-                    g_fight_config.unk_4[3] = 5;
++                    g_fight_config.fighter_setup[3] = 5;
+@@ -5964 +5964 @@
+-                                          [(s8)g_fight_config.unk_4[0]]] != 0) {
++                                          [(s8)g_fight_config.fighter_setup[0]]] != 0) {
+@@ -5980 +5980 @@
+-                                          [(s8)g_fight_config.unk_4[0]]] != 0) {
++                                          [(s8)g_fight_config.fighter_setup[0]]] != 0) {
+@@ -6004 +6004 @@
+-                  [g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]]] ==
++                  [g_fight_config_id_data_rows[(s8)g_fight_config.fighter_setup[0]]] ==
+@@ -6011 +6011 @@
+-        g_fight_config.unk_4[1] = moves[row][entry];
++        g_fight_config.fighter_setup[1] = moves[row][entry];
+@@ -6139 +6139 @@
+-            g_fight_config.unk_4[fighter_index] =
++            g_fight_config.fighter_setup[fighter_index] =
+@@ -6141 +6141 @@
+-            g_fight_config.unk_4[2 + fighter_index] =
++            g_fight_config.fighter_setup[2 + fighter_index] =
+--- a/src/main/24BF0.c
++++ b/src/main/24BF0.c
+@@ -55,2 +55,2 @@
+-            g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]]);
+-        g_fight_config.unk_4[1] = 0;
++            g_fight_config_id_data_rows[(s8)g_fight_config.fighter_setup[0]]);
++        g_fight_config.fighter_setup[1] = 0;
+@@ -61 +61 @@
+-        g_fight_config.unk_4[5] = 1;
++        g_fight_config.fighter_setup[5] = 1;
+@@ -67,3 +67,3 @@
+-        g_fight_config.unk_4[5] = 1;
+-        g_fight_config.unk_4[3] = 0;
+-        g_fight_config.unk_4[2] = 0;
++        g_fight_config.fighter_setup[5] = 1;
++        g_fight_config.fighter_setup[3] = 0;
++        g_fight_config.fighter_setup[2] = 0;
+@@ -89 +89 @@
+-        g_fight_config.unk_4[5] = 1;
++        g_fight_config.fighter_setup[5] = 1;
+@@ -91 +91 @@
+-            g_fight_config.unk_4[1] =
++            g_fight_config.fighter_setup[1] =
+@@ -93 +93 @@
+-                                          [(s8)g_fight_config.unk_4[0]]]
++                                          [(s8)g_fight_config.fighter_setup[0]]]
+@@ -107 +107 @@
+-    if ((s8)g_fight_config.unk_4[5] != 0) {
++    if ((s8)g_fight_config.fighter_setup[5] != 0) {
+--- a/src/main/25788.c
++++ b/src/main/25788.c
+@@ -49 +49 @@
+-        g_fight_config.unk_4[i] = var_7;
++        g_fight_config.fighter_setup[i] = var_7;
+@@ -53 +53 @@
+-                g_fight_config.unk_4[i] = g_fight_config.unk_4[i] - 3;
++                g_fight_config.fighter_setup[i] = g_fight_config.fighter_setup[i] - 3;
+@@ -58,2 +58,2 @@
+-        g_fight_config.unk_4[4 + i] = 0;
+-        g_fight_config.unk_4[2 + i] = tmp;
++        g_fight_config.fighter_setup[4 + i] = 0;
++        g_fight_config.fighter_setup[2 + i] = tmp;
+--- a/src/main/28708.c
++++ b/src/main/28708.c
+@@ -1560 +1560 @@
+-                                                                 .unk_4[0]];
++                                                                 .fighter_setup[0]];
+--- a/src/main/2B344.c
++++ b/src/main/2B344.c
+@@ -165,7 +165,7 @@
+-    if (g_fight_config.unk_4[2 + fighter_index] == 0xFF) {
+-        g_fight_config.unk_4[2 + fighter_index] =
+-            (&g_fight_config.unk_4[2])[(u32)fighter_index < 1u];
+-    }
+-    fighter_Init(fighter_index, (s8)g_fight_config.unk_4[4 + fighter_index],
+-                 (s8)g_fight_config.unk_4[fighter_index],
+-                 (s8)g_fight_config.unk_4[2 + fighter_index], 0);
++    if (g_fight_config.fighter_setup[2 + fighter_index] == 0xFF) {
++        g_fight_config.fighter_setup[2 + fighter_index] =
++            (&g_fight_config.fighter_setup[2])[(u32)fighter_index < 1u];
++    }
++    fighter_Init(fighter_index, (s8)g_fight_config.fighter_setup[4 + fighter_index],
++                 (s8)g_fight_config.fighter_setup[fighter_index],
++                 (s8)g_fight_config.fighter_setup[2 + fighter_index], 0);
+@@ -176 +176 @@
+-        g_fight_selection_object_ids[(s8)g_fight_config.unk_4[fighter_index]],
++        g_fight_selection_object_ids[(s8)g_fight_config.fighter_setup[fighter_index]],
+@@ -233,2 +233,2 @@
+-    g_fight_config.unk_4[4] = 0;
+-    g_fight_config.unk_4[5] = 1;
++    g_fight_config.fighter_setup[4] = 0;
++    g_fight_config.fighter_setup[5] = 1;
+@@ -247 +247 @@
+-        g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]];
++        g_fight_config_id_data_rows[(s8)g_fight_config.fighter_setup[0]];
+@@ -252 +252 @@
+-    g_fight_saved_first_fighter_selection = g_fight_config.unk_4[0];
++    g_fight_saved_first_fighter_selection = g_fight_config.fighter_setup[0];
+@@ -259 +259 @@
+-        g_fight_config.unk_4[0] = v0;
++        g_fight_config.fighter_setup[0] = v0;
+@@ -266 +266 @@
+-    u8 v_277C = g_fight_config.unk_4[0];
++    u8 v_277C = g_fight_config.fighter_setup[0];
+@@ -273 +273 @@
+-    g_fight_config.unk_4[0] = v_3836;
++    g_fight_config.fighter_setup[0] = v_3836;
+@@ -283 +283 @@
+-    idx = g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]];
++    idx = g_fight_config_id_data_rows[(s8)g_fight_config.fighter_setup[0]];
+@@ -288,2 +288,2 @@
+-    g_fight_config.unk_4[1] = group_flag != 0 ? 0xE : 0x1D;
+-    g_fight_config.unk_4[3] = 0;
++    g_fight_config.fighter_setup[1] = group_flag != 0 ? 0xE : 0x1D;
++    g_fight_config.fighter_setup[3] = 0;
+@@ -306,2 +306,2 @@
+-    g_fight_config.unk_4[1] = operands[0];
+-    g_fight_config.unk_4[3] = operands[1];
++    g_fight_config.fighter_setup[1] = operands[0];
++    g_fight_config.fighter_setup[3] = operands[1];
+@@ -316,3 +316,3 @@
+-    g_fight_config.unk_4[2] = 0;
+-    g_fight_config.unk_4[1] = 0x1F;
+-    g_fight_config.unk_4[3] = 0;
++    g_fight_config.fighter_setup[2] = 0;
++    g_fight_config.fighter_setup[1] = 0x1F;
++    g_fight_config.fighter_setup[3] = 0;
+@@ -342 +342 @@
+-    var_1 = &g_fight_config.unk_4[1];
++    var_1 = &g_fight_config.fighter_setup[1];
+@@ -559,2 +559,2 @@
+-    if ((s8)g_fight_config.unk_4[1] == 0xE ||
+-        (s8)g_fight_config.unk_4[1] == 0x1D) {
++    if ((s8)g_fight_config.fighter_setup[1] == 0xE ||
++        (s8)g_fight_config.fighter_setup[1] == 0x1D) {
+@@ -707,2 +707,2 @@
+-        g_fight_config.unk_4[0] = 8;
+-        g_fight_config.unk_4[2] = 6;
++        g_fight_config.fighter_setup[0] = 8;
++        g_fight_config.fighter_setup[2] = 6;
+@@ -712,2 +712,2 @@
+-        g_fight_config.unk_4[0] = 0x16;
+-        g_fight_config.unk_4[2] = 7;
++        g_fight_config.fighter_setup[0] = 0x16;
++        g_fight_config.fighter_setup[2] = 7;
+@@ -717,2 +717,2 @@
+-        g_fight_config.unk_4[0] = 0x1E;
+-        g_fight_config.unk_4[2] = 0;
++        g_fight_config.fighter_setup[0] = 0x1E;
++        g_fight_config.fighter_setup[2] = 0;
+@@ -722,2 +722,2 @@
+-        g_fight_config.unk_4[0] = 0x20;
+-        g_fight_config.unk_4[2] = 0;
++        g_fight_config.fighter_setup[0] = 0x20;
++        g_fight_config.fighter_setup[2] = 0;
+@@ -738,2 +738,2 @@
+-        g_fight_config.unk_4[0] = g_fight_config.unk_4[1];
+-        g_fight_config.unk_4[2] = g_fight_config.unk_4[3];
++        g_fight_config.fighter_setup[0] = g_fight_config.fighter_setup[1];
++        g_fight_config.fighter_setup[2] = g_fight_config.fighter_setup[3];
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -1227,2 +1227,2 @@
+-    g_fight_config.unk_4[0] = 1;
+-    g_fight_config.unk_4[1] = 0x10;
++    g_fight_config.fighter_setup[0] = 1;
++    g_fight_config.fighter_setup[1] = 0x10;
+@@ -1230,4 +1230,4 @@
+-    g_fight_config.unk_4[2] = 0;
+-    g_fight_config.unk_4[3] = 0;
+-    g_fight_config.unk_4[5] = 0;
+-    g_fight_config.unk_4[4] = 0;
++    g_fight_config.fighter_setup[2] = 0;
++    g_fight_config.fighter_setup[3] = 0;
++    g_fight_config.fighter_setup[5] = 0;
++    g_fight_config.fighter_setup[4] = 0;
+@@ -1257,2 +1257,2 @@
+-            1, (s8)g_fight_config.unk_4[5], (s8)g_fight_config.unk_4[1],
+-            (s8)g_fight_config.unk_4[3], 0);
++            1, (s8)g_fight_config.fighter_setup[5], (s8)g_fight_config.fighter_setup[1],
++            (s8)g_fight_config.fighter_setup[3], 0);
+@@ -1261,2 +1261,2 @@
+-            1, (s8)g_fight_config.unk_4[5], (s8)g_fight_config.unk_4[1],
+-            (s8)g_fight_config.unk_4[3], 1);
++            1, (s8)g_fight_config.fighter_setup[5], (s8)g_fight_config.fighter_setup[1],
++            (s8)g_fight_config.fighter_setup[3], 1);
+@@ -1735 +1735 @@
+-                                                          .unk_4[0]] !=
++                                                          .fighter_setup[0]] !=
+@@ -1738 +1738 @@
+-                                                          .unk_4[1]] !=
++                                                          .fighter_setup[1]] !=
+@@ -1749 +1749 @@
+-                                                              .unk_4[0]],
++                                                              .fighter_setup[0]],
+@@ -1751 +1751 @@
+-                                                              .unk_4[1]]);
++                                                              .fighter_setup[1]]);
+@@ -1756 +1756 @@
+-                                                              .unk_4[0]];
++                                                              .fighter_setup[0]];
+@@ -1759 +1759 @@
+-                                                              .unk_4[1]];
++                                                              .fighter_setup[1]];
+@@ -1923,2 +1923,2 @@
+-            i, (s8)g_fight_config.unk_4[4 + i], (s8)g_fight_config.unk_4[i],
+-            (s8)g_fight_config.unk_4[2 + i], 0);
++            i, (s8)g_fight_config.fighter_setup[4 + i], (s8)g_fight_config.fighter_setup[i],
++            (s8)g_fight_config.fighter_setup[2 + i], 0);
+@@ -1941 +1941 @@
+-                    g_fight_selection_object_ids[(s8)g_fight_config.unk_4[i]],
++                    g_fight_selection_object_ids[(s8)g_fight_config.fighter_setup[i]],
+@@ -1950 +1950 @@
+-                    g_fight_selection_object_ids[(s8)g_fight_config.unk_4[i]],
++                    g_fight_selection_object_ids[(s8)g_fight_config.fighter_setup[i]],
+@@ -2007,4 +2007,4 @@
+-            g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]],
+-            (s8)g_fight_config.unk_4[2],
+-            g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[1]],
+-            (s8)g_fight_config.unk_4[3]);
++            g_fight_config_id_data_rows[(s8)g_fight_config.fighter_setup[0]],
++            (s8)g_fight_config.fighter_setup[2],
++            g_fight_config_id_data_rows[(s8)g_fight_config.fighter_setup[1]],
++            (s8)g_fight_config.fighter_setup[3]);
+--- a/src/main/menu_config.c
++++ b/src/main/menu_config.c
+@@ -41 +41 @@
+-                (s8)g_fight_config.unk_4[0]);
++                (s8)g_fight_config.fighter_setup[0]);
+@@ -45 +45 @@
+-                (s8)g_fight_config.unk_4[1]);
++                (s8)g_fight_config.fighter_setup[1]);
+@@ -49 +49 @@
+-                (s8)g_fight_config.unk_4[2]);
++                (s8)g_fight_config.fighter_setup[2]);
+@@ -53 +53 @@
+-                (s8)g_fight_config.unk_4[3]);
++                (s8)g_fight_config.fighter_setup[3]);
+@@ -57 +57 @@
+-                (s8)g_fight_config.unk_4[4]);
++                (s8)g_fight_config.fighter_setup[4]);
+@@ -61 +61 @@
+-                (s8)g_fight_config.unk_4[5]);
++                (s8)g_fight_config.fighter_setup[5]);
+@@ -122 +122 @@
+-                g_fight_config.unk_4[i]--;
++                g_fight_config.fighter_setup[i]--;
+@@ -125 +125 @@
+-                g_fight_config.unk_4[2 + i]--;
++                g_fight_config.fighter_setup[2 + i]--;
+@@ -128 +128 @@
+-                g_fight_config.unk_4[4 + i]--;
++                g_fight_config.fighter_setup[4 + i]--;
+@@ -162 +162 @@
+-                g_fight_config.unk_4[i]++;
++                g_fight_config.fighter_setup[i]++;
+@@ -165 +165 @@
+-                g_fight_config.unk_4[2 + i]++;
++                g_fight_config.fighter_setup[2 + i]++;
+@@ -168 +168 @@
+-                g_fight_config.unk_4[4 + i]++;
++                g_fight_config.fighter_setup[4 + i]++;
+@@ -199,3 +199,3 @@
+-        g_fight_config.unk_4[i] = ((s8)g_fight_config.unk_4[i] + 33) % 33;
+-        g_fight_config.unk_4[2 + i] = ((s8)g_fight_config.unk_4[2 + i] + 8) % 8;
+-        g_fight_config.unk_4[4 + i] = ((s8)g_fight_config.unk_4[4 + i] + 2) % 2;
++        g_fight_config.fighter_setup[i] = ((s8)g_fight_config.fighter_setup[i] + 33) % 33;
++        g_fight_config.fighter_setup[2 + i] = ((s8)g_fight_config.fighter_setup[2 + i] + 8) % 8;
++        g_fight_config.fighter_setup[4 + i] = ((s8)g_fight_config.fighter_setup[4 + i] + 2) % 2;
+DRY RUN: 8 file(s) would change; nothing written
+OK: every member access renamed
