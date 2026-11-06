@@ -1248,7 +1248,7 @@ void fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11(void) {
     }
 }
 
-void func_8001C51C(void) {
+void fight_StartNextSecondFighter(void) {
     MoveScript *default_script;
     fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11();
     if (g_fight_mode_selector == 3 &&
@@ -1387,7 +1387,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
                     fight_RunCommandStream();
                 }
             } else {
-                func_8001C51C();
+                fight_StartNextSecondFighter();
                 fight_QueuePositionalSoundWithRandomAlternate();
             }
             goto end;
@@ -1427,7 +1427,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
             D_80101EC8[0].move_is_common = 0;
             fighter_StartMoveScript(0, current_script, 0);
         }
-        func_8001C51C();
+        fight_StartNextSecondFighter();
         if (g_fight_step_row_column < 4) {
             gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels(
                 g_fight_step_row_tint_red, g_fight_step_row_tint_green,
@@ -5475,7 +5475,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
         fighter_index, (u8 *)&pose_frames[0], (u8 *)&pose_frames[1],
         fighter_record->pose_interp_weight, (MATRIX *)0x1F8001B0);
     scratchpad_Save();
-    func_80040D48(
+    slot_UpdateObjectFrame(
         fighter_index, 1, (s32 *)&fighter_record->world_pos,
         (s16 *)&fighter_record->orientation, 0, fighter_record->ground_y);
     scratchpad_Restore();

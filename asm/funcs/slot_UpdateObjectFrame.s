@@ -1,4 +1,4 @@
-glabel func_80040D48
+glabel slot_UpdateObjectFrame
     /* 31548 80040D48 C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 3154C 80040D4C 2C00B7AF */  sw         $s7, 0x2C($sp)
     /* 31550 80040D50 21B88000 */  addu       $s7, $a0, $zero
@@ -284,4 +284,4 @@ glabel func_80040D48
     /* 3197C 8004117C 3800BD27 */  addiu      $sp, $sp, 0x38
     /* 31980 80041180 0800E003 */  jr         $ra
     /* 31984 80041184 00000000 */   nop
-endlabel func_80040D48
+endlabel slot_UpdateObjectFrame

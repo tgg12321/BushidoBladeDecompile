@@ -38,7 +38,8 @@ s32 motion_UpdatePlayback(void) {
     Unk800EFAE8Rec *s = &g_motion_playback_record;
     VECTOR vec;
     /* The 0x84 bytes motion_DecodeFrame decodes, as s16: three of its fields
-     * load signed (lh), and the array goes to func_80040D48's s16 * parameter.
+     * load signed (lh), and the array goes to slot_UpdateObjectFrame's s16 *
+     * parameter.
      */
     s16 decoded_motion_frame[0x42];
     s16 *camera_pose;
@@ -171,8 +172,8 @@ s32 motion_UpdatePlayback(void) {
             vec.vy += s->origin_y;
             vec.vx += s->origin_x;
             vec.vz += s->origin_z;
-            func_80040D48(i, 0, &vec.vx, &s->rotation_x, decoded_motion_frame,
-                          s->origin_y);
+            slot_UpdateObjectFrame(i, 0, &vec.vx, &s->rotation_x,
+                                   decoded_motion_frame, s->origin_y);
             if (s->weapon_entry_ids[i] >= 0) {
                 node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
                     s->weapon_entry_ids[i], (i * 2) | 0x8000, 0, 0);

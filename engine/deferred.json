@@ -8,7 +8,7 @@
     "slot_BlendTwoPosesIntoNodeMatrices": "FAILED: sha1=3e9fe25b6909958246876089d1a153b794e89543 != oracle \u2014 ROLLED BACK. Build tail:",
     "func_8003D888": "REFUSED: body emits .rodata (string/const/FP literal) \u2014 removal shifts section layout (deferred)",
     "node_BuildIdToNodeMapWithDuplicates": "FAILED: sha1=e29f91cc3054aef4ec75be34376b4d386d8d4460 != oracle \u2014 ROLLED BACK. Build tail:",
-    "func_80040D48": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",
+    "slot_UpdateObjectFrame": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",
     "func_80043BD0": "REFUSED: body emits .rodata (string/const/FP literal) \u2014 removal shifts section layout (deferred)",
     "func_80043D34": "REFUSED: body emits .rodata (string/const/FP literal) \u2014 removal shifts section layout (deferred)",
     "resource_LoadOrReuseSelectedBlock": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",

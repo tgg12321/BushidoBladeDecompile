@@ -346,7 +346,7 @@ glabel motion_UpdatePlayback
     /* 45640 80054E40 21100201 */  addu       $v0, $t0, $v0
     /* 45644 80054E44 2000A2AF */  sw         $v0, 0x20($sp)
     /* 45648 80054E48 1000B6AF */  sw         $s6, 0x10($sp)
-    /* 4564C 80054E4C 5203010C */  jal        func_80040D48
+    /* 4564C 80054E4C 5203010C */  jal        slot_UpdateObjectFrame
     /* 45650 80054E50 1400A3AF */   sw        $v1, 0x14($sp)
     /* 45654 80054E54 44004486 */  lh         $a0, 0x44($s2)
     /* 45658 80054E58 00000000 */  nop

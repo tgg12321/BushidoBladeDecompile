@@ -1443,7 +1443,8 @@ void replay_PlayFrame(void) {
         rot[0] = 0;
         rot[1] = fighter_frame->replay_yaw_and_draw_move_set;
         rot[2] = 0;
-        func_80040D48(i, 1, pos, rot, 0, fighter_frame->replay_ground_y);
+        slot_UpdateObjectFrame(
+            i, 1, pos, rot, 0, fighter_frame->replay_ground_y);
         if (fighter_frame->replay_frame_flags & 1) {
             node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
                 fighter_record->weapon_entry_id, i * 2 + 0x8000, 0, 0);

@@ -7,7 +7,7 @@
 
 extern s32 g_node_pose_rotation_indices[];
 
-void func_80040D48(
+void slot_UpdateObjectFrame(
     s32 slot_index, s32 a1, s32 *position, s16 *rotation, s16 *arg4, s32 arg5) {
     Unk80045878Obj *s4;
     Unk80045878Node *s5;
@@ -329,7 +329,7 @@ void slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers(
 /* .data 0x80094CFC..0x80094D40, this file's whole .data
  * (g_object_scale_factors, read by 309CC.c and 9F9C.c, ends at 0x80094CFC;
  * 31D3C.c's g_gpu_asset_tim_group_load_masks follows): 17 node indices, a
- * permutation of 1..17, that func_80040D48 and
+ * permutation of 1..17, that slot_UpdateObjectFrame and
  * slot_BlendTwoPosesIntoNodeMatrices step through to index per-node rotation
  * triples. Defined after every function, so no body sees a definition where it
  * saw an extern. */

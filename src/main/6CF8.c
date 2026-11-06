@@ -280,7 +280,7 @@ extern u8 D_800A3745;
 extern u8 D_800A3746;
 extern u8 D_800A36B0;
 
-void func_80016D78(void) {
+void sys_InitAtBoot(void) {
     printf(g_str_limit, 0x8010DB00);
     InitSavedRecordAndResetCameraDistanceOffset();
     motion_InitBuffers();
@@ -438,7 +438,7 @@ void main(void) {
     SetSp(0x801FFF00);
     SetMem(2);
     sys_Init();
-    func_80016D78();
+    sys_InitAtBoot();
     SetDispMask(1);
     gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth(
         (u8 *)0x80118800, var_1, idx);

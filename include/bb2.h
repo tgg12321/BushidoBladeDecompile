@@ -386,7 +386,7 @@ extern MATRIX *D_800A3778;
 /* match-result table: 0/1/2 per match, indexed by g_fight_match_cursor */
 extern u8 g_fight_match_results[];
 
-/* Two buffer addresses selected by frame parity: func_80016D78 sets 0x801D8800
+/* Two buffer addresses selected by frame parity: sys_InitAtBoot sets 0x801D8800
  * / 0x801EBC00, menu_RunPauseMenu and main read [g_gpu_presented_frame_count &
  * 1]. */
 extern u32 D_800A3770[2];
@@ -870,7 +870,7 @@ extern Unk80045878Obj *slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
     s32, s32, s32);
 extern void node_RefreshObjectMatrixPointerTables(Unk80045878Obj *);
 extern void node_BuildProjectedNodeList(Unk80045878Obj *);
-extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
+extern void slot_UpdateObjectFrame(s32, s32, s32 *, s16 *, s16 *, s32);
 extern void slot_BlendTwoPosesIntoNodeMatrices(s32, u8 *, u8 *, s32, MATRIX *);
 extern void PatchColorImmediatesAtListedCodeSites(s32);
 extern void slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers(s32, s32);

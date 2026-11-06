@@ -2045,7 +2045,7 @@ glabel fighter_Update
     /* 164CC 80025CCC 1000A0AF */  sw         $zero, 0x10($sp)
     /* 164D0 80025CD0 4801228E */  lw         $v0, 0x148($s1)
     /* 164D4 80025CD4 C8012726 */  addiu      $a3, $s1, 0x1C8
-    /* 164D8 80025CD8 5203010C */  jal        func_80040D48
+    /* 164D8 80025CD8 5203010C */  jal        slot_UpdateObjectFrame
     /* 164DC 80025CDC 1400A2AF */   sw        $v0, 0x14($sp)
     /* 164E0 80025CE0 D75F000C */  jal        scratchpad_Restore
     /* 164E4 80025CE4 00000000 */   nop

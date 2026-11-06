@@ -1,4 +1,4 @@
-glabel func_8001C51C
+glabel fight_StartNextSecondFighter
     /* CD1C 8001C51C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* CD20 8001C520 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* CD24 8001C524 3071000C */  jal        fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11
@@ -67,4 +67,4 @@ glabel func_8001C51C
     /* CE18 8001C618 2000BD27 */  addiu      $sp, $sp, 0x20
     /* CE1C 8001C61C 0800E003 */  jr         $ra
     /* CE20 8001C620 00000000 */   nop
-endlabel func_8001C51C
+endlabel fight_StartNextSecondFighter

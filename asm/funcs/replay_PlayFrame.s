@@ -153,7 +153,7 @@ glabel replay_PlayFrame
     /* 2A37C 80039B7C 1000A0AF */  sw         $zero, 0x10($sp)
     /* 2A380 80039B80 0C000286 */  lh         $v0, 0xC($s0)
     /* 2A384 80039B84 B801A727 */  addiu      $a3, $sp, 0x1B8
-    /* 2A388 80039B88 5203010C */  jal        func_80040D48
+    /* 2A388 80039B88 5203010C */  jal        slot_UpdateObjectFrame
     /* 2A38C 80039B8C 1400A2AF */   sw        $v0, 0x14($sp)
     /* 2A390 80039B90 18000292 */  lbu        $v0, 0x18($s0)
     /* 2A394 80039B94 00000000 */  nop

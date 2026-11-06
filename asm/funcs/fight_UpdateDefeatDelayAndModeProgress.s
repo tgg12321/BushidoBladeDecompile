@@ -112,7 +112,7 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D278 8001CA78 44730008 */  j          .L8001CD10
     /* D27C 8001CA7C 00000000 */   nop
   .L8001CA80:
-    /* D280 8001CA80 4771000C */  jal        func_8001C51C
+    /* D280 8001CA80 4771000C */  jal        fight_StartNextSecondFighter
     /* D284 8001CA84 00000000 */   nop
     /* D288 8001CA88 0872000C */  jal        fight_QueuePositionalSoundWithRandomAlternate
     /* D28C 8001CA8C 00000000 */   nop
@@ -206,7 +206,7 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D3CC 8001CBCC A686000C */  jal        fighter_StartMoveScript
     /* D3D0 8001CBD0 21300000 */   addu      $a2, $zero, $zero
   .L8001CBD4:
-    /* D3D4 8001CBD4 4771000C */  jal        func_8001C51C
+    /* D3D4 8001CBD4 4771000C */  jal        fight_StartNextSecondFighter
     /* D3D8 8001CBD8 00000000 */   nop
     /* D3DC 8001CBDC 0A80023C */  lui        $v0, %hi(g_fight_step_row_column)
     /* D3E0 8001CBE0 4C384290 */  lbu        $v0, %lo(g_fight_step_row_column)($v0)

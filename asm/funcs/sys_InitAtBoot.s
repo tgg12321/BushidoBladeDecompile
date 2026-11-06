@@ -1,4 +1,4 @@
-glabel func_80016D78
+glabel sys_InitAtBoot
     /* 7578 80016D78 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 757C 80016D7C 1080053C */  lui        $a1, (0x8010DB00 >> 16)
     /* 7580 80016D80 0180043C */  lui        $a0, %hi(g_str_limit)
@@ -49,4 +49,4 @@ glabel func_80016D78
     /* 7634 80016E34 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 7638 80016E38 0800E003 */  jr         $ra
     /* 763C 80016E3C 00000000 */   nop
-endlabel func_80016D78
+endlabel sys_InitAtBoot
