@@ -177,8 +177,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 
 ### Display / frame
 - `g_local_ot_draw_mode` — a five-valued mode (0xFF, 1, 2, 10, 0x14) that selects what
-  `gpu_DrawDisplayModeOnLocalOtAndSync` draws each frame (6CF8.c:540-590); `bb2_const.h` names
-  three of the values.
+  `gpu_DrawDisplayModeOnLocalOtAndSync` draws each frame (6CF8.c:540-590).
 - `g_gpu_jitter_burst_enabled` — a 0/1 switch that multiplies the `gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle` sprite passes.
 - `g_gpu_presented_frame_count` — presented-frame counter (++ after each DrawOTag); most readers take its low bit as the
   double-buffer index, `fight_UpdateRotatingViewThreeOptionChoice` / `fight_UpdateRotatingViewDecimalPresentation` use the whole value.
@@ -187,8 +186,6 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 
 ### Sound
 - `g_snd_bgm_id` (0x800A33B0), `g_snd_stage_bgm` (0x800A33C0), `g_snd_volume` (0x800A33D0)
-- `SND_CHANNEL_BGM=8`, `SND_CHANNEL_SE=9`, `SND_CHANNEL_UI=0xA`
-  (`bb2_const.h`)
 
 ### Loaded resource / model state
 - `g_fight_position_records` (0x800A33B4) — pointer into the loaded block's position-record list

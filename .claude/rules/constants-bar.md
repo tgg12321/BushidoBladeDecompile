@@ -56,8 +56,7 @@ when main moved.
 
 Sony constants in `include/psxsdk/lib*.h` next to their library's prototypes (used only inside
 the library: its `*_internal.h` / `libsnd_i.h`); hardware bits
-in `include/psx.h`. Game constants used by several TUs in `include/bb2_const.h` (its
-DISP_* / SND_CHANNEL_* get a K1-K3 review in the first game-codes wave), one TU's in that TU.
+in `include/psx.h`. Game constants used by several TUs in `include/bb2_const.h`, one TU's in that TU.
 One definition per value-role; never a second name for the same role.
 
 ## K5 — the wave

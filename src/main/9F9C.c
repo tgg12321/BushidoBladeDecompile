@@ -1876,7 +1876,7 @@ void motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id(void) {
 void fight_WaitForCounterThenClearAndEnableDisplay(void) {
     s32 i;
 
-    if (g_local_ot_draw_mode != DISP_ACTIVE) {
+    if (g_local_ot_draw_mode != 0x14) {
         return;
     }
     comb_BeginWait();
@@ -1911,7 +1911,7 @@ void fight_Init(void) {
     s32 addr;
 
     snd_ResetVoicesAndQueue();
-    if (g_local_ot_draw_mode != DISP_ACTIVE) {
+    if (g_local_ot_draw_mode != 0x14) {
         gpu_HideResetAndClear();
         gpu_SetDispMaskOn();
     }
@@ -2084,7 +2084,7 @@ void fight_Init(void) {
     replay_Reset();
     eff_StopCommands();
     fight_WaitForCounterThenClearAndEnableDisplay();
-    g_local_ot_draw_mode = DISP_DISABLED;
+    g_local_ot_draw_mode = 0xFF;
     g_gpu_jitter_burst_enabled = 0;
     eff_Init();
     g_fight_reinit_reuses_assets = 0;

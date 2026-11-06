@@ -185,7 +185,7 @@ void sys_Init(void) {
     StartPAD();
     ChangeClearPAD(0);
     disp_Init();
-    g_local_ot_draw_mode = DISP_DISABLED;
+    g_local_ot_draw_mode = 0xFF;
     g_gpu_jitter_burst_enabled = 0;
     cdrom_Init();
     memcard_Init();
@@ -462,7 +462,7 @@ void main(void) {
 
         if (g_comb_abort_request != 0) {
             cdrom_PauseAndWait();
-            g_local_ot_draw_mode = DISP_DISABLED;
+            g_local_ot_draw_mode = 0xFF;
             g_comb_abort_request = 0;
             g_menu_mode_subflow_init_pending = 0;
             g_main_loop_handler_index = 8;
@@ -538,7 +538,7 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
     s32 temp2;
 
     draw_chunk_addr = (s32)g_shared_buffer;
-    if (g_local_ot_draw_mode == DISP_DISABLED) {
+    if (g_local_ot_draw_mode == 0xFF) {
         return;
     }
     SetDefDrawEnv(

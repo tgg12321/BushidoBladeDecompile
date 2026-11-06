@@ -963,7 +963,7 @@ CdDataSync = 0x80080684; /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper
 // RENAME 0x80056FE8: retired name 'func_80056FE8' — preserved note: MISNAMED: not angle correction; character display-offset lookup via D_8009A830/38/40
 // RENAME 0x80044378: retired name 'func_80044378' — preserved note: MISNAMED: actually builds an offset table; counts -2 terminators (see build_offset_table_80044378 in pass-6 replacement section)
 // RENAME 0x800203B4: retired name 'func_800203B4' — preserved note: MISNAMED: not frame calc; extracts motion matrix and applies GTE rotation to a vector
-// RENAME 0x8001DBE4: retired name 'func_8001DBE4' — preserved note: MISNAMED: not a camera fn; returns unless D_800A3768 == DISP_ACTIVE (0x14); then comb_BeginWait, comb_ExchangeEmptyPad wait loops, comb_EndWait (9F9C.c:1738-1756)
+// RENAME 0x8001DBE4: retired name 'func_8001DBE4' — preserved note: MISNAMED: not a camera fn; returns unless D_800A3768 == 0x14; then comb_BeginWait, comb_ExchangeEmptyPad wait loops, comb_EndWait (9F9C.c:1738-1756)
 gpu_MoveObjectClutsToFogBlock = 0x8003E164; /* when slot_index is not the selected object g_gpu_fog_clut_object: restores the previous object's CLUT offsets; if object slot_index exists, copies its 64 x 6 palette block from (0x280 or 0x300, 0xF8) to (0x140, 0x1E8) (MoveImage), shifts its CLUT coordinates (gpu_OffsetBlockTexPrimStreams) and rebuilds the block's fog levels (gpu_BuildFogBlockLevels); then g_gpu_fog_clut_object = slot_index; 2B344.c */
 // RENAME 0x8004939C: retired name 'func_8004939C' — preserved note: MISNAMED: not ground close; fills 0x800EF9F2/F4 with -1/-2 sentinels + three D_800A3* cells
 // RENAME 0x80041688: retired name 'func_80041688' — preserved note: MISNAMED: not ground init; sets bit flags in player weapon/move records (struct at 0x94+)
@@ -2004,7 +2004,7 @@ D_800EEDBE = 0x800EEDBE; /* data-wave 2026-09-29: was g_cam_matrix_m7 */
 D_800EEDC0 = 0x800EEDC0; /* data-wave 2026-09-29: was g_cam_matrix_m8 */
 D_800EEDD6 = 0x800EEDD6; /* s16 field halved by camera_CopyViewMatrixWithHalvedMiddleRow (h >> 1) */  /* data-wave 2026-10-07: was g_cam_bone_data_h0 */
 D_800EEDD8 = 0x800EEDD8; /* s16 field halved by camera_CopyViewMatrixWithHalvedMiddleRow; new_var pointer base */  /* data-wave 2026-10-07: was g_cam_bone_data_h1 */
-g_comb_abort_request = 0x800A3928; /* set to 1 only by comb_Abort (a failed link transfer); main (6CF8.c:460-465) then calls cdrom_PauseAndWait, sets g_local_ot_draw_mode = DISP_DISABLED, clears it and g_menu_mode_subflow_init_pending, sets mode 8 */  /* data-wave 2026-10-08: was g_global_reset_request */
+g_comb_abort_request = 0x800A3928; /* set to 1 only by comb_Abort (a failed link transfer); main (6CF8.c:460-465) then calls cdrom_PauseAndWait, sets g_local_ot_draw_mode = 0xFF, clears it and g_menu_mode_subflow_init_pending, sets mode 8 */  /* data-wave 2026-10-08: was g_global_reset_request */
 g_main_present_skip_frames = 0x800A390D; /* frame-skip count: frames main draws without presenting; decrements before frame submit */  /* data-wave 2026-10-08: was g_voice_skip_count */
 D_800EEE00 = 0x800EEE00; /* sibling pair to g_camera_calculated_angles/D_800A33CA but for the bone-data2 context */  /* data-wave 2026-09-25: was g_snd_3d_angle_h_b */
 D_800EEE02 = 0x800EEE02; /* sibling pair */  /* data-wave 2026-09-25: was g_snd_3d_angle_v_b */
