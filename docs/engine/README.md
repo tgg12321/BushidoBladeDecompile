@@ -177,7 +177,9 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 
 ### Display / frame
 - `g_local_ot_draw_mode` — a five-valued mode (0xFF, 1, 2, 10, 0x14) that selects what
-  `gpu_DrawDisplayModeOnLocalOtAndSync` draws each frame (6CF8.c:540-590).
+  `gpu_DrawDisplayModeOnLocalOtAndSync` draws each frame (6CF8.c:540-600);
+  `enum LocalOtDrawMode` (`bb2_const.h`): none, loading screen, next-opponent screen (versus CPU),
+  group-battle score table, story stage card.
 - `g_gpu_jitter_burst_enabled` — a 0/1 switch that multiplies the `gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle` sprite passes.
 - `g_gpu_presented_frame_count` — presented-frame counter (++ after each DrawOTag); most readers take its low bit as the
   double-buffer index, `fight_UpdateRotatingViewThreeOptionChoice` / `fight_UpdateRotatingViewDecimalPresentation` use the whole value.

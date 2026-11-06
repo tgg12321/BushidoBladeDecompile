@@ -1876,7 +1876,7 @@ void motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id(void) {
 void fight_WaitForCounterThenClearAndEnableDisplay(void) {
     s32 i;
 
-    if (g_local_ot_draw_mode != 0x14) {
+    if (g_local_ot_draw_mode != LOCAL_OT_DRAW_STORY_STAGE_CARD) {
         return;
     }
     comb_BeginWait();
@@ -1911,7 +1911,7 @@ void fight_Init(void) {
     s32 addr;
 
     snd_ResetVoicesAndQueue();
-    if (g_local_ot_draw_mode != 0x14) {
+    if (g_local_ot_draw_mode != LOCAL_OT_DRAW_STORY_STAGE_CARD) {
         gpu_HideResetAndClear();
         gpu_SetDispMaskOn();
     }
@@ -2084,7 +2084,7 @@ void fight_Init(void) {
     replay_Reset();
     eff_StopCommands();
     fight_WaitForCounterThenClearAndEnableDisplay();
-    g_local_ot_draw_mode = 0xFF;
+    g_local_ot_draw_mode = LOCAL_OT_DRAW_NONE;
     g_gpu_jitter_burst_enabled = 0;
     eff_Init();
     g_fight_reinit_reuses_assets = 0;
@@ -2448,7 +2448,7 @@ void fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPr
         case 1:
             if (g_fight_followup_fighter_index == 0) {
                 snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
-                g_local_ot_draw_mode = 2;
+                g_local_ot_draw_mode = LOCAL_OT_DRAW_NEXT_OPPONENT_SCREEN;
                 fight_AdvanceOpponentOrder();
                 return;
             }

@@ -39,7 +39,7 @@ start-up code, in order:
      `snd_FlushSoundQueue()` (src/main/4BC3C.c);
    - if the link-abort request `g_comb_abort_request` is set (its one setter is
      `comb_Abort`, src/main/28708.c:1634): `cdrom_PauseAndWait()`, display off
-     (`g_local_ot_draw_mode = 0xFF`), clears the request and `g_menu_mode_subflow_init_pending`, and
+     (`g_local_ot_draw_mode = LOCAL_OT_DRAW_NONE`), clears the request and `g_menu_mode_subflow_init_pending`, and
      sets mode 8;
    - calls the mode handler `g_main_loop_handlers[g_main_loop_handler_index]()` (src/main/6CF8.c:468),
      then `font_AddTpage()` (src/main/2B344.c:1228);
@@ -128,4 +128,4 @@ assigns to `g_main_loop_handler_index` itself.
 
 Modes the main loop itself sets: 0xF at start, 8 on a link abort. Many
 handlers draw through `gpu_DrawDisplayModeOnLocalOtAndSync` (src/main/6CF8.c:526), which returns at
-once while `g_local_ot_draw_mode` is 0xFF and otherwise switches on it.
+once while `g_local_ot_draw_mode` is `LOCAL_OT_DRAW_NONE` and otherwise switches on it.

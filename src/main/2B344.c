@@ -472,7 +472,7 @@ void fight_UpdateCommandStreamImageLoadAndResume(void) {
         fight_ScanCommandStreamAndLoadImage(g_fight_command_stream_cursor);
         g_fight_stage_list_step_timer = 500;
         g_fight_stage_list_draw_cursor = 0;
-        g_local_ot_draw_mode = 0x14;
+        g_local_ot_draw_mode = LOCAL_OT_DRAW_STORY_STAGE_CARD;
         fight_ResetGraphAndReloadResourcesOnCachedKeyChange();
         fight_RunCommandStream();
         gpu_SetDrawEnvBg(1, 0, 0, 0);
@@ -518,9 +518,9 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
     dest_addr = 0x80190800;
     snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
     eff_StopCommands();
-    if (g_local_ot_draw_mode != 0x14)
+    if (g_local_ot_draw_mode != LOCAL_OT_DRAW_STORY_STAGE_CARD)
         gpu_HideResetAndClear();
-    if (g_local_ot_draw_mode != 0xFF)
+    if (g_local_ot_draw_mode != LOCAL_OT_DRAW_NONE)
         gpu_SetDispMaskOn();
     gpu_DrawDisplayModeOnLocalOtAndSync();
     gpu_ResetGraphMode1();
@@ -572,7 +572,7 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
             g_fight_operand_tint_blue);
     }
     fight_WaitForCounterThenClearAndEnableDisplay();
-    g_local_ot_draw_mode = 0xFF;
+    g_local_ot_draw_mode = LOCAL_OT_DRAW_NONE;
     g_gpu_jitter_burst_enabled = 0;
     snd_SerialMixOn();
     file_index = cdrom_GetFileIndex(5, g_fight_active_playback_descriptor[1]);

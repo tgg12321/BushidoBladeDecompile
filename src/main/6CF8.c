@@ -185,7 +185,7 @@ void sys_Init(void) {
     StartPAD();
     ChangeClearPAD(0);
     disp_Init();
-    g_local_ot_draw_mode = 0xFF;
+    g_local_ot_draw_mode = LOCAL_OT_DRAW_NONE;
     g_gpu_jitter_burst_enabled = 0;
     cdrom_Init();
     memcard_Init();
@@ -462,7 +462,7 @@ void main(void) {
 
         if (g_comb_abort_request != 0) {
             cdrom_PauseAndWait();
-            g_local_ot_draw_mode = 0xFF;
+            g_local_ot_draw_mode = LOCAL_OT_DRAW_NONE;
             g_comb_abort_request = 0;
             g_menu_mode_subflow_init_pending = 0;
             g_main_loop_handler_index = 8;
@@ -538,7 +538,7 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
     s32 temp2;
 
     draw_chunk_addr = (s32)g_shared_buffer;
-    if (g_local_ot_draw_mode == 0xFF) {
+    if (g_local_ot_draw_mode == LOCAL_OT_DRAW_NONE) {
         return;
     }
     SetDefDrawEnv(
@@ -549,8 +549,8 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
     ClearOTagR(local_ot, 2);
     temp2 = g_local_ot_draw_mode;
     switch (temp2) {
-    case 1:
-    case 2:
+    case LOCAL_OT_DRAW_LOADING_SCREEN:
+    case LOCAL_OT_DRAW_NEXT_OPPONENT_SCREEN:
         draw_chunk_addr =
             gpu_DrawSheetPairSelectedByDrawMode(draw_chunk_addr, temp2);
         if (g_gpu_jitter_burst_enabled != 0) {
@@ -566,11 +566,11 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
                 draw_chunk_addr, g_local_ot_draw_mode);
         }
         break;
-    case 10:
+    case LOCAL_OT_DRAW_GROUP_BATTLE_SCORES:
         gpu_DrawPackedComparisonRowsAndTotals(
             g_fight_packed_match_scores, draw_chunk_addr, 0);
         break;
-    case 20: {
+    case LOCAL_OT_DRAW_STORY_STAGE_CARD: {
         u8 cur;
 
         temp2 = g_fight_stage_command_count;

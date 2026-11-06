@@ -46,7 +46,7 @@ void ApplyPendingConfigAndInitializeMode(void) {
     switch (g_fight_mode_selector) {
     case 6:
         g_fight_config.pending_view_setting = 1;
-        g_local_ot_draw_mode = 1;
+        g_local_ot_draw_mode = LOCAL_OT_DRAW_LOADING_SCREEN;
         g_main_loop_handler_index = 0;
         g_fight_tracked_fighter_index = (g_comb_local_side != 0);
         break;
@@ -60,7 +60,7 @@ void ApplyPendingConfigAndInitializeMode(void) {
     case 1:
         g_fight_config.fighter_setup[5] = 1;
         fight_BuildOpponentOrder();
-        g_local_ot_draw_mode = 1;
+        g_local_ot_draw_mode = LOCAL_OT_DRAW_LOADING_SCREEN;
         fight_AdvanceOpponentOrder();
         break;
     case 3:
@@ -73,7 +73,7 @@ void ApplyPendingConfigAndInitializeMode(void) {
         g_fight_start_position_pair_changed = 0;
         g_fight_stage_index = 0x22;
         fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags();
-        g_local_ot_draw_mode = 1;
+        g_local_ot_draw_mode = LOCAL_OT_DRAW_LOADING_SCREEN;
         g_main_loop_handler_index = 0;
         break;
     case 5:
@@ -97,7 +97,7 @@ void ApplyPendingConfigAndInitializeMode(void) {
         g_main_loop_handler_index = 0;
         break;
     case 4:
-        g_local_ot_draw_mode = 1;
+        g_local_ot_draw_mode = LOCAL_OT_DRAW_LOADING_SCREEN;
         g_main_loop_handler_index = 0;
         break;
     default:

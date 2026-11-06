@@ -5883,7 +5883,7 @@ void fight_AdvanceOpponentOrder(void) {
     u8 order_count = g_fight_opponent_order_count;
 
     if (order_cursor == order_count) {
-        g_local_ot_draw_mode = 0xFF;
+        g_local_ot_draw_mode = LOCAL_OT_DRAW_NONE;
         g_gpu_jitter_burst_enabled = 0;
         if (order_cursor == 0x14) {
             u8 group_flag = g_fighter_group_flags[g_fighter_records[0]
@@ -6110,7 +6110,7 @@ void fight_PackMatchScores(void) {
     s32 recorded_match_count;
     u8 *base;
 
-    g_local_ot_draw_mode = 10;
+    g_local_ot_draw_mode = LOCAL_OT_DRAW_GROUP_BATTLE_SCORES;
     n = g_fight_match_count;
     if (i < n) {
         recorded_match_count = g_fight_match_cursor;
@@ -6142,7 +6142,7 @@ extern void fight_PackMatchScores(void);
 void fight_AdvanceMatch(void) {
     fight_PackMatchScores();
     if (g_fight_match_cursor == g_fight_match_count) {
-        g_local_ot_draw_mode = 0xFF;
+        g_local_ot_draw_mode = LOCAL_OT_DRAW_NONE;
         g_gpu_jitter_burst_enabled = 0;
         g_main_loop_handler_index = 0x14;
     } else {
