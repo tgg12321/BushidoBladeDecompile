@@ -269,16 +269,18 @@ void fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState(
 
 void fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields(
     void) {
-    u8 v_277C = g_fight_config.fighter_setup[0];
-    u8 v_376A = g_fight_bone_group_tim_requests;
-    u8 v_3836 = g_fight_saved_first_fighter_selection;
-    u8 v_36C8 = g_fight_saved_bone_group_tim_requests;
+    u8 displaced_selection = g_fight_config.fighter_setup[0];
+    u8 displaced_bone_group_tim_requests = g_fight_bone_group_tim_requests;
+    u8 saved_selection = g_fight_saved_first_fighter_selection;
+    u8 saved_bone_group_tim_requests = g_fight_saved_bone_group_tim_requests;
     g_fight_saved_first_fighter_selection = 0xFF;
-    g_fight_displaced_first_fighter_selection = v_277C;
-    g_fight_displaced_bone_group_tim_requests = v_376A;
-    g_fight_config.fighter_setup[0] = v_3836;
-    g_fight_bone_group_tim_requests = v_36C8;
-    slot_RequestTimGroupsAndMarkReloadOnChange(0, v_36C8);
+    g_fight_displaced_first_fighter_selection = displaced_selection;
+    g_fight_displaced_bone_group_tim_requests =
+        displaced_bone_group_tim_requests;
+    g_fight_config.fighter_setup[0] = saved_selection;
+    g_fight_bone_group_tim_requests = saved_bone_group_tim_requests;
+    slot_RequestTimGroupsAndMarkReloadOnChange(
+        0, saved_bone_group_tim_requests);
     fighter_ResetBoneGroupHitState(g_fighter_records);
 }
 
@@ -335,10 +337,11 @@ void fight_QueueSubstitutionCommandDescriptorPlayback(s32 descriptor_index) {
         (descriptor_index * 4 + 1);
 }
 
-void fight_QueueFixedFighterCommandDescriptorPlayback(s32 arg0) {
-    D_800A390C = arg0;
+void fight_QueueFixedFighterCommandDescriptorPlayback(s32 descriptor_index) {
+    D_800A390C = descriptor_index;
     g_main_loop_handler_index = MAIN_LOOP_DESCRIPTOR_PLAYBACK_INIT;
-    g_fight_active_playback_descriptor = D_800A385C + (arg0 * 4 - 4);
+    g_fight_active_playback_descriptor =
+        D_800A385C + (descriptor_index * 4 - 4);
 }
 
 void fight_RunCommandStream(void) {
@@ -509,9 +512,9 @@ extern void fight_RequestBothFightersEntriesAndReloadOnChange(void);
 
 void fight_StartDescriptorPlaybackAndAudio(void) {
     s32 saved_first;
-    s32 saved_44c;
-    s32 a3_arg;
-    s32 a0_arg;
+    s32 saved_second;
+    s32 first_weapon_entry_id;
+    s32 second_weapon_entry_id;
     s32 dest_addr;
     s32 file_index;
     u8 flags;
@@ -532,36 +535,36 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
         dest_addr = 0x80118800;
     }
     {
-        u8 var_7 = g_fight_active_playback_descriptor[3];
-        if (var_7 & 0x30) {
+        u8 descriptor_flags = g_fight_active_playback_descriptor[3];
+        if (descriptor_flags & 0x30) {
             saved_first = g_fighter_records[0].weapon_entry_id;
-            saved_44c = g_fighter_records[1].weapon_entry_id;
-            if (var_7 & 0x10)
+            saved_second = g_fighter_records[1].weapon_entry_id;
+            if (descriptor_flags & 0x10)
                 g_fighter_records[0].weapon_entry_id = 0x32;
             if (g_fight_active_playback_descriptor[3] & 0x20)
                 g_fighter_records[1].weapon_entry_id = 0x32;
             fight_RequestBothFightersEntriesAndReloadOnChange();
             g_fighter_records[0].weapon_entry_id = saved_first;
-            g_fighter_records[1].weapon_entry_id = saved_44c;
+            g_fighter_records[1].weapon_entry_id = saved_second;
         }
     }
     if (g_fight_active_playback_descriptor[3] & 0x1)
-        a3_arg = g_fighter_records[0].weapon_entry_id;
+        first_weapon_entry_id = g_fighter_records[0].weapon_entry_id;
     else
-        a3_arg = -1;
+        first_weapon_entry_id = -1;
     if (g_fight_active_playback_descriptor[3] & 0x2)
-        a0_arg = g_fighter_records[1].weapon_entry_id;
+        second_weapon_entry_id = g_fighter_records[1].weapon_entry_id;
     else
-        a0_arg = -1;
+        second_weapon_entry_id = -1;
     flags = g_fight_active_playback_descriptor[3];
     if (flags & 0x10)
-        a3_arg = 0x32;
+        first_weapon_entry_id = 0x32;
     if (flags & 0x20)
-        a0_arg = 0x32;
+        second_weapon_entry_id = 0x32;
     D_800A390F = 0;
     motion_StartPlaybackAtIndexedBasePlusOffset(
         g_fight_playback_file_base_index, g_fight_active_playback_descriptor[0],
-        0, a3_arg, a0_arg, -1, -1, dest_addr);
+        0, first_weapon_entry_id, second_weapon_entry_id, -1, -1, dest_addr);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     if (g_fight_active_playback_descriptor[3] & 0x40)

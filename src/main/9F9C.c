@@ -1859,11 +1859,11 @@ void snd_StartFightCdAudio(void) {
 }
 
 s32 snd_ShouldUpdateStageSoundSlots(void) {
-    s32 v = g_fight_mode_selector;
-    if (v >= 5) {
+    s32 fight_mode = g_fight_mode_selector;
+    if (fight_mode >= 5) {
         return 1;
     }
-    if (v >= 2) {
+    if (fight_mode >= 2) {
         return snd_GetSavedCdAudioSuppressFlag();
     }
     return 1;
@@ -2840,7 +2840,7 @@ Unk8001FAE4Entry *motion_FindPairedMoveEntry(MoveScript *move_script) {
 }
 
 s32 fighter_PassesPairedMoveEntryGates(
-    Unk80101EC8Record *fighter_record, s32 arg1) {
+    Unk80101EC8Record *fighter_record, s32 require_group_6_9_intact) {
     if (g_fight_mode_selector == FIGHT_MODE_PRACTICE ||
         g_fight_mode_selector == FIGHT_MODE_TEAM ||
         g_fight_mode_selector == FIGHT_MODE_CHANBARA) {
@@ -2858,7 +2858,7 @@ s32 fighter_PassesPairedMoveEntryGates(
          fighter_record->carried_object_kinds[0] != 0xA)) {
         return 0;
     }
-    if (arg1 != 0) {
+    if (require_group_6_9_intact != 0) {
         return fighter_record->hit_record_group_6_9_intact != 0;
     }
     return 1;
@@ -2984,10 +2984,10 @@ void fight_UpdatePairedMoves(void) {
 s32 fight_UpdateSeparationAndPairedMoves(void) {
     s32 previous_separation = g_fighter_horizontal_separation;
     s32 separation = fighter_CalcHorizontalSeparation();
-    s32 v = g_fight_mode_selector;
+    s32 fight_mode = g_fight_mode_selector;
     g_fighter_horizontal_separation = separation;
     D_800A38F0 = separation - previous_separation;
-    if (v != FIGHT_MODE_TEAM && v != FIGHT_MODE_PRACTICE) {
+    if (fight_mode != FIGHT_MODE_TEAM && fight_mode != FIGHT_MODE_PRACTICE) {
         fight_UpdatePairedMoves();
     }
     g_fight_mash_contest_start_requested = 0;
@@ -3326,7 +3326,8 @@ void motion_LoadCommonData(void) {
  * points g_motion_fighter_sections[i] into g_motion_fighter_buffers[i] and
  * stores the id in g_motion_fighter_loaded_data_ids[i]. */
 void motion_LoadFighterData(
-    s32 arg0, s32 fighter0_weapon_id, s32 arg2, s32 fighter1_weapon_id) {
+    s32 fighter0_character_data_index, s32 fighter0_weapon_id,
+    s32 fighter1_character_data_index, s32 fighter1_weapon_id) {
     /* FAKE: frame layout: only var_0[0..1] are used; the target frame (0x140)
      * reserves 0x100 untouched bytes after them (N = 129..132; var_0[2] gives
      * the wrong frame); without it: score 20. */
@@ -3345,9 +3346,9 @@ void motion_LoadFighterData(
         g_fight_mode_selector == FIGHT_MODE_VS ||
         g_fight_mode_selector == FIGHT_MODE_NETWORK) {
         for (i = 0; i < 2; i++) {
-            j = arg0;
+            j = fighter0_character_data_index;
             if (i != 0) {
-                j = arg2;
+                j = fighter1_character_data_index;
             }
             if (g_motion_frame_set_ids[i] != j) {
                 g_motion_frame_set_ids[i] = j;
@@ -3361,14 +3362,16 @@ void motion_LoadFighterData(
     var_0[1] = 0;
     var_0[0] = 0;
     {
-        u16 id0 = g_fighter_motion_data_ids[arg0][fighter0_weapon_id] |
+        u16 id0 = g_fighter_motion_data_ids[fighter0_character_data_index]
+                                           [fighter0_weapon_id] |
                   (fighter0_weapon_id << 12);
         u16 id1;
 
         if (g_fight_mode_selector == FIGHT_MODE_CHANBARA) {
             id1 = id0;
         } else {
-            id1 = g_fighter_motion_data_ids[arg2][fighter1_weapon_id] |
+            id1 = g_fighter_motion_data_ids[fighter1_character_data_index]
+                                           [fighter1_weapon_id] |
                   (fighter1_weapon_id << 12);
         }
         g_fighter_records[0].motion_data_id = id0;
