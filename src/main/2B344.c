@@ -238,7 +238,7 @@ void fight_RequestOneFighterEntriesAndReloadOnChange(s32 fighter_index) {
 void fight_InitCommandStream(s32 stream_index) {
     g_fight_config.fighter_setup[4] = 0;
     g_fight_config.fighter_setup[5] = 1;
-    D_800A3894 = 0;
+    g_fight_first_fighter_substitution_command_operands = 0;
     D_800A385C = 0;
     g_fight_saved_first_fighter_selection = 0xFF;
     g_fight_displaced_first_fighter_selection = 0xFF;
@@ -257,7 +257,7 @@ void fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState(
     void) {
     g_fight_saved_first_fighter_selection = g_fight_config.fighter_setup[0];
     {
-        u8 *base = D_800A3894;
+        u8 *base = g_fight_first_fighter_substitution_command_operands;
         u8 v1 = g_fight_bone_group_tim_requests;
         u8 v0 = *base;
         g_fight_saved_bone_group_tim_requests = v1;
@@ -330,7 +330,8 @@ void fight_SetFixedFighterBytesAndLoadBothFighters(void) {
 void fight_QueueSubstitutionCommandDescriptorPlayback(s32 a0) {
     D_800A37B0 = a0;
     g_main_loop_handler_index = 6;
-    g_fight_active_playback_descriptor = D_800A3894 + (a0 * 4 + 1);
+    g_fight_active_playback_descriptor =
+        g_fight_first_fighter_substitution_command_operands + (a0 * 4 + 1);
 }
 
 void fight_QueueFixedFighterCommandDescriptorPlayback(s32 arg0) {
@@ -421,11 +422,13 @@ void fight_RunCommandStream(void) {
             break;
 
         case 2:
-            D_800A3894 = g_fight_command_stream_cursor;
+            g_fight_first_fighter_substitution_command_operands =
+                g_fight_command_stream_cursor;
             g_fight_command_stream_cursor += 0x1D;
             fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState();
             fight_FillMissingConfigInitFighterAndLoadObject(0);
-            fight_ConfigureFighter1FromLookupAndOperandsAndLoad(D_800A3894 + 1);
+            fight_ConfigureFighter1FromLookupAndOperandsAndLoad(
+                g_fight_first_fighter_substitution_command_operands + 1);
         case 18:
             g_main_loop_handler_index = 0;
             g_fight_stage_start_count++;
@@ -592,7 +595,7 @@ void fight_HandleDescriptorPlaybackCompletion(void) {
     if (g_fight_mode_selector != 0) {
         return;
     }
-    if (D_800A3894 != 0) {
+    if (g_fight_first_fighter_substitution_command_operands != 0) {
         g_main_loop_handler_index = 0;
         switch (D_800A37B0) {
         case 1:
@@ -606,7 +609,7 @@ void fight_HandleDescriptorPlaybackCompletion(void) {
             fight_RequestBothFightersEntriesAndReloadOnChange();
             /* fall through */
         case 6:
-            D_800A3894 = 0;
+            g_fight_first_fighter_substitution_command_operands = 0;
             break;
         default:
             return;

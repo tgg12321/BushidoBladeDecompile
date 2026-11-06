@@ -648,7 +648,7 @@ extern u32 *D_800A3808;
 extern s16 g_cd_fade_step;
 extern u8 g_fight_step_row_column;
 extern s16 g_cd_fade_len;
-extern u8 *D_800A3894;
+extern u8 *g_fight_first_fighter_substitution_command_operands;
 extern u32 *g_prim_buf_cursor; /* the draw-chunk builders' word cursor */
 extern s32 D_800A38D0;
 extern u16 D_800A38D6;

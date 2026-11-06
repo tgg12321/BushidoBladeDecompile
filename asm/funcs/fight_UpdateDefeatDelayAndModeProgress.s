@@ -85,8 +85,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D218 8001CA18 42730008 */  j          .L8001CD08
     /* D21C 8001CA1C 00000000 */   nop
   .L8001CA20:
-    /* D220 8001CA20 0A80043C */  lui        $a0, %hi(D_800A3894)
-    /* D224 8001CA24 9438848C */  lw         $a0, %lo(D_800A3894)($a0)
+    /* D220 8001CA20 0A80043C */  lui        $a0, %hi(g_fight_first_fighter_substitution_command_operands)
+    /* D224 8001CA24 9438848C */  lw         $a0, %lo(g_fight_first_fighter_substitution_command_operands)($a0)
     /* D228 8001CA28 00000000 */  nop
     /* D22C 8001CA2C 10008010 */  beqz       $a0, .L8001CA70
     /* D230 8001CA30 00000000 */   nop

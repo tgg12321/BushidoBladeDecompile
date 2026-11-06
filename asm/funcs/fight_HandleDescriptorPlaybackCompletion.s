@@ -26,8 +26,8 @@ glabel fight_HandleDescriptorPlaybackCompletion
     /* 2C510 8003BD10 00000000 */  nop
     /* 2C514 8003BD14 3A004014 */  bnez       $v0, .L8003BE00
     /* 2C518 8003BD18 00000000 */   nop
-    /* 2C51C 8003BD1C 0A80023C */  lui        $v0, %hi(D_800A3894)
-    /* 2C520 8003BD20 9438428C */  lw         $v0, %lo(D_800A3894)($v0)
+    /* 2C51C 8003BD1C 0A80023C */  lui        $v0, %hi(g_fight_first_fighter_substitution_command_operands)
+    /* 2C520 8003BD20 9438428C */  lw         $v0, %lo(g_fight_first_fighter_substitution_command_operands)($v0)
     /* 2C524 8003BD24 00000000 */  nop
     /* 2C528 8003BD28 1F004010 */  beqz       $v0, .L8003BDA8
     /* 2C52C 8003BD2C 00000000 */   nop
@@ -60,8 +60,8 @@ glabel fight_HandleDescriptorPlaybackCompletion
     /* 2C590 8003BD90 FFEB000C */  jal        fight_RequestBothFightersEntriesAndReloadOnChange
     /* 2C594 8003BD94 00000000 */   nop
   jlabel .L8003BD98
-    /* 2C598 8003BD98 0A80013C */  lui        $at, %hi(D_800A3894)
-    /* 2C59C 8003BD9C 943820AC */  sw         $zero, %lo(D_800A3894)($at)
+    /* 2C598 8003BD98 0A80013C */  lui        $at, %hi(g_fight_first_fighter_substitution_command_operands)
+    /* 2C59C 8003BD9C 943820AC */  sw         $zero, %lo(g_fight_first_fighter_substitution_command_operands)($at)
     /* 2C5A0 8003BDA0 7EEF0008 */  j          .L8003BDF8
     /* 2C5A4 8003BDA4 00000000 */   nop
   .L8003BDA8:

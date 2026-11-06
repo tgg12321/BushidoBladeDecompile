@@ -146,8 +146,8 @@ glabel fight_RunCommandStream
   jlabel .L8003B7BC
     /* 2BFBC 8003B7BC 0A80023C */  lui        $v0, %hi(g_fight_command_stream_cursor)
     /* 2BFC0 8003B7C0 4438428C */  lw         $v0, %lo(g_fight_command_stream_cursor)($v0)
-    /* 2BFC4 8003B7C4 0A80013C */  lui        $at, %hi(D_800A3894)
-    /* 2BFC8 8003B7C8 943822AC */  sw         $v0, %lo(D_800A3894)($at)
+    /* 2BFC4 8003B7C4 0A80013C */  lui        $at, %hi(g_fight_first_fighter_substitution_command_operands)
+    /* 2BFC8 8003B7C8 943822AC */  sw         $v0, %lo(g_fight_first_fighter_substitution_command_operands)($at)
     /* 2BFCC 8003B7CC 1D004224 */  addiu      $v0, $v0, 0x1D
     /* 2BFD0 8003B7D0 0A80013C */  lui        $at, %hi(g_fight_command_stream_cursor)
     /* 2BFD4 8003B7D4 443822AC */  sw         $v0, %lo(g_fight_command_stream_cursor)($at)
@@ -155,8 +155,8 @@ glabel fight_RunCommandStream
     /* 2BFDC 8003B7DC 00000000 */   nop
     /* 2BFE0 8003B7E0 D0EB000C */  jal        fight_FillMissingConfigInitFighterAndLoadObject
     /* 2BFE4 8003B7E4 21200000 */   addu      $a0, $zero, $zero
-    /* 2BFE8 8003B7E8 0A80043C */  lui        $a0, %hi(D_800A3894)
-    /* 2BFEC 8003B7EC 9438848C */  lw         $a0, %lo(D_800A3894)($a0)
+    /* 2BFE8 8003B7E8 0A80043C */  lui        $a0, %hi(g_fight_first_fighter_substitution_command_operands)
+    /* 2BFEC 8003B7EC 9438848C */  lw         $a0, %lo(g_fight_first_fighter_substitution_command_operands)($a0)
     /* 2BFF0 8003B7F0 E9EC000C */  jal        fight_ConfigureFighter1FromLookupAndOperandsAndLoad
     /* 2BFF4 8003B7F4 01008424 */   addiu     $a0, $a0, 0x1
   jlabel .L8003B7F8

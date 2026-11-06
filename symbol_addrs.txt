@@ -1513,7 +1513,7 @@ g_fight_mash_contest_preset_fighter_index = 0x800A3876;  // data-wave 2026-11-06
 g_fight_active_playback_descriptor = 0x800A3878;  // data-wave 2026-10-27: was D_800A3878
 g_fighter_horizontal_separation = 0x800A387C;  // data-wave 2026-10-27: was D_800A387C
 D_800A3890 = 0x800A3890;
-D_800A3894 = 0x800A3894;
+g_fight_first_fighter_substitution_command_operands = 0x800A3894;  // data-wave 2026-11-06: was D_800A3894
 D_800A3898 = 0x800A3898;
 D_800A3899 = 0x800A3899;
 D_800A389A = 0x800A389A;
@@ -2014,7 +2014,7 @@ D_800EEE24 = 0x800EEE24; /* position triple Z (from g_view_camera_root_node.xf.m
 g_fight_active_playback_descriptor = 0x800A3878; /* playback descriptor bytes: [0] playback offset (added to g_motion_playback_file_id_bases[g_fight_playback_file_base_index] by motion_StartPlaybackAtIndexedBasePlusOffset), [1] cd file arg, [2] audio arg, [3] flag bits (see named_syms.txt) */  /* data-wave 2026-10-08: was g_menuctl_player_select_struct_ptr */
 g_fight_tally_winner_index = 0x800A382D; /* fight_TallyMatchResultsAndInitPresentation's tally result: counts[0] < counts[1] (0 / 1), or 2 on a second tie; fight_UpdateMatchTallyPresentation tests == 2, else indexes g_fighter_records (stride 0x44C) with it */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx */
 g_fight_followup_playback_start_pair = 0x800A3818; /* fight_FindNearestStartPair result stored by fight_InitNearestStartPairPlayback; fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams passes it to fight_GetStartPosition */  /* data-wave 2026-10-08: was g_stage_helper_result_cache */
-D_800A3894 = 0x800A3894; /* byte pointer set from the cursor g_fight_command_stream_cursor, read at +1 / +6 / a0*4+1 */  /* data-wave 2026-10-08: was g_menuctl_pending_flag */
+g_fight_first_fighter_substitution_command_operands = 0x800A3894; /* byte pointer set from the cursor g_fight_command_stream_cursor, read at +1 / +6 / a0*4+1 */  /* data-wave 2026-10-08: was g_menuctl_pending_flag */
 g_arena_blocks = 0x800EED10; /* 10 entries x 0x10 bytes; +0 = state s16, +0xC = callback fn ptr */  /* data-wave 2026-10-08: was g_snd_stream_slot_table */
 D_800EED1C = 0x800EED1C; /* callback function pointer at offset +0xC of each slot */  /* data-wave 2026-10-08: was g_snd_stream_slot_callbacks */
 g_arena = 0x800A9D10; /* base of the fixed 0x45000-byte block arena (arena_Reset) */  /* data-wave 2026-10-08: was g_snd_stream_buffer */

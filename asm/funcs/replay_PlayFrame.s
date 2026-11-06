@@ -464,8 +464,8 @@ glabel replay_PlayFrame
   .L8003A00C:
     /* 2A80C 8003A00C 8B76000C */  jal        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
     /* 2A810 8003A010 00000000 */   nop
-    /* 2A814 8003A014 0A80043C */  lui        $a0, %hi(D_800A3894)
-    /* 2A818 8003A018 9438848C */  lw         $a0, %lo(D_800A3894)($a0)
+    /* 2A814 8003A014 0A80043C */  lui        $a0, %hi(g_fight_first_fighter_substitution_command_operands)
+    /* 2A818 8003A018 9438848C */  lw         $a0, %lo(g_fight_first_fighter_substitution_command_operands)($a0)
     /* 2A81C 8003A01C 00000000 */  nop
     /* 2A820 8003A020 10008010 */  beqz       $a0, .L8003A064
     /* 2A824 8003A024 00000000 */   nop

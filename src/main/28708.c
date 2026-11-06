@@ -1565,13 +1565,14 @@ void replay_PlayFrame(void) {
                     }
                 }
                 snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
-                if (D_800A3894 != 0) {
+                if (g_fight_first_fighter_substitution_command_operands != 0) {
                     if (D_800A3712 != 0) {
                         fight_QueueSubstitutionCommandDescriptorPlayback(
                             var_19 ? 3 : 6);
                     } else {
                         fight_ConfigureFighter1FromOperandsAndLoad(
-                            D_800A3894 + 6);
+                            g_fight_first_fighter_substitution_command_operands +
+                            6);
                         fight_QueueSubstitutionCommandDescriptorPlayback(
                             var_19 ? 2 : 5);
                     }

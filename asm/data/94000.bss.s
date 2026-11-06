@@ -214,9 +214,9 @@ enddlabel D_800A3890
 enddlabel g_memcard_op_completion_code
 
 /* 800A3894 */
-dlabel D_800A3894
+dlabel g_fight_first_fighter_substitution_command_operands
     .space 0x4
-enddlabel D_800A3894
+enddlabel g_fight_first_fighter_substitution_command_operands
 
 /* 800A3898 */
 dlabel D_800A3898

@@ -1381,8 +1381,10 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
                     g_fight_skip_first_defeats_left_expiry = 0;
                     break;
                 }
-                if (D_800A3894 != 0) {
-                    fight_ConfigureFighter1FromOperandsAndLoad(D_800A3894 + 6);
+                if (g_fight_first_fighter_substitution_command_operands != 0) {
+                    fight_ConfigureFighter1FromOperandsAndLoad(
+                        g_fight_first_fighter_substitution_command_operands +
+                        6);
                     if (g_fight_saved_first_fighter_selection != 0xFF) {
                         fight_QueueSubstitutionCommandDescriptorPlayback(2);
                     } else {

@@ -11,8 +11,8 @@ glabel fight_InitCommandStream
     /* 2BA30 8003B230 21082400 */  addu       $at, $at, $a0
     /* 2BA34 8003B234 EC00248C */  lw         $a0, %lo(g_fight_command_streams)($at)
     /* 2BA38 8003B238 FF000224 */  addiu      $v0, $zero, 0xFF
-    /* 2BA3C 8003B23C 0A80013C */  lui        $at, %hi(D_800A3894)
-    /* 2BA40 8003B240 943820AC */  sw         $zero, %lo(D_800A3894)($at)
+    /* 2BA3C 8003B23C 0A80013C */  lui        $at, %hi(g_fight_first_fighter_substitution_command_operands)
+    /* 2BA40 8003B240 943820AC */  sw         $zero, %lo(g_fight_first_fighter_substitution_command_operands)($at)
     /* 2BA44 8003B244 0A80013C */  lui        $at, %hi(D_800A385C)
     /* 2BA48 8003B248 5C3820AC */  sw         $zero, %lo(D_800A385C)($at)
     /* 2BA4C 8003B24C 0A80013C */  lui        $at, %hi(g_fight_saved_first_fighter_selection)
