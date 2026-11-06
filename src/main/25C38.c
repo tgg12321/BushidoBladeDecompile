@@ -119,7 +119,7 @@ void menu_InitSubflowForMode(s32 arg0) {
     }
 
     switch (arg0) {
-    case 0:
+    case FIGHT_MODE_STORY:
         if (g_menu_mode_subflow_init_pending == 0) {
             InitTimedSpriteSequence(0x80118800);
             snd_SerialMixOn();
@@ -132,12 +132,12 @@ void menu_InitSubflowForMode(s32 arg0) {
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
-    case 2:
+    case FIGHT_MODE_PRACTICE:
         g_row_menu_subflow_state = ROW_MENU_SUBFLOW_PRACTICE_MENU;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
-    case 3:
+    case FIGHT_MODE_CHANBARA:
         if (g_menu_mode_subflow_init_pending == 0) {
             menu_ResetFlowBackgroundAndConfirmCursor();
             g_row_menu_subflow_state = ROW_MENU_SUBFLOW_CHANBARA_MENU;
@@ -149,7 +149,7 @@ void menu_InitSubflowForMode(s32 arg0) {
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
-    case 6:
+    case FIGHT_MODE_NETWORK:
         if (g_menu_mode_subflow_init_pending != 0) {
             InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
             g_row_menu_subflow_state = ROW_MENU_SUBFLOW_ENTRY_MENU;
@@ -176,21 +176,21 @@ void menu_InitSubflowForMode(s32 arg0) {
         }
         return;
 
-    case 1:
+    case FIGHT_MODE_VSCPU:
         StoreCompactedBits(g_saved_record.unlock_mask & 0x003EF3DF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         g_row_menu_subflow_state = ROW_MENU_SUBFLOW_ENTRY_MENU;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
-    case 5:
+    case FIGHT_MODE_TEAM:
         StoreCompactedBits(g_saved_record.unlock_mask & 0x003FF3FF);
         menu_InitSelWithStoredBits(0x80118800);
         g_row_menu_subflow_state = ROW_MENU_SUBFLOW_TEAM_SEL_SCREEN;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
-    case 4:
+    case FIGHT_MODE_VS:
         StoreCompactedBits(g_saved_record.unlock_mask & 0x053FF3FF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         g_row_menu_subflow_state = ROW_MENU_SUBFLOW_ENTRY_MENU;
