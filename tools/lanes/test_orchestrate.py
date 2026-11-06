@@ -225,6 +225,34 @@ class Candidates(unittest.TestCase):
                                                 "topic:tuedit:main/4D0A8")})
             self.assertEqual(o.plan_starts(b, held, st(), NOW, "naming"), [("naming-a", "m0")])
 
+    def test_tu_sweeps_run_in_parallel(self):
+        # kind `sweep` rows (naming-session skill, Sweeps): every startable sweep gets a session,
+        # whatever its kind; a unit draft `<sweep>.<n>/` claims symbols plus a shared tuedit, so
+        # two sweeps' units editing one user TU start together; `Lands after <row>` still waits
+        import tempfile
+        with tempfile.TemporaryDirectory() as d, patch.object(o, "MAIN", Path(d)):
+            f = Path(d) / "src" / "main" / "17AFC.c"
+            f.parent.mkdir(parents=True)
+            f.write_text("", encoding="utf-8")
+            for i, pairs in enumerate(("D_1=g_one\n", "D_2=g_two\n")):
+                w = Path(d) / f"sweep-s{i}.1"
+                w.mkdir()
+                (w / "dry.txt").write_text("-- file edits (1) --\nsrc/main/17AFC.c\n",
+                                           encoding="utf-8")
+                (w / "pairs.txt").write_text(pairs, encoding="utf-8")
+            b = {"naming": [{"id": f"sweep-s{i}", "kind": "sweep", "stage": s, "note": n,
+                             "draft": dr}
+                            for i, (s, n, dr) in enumerate((
+                                ("reviewed", "", "sweep-s0.1"), ("reviewed", "", "sweep-s1.1"),
+                                ("idea", "", "-"), ("idea", "Lands after v1", "-")))]
+                 + [{"id": "v1", "kind": "local", "stage": "researched", "note": ""}],
+                 "foundation": []}
+            self.assertEqual(o.plan_starts(b, reg(), st(), NOW, "naming"),
+                             [("naming-a", "sweep-s0"), ("naming-b", "sweep-s1"),
+                              ("naming-c", "v1"), ("naming-d", "sweep-s2")])
+            b["naming"][4]["stage"] = "landed"
+            self.assertIn(("naming-d", "sweep-s3"), o.plan_starts(b, reg(), st(), NOW, "naming"))
+
     def test_dependency_wait_is_not_a_claim_block(self):
         b = bl(naming_stages=("idea", "blocked"))
         b["naming"][0]["note"] = "lands after m1"

@@ -59,6 +59,11 @@ row's kind.
       as git lists them (an ignored file such as the generated
       include/m2c_context.h does not count); a typedef name used only as a
       type (s8) is no local.
+  homes [<tu id>,...]
+      every open (non-final) placeholder status counts, one `kind key home`
+      line, home the game TU owning it (homes() states the rules; the backlog's
+      TU sweep rows own placeholders by it); only those TUs if given
+      (main/17AFC,main/87A0).
 
 add and prune also fill each `-` commit from git: the `naming: waveNN` commit of
 the row's last wave, else a commit whose body cites `wNN-research.md`. Lane
@@ -421,6 +426,101 @@ def cmd_prune(args):
     print(f'pruned {len(gone)}: {" ".join(gone)}' if gone else 'nothing to prune')
 
 
+def homes(census, rows):
+    """[(kind, key, home TU id)] for every open (non-final) game placeholder; the home rules
+    of a TU sweep (naming-session skill, Sweeps). func: its census src_location; local: the TU
+    defining its function; data: the code TU (not a data-only d_*.c) with the most uses, C
+    tokens outside `extern` lines plus the asm/funcs bodies it INCLUDE_ASMs (ties: lowest TU
+    id), else the TU defining it in C, else `-`; member: one home per type, the .c defining
+    it, else the code TU naming the type most, else the home of a type embedding it, else the
+    code TU with most `.m` / `->m` accesses of the type's placeholder members (ties: lowest)."""
+    files = game_files()
+    heads = [f for f in files if not f.endswith('.c')]
+    cfiles = [f for f in files if f.endswith('.c')]
+    code = [f for f in cfiles if not os.path.basename(f).startswith('d_')]
+    tid = lambda f: f[4:-2] if f.startswith('src/') and f.endswith('.c') else f  # noqa: E731
+    raw = {}
+    for f in files:
+        with io.open(f, encoding='utf-8') as fh:
+            raw[f] = fh.read()
+    texts = {f: blank(t) for f, t in raw.items()}
+    final = {(r['kind'], r['name'] if r['kind'] == 'data' else key_of(r))
+             for r in rows.values() if is_final(r)}
+    tree = tree_census(files)
+    out = [('func', a, tid((c.get('src_location') or '-').split(':')[0]))
+           for a, c in sorted(census.items()) if unnamed(c) and ('func', a) not in final]
+    for f in cfiles:
+        for k in sorted(tree_census(heads + [f])['local'] & tree['local']):
+            if ('local', k) not in final:
+                out.append(('local', k, tid(f)))
+
+    def best(cnt):
+        cnt = {f: n for f, n in cnt.items() if n}
+        return tid(sorted(cnt, key=lambda f: (-cnt[f], f))[0]) if cnt else None
+    asm = {}
+    for f in code:
+        bodies = []
+        for n in re.findall(r'INCLUDE_ASM\(\s*"asm/funcs"\s*,\s*(\w+)\s*\)', raw[f]):
+            if os.path.exists(f'asm/funcs/{n}.s'):
+                with io.open(f'asm/funcs/{n}.s', encoding='utf-8', errors='replace') as fh:
+                    bodies.append(fh.read())
+        asm[f] = '\n'.join(bodies)
+    for d in sorted(tree['data']):
+        if ('data', d) in final:
+            continue
+        w = re.compile(rf'\b{d}\b')
+        uses = {f: len(w.findall(asm[f])) + sum(len(w.findall(ln))
+                                                for ln in texts[f].splitlines()
+                                                if not re.match(r'\s*extern\b', ln))
+                for f in code}
+        dfn = [f for f in cfiles if any(w.search(ln) for ln in texts[f].splitlines()
+                                        if not re.match(r'\s*extern\b', ln))]
+        out.append(('data', d, best(uses) or (tid(dfn[0]) if dfn else '-')))
+    defined, members, embeds = {}, {}, {}
+    for f in files:
+        for m in re.finditer(r'\b(typedef\s+)?(struct|union)\s*(\w*)\s*\{', texts[f]):
+            end = closing(texts[f], m.end())
+            tail = re.match(r'\s*(\w+)', texts[f][end:])
+            name = tail.group(1) if m.group(1) and tail else m.group(3)
+            if name:
+                defined.setdefault(name, f)
+                for t in re.findall(r'\b([A-Za-z_]\w*)\s+\w+\s*(?:\[[^\]]*\]\s*)*;',
+                                    flat(texts[f][m.end():end - 1])):
+                    embeds.setdefault(t, name)
+    for k in sorted(tree['member']):
+        if ('member', k) not in final:
+            members.setdefault(k.split('.')[0], []).append(k)
+
+    def type_home(t, seen=()):
+        if defined.get(t, '').endswith('.c'):
+            return tid(defined[t])
+        h = best({f: len(re.findall(rf'\b{t}\b', texts[f])) for f in code})
+        if h:
+            return h
+        if t in embeds and embeds[t] not in seen:
+            h = type_home(embeds[t], seen + (t,))
+            if h != '-':
+                return h
+        ms = [k.split('.')[1] for k in members.get(t, [])]
+        return best({f: sum(len(re.findall(rf'(?:->|\.)\s*{m}\b', texts[f])) for m in ms)
+                     for f in code}) or '-'
+    for t, ks in sorted(members.items()):
+        h = type_home(t)
+        out += [('member', k, h) for k in ks]
+    return out
+
+
+def cmd_homes(args):
+    want = {t for t in (args.tus or '').split(',') if t}
+    rows = homes(load_census(), load())
+    for kind, key, home in rows:
+        if not want or home in want:
+            print(f'{kind}\t{key}\t{home}')
+    shown = [r for r in rows if not want or r[2] in want]
+    print('# ' + ', '.join(f'{k} {sum(1 for r in shown if r[0] == k)}' for k in KINDS),
+          file=sys.stderr)
+
+
 def cmd_status(args):
     census, rows = load_census(), load()
     tree = tree_census()
@@ -454,6 +554,9 @@ def main():
     a.set_defaults(fn=cmd_add)
     sub.add_parser('prune').set_defaults(fn=cmd_prune)
     sub.add_parser('status').set_defaults(fn=cmd_status)
+    h = sub.add_parser('homes')
+    h.add_argument('tus', nargs='?')
+    h.set_defaults(fn=cmd_homes)
     args = p.parse_args()
     args.fn(args)
 

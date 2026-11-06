@@ -46,8 +46,7 @@ workable, change nothing, close the lane and stop (report why).
   `fresh --discard` here. If any claim is refused, unclaim what you took and do another unit or
   stop; never wait for it. After any row claim succeeds, `lanes.py fresh <lane>` and re-read the
   row on main: go on only if its stage and note are what you picked it by (the Codex lane may
-  have just moved it). Claims are held until the unit's stopping point. Older row notes that
-  say to claim TUs or types before PREPARE are superseded.
+  have just moved it). Claims are held until the unit's stopping point.
 - **Landing.** `python tools/lanes/lanes.py land <lane>` replays the lane's commits onto the current
   main in a private landing worktree, then:
   - runs the gates (`verify-oracle --rebuild`, `tus-check`, integrity, `engine test`,
@@ -105,11 +104,11 @@ workable, change nothing, close the lane and stop (report why).
   `idea` row it claims the row and lands it `researching` with the run id, then `researched`
   with `research: Codex <run id>` once the file is checked. A row it claims is
   skipped like any claimed row; never wait for it.
-- **Tracks run in parallel, batches don't.** A track (locals, globals, members) has at most one
-  open row (`idea` .. `reviewed`) at a time, and parallel lanes take different rows. The function
-  track may hold up to **3** open rows at once when their target functions are defined in
-  disjoint TUs (owner 2026-11-01); a session queueing a new function row checks that. Names can
-  still meet across tracks (a local and a global in one TU); the symbol claims (§Claims) and
+- **Sweeps run in parallel (owner 2026-11-06).** Game placeholders are worked by TU sweep rows
+  of disjoint scope (§Sweeps), one session per sweep, any number at once. The old one-row-per-track
+  chains (`var-locals-N`, `var-globals-X`, `var-members-rest-N`, `func-second-pass-N` successors)
+  have stopped: never queue such a row for a placeholder a sweep owns. Names can still meet
+  across sweeps (a global one sweep owns, used in another's TU); the symbol claims (§Claims) and
   the replay keycheck keep them apart.
 - **Coalescing.** If other `reviewed` rows that no lane claims would collide with yours at
   LAND (the same symbol, or a whole-TU claim on a hot TU), the session may apply them with its
@@ -162,27 +161,24 @@ workable, change nothing, close the lane and stop (report why).
 
 ## Backlog (`docs/naming/phase3/backlog.tsv`)
 
-The columns are `id  kind  stage  draft  note`. `kind` is `func`, `member`, `data` or `local`.
-Each kind is one track: `local` = locals, `data` = globals, `member` = members, `func` = functions
-(the second pass over the NO_NAME functions, `func-second-pass` rows; owner 2026-10-28). Kind
-`audit` (stage `active`, the Codex lane's `name-audit` index) is never picked. Kind `file` =
-file names (naming-bar N6), §File waves.
+The columns are `id  kind  stage  draft  note`. `kind` is `sweep` (§Sweeps), or, for rows
+filed before the sweeps or by another lane for one evidence lead, `func`, `member`, `data` or
+`local` (one wave of that kind). Kind `audit` (stage `active`, the Codex lane's `name-audit`
+index) is never picked. Kind `file` = file names (naming-bar N6), §File waves.
 `draft` is the tracked draft dir `docs/naming/phase3/pending/<id>/` (rows.py, member_manifest.csv,
 pairs.txt, dry.txt). Stages:
 
 `idea` -> `researching` -> `researched` -> `reviewed` -> `landed` (or `dropped`, with the reason in `note`)
 
-A row whose precondition is unmet never sits at `idea` with the condition only in prose: such a
-row starts a session that finds nothing and drops it (var-locals-46 -> 47 looped
-drop-and-recreate). Spell the condition so the tools read it:
+A row whose precondition is unmet never sits at `idea` with the condition only in prose (a
+session would start, find nothing and drop it). Spell the condition so the tools read it:
 - **a specific row** (either backlog): stage `idea`, note `Lands after <row id>`. The dispatcher
   starts it only once that row is landed or dropped (orchestrate.py DEPENDS).
-- **a wave no row names yet** ("only after a var-globals / members / func wave lands"): stage
-  **`blocked`**, note `Lands after kind:<kind>`, alternatives joined by ` | `, for example
-  `Lands after kind:data | kind:member | kind:func` for locals that wait on a newly named
-  global, member or function. The self-heal (`tools/lanes/heal.py`) moves it to `idea` once a
-  naming row of that kind lands after the block (any one alternative; every `Lands after` in
-  the note must hold).
+- **a wave no row names yet**: stage **`blocked`**, note `Lands after kind:<kind>`,
+  alternatives joined by ` | ` (`kind:data | kind:func`). The self-heal (`tools/lanes/heal.py`)
+  moves it to `idea` once a naming row of that kind lands after the block (any one
+  alternative; every `Lands after` in the note must hold). A sweep's units never land its row,
+  so no `kind:` dependency waits on sweep work: put such work in the owning sweep instead.
 - **a trace capture**: `blocked`; the capture's ` EVIDENCE ...` line releases it (heal.py).
 - **an owner ruling**: `blocked`, no dependency; the owner unblocks it.
 
@@ -192,6 +188,42 @@ tools/lanes/heal.py scan` warns about dependencies the tools cannot honour.
 
 Commit a stage change with the files that justify it, for example `docs: naming backlog -- m09
 reviewed`.
+
+## Sweeps (kind `sweep`, owner 2026-11-06)
+
+A sweep row `sweep-<tu or group>` **closes** a disjoint set of game TUs (`src/main/*.c`, not
+psxsdk: Sony placeholders wait on Sony names, N3.1). Its note gives the scope (TU ids), counts
+per kind, rows it lands after, and the open rows' targets it leaves alone.
+- **Ownership.** `python tools/naming_noname.py homes <tu id>,...` (run at the worktree root)
+  lists every open, non-final placeholder the sweep owns: a function by its census
+  `src_location`; a local or parameter by the TU defining its function; a global by the code
+  TU (not a data-only `d_*.c`) with the most uses, C outside `extern` lines plus the asm/funcs
+  bodies it INCLUDE_ASMs (ties: lowest TU id), else the TU defining it; a member with every
+  member of its type, by the `.c` defining the type, else the code TU naming the type most,
+  else the type embedding it, else the TU accessing its members most. Exception: a target of
+  another open row (the sweep note lists them; a later row's note or `pairs.txt` adds) stays that
+  row's while it is open; once it lands or drops, what it left open joins the owning sweep,
+  with no successor row.
+- **Units.** A unit is one wave of one kind (up to 80 targets from `homes`) by the normal
+  route (§PREPARE, §LAND: pre-apply `naming-reviewer`, the kind's apply tool, R6), or a
+  finality unit as the `naming-close-final` rows run it (class test, a fresh `naming-reviewer`
+  per row, ledger). Globals and functions first help members and locals. Unit id
+  `<sweep id>.<n>`: draft `pending/<unit id>/`, research `tmp/codex/<unit id>-research.md`,
+  wave commit `naming: <unit id> -- ...`.
+- **Stages.** The row's stage and `draft` follow its open unit (`idea` = none open; `reviewed`
+  = the unit's draft awaits LAND). The commit landing a unit moves the row back to `idea`,
+  draft `-`, and rewrites the note's progress line: units landed, counts left per kind.
+- **Close.** Every placeholder `homes` lists for the scope ends RENAMEd, FINAL (N7, fresh
+  reviewer, ledger), or NO_NAME with the specific missing evidence: a function in
+  `no_name.tsv` (`add`), others in `pending/<sweep id>/notes.txt`, each citing the foundation
+  row the sweep files for that question (a trace capture, a layout fix). When `homes` lists
+  only those, the row moves to `landed`; per filed foundation row, an `idea` sweep row
+  `<sweep id>-r<n>` with `Lands after <foundation row>` takes its placeholders back up.
+- **Parallel.** Scopes are disjoint, so sweeps share no target. A pairs.txt unit claims its
+  symbols (old and new names) and a shared `tuedit` per TU it edits: two sweeps' units editing
+  one TU land together, and only one symbol or one new name in both collides. A functions unit
+  (no pairs.txt) claims each TU it edits exclusively, callers' TUs included; if refused, do
+  another unit.
 
 ## File waves (kind `file`, naming-bar N6; owner 2026-10-28)
 
@@ -229,13 +261,13 @@ every datum it defines agree on that subsystem; a mixed file keeps its ROM-offse
    earlier rows failed, and to write its result to main's `tmp/codex/<id>-research.md` (in the
    shape `extract_final.py` gives a Codex run; this overrides any output file a template names)
    and return a one-line summary.
-   **Wave size: up to 80 rows** (raised from 40 on 2026-10-27 under the owner's "fix these
-   structural issues"; apply, R6 and land cost ~45 min whatever the size; older `max 40` caps in
-   row notes are superseded), so ask for up to ~90 proposals. Run it
+   **Wave size: up to 80 rows** (apply, R6 and land cost ~45 min whatever the size), so ask
+   for up to ~90 proposals. Run it
    through one `general-purpose` subagent with `model: opus` (foreground). Note `research: Opus`
    on the row and
    go on to step 3 in this unit; if the unit stops before step 5, land the row as `researched`.
-   For functions, take the target list from `python tools/naming_noname.py free <tu,...>`: it
+   A sweep unit takes its targets from `naming_noname.py homes` (§Sweeps); its functions
+   are also filtered by `python tools/naming_noname.py free <tu,...>`, which
    skips every function in the NO_NAME ledger (`docs/naming/phase3/no_name.tsv`). Bring one back
    only with evidence specific to it and newer than its ledger `commit`: a callee or caller, or a
    global, member or type it touches, named since; or a newer Q124 capture or only-X row covering
@@ -266,9 +298,8 @@ every datum it defines agree on that subsystem; a mixed file keeps its ROM-offse
    - Rows that FAIL are dropped.
    - A name the reviewer only *suggests* may replace a failed one, but it is marked
      `suggested` in the manifest, and R6 must judge it fresh at every use.
-   - If no row survives, the unit ends as `dropped`; if the track still has targets, add its
-     next row in the same commit (`idea`, or `blocked` with `Lands after kind:<kind>` if it can
-     only start after a wave no row names yet, §Backlog).
+   - If no row survives, the unit ends as `dropped` (a sweep unit: its row goes back to
+     `idea` with the reason in the note; §Sweeps).
 5. Set VERDICT CONFIRM with a verifier note, commit the draft dir and the backlog row as
    `reviewed` in the lane worktree, and `lanes.py land <lane>` (docs-only, so no build gates).
    That is the stopping point.
@@ -303,12 +334,8 @@ every datum it defines agree on that subsystem; a mixed file keeps its ROM-offse
      (it also prunes rows named since; commits stay `-` until the wave is on main, and the next
      `add` or `prune` fills them). Commit `docs/naming/phase3/no_name.tsv` together with the
      backlog row set to `landed`, in one commit.
-   - If the track still has unnamed targets and an open-row slot (none open; function track:
-     fewer than 3, in TUs disjoint from the open ones), add its next
-     batch as an `idea` row in that same commit (`var-globals-c`, `var-members-rest-4`, ...): the
-     note says what is left and what this wave left neutral on purpose. A batch that can only
-     start after another wave is filed as §Backlog says (`Lands after <row id>` or
-     `blocked` + `Lands after kind:<kind>`).
+   - Queue no successor row: what this wave left open goes back to its sweep (§Sweeps); a
+     sweep row goes back to `idea` with its progress line updated, in that same commit.
    - Run `python tools/lanes/lanes.py land <lane>`. It rebuilds, regenerates the census, runs
      `test_label_census.py` and the integrity check, fast-forwards main and pushes. That is the
      stopping point.

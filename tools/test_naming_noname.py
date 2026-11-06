@@ -183,6 +183,25 @@ class NoNameTest(unittest.TestCase):
         self.assertEqual(lines['member'], '2\t1\t1\t0')
         self.assertEqual(lines['local'], '2\t1\t1\t0')
 
+    def test_homes(self):
+        # a second TU uses Rec and the new global most; a data-only TU defines a global no code
+        # uses; a header type only a macro names goes where its members are accessed
+        with open('include/game.h', 'w', newline='\n') as f:
+            f.write('typedef struct {\n    s32 unk_10;\n} Hdr;\n')
+        with open('src/main/b.c', 'w', newline='\n') as f:
+            f.write('extern s32 D_80090010;\n#define H ((Hdr *)0)\n'
+                    'void k(Rec *r) { r->unk06 = D_80090010 + D_80090010 + H->unk_10; }\n')
+        with open('src/main/d_1.c', 'w', newline='\n') as f:
+            f.write('s32 D_80090010 = 1;\ns32 D_80090020;\n')
+        got = {(k, key): h for k, key, h in nn.homes(nn.load_census(), nn.load())}
+        self.assertEqual(got, {('func', '0x80010008'): 'main/a', ('func', '0x80010010'): 'main/a',
+                               ('local', 'f:arg0'): 'main/a', ('member', 'Rec.unk06'): 'main/a',
+                               ('member', 'Hdr.unk_10'): 'main/b',
+                               ('data', 'D_80090010'): 'main/b', ('data', 'D_80090020'): 'main/d_1'})
+        code, out, _ = self.run_cmd('homes', 'main/b')
+        self.assertEqual(sorted(out.splitlines()), ['data\tD_80090010\tmain/b',
+                                                    'member\tHdr.unk_10\tmain/b'])
+
 
 if __name__ == '__main__':
     unittest.main()
