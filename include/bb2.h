@@ -596,7 +596,9 @@ extern u8 g_fight_step_row_object_ids[][5];
  * from the data labels) */
 extern TexRec D_8009B890[4];
 extern TexRec D_8009B8B0[3];
-extern TexRec D_8009B8C8[1];
+extern TexRec
+    g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec
+        [1];
 extern TexRec g_eff_spinning_quad_far_tex_rec[1];
 extern TexRec g_eff_spinning_quad_near_tex_rec[1];
 extern TexRec D_8009B8E0[1];

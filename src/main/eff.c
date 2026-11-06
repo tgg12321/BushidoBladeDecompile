@@ -2191,14 +2191,16 @@ again:
         if (g_eff_animated_quad_counters[4] > 0x800) {
             g_eff_current_tex_rec = D_8009B8E0;
         } else {
-            g_eff_current_tex_rec = D_8009B8C8;
+            g_eff_current_tex_rec =
+                g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec;
         }
         prim->r0 = 0x80;
         prim->g0 = 0x80;
         prim->b0 = 0xFF;
         break;
     case 0:
-        g_eff_current_tex_rec = D_8009B8C8;
+        g_eff_current_tex_rec =
+            g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec;
         prim->r0 = 0x80;
         prim->g0 = 0x80;
         prim->b0 = 0xFF;
@@ -2281,7 +2283,8 @@ again:
         *g_eff_base_width *= 2;
         *g_eff_base_height *= 2;
         if (g_eff_animated_quad_counters[mode_index] >= 8) {
-            g_eff_current_tex_rec = D_8009B8C8;
+            g_eff_current_tex_rec =
+                g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec;
             brightness = 10 - g_eff_animated_quad_counters[mode_index];
             prim->r0 = brightness << 6;
             prim->g0 = brightness * 0x70 / 3;
@@ -2298,7 +2301,8 @@ again:
         break;
     case 16:
     case 17:
-        g_eff_current_tex_rec = D_8009B8C8;
+        g_eff_current_tex_rec =
+            g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec;
         prim->r0 = 0xFF;
         prim->g0 = 0x60;
         prim->b0 = 0xFF;

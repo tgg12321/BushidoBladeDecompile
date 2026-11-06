@@ -187,8 +187,8 @@ glabel eff_DrawAnimatedQuads
     /* 562C0 80065AC0 B4960108 */  j          .L80065AD0
     /* 562C4 80065AC4 00000000 */   nop
   jlabel .L80065AC8
-    /* 562C8 80065AC8 0A80023C */  lui        $v0, %hi(D_8009B8C8)
-    /* 562CC 80065ACC C8B84224 */  addiu      $v0, $v0, %lo(D_8009B8C8)
+    /* 562C8 80065AC8 0A80023C */  lui        $v0, %hi(g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec)
+    /* 562CC 80065ACC C8B84224 */  addiu      $v0, $v0, %lo(g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec)
   .L80065AD0:
     /* 562D0 80065AD0 BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 562D4 80065AD4 80000224 */  addiu      $v0, $zero, 0x80
@@ -442,8 +442,8 @@ glabel eff_DrawAnimatedQuads
     /* 56670 80065E70 18006500 */  mult       $v1, $a1
     /* 56674 80065E74 80210400 */  sll        $a0, $a0, 6
     /* 56678 80065E78 C3170200 */  sra        $v0, $v0, 31
-    /* 5667C 80065E7C 0A80053C */  lui        $a1, %hi(D_8009B8C8)
-    /* 56680 80065E80 C8B8A524 */  addiu      $a1, $a1, %lo(D_8009B8C8)
+    /* 5667C 80065E7C 0A80053C */  lui        $a1, %hi(g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec)
+    /* 56680 80065E80 C8B8A524 */  addiu      $a1, $a1, %lo(g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec)
     /* 56684 80065E84 2310C200 */  subu       $v0, $a2, $v0
     /* 56688 80065E88 BC0385AF */  sw         $a1, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 5668C 80065E8C 040044A2 */  sb         $a0, 0x4($s2)
@@ -476,8 +476,8 @@ glabel eff_DrawAnimatedQuads
     /* 566E8 80065EE8 C4970108 */  j          .L80065F10
     /* 566EC 80065EEC 000062AC */   sw        $v0, 0x0($v1)
   jlabel .L80065EF0
-    /* 566F0 80065EF0 0A80023C */  lui        $v0, %hi(D_8009B8C8)
-    /* 566F4 80065EF4 C8B84224 */  addiu      $v0, $v0, %lo(D_8009B8C8)
+    /* 566F0 80065EF0 0A80023C */  lui        $v0, %hi(g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec)
+    /* 566F4 80065EF4 C8B84224 */  addiu      $v0, $v0, %lo(g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec)
     /* 566F8 80065EF8 FF000324 */  addiu      $v1, $zero, 0xFF
     /* 566FC 80065EFC BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 56700 80065F00 60000224 */  addiu      $v0, $zero, 0x60
