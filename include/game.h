@@ -932,8 +932,8 @@ typedef struct {
  * (`ofs` rotated by node_GetSlotMatrixPointerArray()'s matrix `bone`, plus that
  * matrix's translation); the hit tests (fighter_CastWeaponSegment,
  * fighter_TestTriangleBoneHits, object_ResolveFighterHits) take outer_radius /
- * unk_0E as the first test's limits and, when has_inner_sphere != 0,
- * inner_radius / unk_12 as a second test's. */
+ * outer_dist_sq_limit as the first test's limits and, when has_inner_sphere !=
+ * 0, inner_radius / inner_dist_sq_limit as a second test's. */
 typedef struct BoneHitRec {
     s16 has_inner_sphere;
     s16 bone;
