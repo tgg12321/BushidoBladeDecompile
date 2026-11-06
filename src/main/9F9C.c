@@ -3308,13 +3308,15 @@ void motion_LoadCommonData(void) {
     g_motion_common_loaded = 1;
 }
 
-/* For i = 0, 1 with v = arg0, then arg2 (when g_fight_mode_selector is 1, 4 or
- * 6): when g_motion_frame_set_ids[i] differs from v, stores v there and calls
+/* For i = 0, 1 with v = fighter0_character_data_index, then
+ * fighter1_character_data_index (when g_fight_mode_selector is 1, 4 or 6):
+ * when g_motion_frame_set_ids[i] differs from v, stores v there and calls
  * cdrom_StartReadAt(cdrom_GetFileIndex(1, 0), g_motion_frame_buffers[i], v * 7,
  * 7). Then sets g_fighter_records[0].motion_data_id to
- * g_fighter_motion_data_ids[arg0][fighter0_weapon_id] | fighter0_weapon_id <<
- * 12 and g_fighter_records[1].motion_data_id to the same of arg2 and
- * fighter1_weapon_id (a copy of the first when g_fight_mode_selector is 3). It
+ * g_fighter_motion_data_ids[fighter0_character_data_index][fighter0_weapon_id]
+ * | fighter0_weapon_id << 12 and g_fighter_records[1].motion_data_id to the
+ * same of fighter1_character_data_index and fighter1_weapon_id (a copy of the
+ * first when g_fight_mode_selector is 3). It
  * then fills var_0[0..1] from g_motion_fighter_loaded_data_ids[0..1]: it
  * returns when every id is already there; equal ids give var_0[0] = id0; an id
  * found in g_motion_fighter_loaded_data_ids[0] stays and the other id goes to
@@ -3333,9 +3335,10 @@ void motion_LoadFighterData(
      * the wrong frame); without it: score 20. */
     u16 var_0[130];
     s32 i;
-    /* FAKE: one local for loop 1's arg0 / arg2 and loop 2's
-     * g_motion_fighter_data_files index; separate locals seat the index in $a1,
-     * the target keeps both in $s0 (score 3) (Q129). */
+    /* FAKE: one local for loop 1's fighter0_character_data_index /
+     * fighter1_character_data_index and loop 2's g_motion_fighter_data_files
+     * index; separate locals seat the index in $a1, the target keeps both in
+     * $s0 (score 3) (Q129). */
     s32 j;
 
     if (g_motion_common_loaded == 0) {
