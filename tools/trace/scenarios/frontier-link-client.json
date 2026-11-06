@@ -1,7 +1,8 @@
 {
   "description": "link-cable pair, SIO1 client side (run with frontier-link-server, see there): top menu DOWN x5 to Link Mode, CROSS at 6460 and again at 7150",
   "evidence": [
-    "docs/naming/runtime/frontier-link-client-1/spec.json"
+    "docs/naming/runtime/frontier-link-client-1/spec.json",
+    "docs/naming/runtime/frontier-link-client-2/spec.json"
   ],
   "use": [
     "boot"

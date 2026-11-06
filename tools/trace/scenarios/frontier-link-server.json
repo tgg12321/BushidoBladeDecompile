@@ -1,7 +1,8 @@
 {
   "description": "link-cable pair, SIO1 server side (run with frontier-link-client, the instrument's \"settings\" turn on PCSX-Redux SIO1 networking: server here, client there): top menu DOWN x5 to Link Mode, CROSS at 6400, 6700, 7000 and 7300 (each attempt the partner is not ready for returns to the top menu on Link Mode), so one attempt meets the client's and the link reaches comb_EnableEvents, the first pad exchange and comb_Abort",
   "evidence": [
-    "docs/naming/runtime/frontier-link-server-1/spec.json"
+    "docs/naming/runtime/frontier-link-server-1/spec.json",
+    "docs/naming/runtime/frontier-link-server-2/spec.json"
   ],
   "use": [
     "boot"

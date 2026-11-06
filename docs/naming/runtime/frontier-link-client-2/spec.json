@@ -1,0 +1,255 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "settings": {
+    "emulator": {
+      "Debug": {
+        "SIO1Client": true,
+        "SIO1Clienthost": "127.0.0.1",
+        "SIO1ClientPort": 6731,
+        "SIO1Mode": "Protobuf"
+      }
+    }
+  },
+  "script": {
+    "end_frame": 8000,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6460,
+        "name": "link_1"
+      },
+      {
+        "frame": 7150,
+        "name": "link_2"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6080,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6140,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6260,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6320,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6460,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7150,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6390,
+        "name": "top_menu.link_cursor"
+      },
+      {
+        "frame": 6450,
+        "name": "s6450"
+      },
+      {
+        "frame": 6500,
+        "name": "s6500"
+      },
+      {
+        "frame": 6550,
+        "name": "s6550"
+      },
+      {
+        "frame": 6600,
+        "name": "s6600"
+      },
+      {
+        "frame": 6650,
+        "name": "s6650"
+      },
+      {
+        "frame": 6700,
+        "name": "s6700"
+      },
+      {
+        "frame": 6750,
+        "name": "s6750"
+      },
+      {
+        "frame": 6800,
+        "name": "s6800"
+      },
+      {
+        "frame": 6850,
+        "name": "s6850"
+      },
+      {
+        "frame": 6900,
+        "name": "s6900"
+      },
+      {
+        "frame": 6950,
+        "name": "s6950"
+      },
+      {
+        "frame": 7000,
+        "name": "s7000"
+      },
+      {
+        "frame": 7050,
+        "name": "s7050"
+      },
+      {
+        "frame": 7100,
+        "name": "s7100"
+      },
+      {
+        "frame": 7150,
+        "name": "s7150"
+      },
+      {
+        "frame": 7200,
+        "name": "s7200"
+      },
+      {
+        "frame": 7250,
+        "name": "s7250"
+      },
+      {
+        "frame": 7300,
+        "name": "s7300"
+      },
+      {
+        "frame": 7350,
+        "name": "s7350"
+      },
+      {
+        "frame": 7400,
+        "name": "s7400"
+      },
+      {
+        "frame": 7450,
+        "name": "s7450"
+      },
+      {
+        "frame": 7500,
+        "name": "s7500"
+      },
+      {
+        "frame": 7550,
+        "name": "s7550"
+      },
+      {
+        "frame": 7600,
+        "name": "s7600"
+      },
+      {
+        "frame": 7650,
+        "name": "s7650"
+      },
+      {
+        "frame": 7700,
+        "name": "s7700"
+      },
+      {
+        "frame": 7750,
+        "name": "s7750"
+      },
+      {
+        "frame": 7800,
+        "name": "s7800"
+      },
+      {
+        "frame": 7850,
+        "name": "s7850"
+      },
+      {
+        "frame": 7900,
+        "name": "s7900"
+      },
+      {
+        "frame": 7950,
+        "name": "s7950"
+      }
+    ]
+  }
+}
