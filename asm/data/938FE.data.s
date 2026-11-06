@@ -43,12 +43,12 @@ dlabel g_str_motion_file_gn
     .space 1
 enddlabel g_str_motion_file_gn
 
-nonmatching D_800A312C
+nonmatching g_fight_followup_playback_red_light_effect_vector
 
-dlabel D_800A312C
+dlabel g_fight_followup_playback_red_light_effect_vector
     /* 9392C 800A312C 001000FC */ .word 0xFC001000
     /* 93930 800A3130 00000000 */ .word 0x00000000
-enddlabel D_800A312C
+enddlabel g_fight_followup_playback_red_light_effect_vector
 
 nonmatching g_fighter_opponent_response_max_separation
 

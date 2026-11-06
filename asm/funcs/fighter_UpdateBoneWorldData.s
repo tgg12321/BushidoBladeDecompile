@@ -100,15 +100,15 @@ glabel fighter_UpdateBoneWorldData
     /* 11148 80020948 0E008286 */  lh         $v0, 0xE($s4)
     /* 1114C 8002094C 00000000 */  nop
     /* 11150 80020950 80100200 */  sll        $v0, $v0, 2
-    /* 11154 80020954 0980013C */  lui        $at, %hi(D_8008D86C)
+    /* 11154 80020954 0980013C */  lui        $at, %hi(g_fighter_weapon_point_sets)
     /* 11158 80020958 21082200 */  addu       $at, $at, $v0
-    /* 1115C 8002095C 6CD8278C */  lw         $a3, %lo(D_8008D86C)($at)
+    /* 1115C 8002095C 6CD8278C */  lw         $a3, %lo(g_fighter_weapon_point_sets)($at)
   .L80020960:
     /* 11160 80020960 0E008286 */  lh         $v0, 0xE($s4)
     /* 11164 80020964 21204002 */  addu       $a0, $s2, $zero
-    /* 11168 80020968 0980013C */  lui        $at, %hi(D_8008D864)
+    /* 11168 80020968 0980013C */  lui        $at, %hi(g_fighter_weapon_point_counts)
     /* 1116C 8002096C 21082200 */  addu       $at, $at, $v0
-    /* 11170 80020970 64D82290 */  lbu        $v0, %lo(D_8008D864)($at)
+    /* 11170 80020970 64D82290 */  lbu        $v0, %lo(g_fighter_weapon_point_counts)($at)
     /* 11174 80020974 00000000 */  nop
     /* 11178 80020978 24004018 */  blez       $v0, .L80020A0C
     /* 1117C 8002097C 21880000 */   addu      $s1, $zero, $zero
@@ -141,9 +141,9 @@ glabel fighter_UpdateBoneWorldData
     /* 111E4 800209E4 0000A2AC */  sw         $v0, 0x0($a1)
     /* 111E8 800209E8 0E008286 */  lh         $v0, 0xE($s4)
     /* 111EC 800209EC 0C008424 */  addiu      $a0, $a0, 0xC
-    /* 111F0 800209F0 0980013C */  lui        $at, %hi(D_8008D864)
+    /* 111F0 800209F0 0980013C */  lui        $at, %hi(g_fighter_weapon_point_counts)
     /* 111F4 800209F4 21082200 */  addu       $at, $at, $v0
-    /* 111F8 800209F8 64D82290 */  lbu        $v0, %lo(D_8008D864)($at)
+    /* 111F8 800209F8 64D82290 */  lbu        $v0, %lo(g_fighter_weapon_point_counts)($at)
     /* 111FC 800209FC 00000000 */  nop
     /* 11200 80020A00 2A102202 */  slt        $v0, $s1, $v0
     /* 11204 80020A04 DFFF4014 */  bnez       $v0, .L80020984
@@ -171,9 +171,9 @@ glabel fighter_UpdateBoneWorldData
     /* 11258 80020A58 14008286 */  lh         $v0, 0x14($s4)
     /* 1125C 80020A5C 08008524 */  addiu      $a1, $a0, 0x8
     /* 11260 80020A60 80100200 */  sll        $v0, $v0, 2
-    /* 11264 80020A64 0980013C */  lui        $at, %hi(D_8008D88C)
+    /* 11264 80020A64 0980013C */  lui        $at, %hi(g_fighter_wielded_object_point_pairs)
     /* 11268 80020A68 21082200 */  addu       $at, $at, $v0
-    /* 1126C 80020A6C 8CD8278C */  lw         $a3, %lo(D_8008D88C)($at)
+    /* 1126C 80020A6C 8CD8278C */  lw         $a3, %lo(g_fighter_wielded_object_point_pairs)($at)
   .L80020A70:
     /* 11270 80020A70 00000000 */  nop
     /* 11274 80020A74 2160E000 */  addu       $t4, $a3, $zero

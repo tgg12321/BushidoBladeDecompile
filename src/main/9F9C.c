@@ -2894,7 +2894,7 @@ void fight_UpdatePairedMoves(void) {
     }
     if (g_fight_missing_support_fighter_index != 0xFF) {
         rec = &g_fighter_records[g_fight_missing_support_fighter_index];
-        if (D_800A3769 != 0) {
+        if (g_fight_missing_support_fighter_falls_forward != 0) {
             rec->pending_move_event = 1;
             rec->falling_backward = 0;
         } else {
@@ -3144,12 +3144,13 @@ void fighter_ScaleBoneHitRecords(s32 fighter_index, s32 size_scale) {
 /* Places character rec->index's points in world space with its bone matrices
  * (node_GetSlotMatrixPointerArray()): each of the 22 hit records' offsets
  * through its bone into bone_hit_points (the callers pass
- * SPAD->spadA8[i]); the point set D_8008D86C[weapon_id] (D_8008D774
- * when weapon_entry_id == 50) through bone 18 into weapon_points; when
- * wielded_object_live_state != 0, the pair D_8008D88C[wielded_object_kind]
- * through bone 19 into second_weapon_points. A point is the GTE MVMVA rotation
- * (sf=1) of the SVECTOR plus the matrix translation. Then: bone 11's y axis
- * into rec->bone_y_axis, bone_hit_points[0] into rec->bone_hit_point_0, the
+ * SPAD->spadA8[i]); the point set g_fighter_weapon_point_sets[weapon_id]
+ * (D_8008D774 when weapon_entry_id == 50) through bone 18 into weapon_points;
+ * when wielded_object_live_state != 0, the pair
+ * g_fighter_wielded_object_point_pairs[wielded_object_kind] through bone 19
+ * into second_weapon_points. A point is the GTE MVMVA rotation (sf=1) of the
+ * SVECTOR plus the matrix translation. Then: bone 11's y axis into
+ * rec->bone_y_axis, bone_hit_points[0] into rec->bone_hit_point_0, the
  * translations of bones 17 and 14 (y raised by (size_scale * 71) >> 11) into
  * rec->ground_probe_points[], the end y of a down-segment from each (y - 100
  * to y + 2000): the hit y from collision_TestSegmentWithWork, or the segment's
@@ -3185,10 +3186,11 @@ void fighter_UpdateBoneWorldData(
     if (rec->weapon_entry_id == 50) {
         v = D_8008D774;
     } else {
-        v = D_8008D86C[rec->weapon_id];
+        v = g_fighter_weapon_point_sets[rec->weapon_id];
     }
     o = weapon_points;
-    for (i = 0; i < D_8008D864[rec->weapon_id]; i++, v++, o++) {
+    for (i = 0; i < g_fighter_weapon_point_counts[rec->weapon_id]; i++, v++,
+        o++) {
         gte_ApplyRotMatrix(v, o);
         o->x += m->t[0];
         o->y += m->t[1];
@@ -3198,7 +3200,7 @@ void fighter_UpdateBoneWorldData(
     if (rec->wielded_object_live_state != 0) {
         m = bone_matrices[19];
         gte_SetRotMatrix(m);
-        v = D_8008D88C[rec->wielded_object_kind];
+        v = g_fighter_wielded_object_point_pairs[rec->wielded_object_kind];
         o = second_weapon_points;
         for (i = 0; i < 2; i++, v++, o++) {
             gte_ApplyRotMatrix(v, o);
@@ -4578,7 +4580,7 @@ void fighter_HandleMissingSupportWhileDescending(
         fighter_record->other->pending_move_event = 2;
         fighter_record->saved_collision_y = fighter_record->collision_pos.vy;
     } else if (kind == 0x11) {
-        D_800A3769 = s1 < 0x400;
+        g_fight_missing_support_fighter_falls_forward = s1 < 0x400;
         g_fight_missing_support_fighter_index = fighter_record->index;
     } else {
         if (s1 < 0x400) {

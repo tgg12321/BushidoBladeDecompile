@@ -184,14 +184,16 @@ extern u8 g_fight_roster_indices_by_character_data_index;
 extern u8 g_fight_selection_object_ids[];
 
 /* Attachment point sets fighter_UpdateBoneWorldData rotates by a character's
- * bone matrices: D_8008D86C[weapon_id] (D_8008D864[weapon_id] points;
- * D_8008D774 when weapon_entry_id == 50) and D_8008D88C[wielded_object_kind]
- * (two points, when wielded_object_live_state
+ * bone matrices: g_fighter_weapon_point_sets[weapon_id]
+ * (g_fighter_weapon_point_counts[weapon_id] points; D_8008D774 when
+ * weapon_entry_id == 50) and
+ * g_fighter_wielded_object_point_pairs[wielded_object_kind] (two points, when
+ * wielded_object_live_state
  * != 0). g_unit_y_vector is the unit y vector (0, 0x1000, 0). */
-extern u8 D_8008D864[8];
+extern u8 g_fighter_weapon_point_counts[8];
 
-extern SVec4i16 *D_8008D86C[8];
-extern SVec4i16 *D_8008D88C[32];
+extern SVec4i16 *g_fighter_weapon_point_sets[8];
+extern SVec4i16 *g_fighter_wielded_object_point_pairs[32];
 extern SVec4i16 D_8008D774[2];
 extern SVec4i16 g_unit_y_vector;
 extern u8 g_fighter_group_flags[];
@@ -380,7 +382,7 @@ extern u8 g_fight_missing_support_fighter_index;
  * global COMMON model). */
 extern u8 g_cd_result[8];
 
-extern u8 D_800A3769;
+extern u8 g_fight_missing_support_fighter_falls_forward;
 extern u8 g_fight_bone_group_tim_requests;
 extern u8 D_800A376B;
 extern u8 g_fight_playback_file_base_index;

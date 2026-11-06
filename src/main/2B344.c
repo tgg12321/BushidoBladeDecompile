@@ -1125,7 +1125,7 @@ extern void
 fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields(
     void);
 extern void fight_QueueSubstitutionCommandDescriptorPlayback(s32);
-extern SVECTOR D_800A312C;
+extern SVECTOR g_fight_followup_playback_red_light_effect_vector;
 
 void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
     /* FAKE: unwritten leading pad: the original frame's untouched 16-byte
@@ -1177,7 +1177,8 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
         vec[0] += g_fight_followup_playback_red_light_effect_offset_x;
         vec[1] += g_fight_followup_playback_red_light_effect_offset_y;
         vec[2] += g_fight_followup_playback_red_light_effect_offset_z;
-        eff_StartRecycledVectorCommandWithRedLight(vec, &D_800A312C.vx);
+        eff_StartRecycledVectorCommandWithRedLight(
+            vec, &g_fight_followup_playback_red_light_effect_vector.vx);
     }
     view_angles = motion_GetPlaybackViewAngles();
     root_translation = node_GetRootNodeMatrixTranslation();

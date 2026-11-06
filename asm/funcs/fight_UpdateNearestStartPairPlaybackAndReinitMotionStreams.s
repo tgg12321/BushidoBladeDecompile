@@ -108,8 +108,8 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2D914 8003D114 4487000C */  jal        fight_GetStartPosition
     /* 2D918 8003D118 21280002 */   addu      $a1, $s0, $zero
     /* 2D91C 8003D11C 21200002 */  addu       $a0, $s0, $zero
-    /* 2D920 8003D120 0A80053C */  lui        $a1, %hi(D_800A312C)
-    /* 2D924 8003D124 2C31A524 */  addiu      $a1, $a1, %lo(D_800A312C)
+    /* 2D920 8003D120 0A80053C */  lui        $a1, %hi(g_fight_followup_playback_red_light_effect_vector)
+    /* 2D924 8003D124 2C31A524 */  addiu      $a1, $a1, %lo(g_fight_followup_playback_red_light_effect_vector)
     /* 2D928 8003D128 2000A28F */  lw         $v0, 0x20($sp)
     /* 2D92C 8003D12C 0980033C */  lui        $v1, %hi(g_fight_followup_playback_red_light_effect_offset_x)
     /* 2D930 8003D130 10EB638C */  lw         $v1, %lo(g_fight_followup_playback_red_light_effect_offset_x)($v1)

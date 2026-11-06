@@ -561,11 +561,11 @@ dlabel g_local_ot_draw_mode
     /* 93F68 800A3768 */ .byte 0x00
 enddlabel g_local_ot_draw_mode
 
-nonmatching D_800A3769
+nonmatching g_fight_missing_support_fighter_falls_forward
 
-dlabel D_800A3769
+dlabel g_fight_missing_support_fighter_falls_forward
     /* 93F69 800A3769 */ .byte 0x00
-enddlabel D_800A3769
+enddlabel g_fight_missing_support_fighter_falls_forward
 
 nonmatching g_fight_bone_group_tim_requests
 

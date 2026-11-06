@@ -79,8 +79,8 @@ glabel fight_UpdatePairedMoves
     /* 10514 8001FD14 80100200 */  sll        $v0, $v0, 2
     /* 10518 8001FD18 1080033C */  lui        $v1, %hi(g_fighter_records)
     /* 1051C 8001FD1C C81E6324 */  addiu      $v1, $v1, %lo(g_fighter_records)
-    /* 10520 8001FD20 0A80043C */  lui        $a0, %hi(D_800A3769)
-    /* 10524 8001FD24 69378490 */  lbu        $a0, %lo(D_800A3769)($a0)
+    /* 10520 8001FD20 0A80043C */  lui        $a0, %hi(g_fight_missing_support_fighter_falls_forward)
+    /* 10524 8001FD24 69378490 */  lbu        $a0, %lo(g_fight_missing_support_fighter_falls_forward)($a0)
     /* 10528 8001FD28 00000000 */  nop
     /* 1052C 8001FD2C 05008010 */  beqz       $a0, .L8001FD44
     /* 10530 8001FD30 21884300 */   addu      $s1, $v0, $v1

@@ -6,8 +6,8 @@
  *    block ends at 0x8008D118 and every .data input section linked before
  *    this one is empty) and ends where cdrom.c's .data starts, 0x8008EC34.
  *    No uninitialized objects.
- * 2. Small objects in .data: D_8008D864 (u8[8]: one point count per
- *    D_8008D86C set), D_8008EB04, D_8008EB06,
+ * 2. Small objects in .data: g_fighter_weapon_point_counts (u8[8]: one point
+ * count per g_fighter_weapon_point_sets set), D_8008EB04, D_8008EB06,
  * g_fight_followup_playback_other_fighter_sound_frame,
  * g_fight_followup_playback_common_sound_frame,
  * g_fight_followup_playback_red_light_effect_frame (s16) and
@@ -172,9 +172,10 @@ BoneHitRec g_fighter_bone_hit_record_templates[22] = {
     {0, 16, {103, 0, 0, 0}, 130, 16900, 0, 0},
     {0, 16, {287, 0, 0, 0}, 130, 16900, 0, 0}};
 
-/* fighter_UpdateBoneWorldData's attachment point sets (see D_8008D86C /
- * D_8008D88C): D_8008D864[i] points for D_8008D86C[i], two per D_8008D88C
- * entry. */
+/* fighter_UpdateBoneWorldData's attachment point sets (see
+ * g_fighter_weapon_point_sets / g_fighter_wielded_object_point_pairs):
+ * g_fighter_weapon_point_counts[i] points for g_fighter_weapon_point_sets[i],
+ * two per g_fighter_wielded_object_point_pairs entry. */
 SVec4i16 D_8008D754[2] = {{0, -60, 950, 0}, {0, 0, 100, 0}};
 
 SVec4i16 D_8008D764[2] = {{0, 0, 919, 0}, {0, 0, 103, 0}};
@@ -207,15 +208,16 @@ SVec4i16 D_8008D844[2] = {{0, 0, 224, 0}, {0, 0, -150, 0}};
 
 SVec4i16 D_8008D854[2] = {{0, -111, 289, 0}, {0, -111, 0, 0}};
 
-/* Point count of each D_8008D86C set. */
-u8 D_8008D864[8] = {2, 2, 2, 2, 3, 3, 2, 2};
+/* Point count of each g_fighter_weapon_point_sets set. */
+u8 g_fighter_weapon_point_counts[8] = {2, 2, 2, 2, 3, 3, 2, 2};
 
-SVec4i16 *D_8008D86C[8] = {D_8008D754, D_8008D764, D_8008D774, D_8008D784,
-                           D_8008D794, D_8008D7AC, D_8008D7C4, D_8008D7D4};
+SVec4i16 *g_fighter_weapon_point_sets[8] = {
+    D_8008D754, D_8008D764, D_8008D774, D_8008D784,
+    D_8008D794, D_8008D7AC, D_8008D7C4, D_8008D7D4};
 
 /* Indexed by Unk80101EC8Record.wielded_object_kind when
  * wielded_object_live_state != 0. */
-SVec4i16 *D_8008D88C[32] = {
+SVec4i16 *g_fighter_wielded_object_point_pairs[32] = {
     NULL,       D_8008D7E4, NULL, D_8008D7F4, D_8008D804, NULL,
     NULL,       D_8008D814, NULL, NULL,       NULL,       NULL,
     D_8008D824, NULL,       NULL, NULL,       NULL,       D_8008D834,
