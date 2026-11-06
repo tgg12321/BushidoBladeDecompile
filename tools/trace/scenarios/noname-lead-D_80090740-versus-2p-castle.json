@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-castle re-run unchanged with breakpoints on the three mask-table picks of gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards (2B344.c:1999-2011: +0x11C D_800927C0 when g_gpu_tracked_fighter_view_active, +0x144 D_80090740 direct when g_gpu_grid_and_fog_control bit 0, +0x154 D_80090740 ANDed with D_80094840 otherwise; a2 = the angle row, ra) and both control words read at every phase start: trace-noname-leads runtime evidence (which table each stage reads)",
+  "evidence": [
+    "docs/naming/runtime/noname-lead-D_80090740-versus-2p-castle-1/spec.json"
+  ],
+  "extends": "versus-2p-castle",
+  "refines": "versus-2p-castle"
+}
