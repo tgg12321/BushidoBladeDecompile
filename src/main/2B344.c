@@ -258,11 +258,11 @@ void fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState(
     g_fight_saved_first_fighter_selection = g_fight_config.fighter_setup[0];
     {
         u8 *base = g_fight_first_fighter_substitution_command_operands;
-        u8 v1 = g_fight_bone_group_tim_requests;
-        u8 v0 = *base;
-        g_fight_saved_bone_group_tim_requests = v1;
+        u8 bone_group_tim_requests = g_fight_bone_group_tim_requests;
+        u8 substitute_selection = *base;
+        g_fight_saved_bone_group_tim_requests = bone_group_tim_requests;
         g_fight_bone_group_tim_requests = 0;
-        g_fight_config.fighter_setup[0] = v0;
+        g_fight_config.fighter_setup[0] = substitute_selection;
     }
     slot_RequestTimGroupsAndMarkReloadOnChange(0, 0);
 }
@@ -327,11 +327,12 @@ void fight_SetFixedFighterBytesAndLoadBothFighters(void) {
     fight_RequestBothFightersEntriesAndReloadOnChange();
 }
 
-void fight_QueueSubstitutionCommandDescriptorPlayback(s32 a0) {
-    D_800A37B0 = a0;
+void fight_QueueSubstitutionCommandDescriptorPlayback(s32 descriptor_index) {
+    D_800A37B0 = descriptor_index;
     g_main_loop_handler_index = 6;
     g_fight_active_playback_descriptor =
-        g_fight_first_fighter_substitution_command_operands + (a0 * 4 + 1);
+        g_fight_first_fighter_substitution_command_operands +
+        (descriptor_index * 4 + 1);
 }
 
 void fight_QueueFixedFighterCommandDescriptorPlayback(s32 arg0) {

@@ -36,7 +36,7 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
     s32 new_var;
     s32 new_var2;
     s8 mode_selector;
-    u8 tmp;
+    u8 weapon_id;
 
     p = GetWorkingRecord();
     i = 0;
@@ -55,10 +55,10 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
                     g_fight_config.fighter_setup[i] - 3;
             }
         }
-        tmp = s[1];
+        weapon_id = s[1];
         s += 10;
         g_fight_config.fighter_setup[4 + i] = 0;
-        g_fight_config.fighter_setup[2 + i] = tmp;
+        g_fight_config.fighter_setup[2 + i] = weapon_id;
         i++;
     } while (i < 2);
 
@@ -85,12 +85,12 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
         D_800A38E1 = p->unk14_15;
         {
             s32 j = 0;
-            u8 *dst_d = s;
-            u8 *dst_a = g_fight_match_roster_indices[0];
+            u8 *weapon_id_row = s;
+            u8 *roster_index_row = g_fight_match_roster_indices[0];
             do {
                 s32 k = 0;
-                u8 *weapon_id_dst = dst_d;
-                u8 *roster_index_dst = dst_a;
+                u8 *weapon_id_dst = weapon_id_row;
+                u8 *roster_index_dst = roster_index_row;
                 s32 off = j << 1;
             loop_inner: {
                 u8 *match_pick = (u8 *)p + off;
@@ -105,9 +105,9 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
             }
                 if (k < 2)
                     goto loop_inner;
-                dst_d += 2;
+                weapon_id_row += 2;
                 j++;
-                dst_a += 2;
+                roster_index_row += 2;
             } while (j < 5);
         }
     }

@@ -5910,10 +5910,10 @@ void fight_AdvanceOpponentOrder(void) {
         } else if (opponent_character_index == 0x10) {
             g_fight_config.fighter_setup[3] = 7;
         } else {
-            u8 x = g_fight_opponent_weapon_cursor;
+            u8 weapon_cursor = g_fight_opponent_weapon_cursor;
             s8 opponent_weapon_id;
-            g_fight_opponent_weapon_cursor = x + 1;
-            opponent_weapon_id = (&g_fight_opponent_weapon_ids)[x];
+            g_fight_opponent_weapon_cursor = weapon_cursor + 1;
+            opponent_weapon_id = (&g_fight_opponent_weapon_ids)[weapon_cursor];
             g_fight_config.fighter_setup[3] = opponent_weapon_id;
             if (opponent_weapon_id == 4) {
                 u8 v = g_fighter_group_flags[opponent_character_index];
