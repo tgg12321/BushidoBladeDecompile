@@ -208,9 +208,7 @@ enddlabel D_800A388C
 
 /* 800A3890 */
 dlabel g_memcard_info_load_result
-dlabel g_memcard_info_load_result
     .space 0x4
-enddlabel g_memcard_info_load_result
 enddlabel g_memcard_info_load_result
 
 /* 800A3894 */
