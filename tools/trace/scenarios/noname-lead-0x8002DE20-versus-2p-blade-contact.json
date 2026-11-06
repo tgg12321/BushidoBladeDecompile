@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-blade-contact re-run unchanged with func_8002DE20 breakpoints (entry: a0..a3, ra; its jr ra at func_8002DE20+0x888: v0, ra), a breakpoint on fighter_ResolveWeaponContact (a0, a1, ra) and a write watch on g_fight_weapon_contact_result (fighter_ProcessWeaponContacts' result, 17AFC.c:2492): trace-noname-leads runtime evidence (hit vs no-hit per call)",
+  "evidence": [
+    "docs/naming/runtime/noname-lead-0x8002DE20-versus-2p-blade-contact-1/spec.json"
+  ],
+  "extends": "versus-2p-blade-contact",
+  "refines": "versus-2p-blade-contact"
+}
