@@ -1,0 +1,1 @@
+D_800A37E0=g_camera_distance_chord_used

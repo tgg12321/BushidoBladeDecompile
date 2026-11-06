@@ -1,0 +1,16 @@
+==============================================================================
+DATA WAVE — 1 addresses, 1 identifiers remapped
+  0x800a37e0: D_800A37E0 -> g_camera_distance_chord_used
+
+-- file edits (5) --
+  asm/data/93E18.data.s  (3)
+  asm/funcs/camera_UpdatePadOffset.s  (2)
+  include/bb2.h  (1)
+  src/main/9F9C.c  (1)
+  symbol_addrs.txt  (2)
+
+-- registry lines --
+  symbol_addrs.txt:373 D_800A37E0 -> g_camera_distance_chord_used
+  symbol_addrs.txt:1033 D_800A37E0 -> g_camera_distance_chord_used
+
+DRY RUN — nothing written. Re-run with --apply.
