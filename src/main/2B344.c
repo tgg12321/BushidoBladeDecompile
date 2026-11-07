@@ -100,7 +100,8 @@ s32 comb_Connect(void) {
     comb_ExchangeEmptyPad();
     VSync(1);
     comb_ExchangeEmptyPad();
-    g_comb_received_unlock_mask_bits = bits_DepositMask3F83F8(D_800A36C6);
+    g_comb_received_unlock_mask_bits =
+        bits_DepositMask3F83F8((s16)(g_comb_received_payload_check_word >> 16));
     g_comb_send_payload = pad_PackSavedButtonMappingLowNibbles();
     VSync(1);
     comb_ExchangeEmptyPad();
@@ -108,7 +109,8 @@ s32 comb_Connect(void) {
     comb_ExchangeEmptyPad();
     VSync(1);
     comb_ExchangeEmptyPad();
-    pad_UnpackButtonMappingNibblesToCells(D_800A36C6);
+    pad_UnpackButtonMappingNibblesToCells(
+        (s16)(g_comb_received_payload_check_word >> 16));
     g_comb_send_payload = rand();
     VSync(1);
     comb_ExchangeEmptyPad();
@@ -121,7 +123,7 @@ s32 comb_Connect(void) {
         if (g_comb_local_side == 0) {
             rng_seed = (u16)g_comb_send_payload;
         } else {
-            rng_seed = D_800A36C6;
+            rng_seed = (s16)(g_comb_received_payload_check_word >> 16);
         }
         g_fight_rng_seed = rng_seed;
     }

@@ -214,13 +214,8 @@ nonmatching g_comb_received_payload_check_word
 
 dlabel g_comb_received_payload_check_word
     /* 93EC4 800A36C4 */ .short 0x0000
-enddlabel g_comb_received_payload_check_word
-
-nonmatching D_800A36C6
-
-dlabel D_800A36C6
     /* 93EC6 800A36C6 */ .short 0x0000
-enddlabel D_800A36C6
+enddlabel g_comb_received_payload_check_word
 
 nonmatching g_fight_saved_bone_group_tim_requests
 

@@ -270,7 +270,6 @@ _spu_rev_attr_plus_0xA = 0x800A2892; /* data-wave 2026-09-07: was D_800A2892 */
 _spu_voice_centerNote_plus_0x2E = 0x800A28D2; /* data-wave 2026-09-29: was D_800A28D2 */
 g_fight_second_fighter_initial_defeats_left = 0x800A3671;  // data-wave 2026-10-28: was D_800A3671
 D_800A36C2 = 0x800A36C2;
-D_800A36C6 = 0x800A36C6;
 g_fight_paired_move_flags = 0x800A36CA;  // data-wave 2026-10-28: was D_800A36CA
 D_800A36D2 = 0x800A36D2;
 g_main_frame_period = 0x800A36F1;  // data-wave 2026-10-28: was D_800A36F1
@@ -1017,7 +1016,6 @@ g_pad_direction_negative_masks = 0x800A32D0; /* u32[2] bit masks {0x8000, 0x1000
 g_entry_menu_grid_pulse_shifts = 0x800A3530; /* +8 from g_menu_stored_choice_cursor */  /* data-wave 2026-10-08: was g_menuctl_call_counter_plus_8 */
 g_fight_second_fighter_defeats_left = 0x800A3680; /* +8 from g_gpu_flush_rotation_angles (0x800A3678) */  /* data-wave 2026-10-08: was g_leaf_muki_buffer_plus_8 */
 D_800A36C2 = 0x800A36C2; /* +2 from g_comb_received_pad_word */  /* data-wave 2026-10-08: was g_pad_rec_validated_packed_plus_2 */
-D_800A36C6 = 0x800A36C6; /* +2 from g_comb_received_payload_check_word (its high half) */  /* data-wave 2026-10-08: was g_pad_rec_validated_hash_plus_2 */
 g_fight_time_limit_seconds = 0x800A36CC; /* limit in units of 30 frames */  /* data-wave 2026-10-08: was g_char_id_saved_d_plus_4 */
 D_800A36D2 = 0x800A36D2; /* +2 from g_comb_prev_send_word */  /* data-wave 2026-10-08: was g_pad_rec_prev_packed_plus_2 */
 g_fight_displaced_bone_group_tim_requests = 0x800A36F4; /* saved byte, passed as slot_RequestTimGroupsAndMarkReloadOnChange's second argument */  /* data-wave 2026-10-08: was g_char_class_state_array_plus_2 */
@@ -2130,7 +2128,7 @@ g_gpu_ot256_ptr = 0x800A38D8; /* = g_gpu_ot256_db[g_gpu_presented_frame_count & 
 g_fight_nearest_start_pair_index = 0x800A38DF; /* fight_FindNearestStartPair(&g_fighter_records[g_fight_followup_fighter_index].unk_F4); read by fighter_Init */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_1 */
 g_fight_start_position_pair_index = 0x800A38E0; /* 0..3, set by fight_UpdateDefeatDelayAndModeProgress at g_fight_step_table_next_row = 0x1F / 0x33 / 0x51; fight_GetStartPosition's third argument */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_2 */
 D_800A38E1 = 0x800A38E1; /* = p->unk14_15 (ApplyWorkingRecordToPendingConfigAndInitializeMode); bit 0 picks g_fight_stage_index = 0x21 / 0x20 */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_3 */
-g_comb_received_unlock_mask_bits = 0x800A38E4; /* bits_DepositMask3F83F8(D_800A36C6) (comb_Connect); OR-ed into StoreCompactedBits's argument */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_2 */
+g_comb_received_unlock_mask_bits = 0x800A38E4; /* bits_DepositMask3F83F8 of the high half of g_comb_received_payload_check_word (comb_Connect); OR-ed into StoreCompactedBits's argument */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_2 */
 g_fight_paired_move_event_min_frame = 0x800A38E8; /* 0xFF or data[3] & 0x7F (fight_UpdatePairedMoves); lower bound on unk_40 in fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_6 */
 g_fighter_horizontal_separation_change = 0x800A38F0; /* store-only: fight_UpdateSeparationAndPairedMoves stores the change of g_fighter_horizontal_separation */  /* data-wave 2026-10-08: was g_practice_lesson_param3_plus_2 */
 g_fight_time_limit_elapsed_frames = 0x800A38F4; /* frame clock of fight_UpdateModeDisplaysAndMatchProgress's mode-5 branch (vs g_fight_time_limit_seconds * 30) */  /* data-wave 2026-10-08: was g_practice_lesson_param3_plus_6 */

@@ -340,7 +340,6 @@ extern CdlATV g_cd_atv_target;
  * halves 4. Owner ruling Q125: comb_ExchangePad only. */
 extern s16 D_800A36C2;
 extern s32 g_comb_received_payload_check_word;
-extern s16 D_800A36C6;
 extern u8 g_fight_saved_bone_group_tim_requests;
 extern u16 g_fight_paired_move_flags;
 extern u8 g_fight_time_limit_seconds;
