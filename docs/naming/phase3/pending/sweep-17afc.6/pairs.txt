@@ -1,0 +1,4 @@
+Unk80101EC8Record.unk_1D0=initial_orientation
+Unk80101EC8Record.unk_24C=saved_base_velocity
+Unk80101EC8Record.unk_150=forward_move_rate_reduction
+Unk80104E88Rec.unk_01=ever_created

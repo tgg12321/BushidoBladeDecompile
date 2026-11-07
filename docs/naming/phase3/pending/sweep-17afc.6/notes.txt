@@ -1,0 +1,32 @@
+sweep-17afc.6 -- draft notes (Codex research tmp/codex/sweep-17afc.6-research.md re-derived at HEAD; Codex was hints only)
+
+Scope: Unk80101EC8Record (fighter record) and Unk80104E88Rec (ballistic record) members, plus Unk1F8002B8Rec.unk78.
+Research: 4 RENAME / 2 NO_NAME. Surviving: 4 RENAME (pairs.txt), 2 NO_NAME kept in the manifest. Dropped 0.
+
+Per row (current HEAD line numbers; they shifted vs the research, which cited 9a6a81893)
+- Unk80101EC8Record.unk_1D0 -> initial_orientation: only access W src/main/9F9C.c:4195 (fighter_Init), after orientation set :4186-4194.
+- Unk80101EC8Record.unk_24C -> saved_base_velocity: W-only copies of base_velocity at 9F9C.c:1316, :4156, :5753.
+- Unk80101EC8Record.unk_150 -> forward_move_rate_reduction: W 0 at 9F9C.c:1331, :4169; R at :4514 (|x| clamped 0x400, subtracted from forward_move_rate :4523).
+  Weakest row (always-0 stores; rest-20/-21/-22 precedent). Give it a fresh naming-reviewer first.
+- Unk80104E88Rec.unk_01 -> ever_created: only access W 17AFC.c:4796 (fight_CreateBallisticRecordAndDispatchEvent); never cleared (:4770, :4843).
+- Unk80101EC8Record.unk_6E: NO_NAME (copy of the two-role motion_metadata[2], 9F9C.c:3753).
+- Unk1F8002B8Rec.unk78: NO_NAME (no spelling true at all sites; 17AFC.c:1139-1151/:1207 vs :1395-1408 etc.).
+
+Re-derivation
+- git grep -n -w of each of unk_1D0, unk_24C, unk_150, unk_6E, unk_01 over src and include: every hit is listed above (each is a single
+  declaration; unk_01 only in Unk80104E88Rec). Attribution by base type: fighter_record / p / arg0 are Unk80101EC8Record *,
+  ballistic_record is Unk80104E88Rec *.
+- No block copy of either record type: the only memcpy callers (9F9C.c:1783/:1800, 6CF8.c, 87A0.c) copy loaded overlay data, not these records.
+- 138 INCLUDE_ASM bodies scanned (asm/funcs/<f>.s) for 0x24C/0x250/0x254, 0x1D0-0x1D6, 0x150, 0x6E, 0x1 offsets and for D_80101EC8 /
+  g_fighter_records / g_fight_ballistic_records: only hits are other types (LoadAverageByte/LoadAverageCol, gpu_DrawQueuedEntries,
+  gpu_ProjectStridedNodeVerticesAndDispatchPackets 0x1(reg) byte ops; gpu_SubdivideAndEmitTextured{Quad,Triangle} lw 0x1D0($s7), a word load
+  off another base while unk_1D0 is a halfword vector).
+- Collisions: initial_orientation, saved_base_velocity, forward_move_rate_reduction, ever_created = 0 whole-word hits in src include
+  symbol_addrs.txt; none is a member of Unk80101EC8Record / Unk80104E88Rec in include/game.h.
+
+Comment pass (comments in src that spell an old member token)
+- src/main/9F9C.c:4509: /* FAKE: the clamped |arg0->unk_150| ... */ -> arg0->forward_move_rate_reduction (Q133, by the pair alone; check line wrap).
+- No comment spells unk_1D0, unk_24C, unk_01 or unk_6E (git grep -w over src include).
+- unk78 comments (17AFC.c:1120, :1213) stay (NO_NAME).
+
+Dry run: tools/naming_member_apply.py --dry-run on pairs.txt; see dry.txt (dry.sh reproduces it in WSL).

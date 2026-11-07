@@ -1,0 +1,60 @@
+PASS Unk80101EC8Record.unk_1D0=initial_orientation, Unk80101EC8Record.unk_24C=saved_base_velocity, Unk80101EC8Record.unk_150=forward_move_rate_reduction, Unk80104E88Rec.unk_01=ever_created
+decl Unk80101EC8Record.unk_1D0 -> initial_orientation  include/game.h:1743
+decl Unk80101EC8Record.unk_24C -> saved_base_velocity  include/game.h:1762
+decl Unk80101EC8Record.unk_150 -> forward_move_rate_reduction  include/game.h:1713
+decl Unk80104E88Rec.unk_01 -> ever_created  include/game.h:908
+  round 0: 8 member error line(s)
+    src/main/17AFC.c:4796 unk_01 x1
+    src/main/9F9C.c:1316 unk_24C x1
+    src/main/9F9C.c:1331 unk_150 x1
+    src/main/9F9C.c:4156 unk_24C x1
+    src/main/9F9C.c:4169 unk_150 x1
+    src/main/9F9C.c:4195 unk_1D0 x1
+    src/main/9F9C.c:4514 unk_150 x1
+    src/main/9F9C.c:5753 unk_24C x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -908 +908 @@
+-    u8 unk_01;
++    u8 ever_created;
+@@ -1713 +1713 @@
+-    s16 unk_150;
++    s16 forward_move_rate_reduction;
+@@ -1743 +1743 @@
+-    SVec4i16 unk_1D0;
++    SVec4i16 initial_orientation;
+@@ -1762 +1762 @@
+-    VECTOR unk_24C;
++    VECTOR saved_base_velocity;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -4796 +4796 @@
+-    ballistic_record->unk_01 = 1;
++    ballistic_record->ever_created = 1;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -1316 +1316 @@
+-    fighter_record->unk_24C = fighter_record->base_velocity;
++    fighter_record->saved_base_velocity = fighter_record->base_velocity;
+@@ -1331 +1331 @@
+-    fighter_record->unk_150 = 0;
++    fighter_record->forward_move_rate_reduction = 0;
+@@ -4156 +4156 @@
+-    p->unk_24C = p->base_velocity;
++    p->saved_base_velocity = p->base_velocity;
+@@ -4169 +4169 @@
+-    p->unk_150 = 0;
++    p->forward_move_rate_reduction = 0;
+@@ -4195 +4195 @@
+-    p->unk_1D0 = p->orientation;
++    p->initial_orientation = p->orientation;
+@@ -4514 +4514 @@
+-            a2 = arg0->unk_150;
++            a2 = arg0->forward_move_rate_reduction;
+@@ -5753 +5753 @@
+-    fighter_record->unk_24C = fighter_record->base_velocity;
++    fighter_record->saved_base_velocity = fighter_record->base_velocity;
+DRY RUN: 3 file(s) would change; nothing written
+OK: every member access renamed
+exit=0
