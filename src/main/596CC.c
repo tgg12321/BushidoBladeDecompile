@@ -10,6 +10,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
+#include "bb2_const.h"
 #include <psxsdk/libgte.h>
 #include <psxsdk/inline_c.h>
 #include <psxsdk/gtemac.h>
@@ -378,8 +379,8 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 pressed_buttons) {
         var_0, g_row_menu_row_state.opt[g_menu_packed_cursors & 0xF].mode);
     if (pressed_buttons & PADRdown) {
         switch (g_row_menu_row_state.opt[g_menu_packed_cursors & 0xF].state) {
-        case 4:
-        case 5:
+        case FIGHT_MODE_VS:
+        case FIGHT_MODE_TEAM:
             if (g_pad_state.valid[1] == 0) {
                 snd_QueueSound(2, 0x7F, 0x7F);
                 snd_FlushSoundQueue();
@@ -390,11 +391,11 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 pressed_buttons) {
     }
     if (pressed_buttons & 0x400000) {
         switch (g_row_menu_row_state.opt[g_menu_packed_cursors & 0xF].state) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 6:
+        case FIGHT_MODE_STORY:
+        case FIGHT_MODE_VSCPU:
+        case FIGHT_MODE_PRACTICE:
+        case FIGHT_MODE_CHANBARA:
+        case FIGHT_MODE_NETWORK:
             goto reject;
         }
         if (g_pad_state.valid[0] == 0) {
