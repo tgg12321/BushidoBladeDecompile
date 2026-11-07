@@ -1,0 +1,5 @@
+D_8008D754=g_fighter_katana_weapon_points
+D_8008D764=g_fighter_long_sword_weapon_points
+D_8008D784=g_fighter_broadsword_weapon_points
+D_8008D794=g_fighter_naginata_weapon_points
+D_8008D7AC=g_fighter_yari_weapon_points

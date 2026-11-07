@@ -1,0 +1,17 @@
+==============================================================================
+DATA WAVE — 5 addresses, 5 identifiers remapped
+  0x8008d754: D_8008D754 -> g_fighter_katana_weapon_points
+  0x8008d764: D_8008D764 -> g_fighter_long_sword_weapon_points
+  0x8008d784: D_8008D784 -> g_fighter_broadsword_weapon_points
+  0x8008d794: D_8008D794 -> g_fighter_naginata_weapon_points
+  0x8008d7ac: D_8008D7AC -> g_fighter_yari_weapon_points
+
+-- file edits (2) --
+  src/main/d_7D920.c  (10)
+  symbol_addrs.txt  (1)
+
+-- registry lines --
+  symbol_addrs.txt:771 D_8008D754 -> g_fighter_katana_weapon_points
+
+DRY RUN — nothing written. Re-run with --apply.
+?? docs/naming/phase3/pending/sweep-data.1/
