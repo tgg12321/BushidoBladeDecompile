@@ -893,13 +893,8 @@ enddlabel g_gpu_vram_scrolls
 
 /* 800EF980 */
 dlabel g_resource_entry_request_state
-    .space 0x74
+    .space 0x78
 enddlabel g_resource_entry_request_state
-
-/* 800EF9F4 */
-dlabel D_800EF9F4
-    .space 0x4
-enddlabel D_800EF9F4
 
 /* 800EF9F8 */
 dlabel g_collision_static_segment_work

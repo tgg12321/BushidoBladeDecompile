@@ -1789,9 +1789,10 @@ void gpu_QueueVramScroll(s32 scroll_index) {
     }
 }
 
-/* One request state per resource entry (0x3A entries). */
-extern s16 g_resource_entry_request_state[0x3A];
-extern s16 D_800EF9F4;
+/* One request state per resource entry (0x3A entries), then a -2
+ * terminator at [0x3A] that resource_LoadSelectedEntriesTexturesAndSound
+ * walks to. */
+extern s16 g_resource_entry_request_state[0x3B];
 
 void ResetEntrySelectionState(void) {
     s16 val = -1;
@@ -1802,7 +1803,7 @@ void ResetEntrySelectionState(void) {
         i--;
         p--;
     } while (i >= 0);
-    D_800EF9F4 = -2;
+    g_resource_entry_request_state[0x3A] = -2;
     g_resource_pair_selection[1] = -1;
     g_resource_pair_selection[0] = -1;
     g_resource_entry_category = -1;
