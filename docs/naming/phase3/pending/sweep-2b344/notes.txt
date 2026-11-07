@@ -10,3 +10,6 @@
 - D_800A390C: NO_NAME. Waits on D_800A385C.
 - D_800A93B0 / D_800A93BC: NO_NAME. Always 0 at runtime; the only non-zero setter (func_8003F5A8) has no caller; read only to pass to the empty func_80017F98 (so not write-only final). func-second-pass-32's functions 0x8003F5A8 / 0x8003F5CC therefore stay unrevived.
 - D_800F665C: NO_NAME. Write-only mirror storing non-initial values; the value's meaning is not shown by its writer.
+
+## Unit sweep-2b344.2 (members; research: Opus, tmp/codex/sweep-2b344.2-research.md, 2026-11-06): 9 renames landed
+- The unit's 4 NO_NAME members (Unk8003F62CRec.unk4, Unk80045878Obj.unk_18F4, Unk80094B94Table.unk_00, Unk800A6690Rec.unk59), each with its missing evidence: pending/sweep-2b344.2/notes.txt.
