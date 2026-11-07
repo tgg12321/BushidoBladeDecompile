@@ -1,0 +1,6 @@
+# sweep-64fd8.1 notes
+D_800A30E0: no reader anywhere, word 1 (0x190) unexplained; needs a read-watch capture on 0x800A30E0-0x800A30E7 or a meaning for 0x190 (word 0 named g_str_date_time_stamp, c90adc694).
+D_800A3770: var-globals-e address-use objection (43500.c:842, motion_StartPlayback.s:145-146) stands; needs a runtime capture of the 43500.c:840-842 call (does it run, what is read to 0x800A3770).
+D_800A3712: var-globals-e objection stands, no name landed since var-globals-af; needs a role word that both 1-setters (2B344.c:326, :336) and every reader bear out.
+D_800A36C2: Q125 FAKE interior alias of g_comb_received_pad_word; needs a one-object layout form that scores 0 (noname-layout found none).
+D_800A36D2: Q125 FAKE interior alias of g_comb_prev_send_word; same missing one-object layout form.

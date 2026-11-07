@@ -1,0 +1,17 @@
+==============================================================================
+DATA WAVE — 4 addresses, 4 identifiers remapped
+  0x800a3207: D_800A3207 -> g_memcard_save_prompt_state
+  0x800a3206: D_800A3206 -> g_memcard_format_prompt_cursor_moved
+  0x800a3205: D_800A3205 -> g_memcard_retry_load_rearm
+  0x800a3354: D_800A3354 -> g_memcard_save_prompt_no_card_latched
+
+-- file edits (3) --
+  asm/funcs/memcard_StepSaveOverwriteAndFormatPrompts.s  (7)
+  src/main/28708.c  (39)
+  symbol_addrs.txt  (2)
+
+-- registry lines --
+  symbol_addrs.txt:1175 D_800A3207 -> g_memcard_save_prompt_state
+  symbol_addrs.txt:1413 D_800A3354 -> g_memcard_save_prompt_no_card_latched
+
+DRY RUN — nothing written. Re-run with --apply.

@@ -1,0 +1,4 @@
+D_800A3207=g_memcard_save_prompt_state
+D_800A3206=g_memcard_format_prompt_cursor_moved
+D_800A3205=g_memcard_retry_load_rearm
+D_800A3354=g_memcard_save_prompt_no_card_latched
