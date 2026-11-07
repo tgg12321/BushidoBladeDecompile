@@ -12,7 +12,7 @@ list of segments; each segment is:
                    (gte_ProjectPackedVertices); mode 3: none (func_8004A938,
                    an empty function, takes the projection's place)
   group list       (u16 count, u16 type) pairs, 0 count ends it
-                   (func_8004A940); each group calls table[type] once, which
+                   (gpu_DispatchPrimitiveGroupsThroughHandlerTable); each group calls table[type] once, which
                    steps count records of a fixed size
   u16 more         0 ends the stream, else the next segment header follows
 
