@@ -1,0 +1,2 @@
+motion_AdvanceVariantIfAtNibble4Or5Position:a1=variant_index
+motion_UpdateFrameStep:var_9=power_scale_tally

@@ -1,0 +1,10 @@
+sweep-9f9c-r2.1 (naming-d 2026-11-07): 2 local bindings in 2 functions (6 token substitutions, all in src/main/9F9C.c); no include/ file touched.
+Tree: ln-naming-d = main 8efaedf66 (clean). Run on Windows Python (python -I over main tmp/sweep-9f9c-r2-naming-d/dry.py; sys.path = the worktree tools/, NAMING_KEYCHECK_ROOT = the worktree).
+Drafting aid only (not the gate): naming_keycheck.scoped_plan(read_working_tree(), pairs, {}); local pairs are proven at the apply gate (keycheck cc1 differential + oracle build).
+ACCEPT motion_AdvanceVariantIfAtNibble4Or5Position:a1=variant_index 4 (src/main/9F9C.c 4)
+ACCEPT motion_UpdateFrameStep:var_9=power_scale_tally 2 (src/main/9F9C.c 2)
+SUM alone 6
+SET 2 ACCEPT 6 (src/main/9F9C.c 6; every other path 0)
+Both were refused at 17534b2c9 ('destination ... already occurs in f'); accepted since 8efaedf66 (naming_keycheck.bound_occurrence, foundation row scoped-plan-member-name-locals).
+Required comment edits: none (no comment in either function spells a1 or var_9).
+Width: formatting is applied at apply (python tools/format.py).

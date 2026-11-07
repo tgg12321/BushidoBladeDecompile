@@ -1,0 +1,5 @@
+sweep-9f9c-r2.1 (naming-d 2026-11-07): the 2 targets sweep-9f9c-r2 owns (pending/sweep-9f9c/notes.txt:88-90, group scoped-plan-member-name-locals), released by that foundation row (landed, 8efaedf66). 2 RENAME rows drafted, 0 dropped, 0 NO_NAME, 0 FINAL candidates; 6 substitutions in src/main/9F9C.c. Rows are VERDICT PENDING for the pre-apply naming-reviewer.
+Research: the r-row's own leads (notes.txt:89-90; power_scale_tally is the sweep-9f9c.4 pre-apply reviewer's suggestion); evidence newer than the record: the tool now accepts both destinations (dry.txt).
+Both targets are plain copies of one Unk80101EC8Record member, named by that member's spelling (the precedent in motion_UpdateFrameStep itself: group_10_13_tally / group_14_21_tally are named after the members they copy).
+
+# Pre-apply review (naming-reviewer, fresh, 2026-11-07): 2 PASS, 0 FAIL. VERDICT CONFIRM on both rows.
