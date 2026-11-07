@@ -4510,11 +4510,11 @@ void fighter_UpdateInputSteeredForwardMotion(
         }
 
         {
-            /* FAKE: the clamped |arg0->forward_move_rate_reduction| is staged
-             * through the existing `a2` (its table-entry value is dead here):
-             * one multiply-set pseudo keeps every staged value in $a2, as in
-             * the target; separate locals land in $a2/$a0/$a1 (a fresh local
-             * here: score 15). */
+            /* FAKE: the clamped |fighter_record->forward_move_rate_reduction|
+             * is staged through the existing `a2` (its table-entry value is
+             * dead here): one multiply-set pseudo keeps every staged value in
+             * $a2, as in the target; separate locals land in $a2/$a0/$a1 (a
+             * fresh local here: score 15). */
             a2 = fighter_record->forward_move_rate_reduction;
             if (a2 < 0) {
                 a2 = -a2;
@@ -4542,8 +4542,8 @@ void fighter_UpdateInputSteeredForwardMotion(
                 tbl_val = g_fighter_forward_move_rate_limits
                     [g_fighter_forward_move_rate_limit_indices
                          [fighter_record->character_data_index]];
-                /* FAKE: the second read of arg0->size_scale is staged through
-                 * the dead `var_5`, as above; reading in place: score
+                /* FAKE: the second read of fighter_record->size_scale is staged
+                 * through the dead `var_5`, as above; reading in place: score
                  * 11. */
                 var_5 = fighter_record->size_scale;
                 mult_res = var_5 * tbl_val;

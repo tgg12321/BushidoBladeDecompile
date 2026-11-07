@@ -124,12 +124,12 @@ static inline s32 softbody_Sqrt(s32 x) {
     }
 }
 
-/* softbody_PrepareStep -- loads the GTE rotation/translation from arg0's MATRIX
- * (arg0->object_matrix), runs softbody_LoadColliders, writes that MATRIX's
- * translation minus the object's (softbody->matrix.t) to scratchpad, scales it
- * by a factor derived from its length (byte-LUT integer sqrt, GTE LZC above
- * 0x400; 0x100 when the squared length exceeds 250000, 0 when it is negative
- * (overflowed)), copies the MATRIX to softbody->matrix and runs
+/* softbody_PrepareStep -- loads the GTE rotation/translation from step_desc's
+ * MATRIX (step_desc->object_matrix), runs softbody_LoadColliders, writes that
+ * MATRIX's translation minus the object's (softbody->matrix.t) to scratchpad,
+ * scales it by a factor derived from its length (byte-LUT integer sqrt, GTE LZC
+ * above 0x400; 0x100 when the squared length exceeds 250000, 0 when it is
+ * negative (overflowed)), copies the MATRIX to softbody->matrix and runs
  * softbody_SolveSprings. */
 void softbody_PrepareStep(
     Unk80017FA0Rec *step_desc, Func80017A44Output *softbody) {
@@ -564,8 +564,9 @@ void softbody_UpdateList(Unk80017FA0Rec *step_descs, s32 step_desc_count) {
 }
 
 /* softbody_SnapToPoints - GTE rotate-translate of the body's SVECTOR points (by
- * arg0's MATRIX) into its 0x40-stride node table, scaled << 7, with each node's
- * velocity zeroed; then copies that MATRIX (32 bytes) into arg1->matrix. */
+ * step_desc's MATRIX) into its 0x40-stride node table, scaled << 7, with each
+ * node's velocity zeroed; then copies that MATRIX (32 bytes) into
+ * softbody->matrix. */
 void softbody_SnapToPoints(
     Unk80017FA0Rec *step_desc, Func80017A44Output *softbody) {
     s32 out[3];
