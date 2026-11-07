@@ -1,0 +1,39 @@
+sweep-4510c.3 (naming-d 2026-11-07): 27 local / parameter bindings in 15 functions (24 token substitutions in src/main/31D3C.c, 44 in src/main/32D04.c, 53 in src/main/4510C.c = 121); no include/ file touched.
+Tree: ln-naming-d = main 239ff3a64 (tracked tree clean; only untracked draft dirs). Run on Windows Python (python -I over a script file, main tmp/sweep-4510c.3-draft-naming-d/dry.py; sys.path = the worktree tools/, NAMING_KEYCHECK_ROOT = the worktree). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree (base = naming_keycheck.read_working_tree(), a fresh read per call). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build).
+The 27 pairs of pairs.txt together were accepted (121 token substitutions: src/main/31D3C.c 24, src/main/32D04.c 44, src/main/4510C.c 53; every other path 0). Each pair was also run alone: all accepted, alone counts sum to 121, and each alone count equals the drafter's own use scan of the function body at 239ff3a64 (use lists in local_manifest.csv).
+ACCEPT ApplyLightPresetRowBackgroundClearAndFarColor:var_1=angle_word 5  (src/main/31D3C.c 5)
+ACCEPT ApplyLightPresetRowBackgroundClearAndFarColor:var_2=angle_word_high 5  (src/main/31D3C.c 5)
+ACCEPT gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex:arg0=slot_object 5  (src/main/31D3C.c 5)
+ACCEPT light_ApplyPointLight:var_1=target_index 5  (src/main/31D3C.c 5)
+ACCEPT light_SetLightOrBackColorOfSelectedSetups:a0=preset_index 1  (src/main/31D3C.c 1)
+ACCEPT light_SetLightOrBackColorOfSelectedSetups:a2=use_setup_4 3  (src/main/31D3C.c 3)
+ACCEPT gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift:arg0=matrix_ptrs 2  (src/main/32D04.c 2)
+ACCEPT gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift:arg1=section_stream 2  (src/main/32D04.c 2)
+ACCEPT gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift:arg3=queued_entry 2  (src/main/32D04.c 2)
+ACCEPT gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift:t0=distance_shift 4  (src/main/32D04.c 4)
+ACCEPT gpu_OffsetTexPrimStream:var_4=header_bit15_set 5  (src/main/32D04.c 5)
+ACCEPT gpu_OffsetTexPrimStream:var_5=trailing_list_count 4  (src/main/32D04.c 4)
+ACCEPT gpu_RemapDepthToOtIndex:v0=shifted_depth 3  (src/main/32D04.c 3)
+ACCEPT math_TransposeMatrixInPlace:temp=lower_element 7  (src/main/32D04.c 7)
+ACCEPT node_BindFrameDataAndReserveEntryBuffer:a0=frame_section 3  (src/main/32D04.c 3)
+ACCEPT reloc_CopySelectedEntries:var_6=select_end_marker 3  (src/main/32D04.c 3)
+ACCEPT reloc_UnrelocateBlock:v1=slot_cursor 9  (src/main/32D04.c 9)
+ACCEPT fighter_AppendNavDetour:var_16=backward_length 6  (src/main/4510C.c 6)
+ACCEPT fighter_AppendNavDetour:var_17=forward_length 6  (src/main/4510C.c 6)
+ACCEPT fighter_AppendNavDetour:var_29=chain_vertex 17  (src/main/4510C.c 17)
+ACCEPT fighter_AppendNavDetour:var_5=intersection_x 3  (src/main/4510C.c 3)
+ACCEPT fighter_AppendNavDetour:var_6=intersection_z 3  (src/main/4510C.c 3)
+ACCEPT fighter_BuildCpuOrbitRoute:var_4=hit_point 5  (src/main/4510C.c 5)
+ACCEPT fighter_BuildCpuRoutePadWithSurfaceProbe:arg3=route_exceeds_limit 3  (src/main/4510C.c 3)
+ACCEPT fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_41=range_flag4_waived 4  (src/main/4510C.c 4)
+ACCEPT fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_54=press_action_by_nibble 3  (src/main/4510C.c 3)
+ACCEPT fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_55=double_tap_action_by_nibble 3  (src/main/4510C.c 3)
+SUM alone 121
+SET 27 ACCEPT 121: src/main/31D3C.c 24, src/main/32D04.c 44, src/main/4510C.c 53
+Required comment edits (comments spelling an old name in the touched ranges; scoped_plan edits code tokens only; all pair word only, claims unchanged):
+  src/main/31D3C.c:219 and :222  arg0->asset_index -> slot_object->asset_index (inside the FAKE label of gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex)
+  src/main/32D04.c:934  `v1++; v1--;` -> `slot_cursor++; slot_cursor--;` (reloc_UnrelocateBlock FAKE comment); 935 `$v1` is a register: do NOT change
+  src/main/4510C.c:1594  `var_29 holds` -> `chain_vertex holds` (fighter_AppendNavDetour)
+No other comment in the touched function bodies spells an old name (drafter scan of each body, raw minus comment-blanked token hits).
+Width: formatting is applied at apply (python tools/format.py).
+Post-review (naming-d 2026-11-07): pair gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift:arg1=section_stream dropped after the pre-apply naming-reviewer FAIL (alone count 2, src/main/32D04.c); the 26 kept pairs total 119 substitutions (31D3C.c 24, 32D04.c 42, 4510C.c 53), proven again at the apply gate.
