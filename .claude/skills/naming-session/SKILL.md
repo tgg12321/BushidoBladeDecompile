@@ -198,12 +198,14 @@ per kind, rows it lands after, and the open rows' targets it leaves alone.
   lists every open, non-final placeholder the sweep owns: a function by its census
   `src_location`; a local or parameter by the TU defining its function; a global by the code
   TU (not a data-only `d_*.c`) with the most uses, C outside `extern` lines plus the asm/funcs
-  bodies it INCLUDE_ASMs (ties: lowest TU id), else the TU defining it; a member with every
+  bodies it INCLUDE_ASMs (ties: lowest TU id), else the data-only TU holding it; a member with every
   member of its type, by the `.c` defining the type, else the code TU naming the type most,
   else the type embedding it, else the TU accessing its members most. Exception: a target of
   another open row (the sweep note lists them; a later row's note or `pairs.txt` adds) stays that
   row's while it is open; once it lands or drops, what it left open joins the owning sweep,
-  with no successor row.
+  with no successor row. Such a row never re-blocks on `kind:` (sweep units don't count): with
+  nothing workable it drops. A row filed later for a sweep's placeholder updates that sweep's
+  note in the same commit, and never takes a target of the sweep's open unit.
 - **Units.** A unit is one wave of one kind (up to 80 targets from `homes`) by the normal
   route (§PREPARE, §LAND: pre-apply `naming-reviewer`, the kind's apply tool, R6), or a
   finality unit as the `naming-close-final` rows run it (class test, a fresh `naming-reviewer`
@@ -211,14 +213,22 @@ per kind, rows it lands after, and the open rows' targets it leaves alone.
   `<sweep id>.<n>`: draft `pending/<unit id>/`, research `tmp/codex/<unit id>-research.md`,
   wave commit `naming: <unit id> -- ...`.
 - **Stages.** The row's stage and `draft` follow its open unit (`idea` = none open; `reviewed`
-  = the unit's draft awaits LAND). The commit landing a unit moves the row back to `idea`,
-  draft `-`, and rewrites the note's progress line: units landed, counts left per kind.
+  = the unit's draft awaits LAND); from `researching` on, the note names it (`unit <unit id>`)
+  and its research file (a Codex harvest too) is keyed by the unit id. The commit landing a
+  unit moves the row back to `idea`, draft `-`, and rewrites the note's progress line: units
+  landed, counts left per kind. A target the pre-apply reviewer FAILs is recorded with the
+  reason in `pending/<sweep id>/notes.txt` and comes back only with evidence newer than that
+  record (as `free --revive`). A sweep with only other rows' targets left (and recorded
+  NO_NAMEs) goes `idea` with one `Lands after <row>` phrase per holding row.
 - **Close.** Every placeholder `homes` lists for the scope ends RENAMEd, FINAL (N7, fresh
   reviewer, ledger), or NO_NAME with the specific missing evidence: a function in
   `no_name.tsv` (`add`), others in `pending/<sweep id>/notes.txt`, each citing the foundation
   row the sweep files for that question (a trace capture, a layout fix). When `homes` lists
   only those, the row moves to `landed`; per filed foundation row, an `idea` sweep row
-  `<sweep id>-r<n>` with `Lands after <foundation row>` takes its placeholders back up.
+  `<sweep id>-r<n>` with `Lands after <foundation row>` takes its placeholders back up (it owns
+  exactly the ones its note lists). A placeholder that later shows in `homes` for a landed
+  sweep's scope (unrecorded) gets such an r-row too. Function NO_NAMEs: `add --commit <wave
+  sha>` once the unit is on main (a sweep tag is no `wNN` the tool can look up).
 - **Parallel.** Scopes are disjoint, so sweeps share no target. A pairs.txt unit claims its
   symbols (old and new names) and a shared `tuedit` per TU it edits: two sweeps' units editing
   one TU land together, and only one symbol or one new name in both collides. A functions unit
@@ -340,8 +350,8 @@ every datum it defines agree on that subsystem; a mixed file keeps its ROM-offse
      `test_label_census.py` and the integrity check, fast-forwards main and pushes. That is the
      stopping point.
 4. If R6 fails on a name, revert that pair on the lane branch (or redo the apply without it) and
-   run R6 again. On a second failure, mark the row `dropped` (and queue the track's next `idea`
-   row, as in step 3).
+   run R6 again. On a second failure, mark the row `dropped` (a sweep unit: the row goes back to
+   `idea` with the reason); queue no successor, as in step 3.
 
 ## Gate commands (from PowerShell)
 

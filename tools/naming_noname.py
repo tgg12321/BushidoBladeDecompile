@@ -431,7 +431,7 @@ def homes(census, rows):
     of a TU sweep (naming-session skill, Sweeps). func: its census src_location; local: the TU
     defining its function; data: the code TU (not a data-only d_*.c) with the most uses, C
     tokens outside `extern` lines plus the asm/funcs bodies it INCLUDE_ASMs (ties: lowest TU
-    id), else the TU defining it in C, else `-`; member: one home per type, the .c defining
+    id), else the data-only TU naming it outside `extern` lines, else `-`; member: one home per type, the .c defining
     it, else the code TU naming the type most, else the home of a type embedding it, else the
     code TU with most `.m` / `->m` accesses of the type's placeholder members (ties: lowest)."""
     files = game_files()
@@ -449,8 +449,10 @@ def homes(census, rows):
     tree = tree_census(files)
     out = [('func', a, tid((c.get('src_location') or '-').split(':')[0]))
            for a, c in sorted(census.items()) if unnamed(c) and ('func', a) not in final]
+    seen = set()  # a function defined in a header would show in every .c: first TU only
     for f in cfiles:
-        for k in sorted(tree_census(heads + [f])['local'] & tree['local']):
+        for k in sorted(tree_census(heads + [f])['local'] & tree['local'] - seen):
+            seen.add(k)
             if ('local', k) not in final:
                 out.append(('local', k, tid(f)))
 
