@@ -329,7 +329,9 @@ extern s16 g_resource_cached_node_asset_id;
 
 void resource_RebaseNodeAssetBlock(s32 block_id, s32 byte_offset);
 
-s32 func_80046780(void) { return g_resource_stage_counted_record_list; }
+s32 resource_GetStageCountedRecordList(void) {
+    return g_resource_stage_counted_record_list;
+}
 
 s32 fight_GetPositionRecordList(void) { return g_fight_position_records; }
 
