@@ -9,6 +9,12 @@
 #include <psxsdk/inline_o.h>
 #include <psxsdk/gtemac.h>
 
+enum MoveStartState {
+    MOVE_START_NONE = 0,
+    MOVE_START_SCRIPT = 1,
+    MOVE_START_PAIRED = 2,
+};
+
 enum CameraFightViewMode {
     CAMERA_FIGHT_VIEW_TRACKED = 0,
     CAMERA_FIGHT_VIEW_TWO_FIGHTER = 1,
@@ -2912,8 +2918,8 @@ void fight_UpdatePairedMoves(void) {
         fighter_StartMoveScript(
             g_fight_paired_move_initiator == 0, g_fight_paired_move,
             g_fight_paired_move_is_common);
-        g_fighter_records[1].move_started = 2;
-        g_fighter_records[0].move_started = 2;
+        g_fighter_records[1].move_started = MOVE_START_PAIRED;
+        g_fighter_records[0].move_started = MOVE_START_PAIRED;
         return;
     }
     if (g_fight_missing_support_fighter_index != 0xFF) {
@@ -2946,7 +2952,7 @@ void fight_UpdatePairedMoves(void) {
     }
     for (i = 0; i < 2; i++) {
         rec = &g_fighter_records[i];
-        if (rec->move_started == 0) {
+        if (rec->move_started == MOVE_START_NONE) {
             continue;
         }
         ent = motion_FindPairedMoveEntry(rec->cur_move);
@@ -2984,8 +2990,8 @@ void fight_UpdatePairedMoves(void) {
         rec->other->borrow_other_motion = 1;
         rec->other->move_is_common = rec->move_is_common;
         fighter_StartMoveScript(i == 0, paired_script, rec->move_is_common);
-        rec->move_started = 2;
-        rec->other->move_started = 2;
+        rec->move_started = MOVE_START_PAIRED;
+        rec->other->move_started = MOVE_START_PAIRED;
         rec->other->variant_index = rec->other->default_variant_index;
         rec->other->power_scale_tally += 1;
         pos[0] = (rec->world_pos.x + rec->other->world_pos.x) / 2;
@@ -3750,7 +3756,7 @@ void fighter_StartMoveScript(
             {
                 u8 *v1_58 = fighter_record->motion_metadata;
                 fighter_record->move_frame_frac = 0;
-                fighter_record->move_started = 1;
+                fighter_record->move_started = MOVE_START_SCRIPT;
                 fighter_record->queued_move = 0;
                 fighter_record->move_frame_unchanged = 0;
                 fighter_record->move_frame = a1_val;
@@ -4897,8 +4903,8 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
                                     ? 3
                                     : fighter_record->power_scale_tally]) >>
         12;
-    if (fighter_record->move_started == 1) {
-        fighter_record->move_started = 0;
+    if (fighter_record->move_started == MOVE_START_SCRIPT) {
+        fighter_record->move_started = MOVE_START_NONE;
     }
     motion_UpdateFrameStep(fighter_record);
     frame_fraction_sum =
@@ -5126,7 +5132,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
             }
             fighter_record->airborne_until_landing = 0;
         }
-    } else if (fighter_record->move_started != 0 &&
+    } else if (fighter_record->move_started != MOVE_START_NONE &&
                (fighter_record->prev_move_kind == 0x17 ||
                 fighter_record->prev_move_kind == 0x18) &&
                !(fighter_record->move_kind == 0x17 ||
@@ -5147,7 +5153,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
     if (fighter_record->move_turn_mode == 1) {
         fighter_SetTurnDelta(fighter_record, fighter_record->opponent_bearing);
     }
-    if (fighter_record->move_started != 0) {
+    if (fighter_record->move_started != MOVE_START_NONE) {
         if (fighter_record->move_kind == 2 ||
             fighter_record->move_kind == 0x1B ||
             fighter_record->move_kind == 0x28 ||
@@ -5171,7 +5177,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
         fighter_record->opponent_turn_frame == fighter_record->move_frame) {
         fighter_SetTurnDelta(fighter_record, fighter_record->opponent_bearing);
     }
-    if (fighter_record->move_started != 0 &&
+    if (fighter_record->move_started != MOVE_START_NONE &&
         fighter_record->prev_move_kind != 0x18 &&
         fighter_record->move_kind == 0x18) {
         fighter_record->base_velocity.vx +=
@@ -5189,7 +5195,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
                 [fighter_record->character_data_index];
         fighter_record->saved_collision_y = fighter_record->collision_pos.vy;
     }
-    if (fighter_record->move_started != 0 &&
+    if (fighter_record->move_started != MOVE_START_NONE &&
         fighter_record->prev_move_kind != 0x17 &&
         fighter_record->move_kind == 0x17) {
         fighter_record->base_velocity.vy +=
@@ -5197,7 +5203,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
                                                    ->character_data_index];
         fighter_record->saved_collision_y = fighter_record->collision_pos.vy;
     }
-    if (fighter_record->move_started != 0 &&
+    if (fighter_record->move_started != MOVE_START_NONE &&
         fighter_record->move_kind == 0x28) {
         s32 horizontal_velocity[3];
         s32 target_point[3];
@@ -5236,7 +5242,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
                 fighter_record->cur_move->last_move_frame - 1;
         }
     }
-    if (fighter_record->move_started != 0 &&
+    if (fighter_record->move_started != MOVE_START_NONE &&
         fighter_record->move_kind == 0x23) {
         fighter_record->collision_pos.vy -= 0x898;
         fighter_record->base_pos.y -= 0x898;
@@ -5249,7 +5255,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
          * 3); a u16 `state` also misses (Q129). */
         s32 state = fighter_record->move_kind;
 
-        if (fighter_record->move_started != 0 && state == 6) {
+        if (fighter_record->move_started != MOVE_START_NONE && state == 6) {
             fighter_record->variant_index =
                 fighter_record->default_variant_index;
         }
@@ -5258,7 +5264,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
            24576;
     fighter_record->orientation.vy += temp;
     fighter_record->remaining_turn -= temp;
-    if (fighter_record->move_started != 0) {
+    if (fighter_record->move_started != MOVE_START_NONE) {
         if (fighter_record->blend_into_move != 0) {
             func_80023D08(fighter_record);
         } else if (fighter_record->move_kind == 0x1C) {
@@ -5332,7 +5338,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
         motion_DecodeFrame(decoder_index, dest_frame_index, &pose_frames[1],
                            (u16 *)0x1F8001B0);
     }
-    if (fighter_record->move_started != 0 &&
+    if (fighter_record->move_started != MOVE_START_NONE &&
         (fighter_record->move_kind == 6 || fighter_record->move_kind == 0x14) &&
         fighter_record->prev_move_kind == 6) {
         MATRIX saved_pose_matrix;
@@ -5416,7 +5422,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
     if (fighter_record->pose_blend_requests != 0) {
         Vec3i32 adjusted_saved_root_offset;
 
-        if (fighter_record->move_started != 0) {
+        if (fighter_record->move_started != MOVE_START_NONE) {
             fighter_record->base_pos.x +=
                 fighter_record->prev_root_offset.x - v[0].x;
             fighter_record->base_pos.z +=
@@ -5471,7 +5477,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
             (v[0].z * complementary_weight + v[1].z * interpolation_weight) >>
             12;
     }
-    if (fighter_record->move_started != 0 &&
+    if (fighter_record->move_started != MOVE_START_NONE &&
         fighter_record->pose_blend_requests == 0) {
         fighter_record->base_pos.x +=
             fighter_record->prev_root_offset.x - fighter_record->root_offset.x;
@@ -5498,7 +5504,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
                 fighter_record->horizontal_probe_normal.vz / 256;
         }
     }
-    if (fighter_record->move_started == 0 ||
+    if (fighter_record->move_started == MOVE_START_NONE ||
         fighter_record->move_kind != 0x28) {
         fighter_record->base_velocity.vx =
             (fighter_record->base_velocity.vx *
@@ -5903,7 +5909,7 @@ skip_62:
         fighter_record->base_velocity_damping_z = 0xFC0;
     }
     if (fighter_record->is_defeated == 0 &&
-        ((fighter_record->move_started != 0 &&
+        ((fighter_record->move_started != MOVE_START_NONE &&
           fighter_record->prev_move_kind != 4 &&
           fighter_record->prev_move_kind != 0x14 &&
           (fighter_record->move_kind == 4 ||
@@ -5935,7 +5941,7 @@ skip_62:
             g_fight_followup_fighter_index = fighter_index == 0;
         }
     }
-    if (fighter_record->move_started != 0 &&
+    if (fighter_record->move_started != MOVE_START_NONE &&
         fighter_record->character_roster_index == 0x1B &&
         fighter_record->move_kind == 0xB &&
         fighter_record->throw_charges_left == 0) {
@@ -6015,8 +6021,8 @@ skip_62:
     gpu_QueueSlotDrawMovesForSelectedSet(
         fighter_index, fighter_record->draw_move_set);
     fighter_DispatchArmedBoneVectorEventAndDisarm(fighter_record);
-    if (fighter_record->move_started == 2) {
-        fighter_record->move_started = 0;
+    if (fighter_record->move_started == MOVE_START_PAIRED) {
+        fighter_record->move_started = MOVE_START_NONE;
     }
     replay_RecordFighter(fighter_record);
 }
