@@ -1224,7 +1224,7 @@ void node_InitFrameEntriesFromWorldTranslations(void) {
     }
 }
 
-/* .data 0x800951D8..0x800955E0 (35000.c's NDATA path pointers
+/* .data 0x800951D8..0x800955E0 (35000.c's DAT file path pointers
  * g_dat_file_path_ptrs follow), in address order: five primitive-type handler
  * tables (gpu_FailCheckOnUnhandledPrimitiveType, which calls
  * sys_StoreZeroPastScratchpadOnFailedCheck, is the default entry; the others

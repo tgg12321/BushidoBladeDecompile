@@ -815,16 +815,17 @@ void resource_RebaseSelectedEntryBlockAndFakeOpenListedVabs(
 
 /* .data 0x800955E0..0x80099478 (32D04.c's g_gpu_prim_type_halfword_sizes
  * precedes, d_89C78.c's g_loaded_resource_selector follows), in address order:
- * g_dat_file_path_ptrs, the 899 NDATA asset path pointers into d_15EC.c's pool
- * (D_80010DEC, its strings in reverse address order; no code reads them,
- * docs/formats/NDATA.md); the NDATA.INF sector table g_ndata_inf ({start,
- * length} per file, read over from disc by ndata_StartReadInf; trailing zero
- * entries implicit), ndata_ReadFromPack's pack index, the 0x1000-step sine
- * table Judge (bb2.h), and resource_LoadSelectedEntriesTexturesAndSound's index
- * list g_resource_entry_texture_groups. g_dat_file_path_ptrs sits between
- * 32D04.c's .data and this file's with no reorder either way; it is this file's
- * by subsystem (the NDATA file names, next to the NDATA file table; 899 is also
- * g_ndata_inf's explicit entry count, 760 packed
+ * g_dat_file_path_ptrs, 899 pointers to DATA<n>\NAME.DAT file path strings in
+ * d_15EC.c's pool (D_80010DEC, its strings in reverse address order; no code
+ * reads them, docs/formats/NDATA.md); the NDATA.INF sector table g_ndata_inf
+ * ({start, length} per file, read over from disc by ndata_StartReadInf;
+ * trailing zero entries implicit), ndata_ReadFromPack's pack index, the
+ * 0x1000-step sine table Judge (bb2.h), and
+ * resource_LoadSelectedEntriesTexturesAndSound's index list
+ * g_resource_entry_texture_groups. g_dat_file_path_ptrs sits between 32D04.c's
+ * .data and this file's with no reorder either way; it is this file's by
+ * position (next to the NDATA file table; 899 is also g_ndata_inf's explicit
+ * entry count, 760 packed
  * + 139 {-1, -1}). Defined after every function, so no body sees a definition
  * where it saw an extern. */
 extern const char D_80010DEC[];

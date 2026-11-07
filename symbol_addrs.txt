@@ -1484,7 +1484,7 @@ g_entry_menu_selection_offset_countdowns = 0x800A35C8; /* 13 refs; two countdown
 // pins-drop: names a linked object defines at this address (moved out of the linker pin files by tools/pins_drop.py)
 g_memcard_sw_event_new = 0x800A3800; /* data-wave 2026-09-24: was D_800A3800 */
 g_fight_choice_menu_first_cursor = 0x800A3804;  // data-wave 2026-10-28: was D_800A3804
-g_gpu_ot_offset_base_ptr = 0x800A3808;  // data-wave 2026-11-06: was D_800A3808
+g_gpu_ot_offset_base_ptr = 0x800A3808;  // g_gpu_ot_ptr stored beside g_gpu_ot_offset_ptr = g_gpu_ot_ptr + 4; never read  // data-wave 2026-11-06: was D_800A3808
 g_fight_menu_restart_count = 0x800A380C;  // data-wave 2026-10-28: was D_800A380C
 g_comb_event_error = 0x800A3810; /* data-wave 2026-09-24: was D_800A3810 */
 g_memcard_request_retry_count = 0x800A3814;  // data-wave 2026-10-28: was D_800A3814
@@ -1534,7 +1534,7 @@ g_memcard_file_count = 0x800A38C8; /* data-wave 2026-09-24: was D_800A38C8 */
 g_memcard_request_write_started = 0x800A38CC;  // data-wave 2026-10-28: was D_800A38CC
 g_comb_received_check_mismatch_count = 0x800A38D0;  // data-wave 2026-11-06: was D_800A38D0
 D_800A38D4 = 0x800A38D4;
-g_gpu_ot_offset_update_count = 0x800A38D6;  // data-wave 2026-11-06: was D_800A38D6
+g_gpu_ot_offset_update_count = 0x800A38D6;  // incremented once per store of g_gpu_ot_offset_ptr; never read  // data-wave 2026-11-06: was D_800A38D6
 g_gpu_ot256_ptr = 0x800A38D8; /* data-wave 2026-09-24: was D_800A38D8 */
 g_fight_mode_selector = 0x800A38DC;  // data-wave 2026-10-27: was D_800A38DC
 g_fight_step_row_object_id = 0x800A38DE;  // data-wave 2026-10-28: was D_800A38DE

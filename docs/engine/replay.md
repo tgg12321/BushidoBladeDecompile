@@ -106,8 +106,8 @@ is `softbody_SolveSprings` (step 4); the reset wave retired that name.
 
 `gpu_ResetDrawQueueAndPrepareViewAndLighting(focus_point, camera_angles, eye_distance)` (src/main/368E4.c:451) sets up the frame's view and draw state:
 
-1. Resets the draw queue cursor and the OT pointers (`D_800A3808`,
-   `g_gpu_ot_offset_ptr`) and increments `D_800A38D6`.
+1. Resets the draw queue cursor and the OT pointers (`g_gpu_ot_offset_base_ptr`,
+   `g_gpu_ot_offset_ptr`) and increments `g_gpu_ot_offset_update_count`.
 2. If `focus_point` is given: stores `-camera_angles` as the rotation of the view record
    `g_view_camera_root_node`, builds its matrix through `g_math_rot_matrix_funcs[0]`, and sets the
    record's translation to `focus_point + M * (0, 0, -eye_distance)`, a point `eye_distance` units back
