@@ -1646,8 +1646,8 @@ void gpu_DrawIndexedSheetPair(s32 arg0, s32 y_offset, Unk8007352CRec *draw_desc,
 
     for (i = 0; i < 2; i++) {
         /* FAKE: operand grouping (or-tree-shape-shift carve-out): with
-         * (var_0 + i) + arg0 * 2, arg0 * 8 is hoisted alone as in the target;
-         * var_0[arg0 * 2 + i]: score 33. */
+         * (sheet_pairs + i) + arg0 * 2, arg0 * 8 is hoisted alone as in the
+         * target; sheet_pairs[arg0 * 2 + i]: score 33. */
         draw_desc->header = *(sheet_pairs + i + arg0 * 2);
         if (draw_desc->header == (Unk8009B0E0Record *)-1)
             return;
