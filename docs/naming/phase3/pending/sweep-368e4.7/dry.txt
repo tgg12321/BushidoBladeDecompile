@@ -1,0 +1,32 @@
+==============================================================================
+NAMING WAVE — 3 operations (0 RESET, 3 RENAME)
+  3 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — src/main/5ED34.c is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (5) --
+  (root): 1 files, 1 substitutions
+      symbol_addrs.txt  (1)
+  asm: 3 files, 6 substitutions
+      asm/funcs/func_80046934.s  (2)
+      asm/funcs/func_8004695C.s  (2)
+      asm/funcs/func_800469A0.s  (2)
+  src: 1 files, 3 substitutions
+      src/main/368E4.c  (3)
+
+-- .s file renames (3) --
+  asm/funcs/func_80046934.s -> asm/funcs/arena_OpenBlock9.s
+  asm/funcs/func_8004695C.s -> asm/funcs/arena_CloseBlock9.s
+  asm/funcs/func_800469A0.s -> asm/funcs/arena_ResizeBlock9.s
+
+-- ledger directory renames (1) --
+  memory/grind/_completed/func_8004695C -> memory/grind/_completed/arena_CloseBlock9
+
+-- symbol-registry line deletions (1) --
+  symbol_addrs.txt:650  func_80046934 = 0x80046934; /* body = arena_OpenBlock(9) only */
+
+-- JSON key/field edits (1) --
+  memory/grind/_completed/func_8004695C/layer2.jsonl: 1 changes
+      line 1: func func_8004695C -> arena_CloseBlock9
+
+DRY RUN — nothing written. Re-run with --apply.

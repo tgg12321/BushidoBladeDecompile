@@ -1,0 +1,29 @@
+sweep-368e4.7 (unit sweep-368e4.7, kind function; lane ln-naming-b). 3 RENAME kept; 0 dropped; 0 NO_NAME. Verdicts are PENDING: the session sets CONFIRM after the naming-reviewer pass.
+Drafted 2026-11-07 at HEAD e07ab78e2 in the lane worktree. Research input tmp/codex/sweep-368e4.7-research.md (untrusted; Opus subagent). Every claim in rows.py re-derived at HEAD from src/main/368E4.c:335-415, src/main/35000.c:354-483, asm/funcs/func_80046934.s, func_8004695C.s, func_800469A0.s, no_name.tsv:19-22.
+The three rows are NO_NAME ledger rows (no_name.tsv:19, :21, :22) revived by the reviewer ruling in pending/sweep-368e4/notes.txt (## Close, "Still the sweep's own"): the only recorded objection is the unknown identity of arena block 9, which Q132 (naming-bar.md:54-56) does not accept as a ground for neutral. None is dead (each calls named arena_* functions) or forwarder (each binds the constant id 9). func_80046954 (empty hook, final `empty`, no_name.tsv:20) is not part of this unit.
+Kept rows:
+ 0x80046934 func_80046934 -> arena_OpenBlock9
+ 0x8004695C func_8004695C -> arena_CloseBlock9   (alternatives arena_EndBlock9At, arena_SetBlock9End)
+ 0x800469A0 func_800469A0 -> arena_ResizeBlock9  (forwarder risk: one call, constant id 9 and a0 -> a1 move break "unchanged"; if ruled a forwarder, drop the row and record NO_NAME `forwarder`)
+Freshness: arena_OpenBlock9, arena_CloseBlock9, arena_ResizeBlock9, arena_EndBlock9At, arena_SetBlock9End each 0 hits (git grep -w over src include asm symbol_addrs.txt docs/naming/function-names.csv).
+
+REVIVE check (run in the worktree, printed 3 free; copy of its output):
+# 3 free, 2 skipped as NO_NAME (no new evidence), 6 final
+# revive func_80046934: NO_NAME in w61,w70,w86,w92,w125,sweep-368e4.2; new evidence: revive: reviewer ruling sweep-368e4.6 close (naming-final-classes.md:22-24, Q132) -- the recorded objection is identity-unknown only
+# revive func_8004695C: NO_NAME in w49,w61,w70,w86,w125,sweep-368e4.2; new evidence: revive: reviewer ruling sweep-368e4.6 close (naming-final-classes.md:22-24, Q132) -- the recorded objection is identity-unknown only
+# revive func_800469A0: NO_NAME in w61,w70,w86,w125,sweep-368e4.2; new evidence: revive: reviewer ruling sweep-368e4.6 close (naming-final-classes.md:22-24, Q132) -- the recorded objection is identity-unknown only
+Command (re-run at land to record the revive in the ledger):
+python tools/naming_noname.py free src/main/368E4.c --revive "0x80046934=revive: reviewer ruling sweep-368e4.6 close (naming-final-classes.md:22-24, Q132) -- the recorded objection is identity-unknown only" --revive "0x8004695C=revive: reviewer ruling sweep-368e4.6 close (naming-final-classes.md:22-24, Q132) -- the recorded objection is identity-unknown only" --revive "0x800469A0=revive: reviewer ruling sweep-368e4.6 close (naming-final-classes.md:22-24, Q132) -- the recorded objection is identity-unknown only"
+
+Re-derivation corrections to the research file
+ - func_8004695C.s jal lines are :5 (UpdatePeak), :8 (SetBlockEnd), :12 (SetMoveCallback); %hi/%lo at :10-11 (matches the research).
+ - Loader arena_OpenBlock sites in 368E4.c are :350 (block 8) and :398 (block 0xA); the research's :346/:397 style cites were not used.
+ - symbol_addrs.txt:650 carries the old name for func_80046934; the dry run deletes that line (the comment only restates the body). No symbol_addrs row for the other two.
+
+DRY RUN: dry.txt (rc=0). Link map reported STALE in the worktree (build/bb2.map older than 5ED34.c): apply.sh already passes --stale-map-ok. Side effects the lander should know:
+ - ledger directory rename memory/grind/_completed/func_8004695C -> memory/grind/_completed/arena_CloseBlock9, plus its layer2.jsonl func field edit (1 line).
+ - symbol_addrs.txt:650 line deleted; named_syms.txt:171/:266 (retired-name notes) carry old snd_* names and are history, untouched.
+ - Comment pass: asm/funcs/func_80046954.s and the 368E4.c hook comment are unaffected (hook is not renamed).
+ - HAZARD (old names in recorded data, must stay): docs/naming/runtime/**, docs/naming/function-names.csv evidence text, older wave manifests, docs/naming/phase3/no_name.tsv, older pending notes.
+
+Manifests: build.py writes func_manifest.csv and data_manifest.csv INTO this draft dir; dry.sh stages a CONFIRM copy under phase3/zz-sweep-368e4-7-dry (removed) and restores function-names.csv; tmp/psw3687 is scratch.

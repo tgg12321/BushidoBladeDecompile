@@ -1,0 +1,55 @@
+"""sweep-368e4.7 rows (unit sweep-368e4.7, kind function): the arena block 9 trio func_80046934, func_8004695C, func_800469A0 (src/main/368E4.c:380-390).
+Research input tmp/codex/sweep-368e4.7-research.md (untrusted; every claim re-derived at HEAD e07ab78e2, see notes.txt).
+Verdicts PENDING (the session sets CONFIRM after the naming-reviewer pass). The three rows are NO_NAME ledger rows revived by the reviewer ruling recorded in
+pending/sweep-368e4/notes.txt (## Close, "Still the sweep's own"). (DATA is empty.)
+"""
+VERDICT = "CONFIRM"
+VERIFIER_NOTE = "naming-reviewer pre-apply PASS (round 1, 3/3, 2026-11-07, naming-b)"
+NOTES = {}
+DROPPED = {}
+
+FUNCS = [
+    ("0x80046934", "arena_OpenBlock9", "RENAME",
+     "BODY: src/main/368E4.c:380 `void func_80046934(void) { arena_OpenBlock(9); }`, result dropped (asm/funcs/func_80046934.s:1-10: one jal arena_OpenBlock with a0 = 9 at :4). "
+     "arena_OpenBlock (src/main/35000.c:439-453) calls arena_Free(block_id), appends a table entry at the next slot with block_start = g_arena_free_ptr, id = block_id and fn = 0, and returns the start; "
+     "the size stays unset until arena_SetBlockEnd. So the whole effect is: open arena block 9. "
+     "CALLERS / USES: none. git grep -w func_80046934 over src include asm symbol_addrs.txt docs/naming/function-names.csv gives the def (368E4.c:380), the glabel/endlabel (asm/funcs/func_80046934.s), "
+     "symbol_addrs.txt:650 (comment 'body = arena_OpenBlock(9) only') and the census row (function-names.csv:559); no jal, j, data word or %hi/%lo. Trace never_hit (docs/naming/runtime/matrix/facts.tsv:814). "
+     "SIBLINGS: block 8 resource_FreeNodeAssetBlock = arena_Free(8) (368E4.c:378) and block 0xA motion_FreePlaybackBlock = arena_Free(0xA) (:411) are landed single constant-id wrappers; the block 8 / 0xA "
+     "loaders open with arena_OpenBlock(arena_block_id) / arena_OpenBlock(0xA) (:350, :398). Neither of those has a 9 counterpart, and block 9 has no owner noun (docs/formats/NDATA.md:195-207, 'block 9 unused'), "
+     "so the trio takes the arena_ prefix and the literal number, which also tells it from the block 8 (resource_*NodeAssetBlock) and 0xA (motion_*PlaybackBlock) sets (Q132). "
+     "Not dead: the callee arena_OpenBlock is a named non-placeholder (naming-final-classes.md:22-24). Not forwarder: the body has no argument to pass through, the id 9 is its own constant (:25-26). "
+     "WHY: the callee's own verb 'Open' with the block id it binds. "
+     "COUNTER-EVIDENCE: (1) the body drops the returned start address, so a user would call arena_GetBlockAddr(9) to write into the block; that does not change what the body does; "
+     "(2) a reviewer could read it as forwarder-like, but the class text asks for arguments passed through unchanged and there are none; precedent: resource_FreeNodeAssetBlock and motion_FreePlaybackBlock; "
+     "(3) the identity of block 9 is unknown (the old NO_NAME objection), which Q132 (naming-bar.md:54-56) rules out as a ground for neutral; "
+     "(4) alternative arena_OpenUnusedBlock9 rejected: 'unused' is a fact about the shipped game, not about the body."),
+    ("0x8004695C", "arena_CloseBlock9", "RENAME",
+     "BODY: src/main/368E4.c:384-388 `arena_UpdatePeak(end_addr); arena_SetBlockEnd(9, end_addr); arena_SetMoveCallback(9, (s32)func_80046954);` (asm/funcs/func_8004695C.s:1-19: end_addr saved in s0 in the jal delay slot :6, "
+     "jal arena_UpdatePeak :5, jal arena_SetBlockEnd with a0 = 9 :7-8, %hi/%lo(func_80046954) into a1 :10-11, jal arena_SetMoveCallback with a0 = 9 :12-13). "
+     "arena_SetBlockEnd (35000.c:455-472) finds block 9, sets amt = end_addr - g_arena_free_ptr and advances g_arena_free_ptr / shrinks g_arena_free_size by it; that ends the block arena_OpenBlock started at the free "
+     "pointer, so the next open begins after it (when block 9 is not open it calls sys_StoreZeroPastScratchpadOnFailedCheck). arena_UpdatePeak (:354-368) records the end in g_arena_peak. arena_SetMoveCallback "
+     "(:474-483) installs the hook arena_ShiftBlocks calls when the block moves; here the hook is func_80046954, an empty body (368E4.c:382; no_name.tsv final `empty`). "
+     "CALLERS / USES: none (git grep -w func_8004695C gives the def 368E4.c:384, the glabel/endlabel, census function-names.csv:561; no jal or address word). Trace never_hit (facts.tsv:816). "
+     "SIBLINGS: the same peak + end + move-callback triple finishes block 8 in resource_LoadOrReuseGrayscaleAdjustedNodeAsset (368E4.c:358, :360, :364) and block 0xA in motion_LoadPlaybackBlock (:403-404, :407): "
+     "the occasion every landed loader uses to finish an opened block, here with block id 9 (Q134, naming-bar.md:57-58: the name is for the occasion, not a list of jobs). 'Close' pairs with arena_OpenBlock9. "
+     "Not dead: calls three named arena_* functions. Not forwarder: three calls, not a pass-through. "
+     "WHY: Close = fix the block's end and size, advance the free pointer past it, register its hook; the counterpart of arena_OpenBlock9. "
+     "COUNTER-EVIDENCE: (1) 'Close' is a new verb in the arena_ family (the family's own verbs for the parts are SetBlockEnd, UpdatePeak, SetMoveCallback); (2) the name does not mention the hook, which is empty, so "
+     "installing it differs from fn = 0 only in that arena_ShiftBlocks calls it; (3) the identity of block 9 is unknown (Q132 rules that out as a ground for neutral). "
+     "Alternatives: arena_EndBlock9At (closer to SetBlockEnd's wording, but leaves out the peak and hook parts equally); arena_SetBlock9End (the main effect only, leaves out the peak and the hook); "
+     "arena_SetBlock9EndAndUpdatePeak and arena_UpdatePeakAndSetBlock9EndAndNoOpCallback rejected as lists of jobs (Q134), the first also omits the callback."),
+    ("0x800469A0", "arena_ResizeBlock9", "RENAME",
+     "BODY: src/main/368E4.c:390 `void func_800469A0(s32 new_size) { arena_Resize(9, new_size); }` (asm/funcs/func_800469A0.s:1-11: a1 = a0 at :4, a0 = 9 in the jal delay slot :6, jal arena_Resize :5). "
+     "arena_Resize (35000.c:423-437) finds block 9, and when new_size differs from its amt shifts every later block by the difference via arena_ShiftBlocks and stores amt = new_size; unchanged size does nothing. "
+     "CALLERS / USES: none (git grep -w func_800469A0: the def 368E4.c:390, the glabel/endlabel, census function-names.csv:562; no jal or address word). Trace never_hit (facts.tsv:817). "
+     "SIBLINGS: block 8 resource_ResizeNodeAssetBlockAndUpdatePeak (368E4.c:368-371) is arena_Resize(8, new_size) plus arena_UpdatePeak(0); this body does not update the peak, so the name leaves the peak out, "
+     "and the block number tells the pair apart. Block 0xA has no resize wrapper. "
+     "Not dead: calls arena_Resize. Not forwarder: the callee's first argument is the wrapper's own constant 9 and new_size moves from a0 to a1 (naming-final-classes.md:25-26), so the arguments are not passed through unchanged. "
+     "WHY: the callee's verb 'Resize' with the block id it binds. "
+     "COUNTER-EVIDENCE: (1) FORWARDER RISK: one call, result dropped, new_size passed on, so a reviewer may rule it a forwarder; the bound constant 9 and the a0 -> a1 move break 'unchanged'; if ruled a forwarder the row "
+     "is dropped and returns to NO_NAME with reason `forwarder` (final); (2) the identity of block 9 is unknown (Q132 rules that out as a ground for neutral); "
+     "(3) the former libscan _SpuCallback claim stays rejected (docs/naming/libscan/ambiguous_resolutions.md:64-67, :205)."),
+]
+
+DATA = []
