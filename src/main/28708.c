@@ -8,6 +8,13 @@
 #include "bb2.h"
 #include "bb2_const.h"
 
+enum MemcardRequestOperation {
+    MEMCARD_OP_LOAD = 0,
+    MEMCARD_OP_SAVE = 1,
+    MEMCARD_OP_OVERWRITE = 2,
+    MEMCARD_OP_FORMAT = 3,
+};
+
 enum MemcardRequestState {
     MEMCARD_REQUEST_IDLE = 0,
     MEMCARD_REQUEST_PROBE_CARD = 1,
@@ -316,17 +323,17 @@ positive_path:
         return;
     if (var_v1 <= 0)
         return;
-    if (g_memcard_request_operation == 0) {
+    if (g_memcard_request_operation == MEMCARD_OP_LOAD) {
         g_memcard_request_state = MEMCARD_REQUEST_READ_START;
         return;
     }
-    if (g_memcard_request_operation == 3)
+    if (g_memcard_request_operation == MEMCARD_OP_FORMAT)
         goto set_state_7;
     g_memcard_request_state = MEMCARD_REQUEST_WRITE_START;
     return;
 
 neg2_handler:
-    if (g_memcard_request_operation != 3)
+    if (g_memcard_request_operation != MEMCARD_OP_FORMAT)
         goto neg2_else;
 set_state_7:
     g_memcard_request_state = MEMCARD_REQUEST_FORMAT;
@@ -365,7 +372,7 @@ state_3:
     free_blocks = memcard_CountFreeBlocks();
     if (memcard_HasFile((u8 *)g_memcard_save_file_name) != 0) {
         create_first = 0;
-        if (g_memcard_request_operation == 1) {
+        if (g_memcard_request_operation == MEMCARD_OP_SAVE) {
             var_v0 = 0xD;
             goto finish;
         }
@@ -482,13 +489,13 @@ s32 memcard_Update(void) {
 void memcard_RequestLoad(void) {
     g_memcard_request_status = 4;
     g_memcard_request_retry_count = 0;
-    g_memcard_request_operation = 0;
+    g_memcard_request_operation = MEMCARD_OP_LOAD;
     g_memcard_request_state = MEMCARD_REQUEST_PROBE_CARD;
 }
 
 void memcard_RequestSave(void) {
     g_memcard_request_status = 1;
-    g_memcard_request_operation = 1;
+    g_memcard_request_operation = MEMCARD_OP_SAVE;
     g_memcard_request_write_started = 0;
     g_memcard_request_retry_count = 0;
     g_memcard_request_state = MEMCARD_REQUEST_PROBE_CARD;
@@ -496,7 +503,7 @@ void memcard_RequestSave(void) {
 
 void memcard_RequestOverwrite(void) {
     g_memcard_request_status = 1;
-    g_memcard_request_operation = 2;
+    g_memcard_request_operation = MEMCARD_OP_OVERWRITE;
     g_memcard_request_write_started = 0;
     g_memcard_request_retry_count = 0;
     g_memcard_request_state = MEMCARD_REQUEST_PROBE_CARD;
@@ -504,7 +511,7 @@ void memcard_RequestOverwrite(void) {
 
 void memcard_RequestFormat(void) {
     g_memcard_request_status = 9;
-    g_memcard_request_operation = 3;
+    g_memcard_request_operation = MEMCARD_OP_FORMAT;
     g_memcard_request_retry_count = 0;
     g_memcard_request_state = MEMCARD_REQUEST_PROBE_CARD;
 }

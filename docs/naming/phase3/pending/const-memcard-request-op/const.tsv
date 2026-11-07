@@ -1,0 +1,13 @@
+kind	where	literal	name	role	evidence
+enum	src/main/28708.c	0	MemcardRequestOperation.MEMCARD_OP_LOAD	g_memcard_request_operation value 0: stored by memcard_RequestLoad; StepRequest sends a ready card to MEMCARD_REQUEST_READ_START (memcard_ReadFile + restore)	28708.c: written only by memcard_RequestLoad / Save / Overwrite / Format (:485, :491, :499, :507), read only by memcard_StepRequest (:319-368); git grep: no other C TU; 28708.c:319-321, 482-487
+enum	src/main/28708.c	1	MemcardRequestOperation.MEMCARD_OP_SAVE	g_memcard_request_operation value 1: stored by memcard_RequestSave; WRITE_START refuses to overwrite an existing save file (status 0xD) only for this operation	28708.c: written only by memcard_RequestLoad / Save / Overwrite / Format (:485, :491, :499, :507), read only by memcard_StepRequest (:319-368); git grep: no other C TU; 28708.c:325, 366-371, 489-495
+enum	src/main/28708.c	2	MemcardRequestOperation.MEMCARD_OP_OVERWRITE	g_memcard_request_operation value 2: stored by memcard_RequestOverwrite; like SAVE but WRITE_START writes over an existing save file (no 0xD check)	28708.c: written only by memcard_RequestLoad / Save / Overwrite / Format (:485, :491, :499, :507), read only by memcard_StepRequest (:319-368); git grep: no other C TU; 28708.c:325, 366-371, 497-503
+enum	src/main/28708.c	3	MemcardRequestOperation.MEMCARD_OP_FORMAT	g_memcard_request_operation value 3: stored by memcard_RequestFormat; StepRequest sends a ready (or -2 unformatted) card to MEMCARD_REQUEST_FORMAT (memcard_Format)	28708.c: written only by memcard_RequestLoad / Save / Overwrite / Format (:485, :491, :499, :507), read only by memcard_StepRequest (:319-368); git grep: no other C TU; 28708.c:323-332, 505-510
+site	src/main/28708.c:319	0	MEMCARD_OP_LOAD	g_memcard_request_operation test (probe ok: == 0 -> READ_START)	see the enum row
+site	src/main/28708.c:323	3	MEMCARD_OP_FORMAT	g_memcard_request_operation test (probe ok: == 3 -> set_state_7)	see the enum row
+site	src/main/28708.c:329	3	MEMCARD_OP_FORMAT	g_memcard_request_operation test (probe -2: != 3 -> status 0xA)	see the enum row
+site	src/main/28708.c:368	1	MEMCARD_OP_SAVE	g_memcard_request_operation test (save file exists: == 1 -> status 0xD)	see the enum row
+site	src/main/28708.c:485	0	MEMCARD_OP_LOAD	g_memcard_request_operation store (memcard_RequestLoad)	see the enum row
+site	src/main/28708.c:491	1	MEMCARD_OP_SAVE	g_memcard_request_operation store (memcard_RequestSave)	see the enum row
+site	src/main/28708.c:499	2	MEMCARD_OP_OVERWRITE	g_memcard_request_operation store (memcard_RequestOverwrite)	see the enum row
+site	src/main/28708.c:507	3	MEMCARD_OP_FORMAT	g_memcard_request_operation store (memcard_RequestFormat)	see the enum row
