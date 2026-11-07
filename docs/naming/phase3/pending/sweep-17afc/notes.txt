@@ -8,3 +8,8 @@
 ## Unit sweep-17afc.3 (locals; research tmp/codex/sweep-17afc.3-research.md, 2026-11-06)
 - fighter_ResolveBodyOverlap:var_13: pre-apply naming-reviewer FAIL for 'distance' (N1 / R2: the slot holds the squared length at 17AFC.c:959-960, compared with radius_sum^2, and the root only from 964). One slot, two quantities (squared then root); a name comes back only with a spelling true of both or a code split of the slot.
 - The unit's NO_NAME (23) and FINAL-candidate (11) locals, each with its missing evidence or class test: pending/sweep-17afc.3/notes.txt. The FINAL candidates go to the sweep's finality unit.
+
+## Unit sweep-17afc.4 (finality, ledger only; three fresh naming-reviewers, 2026-11-06)
+14 PASS rows got a `final` class in docs/naming/phase3/no_name.tsv (data 1, member 4, local 9). FAILs, still open:
+- Tbl8008E194.unk2: write-only does not fit (no store at all); never-accessed is excluded because its initialised instance gives it describable bytes (100 in all 30 rows, d_7D920.c:397-427). Stays NO_NAME: missing what the constant 100 is per object kind (no reader of +2 in C or asm).
+- math_TestPreparedTriangleSphere:var_9 / var_10: not two-role; the FAKE label (17AFC.c:3035-3038) and the code give three instances of one kind (the side value of the centroid / of the tested point against the current edge, 17AFC.c:3039-3057), read alike by (var_9 ^ var_10) >= 0. FAKE-covered, so neutral (N1) as NO_NAME, not FINAL; opens only if the FAKE reuse is retired.
