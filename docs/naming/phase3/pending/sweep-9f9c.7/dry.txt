@@ -1,0 +1,32 @@
+sweep-9f9c.7 (naming-b 2026-11-07): 20 local / parameter bindings in 13 functions (13 token substitutions in src/main/87A0.c, 81 in src/main/9F9C.c = 94); no include/ file touched.
+Tree: ln-naming-b = main 9515c3036 (tracked tree clean; only untracked draft dirs). Run on Windows Python (python -I over a script file, main tmp/sweep-9f9c.6-naming-b/dry7.py; sys.path = the worktree tools/, NAMING_KEYCHECK_ROOT = the worktree).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (same tool result as sweep-9f9c.4). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree (base = naming_keycheck.read_working_tree(), a fresh read per call).
+The 20 pairs of pairs.txt together were accepted (94 token substitutions: src/main/87A0.c 13, src/main/9F9C.c 81; every other path 0). Each pair was also run alone: all accepted, alone counts sum to 94, and each alone count equals the drafter's own use scan of the function body at 9515c3036 (use lists in local_manifest.csv).
+ACCEPT camera_SetInterpolatedFighterView:arg0=fighter_record 3
+ACCEPT camera_SetInterpolatedFighterView:arg1=blend_fraction 5
+ACCEPT math_ComputeBallisticVelocityXZ:a2=vertical_velocity_x32 4
+ACCEPT fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow:var_12=probe_bearing_sin 2
+ACCEPT fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow:var_14=probe_bearing_cos 2
+ACCEPT fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow:var_18=reversed_normal_sin 2
+ACCEPT fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow:var_20=reversed_normal_cos 2
+ACCEPT softbody_Step:var_11=push_magnitude 6
+ACCEPT camera_UpdateTwoFighterView:var_22=sqrt_table_shift 3
+ACCEPT camera_UpdateReplayViewWithSineYawOffset:var_s3=followup_focus_weight 4
+ACCEPT math_ComputeBallisticVelocityXZ:arg3=vertical_acceleration 3
+ACCEPT math_ComputeBallisticVelocityXZ:a0=horizontal_speed 9
+ACCEPT camera_InitTrackedFighterFocus:a0=tracked_fighter 5
+ACCEPT camera_InitTrackedFighterFocus:a1=second_fighter 2
+ACCEPT fighter_StartMoveScript:v0=entry 6
+ACCEPT fighter_StartMoveScript:v1=entry_index 4
+ACCEPT motion_LoadCommonData:v1=file_base 9
+ACCEPT softbody_SolveSprings:var_5=rest_length 7
+ACCEPT motion_DecodeFrame:var_9=old_slot_counter 5
+ACCEPT fighter_BuildCpuOrMappedPadState:temp=player_field_shift 11
+SUM alone 94
+SET 20 ACCEPT 94
+Required comment edits (comments spelling an old name in the touched ranges; scoped_plan edits code tokens only):
+  src/main/9F9C.c:3048  math_ComputeBallisticVelocityXZ FAKE comment '(a2-var_0)' -> '(vertical_velocity_x32-var_0)' (Q133, pair word only; the FAKE reason and claim are unchanged)
+No other comment in the touched ranges spells an old name (drafter scan of the function ranges). 9F9C.c:3732 '$v1' is a register and 'v1_58' another local; neither is fighter_StartMoveScript:v1.
+Width: formatting is applied at apply (python tools/format.py).
+
+# Pre-apply review (naming-reviewer, fresh, 2026-11-07): 19 PASS, 1 FAIL (camera_InitTrackedFighterFocus:a0 tracked_fighter: the one caller passes &g_fighter_records[0]); replaced by the reviewer's suggestion 'fighter' (marked suggested in the manifest; R6 judges it fresh). Re-run of scoped_plan on the final pairs.txt: 20 ACCEPT alone and as a set, 94 substitutions (87A0.c 13, 9F9C.c 81).
