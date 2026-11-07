@@ -1,0 +1,37 @@
+sweep-9f9c.4 (naming-c 2026-11-07): 10 local / parameter bindings in 8 functions (31 token substitutions in src/main/87A0.c, 38 in src/main/9F9C.c = 69); no include/ file touched.
+Tree: ln-naming-c = lanes/naming-c b39256394 (tracked tree clean). Run in WSL via a script file (main tmp/naming-c-d4/run.sh, running dry.py; NAMING_KEYCHECK_ROOT = the worktree, venv active).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (same tool result as sweep-2b344.3). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree (base = naming_keycheck.read_working_tree(), a fresh read per call); lines are mapped from the token index through naming_keycheck.code_spans.
+The 10 pairs of pairs.txt together were accepted (69 token substitutions). Each pair was also run alone: all accepted (alone counts sum to 69) and every alone line list equals the drafter's own use scan of the code at b39256394 (the scan lists the body only; scoped_plan also edits the prototype-scope parameters at 87A0.c:306 and 307, which are the extra lines in the SnapToPoints and Step alone lists).
+Required comment edits (comments spelling an old name in the touched ranges; scoped_plan edits code tokens only):
+  src/main/87A0.c:127-128  softbody_PrepareStep header: 'arg0's MATRIX' and '(arg0->object_matrix)' -> step_desc
+  src/main/87A0.c:565-566  softbody_SnapToPoints header: 'arg0's MATRIX' -> step_desc; 'into arg1->matrix' -> softbody
+  src/main/9F9C.c:4510     FAKE comment '|arg0->forward_move_rate_reduction|' -> fighter_record (Q133, pair word only)
+  src/main/9F9C.c:4542     FAKE comment 'arg0->size_scale' -> fighter_record (Q133, pair word only)
+  Leave 9F9C.c:4513 ('$a2/$a0/$a1' are registers). No other comment in the touched ranges spells an old name (the softbody_Step var_14 comment 338-339 and the softbody_Step header do not spell the old names).
+Line widths: renames push 87A0.c:134, 567 and 9F9C.c:4476, 4498, 4500, 4557, 4558, 4568 past 80 columns; run tools/format.py at apply (token-preserving).
+Per-pair substitutions (function:old=new count (lines)):
+  softbody_PrepareStep:arg0=step_desc 8 (134,143,144,146,148,150,152,169)
+  softbody_SnapToPoints:arg0=step_desc 5 (307,567,572,573,588)
+  softbody_SnapToPoints:arg1=softbody 6 (307,567,575,576,577,588)
+  softbody_Step:arg1=softbody 7 (306,315,330,331,332,346,377)
+  softbody_Step:var_14=node_edge_count 5 (340,390,392,405,407)
+  fighter_DispatchArmedBoneVectorEventAndDisarm:var_4=bone_matrices 3 (3112,3118,3119)
+  fighter_UpdateBoneWorldData:var_5=bone_hit_record 5 (3189,3194,3196,3197,3198)
+  fighter_UpdateInputSteeredForwardMotion:arg0=fighter_record 28 (4476,4477,4481,4497,4498,4498,4500,4500,4504,4505,4515,4524,4525,4531,4537,4541,4545,4550,4552,4557,4557,4558,4564,4568,4569,4575,4577,4579)
+  fight_SearchRadialFlatSurfacePointOrUseStartPositionPair:arg0=fighter_index 1 (3823)
+  fight_PickRandomStartPositionExcludingNearestAndFarthest:arg0=fighter_index 1 (3924)
+
+Raw driver output (HEAD b39256394, scoped_plan together then alone per pair; line numbers are working-tree lines):
+Tree: ln-naming-c HEAD b39256394; scoped_plan(read_working_tree(), pairs, {})
+SET 10 pairs ACCEPT {'87A0.c': 31, '9F9C.c': 38} total 69
+ALONE softbody_PrepareStep:arg0=step_desc ACCEPT 8 87A0.c [134, 143, 144, 146, 148, 150, 152, 169]
+ALONE softbody_SnapToPoints:arg0=step_desc ACCEPT 5 87A0.c [307, 567, 572, 573, 588]
+ALONE softbody_SnapToPoints:arg1=softbody ACCEPT 6 87A0.c [307, 567, 575, 576, 577, 588]
+ALONE softbody_Step:arg1=softbody ACCEPT 7 87A0.c [306, 315, 330, 331, 332, 346, 377]
+ALONE softbody_Step:var_14=node_edge_count ACCEPT 5 87A0.c [340, 390, 392, 405, 407]
+ALONE fighter_DispatchArmedBoneVectorEventAndDisarm:var_4=bone_matrices ACCEPT 3 9F9C.c [3112, 3118, 3119]
+ALONE fighter_UpdateBoneWorldData:var_5=bone_hit_record ACCEPT 5 9F9C.c [3189, 3194, 3196, 3197, 3198]
+ALONE fighter_UpdateInputSteeredForwardMotion:arg0=fighter_record ACCEPT 28 9F9C.c [4476, 4477, 4481, 4497, 4498, 4498, 4500, 4500, 4504, 4505, 4515, 4524, 4525, 4531, 4537, 4541, 4545, 4550, 4552, 4557, 4557, 4558, 4564, 4568, 4569, 4575, 4577, 4579]
+ALONE fight_SearchRadialFlatSurfacePointOrUseStartPositionPair:arg0=fighter_index ACCEPT 1 9F9C.c [3823]
+ALONE fight_PickRandomStartPositionExcludingNearestAndFarthest:arg0=fighter_index ACCEPT 1 9F9C.c [3924]
+ALONE SUM 69
