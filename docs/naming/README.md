@@ -102,7 +102,7 @@ Excluded: the 10 data-as-code symbols the integrity script listed (2026-10-03). 
 entries, `func_800790A4` and `func_800545F4`, were no-`jr $ra` fragments counted as functions.
 Since 2026-11-06 `func_800545F4` and its three template labels are `dlabel` data (four words in
 `.text`), so they are neither functions nor data-as-code; `gpu_DispatchPrimitiveGroupsThroughHandlerTable.s` now ends at
-0x8004A98F and `gpu_EmitOtCutoffFlatLitTexturedTrianglesWithOptionalSubdivision` (0x8004B6E4, entered through `D_80015470[0]`) is its own
+0x8004A98F and `gpu_EmitOtCutoffFlatLitTexturedTrianglesWithOptionalSubdivision` (0x8004B6E4, entered through `g_gpu_queued_node_run_packet_handlers[0]`) is its own
 function. The counts above predate both.
 
 `engine/queue.json` is *not* a universe source: it lists only INCOMPLETE functions
