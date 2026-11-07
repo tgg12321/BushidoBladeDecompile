@@ -16,3 +16,7 @@
 
 ## Unit sweep-2b344.3 (locals; research: Opus, tmp/codex/sweep-2b344.3-research.md, 2026-11-06): 5 renames landed
 - The unit's 24 NO_NAME locals and the FINAL candidate gpu_ReplaceCellAttributesInNearest2x2Block:s1 (two-role), each with its missing evidence or class test: pending/sweep-2b344.3/notes.txt. The FINAL candidate goes to the sweep's finality unit.
+
+## Unit sweep-2b344.4 (finality, naming-a 2026-11-07): 2 final
+- D_800A37B0: FINAL two-role (fresh naming-reviewer PASS): substitution descriptor index (2B344.c:344, read :615) and, by overrun, g_fight_stage_list_entries[8] (2B344.c:412, read 6CF8.c:594). Reviewer note: 2B344.c:167 can write g_fight_stage_list_entries[9] (0x800A37B1, inside this 4-byte block); relevant when that array's extent is settled.
+- gpu_ReplaceCellAttributesInNearest2x2Block:s1: FINAL two-role (fresh naming-reviewer PASS): in-cell x offset in world units (2B344.c:2439, read :2443), then the -1/+1 neighbour cell step (2B344.c:2444 / :2446, read :2454 / :2456).
