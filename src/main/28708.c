@@ -8,6 +8,12 @@
 #include "bb2.h"
 #include "bb2_const.h"
 
+enum CombWaitState {
+    COMB_WAIT_IDLE = 0,
+    COMB_WAIT_ACTIVE = 1,
+    COMB_WAIT_ENDING = 2,
+};
+
 enum MemcardSavePromptState {
     MEMCARD_SAVE_PROMPT_START = 0,
     MEMCARD_SAVE_PROMPT_CONFIRM_SAVE = 1,
@@ -1967,14 +1973,16 @@ void comb_ExchangePad(PadState *pad_state) {
                 type[1] = t & 0xF;
             }
             if (g_comb_local_side == 0) {
-                if (((g_comb_received_pad_word >> 28) & 3) == 2 &&
-                    g_comb_wait_state == 2) {
-                    g_comb_wait_state = 0;
+                if (((g_comb_received_pad_word >> 28) & 3) ==
+                        COMB_WAIT_ENDING &&
+                    g_comb_wait_state == COMB_WAIT_ENDING) {
+                    g_comb_wait_state = COMB_WAIT_IDLE;
                 }
             } else {
-                if (((g_comb_received_pad_word >> 28) & 3) == 2 &&
-                    ((g_comb_prev_send_word >> 28) & 3) == 2) {
-                    g_comb_wait_state = 0;
+                if (((g_comb_received_pad_word >> 28) & 3) ==
+                        COMB_WAIT_ENDING &&
+                    ((g_comb_prev_send_word >> 28) & 3) == COMB_WAIT_ENDING) {
+                    g_comb_wait_state = COMB_WAIT_IDLE;
                 }
             }
         }
@@ -1982,7 +1990,7 @@ void comb_ExchangePad(PadState *pad_state) {
         g_comb_prev_send_word = g_comb_send_buf;
         g_comb_prev_send_payload_check_word = g_comb_send_buf_plus_0x4;
     } else {
-        g_comb_wait_state = 0;
+        g_comb_wait_state = COMB_WAIT_IDLE;
     }
 }
 
@@ -1995,7 +2003,7 @@ void comb_ExchangeEmptyPad(void) {
 }
 
 void comb_BeginWait(void) {
-    g_comb_wait_state = 1;
+    g_comb_wait_state = COMB_WAIT_ACTIVE;
     VSync(2);
     comb_ExchangeEmptyPad();
     VSync(2);
@@ -2003,9 +2011,9 @@ void comb_BeginWait(void) {
 
 void comb_EndWait(void) {
     s32 val;
-    g_comb_wait_state = 2;
+    g_comb_wait_state = COMB_WAIT_ENDING;
     VSync(2);
-    val = 2;
+    val = COMB_WAIT_ENDING;
     do {
         comb_ExchangeEmptyPad();
         if (g_comb_events_enabled == 0) {
