@@ -21,7 +21,7 @@ void gpu_LoadTimClut();
 
 /* Q65: this file's statics (.sbss, allocated per file by PSYLINK), in
  * address order. */
-static s32 D_800A33B0;
+static s32 g_resource_stage_counted_record_list;
 static s32 g_fight_position_records;
 static s32 D_800A33B8; /* not named by any code or data: size from the gap */
 static s32 D_800A33BC;
@@ -184,7 +184,7 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
     gpu_LoadTimGroupWithConditionalClutRowAdvance((u32 *)tim_group, 0);
     gpu_UnpackGridRecordsNodesAndCellRuns((u16 *)grid_stream, 7);
     collision_SetGrid((s32)collision_grid);
-    D_800A33B0 = (s32)sp18;
+    g_resource_stage_counted_record_list = (s32)sp18;
     g_fight_position_records = (s32)position_records;
     DrawSync(0);
     arena_SetBlockEnd(s7, (s32)s1);
@@ -256,7 +256,7 @@ void resource_SelectRetainedSubblockOrApplyHeaderSections(s32 subblock_index) {
     reloc_UnrelocateBlock(7);
     reloc_RelocateBlock(reloc_section, 7);
     collision_SetGrid((s32)collision_grid);
-    D_800A33B0 = (s32)s4p;
+    g_resource_stage_counted_record_list = (s32)s4p;
     g_fight_position_records = (s32)s1p;
     gpu_UnpackGridRecordsNodesAndCellRuns((u16 *)grid_stream, 7);
 }
@@ -275,7 +275,7 @@ void resource_RebaseLoadedBlockSections(s32 block_id, s32 byte_offset) {
     reloc_RebaseBlock(7, byte_offset);
     collision_RebaseGrid(byte_offset);
     rebase_delta = (byte_offset / 4) * 4;
-    D_800A33B0 += rebase_delta;
+    g_resource_stage_counted_record_list += rebase_delta;
     g_fight_position_records += rebase_delta;
     switch (g_loaded_resource_selector) {
     case 4:
@@ -328,7 +328,7 @@ extern s16 g_resource_cached_node_asset_id;
 
 void resource_RebaseNodeAssetBlock(s32 block_id, s32 byte_offset);
 
-s32 func_80046780(void) { return D_800A33B0; }
+s32 func_80046780(void) { return g_resource_stage_counted_record_list; }
 
 s32 fight_GetPositionRecordList(void) { return g_fight_position_records; }
 

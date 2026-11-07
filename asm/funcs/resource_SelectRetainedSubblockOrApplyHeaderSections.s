@@ -47,7 +47,7 @@ glabel resource_SelectRetainedSubblockOrApplyHeaderSections
     /* 36E4C 8004664C 0451010C */  jal        collision_SetGrid
     /* 36E50 80046650 21206002 */   addu      $a0, $s3, $zero
     /* 36E54 80046654 21200002 */  addu       $a0, $s0, $zero
-    /* 36E58 80046658 E40294AF */  sw         $s4, %gp_rel(D_800A33B0)($gp)
+    /* 36E58 80046658 E40294AF */  sw         $s4, %gp_rel(g_resource_stage_counted_record_list)($gp)
     /* 36E5C 8004665C E80291AF */  sw         $s1, %gp_rel(g_fight_position_records)($gp)
     /* 36E60 80046660 70FB000C */  jal        gpu_UnpackGridRecordsNodesAndCellRuns
     /* 36E64 80046664 07000524 */   addiu     $a1, $zero, 0x7

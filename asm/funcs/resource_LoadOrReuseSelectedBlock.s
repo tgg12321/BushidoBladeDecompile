@@ -226,7 +226,7 @@ glabel resource_LoadOrReuseSelectedBlock
     /* 36C24 80046424 00000000 */   nop
     /* 36C28 80046428 1800A78F */  lw         $a3, 0x18($sp)
     /* 36C2C 8004642C 00000000 */  nop
-    /* 36C30 80046430 E40287AF */  sw         $a3, %gp_rel(D_800A33B0)($gp)
+    /* 36C30 80046430 E40287AF */  sw         $a3, %gp_rel(g_resource_stage_counted_record_list)($gp)
     /* 36C34 80046434 2000A78F */  lw         $a3, 0x20($sp)
     /* 36C38 80046438 00000000 */  nop
     /* 36C3C 8004643C E80287AF */  sw         $a3, %gp_rel(g_fight_position_records)($gp)
