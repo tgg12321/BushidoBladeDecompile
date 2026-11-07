@@ -8549,6 +8549,34 @@ def test_naming_keycheck_scoped_pairs() -> None:
                         {"src/a.c": text.replace("int l", "int n").replace("A4(l) + l", "A4(n) + n")})
         check("keycheck: local macro argument " + body,
               ok if reason is None else not ok and reason in why)
+    # scoped-plan-macro-operands: a macro whose every body is one parenthesized
+    # group (368E4.c PTR_OFF / ALIGN4) may also follow a `)` (a cast), and may
+    # hold a call of another such macro in its arguments; any other body shape or
+    # argument macro still refuses.
+    defs = ("#define P(b, o) ((int)((char *)(b) + (o)))\n#define A4(x) (((x) >> 2) << 2)\n"
+            "#define ADD(x) (x) + 1\n#define ONE 1\n#define BARE(x) (x) + (1)\n#define MEM(x) (s.x)\n"
+            "#define I(x) int\n#define ID(x) (x)\nstruct T { int l; } s;\nint g(int a, int b);\n")
+    for use, reason in [("g((int)P(l, 1), 7)", None), ("g(1, P(l, 2))", None),
+                        ("g((int)P(l, A4(l)), 1)", None), ("g(P(l, A4(l[0])), 1)", None),
+                        ("g(BARE(l), 1)", None),
+                        ("g((int)BARE(l), 1)", "outside an expression operand position"),
+                        ("g(P(l, ONE), 1)", "beside a macro name"),
+                        ("g(P(l, ADD(2)), 1)", "beside a macro name"),
+                        ("g(P(l, A4), 1)", "beside a macro name"),
+                        ("g(P(l, MEM(l)), 1)", "member/tag/label"),
+                        ("{ I(0) ID(l) = 2; return l; }", "outside an expression operand position")]:
+        text = defs + "int f(int l){" + (use if use[0] == "{" else "return " + use + " + l;") + "}\n"
+        try:
+            nk.scoped_plan({"src/a.c": text}, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check(f"keycheck: parenthesized macro call argument {use} ({why})",
+              why == "" if reason is None else reason in why)
+    eq("keycheck: parenthesized_macro needs one whole group in every definition",
+       [nk.parenthesized_macro(d) for d in ([(("x",), ("(", "x", ")"))], [(("x",), ("(", "x", ")", "+", "(", "1", ")"))],
+                                            [(None, ("(", "1", ")"))], [], [(("x",), ("(", "x", ")")), (("x",), ("x",))])],
+       [True, False, False, False, False])
     # A fixed member access or cast tag in the body (libgpu setlen / setRGB0 /
     # setVector shape) passes; a parameter as the member or tag, a member followed by
     # a call or a name, a bare-name or leading/trailing access, a keyword member, and

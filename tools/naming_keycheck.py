@@ -185,7 +185,9 @@ plain_source: no CR, NUL, BOM, \f / \v, raw string, unclosed literal, splice off
 line or inside a token, comment, or literal, and no comment inside a directive but a trailing
 one), never inside __attribute__ parentheses, and only when every definition of that macro
 expands all its parameters plainly (as below), operand-only: the call sits between expression
-operators or brackets, its arguments name no macro, and each definition holds no macro name,
+operators or brackets (or after a `)` when every definition is one parenthesized group), its
+arguments name no macro but a call of such a parenthesized macro (itself checked when it holds
+l), and each definition holds no macro name,
 brace, . -> : # ##, keyword other than a cast's type words, or name applied to `(`, with every
 parameter bordered only by operators or brackets. A #define body naming l counts only
 when its file can reach f's TU (f's file, any header, or a .c an #include names, resolved
@@ -2914,6 +2916,28 @@ LOCAL_MACRO_BODY_BANNED = frozenset(("struct", "union", "enum", "goto", "__label
 # non-keyword names: type keywords for a cast. Any other keyword (sizeof,
 # __attribute__, typeof, __extension__, _Pragma ...) refuses.
 LOCAL_MACRO_BODY_KEYWORDS = frozenset("char short int long signed unsigned const volatile void".split())
+# Extra call position for a parenthesized macro (parenthesized_macro): after a
+# `)`, as in a cast `(u16 *)PTR_OFF(l, o)`.
+LOCAL_GROUP_BEFORE = frozenset((")",))
+
+
+def parenthesized_macro(defs):
+    """True when every definition (params, body) of a macro is function-like, not
+    variadic, and its whole replacement list is one parenthesized group (`(` at
+    the start whose matching `)` ends it): `((s32)((u8 *)(base) + (off)))`."""
+    if not defs:
+        return False
+    for params, body in defs:
+        if params is None or "..." in params or "__VA_ARGS__" in body or len(body) < 2 or body[0] != "(":
+            return False
+        try:
+            if balanced(body, 0, "(", ")") != len(body) - 1:
+                return False
+        except ValueError:
+            return False
+    return True
+
+
 ATTRIBUTE_WORDS = frozenset(("__attribute", "__attribute__"))
 
 
@@ -3309,11 +3333,36 @@ def reject_unexpanded_macro_arguments(text, old, records, path, indices=None, lo
             # arguments name no macro, and every definition is an expression whose
             # parameters sit only between operators/brackets (never next to a name,
             # a parameter, a member/tag/label/paste token, a brace or a macro).
-            if (ts[k - 1:k] and ts[k - 1] not in LOCAL_MACRO_BEFORE
+            # A macro every definition of which is one parenthesized group
+            # (parenthesized_macro: PTR_OFF, ALIGN4) expands to a self-contained
+            # `( ... )` whose edges no neighbour can join to a member, tag or
+            # label, so it may also follow a `)` (a cast: `g((u16 *)PTR_OFF(l, o),
+            # 7)`); the body checks below still hold its parameters to operand
+            # positions. A `)` closing a macro call could end a declaration prefix
+            # (`I(0) ID(l)` -> `int (l)`), so that `)` still refuses; declarator
+            # readings are also left to the cpp binding re-run (cpp_scope_checks).
+            group = parenthesized_macro(defs)
+            if group and ts[k - 1:k] == [")"]:
+                depth, q = 0, k - 1
+                while q >= 0:
+                    depth += (ts[q] == ")") - (ts[q] == "(")
+                    if depth == 0:
+                        break
+                    q -= 1
+                if q <= 0 or ts[q - 1] in forms or ts[q - 1] in functions:
+                    group = False
+            if (ts[k - 1:k] and ts[k - 1] not in LOCAL_MACRO_BEFORE | (LOCAL_GROUP_BEFORE if group else frozenset())
                     or ts[end + 1:end + 2] and ts[end + 1] not in LOCAL_MACRO_AFTER):
                 raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, "
                                  "invoked outside an expression operand position")
-            if any(tok in forms or tok in functions for tok in ts[k + 2:end]):
+            # A macro name in the arguments refuses unless it opens a call of a
+            # parenthesized macro: the argument is fully expanded before
+            # substitution, and that inner call is checked on its own at its
+            # index when it holds old (no object-like macro, no bare name).
+            args = ts[k + 2:end]
+            if any((tok in forms or tok in functions)
+                   and not (args[j + 1:j + 2] == ["("] and tok in functions and parenthesized_macro(forms.get(tok, [])))
+                   for j, tok in enumerate(args)):
                 raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, "
                                  "beside a macro name in its arguments")
             for params, body in defs:
