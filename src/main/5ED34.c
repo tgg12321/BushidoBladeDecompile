@@ -753,7 +753,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
        on sheet_headers[0] (normal, then one highlight per player, +0x24), one
        on every other sheet (+0xC). FAKE: the holder between the header's cells
        and s.table; stored directly: score 98. */
-    Unk8009B400Record *var_4;
+    Unk8009B400Record *cells;
     s16 slot_index;
     s16 row;
     s16 col;
@@ -773,7 +773,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
     s.x = 0x82;
     s.y = 0x86;
     s.header = sheet_headers[0];
-    var_4 = s.header[2].cells;
+    cells = s.header[2].cells;
     s.has_color = 0;
     for (slot_index = 0;
          slot_index < 1 + g_entry_menu_init_extra_slot_count +
@@ -805,7 +805,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
             break;
         }
     }
-    s.table = var_4;
+    s.table = cells;
     s.sprt_out = draw_context->primitive_cursors.sprite_prims;
     draw_context->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
 
@@ -900,8 +900,8 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
                 s.header =
                     sheet_headers[g_entry_menu_grid_entries[col][row].value +
                                   1];
-                var_4 = s.header->cells;
-                s.table = var_4;
+                cells = s.header->cells;
+                s.table = cells;
                 s.sprt_out = draw_context->primitive_cursors.sprite_prims;
                 s.ot_idx = 0xA;
                 draw_context->primitive_cursors.sprite_prims =
@@ -911,8 +911,8 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
                 s.x = row * 116 + (row >> 1) * 20;
                 s.has_color = 0;
                 s.header = sheet_headers[21];
-                var_4 = s.header->cells;
-                s.table = var_4;
+                cells = s.header->cells;
+                s.table = cells;
                 s.sprt_out = draw_context->primitive_cursors.sprite_prims;
                 s.ot_idx = 0xA;
                 draw_context->primitive_cursors.sprite_prims =
@@ -925,8 +925,8 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
     s.x = 0;
     s.has_color = 0;
     s.header = sheet_headers[22];
-    var_4 = s.header->cells;
-    s.table = var_4;
+    cells = s.header->cells;
+    s.table = cells;
     s.sprt_out = draw_context->primitive_cursors.sprite_prims;
     s.ot_idx = 1;
     draw_context->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
@@ -1775,7 +1775,7 @@ void menu_UpdateChoiceGrid(
     u16 tile_rect[4];
     RECT rect;
     u8 *choice_table;
-    Unk8009B0E0Record **var_4;
+    Unk8009B0E0Record **cursor_and_choice_cell_sheets;
     /* the cell table following the header(s) of each sheet drawn
      * (s.header[1].cells for the two-header sheet, s.header->cells for the
      * others). Ruling 11: several values of that one kind. FAKE: the holder
@@ -1811,8 +1811,9 @@ void menu_UpdateChoiceGrid(
     if ((g_entry_menu_slide_phase & 0xFF) == ENTRY_MENU_SLIDE_IDLE) {
         s.x = -10;
         s.y = -5;
-        var_4 = g_entry_menu_resources->cursor_and_choice_cell_sheets;
-        s.header = var_4[4];
+        cursor_and_choice_cell_sheets =
+            g_entry_menu_resources->cursor_and_choice_cell_sheets;
+        s.header = cursor_and_choice_cell_sheets[4];
         cells = s.header[1].cells;
         if (!(g_entry_menu_choice_grid_row * 2 +
                       g_entry_menu_choice_grid_column ==
@@ -1838,7 +1839,7 @@ void menu_UpdateChoiceGrid(
                     gpu_AddSpriteCells(&s);
             }
         }
-        s.header = var_4[4];
+        s.header = cursor_and_choice_cell_sheets[4];
         SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                     gpu_GetSheetTPage(s.header, 0), 0);
         AddPrim(
@@ -2012,12 +2013,12 @@ void menu_UpdateChoiceGrid(
     if (g_entry_menu_slide_phase == ENTRY_MENU_SLIDE_IDLE) {
         for (i = 0; i < g_entry_menu_init_extra_slot_count + 1; i++) {
             if (g_entry_menu_pressed_buttons & (PADRup << (i * 16))) {
-                s32 var_11;
+                s32 grid_pick;
 
                 snd_QueueSound(2, 0x7F, 0x7F);
-                var_11 = g_entry_menu_slot_records.rec[i].grid_pick;
+                grid_pick = g_entry_menu_slot_records.rec[i].grid_pick;
                 g_entry_menu_slot_records.rec[i].row_pick = 0xFF;
-                if (var_11 == 5 || var_11 == 16) {
+                if (grid_pick == 5 || grid_pick == 16) {
                     g_entry_menu_handler_index = ENTRY_MENU_ENTRY_GRID;
                     g_entry_menu_slot_records.rec[i == 0 ? 1 : 0].row_pick =
                         0xFF;
@@ -2281,7 +2282,7 @@ void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
     Unk8009B0E0Record **sheet_headers;
     /* FAKE: the holder between the header's cells and s.table; stored directly:
      * score 15. */
-    Unk8009B400Record *s1;
+    Unk8009B400Record *cells;
 
     s.x = 0;
     s.y = 0;
@@ -2295,7 +2296,7 @@ void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
     draw_context->primitive_cursors.unk_14++;
     s.has_color = 1;
     s.header = sheet_headers[4];
-    s1 = s.header->cells;
+    cells = s.header->cells;
     if (g_entry_menu_handler_index < 4) {
         s.semi = 1;
         if (g_entry_menu_work_block->animation_frame_counter & 4) {
@@ -2308,19 +2309,19 @@ void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
             s.col_b = 0x14;
         }
         s.ot_idx = 0x14;
-        s.table = s1;
+        s.table = cells;
         s.ft4_out = draw_context->primitive_cursors.textured_quad_prims;
         draw_context->primitive_cursors.textured_quad_prims =
             gpu_AddScaledSpriteQuads(&s, 0);
-        s.table = s1 + 1;
+        s.table = cells + 1;
         s.ft4_out = draw_context->primitive_cursors.textured_quad_prims;
         draw_context->primitive_cursors.textured_quad_prims =
             gpu_AddScaledSpriteQuads(&s, 1);
-        s.table = s1 + 2;
+        s.table = cells + 2;
         s.ft4_out = draw_context->primitive_cursors.textured_quad_prims;
         draw_context->primitive_cursors.textured_quad_prims =
             gpu_AddScaledSpriteQuads(&s, 2);
-        s.table = s1 + 3;
+        s.table = cells + 3;
         s.ft4_out = draw_context->primitive_cursors.textured_quad_prims;
         draw_context->primitive_cursors.textured_quad_prims =
             gpu_AddScaledSpriteQuads(&s, 3);
@@ -2338,8 +2339,8 @@ void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
     s.ot_idx = 0x12;
     s.semi = 0;
     s.header = sheet_headers[5];
-    s1 = s.header->cells;
-    s.table = s1;
+    cells = s.header->cells;
+    s.table = cells;
     s.sprt_out = draw_context->primitive_cursors.sprite_prims;
     draw_context->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
     SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
@@ -2352,8 +2353,8 @@ void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
         s.header =
             sheet_headers[10 +
                           g_entry_menu_work_block->animation_frame_counter % 4];
-        s1 = s.header->cells;
-        s.table = s1;
+        cells = s.header->cells;
+        s.table = cells;
         s.sprt_out = draw_context->primitive_cursors.sprite_prims;
         draw_context->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
         SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,

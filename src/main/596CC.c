@@ -698,7 +698,7 @@ void menu_DrawModeBit1Sheets(s32 *draw_context, s32 cursor_row_mode) {
     s32 c;
     /* FAKE: single-use holder of the cell table ahead of the descriptor's table
      * store; stored directly: score 8. */
-    Unk8009B400Record *var_4;
+    Unk8009B400Record *cells;
 
     if (cursor_row_mode & 2) {
         sheet_headers = ((Unk8006919CRec *)draw_context[1])->unk_1C;
@@ -734,16 +734,16 @@ void menu_DrawModeBit1Sheets(s32 *draw_context, s32 cursor_row_mode) {
         }
         s.fr00.semi = 0;
         s.fr00.ot_idx = 3;
-        var_4 = s.fr00.header->cells;
-        s.fr00.table = var_4;
+        cells = s.fr00.header->cells;
+        s.fr00.table = cells;
         s.fr00.ft4_out = draw_context[2];
         draw_context[2] = gpu_AddScaledSpriteQuads(&s.fr00, 0);
         s.fr00.y = 0;
         s.fr00.x = x0;
         s.fr00.has_color = 0;
         s.fr00.header = sheet_headers[1];
-        var_4 = s.fr00.header->cells;
-        s.fr00.table = var_4;
+        cells = s.fr00.header->cells;
+        s.fr00.table = cells;
         s.fr00.sprt_out = draw_context[5];
         draw_context[5] = gpu_AddSpriteCells(&s.fr00);
         if (cursor_row_mode & 1) {
@@ -776,7 +776,7 @@ void menu_DrawModeBit0Sheets(s32 *draw_context, s32 cursor_row_mode) {
     s32 c;
     /* FAKE: single-use holder of the cell table ahead of the descriptor's table
      * store; stored directly: score 8. */
-    Unk8009B400Record *var_4;
+    Unk8009B400Record *cells;
 
     if (cursor_row_mode & 1) {
         sheet_headers = ((Unk8006919CRec *)draw_context[1])->unk_1C;
@@ -813,16 +813,16 @@ void menu_DrawModeBit0Sheets(s32 *draw_context, s32 cursor_row_mode) {
         }
         s.fr00.semi = 0;
         s.fr00.ot_idx = 2;
-        var_4 = s.fr00.header->cells;
-        s.fr00.table = var_4;
+        cells = s.fr00.header->cells;
+        s.fr00.table = cells;
         s.fr00.ft4_out = draw_context[2];
         draw_context[2] = gpu_AddScaledSpriteQuads(&s.fr00, 0);
         s.fr00.y = 0;
         s.fr00.x = x0;
         s.fr00.has_color = 0;
         s.fr00.header = sheet_headers[3];
-        var_4 = s.fr00.header->cells;
-        s.fr00.table = var_4;
+        cells = s.fr00.header->cells;
+        s.fr00.table = cells;
         s.fr00.sprt_out = draw_context[5];
         draw_context[5] = gpu_AddSpriteCells(&s.fr00);
         if (cursor_row_mode & 2) {
@@ -832,8 +832,8 @@ void menu_DrawModeBit0Sheets(s32 *draw_context, s32 cursor_row_mode) {
             s.fr00.x = 0;
             s.fr00.y = 0;
             s.fr00.has_color = 1;
-            var_4 = s.fr00.header->cells;
-            s.fr00.table = var_4;
+            cells = s.fr00.header->cells;
+            s.fr00.table = cells;
             s.fr00.sprt_out = draw_context[5];
             draw_context[5] = gpu_AddSpriteCells(&s.fr00);
         }
@@ -936,7 +936,7 @@ void menu_DrawRowThreeThinTilesAndTwoSheets(
     {
         /* FAKE: single-use holder of the cell table ahead of the descriptor's
          * table store; stored directly: score 7. */
-        Unk8009B400Record *v1;
+        Unk8009B400Record *cells;
         /* FAKE: the header store through a pointer to the member: stored as
            arg1->header the member store is scheduled past the
            g_menu_packed_cursors load (MEM_IN_STRUCT_P); score 7. */
@@ -954,16 +954,16 @@ void menu_DrawRowThreeThinTilesAndTwoSheets(
         }
 
         arg1->x = 0;
-        v1 = arg1->header->cells;
+        cells = arg1->header->cells;
         arg1->y += 0xF;
-        arg1->table = v1;
+        arg1->table = cells;
 
         arg1->sprt_out = *(s32 *)(draw_context + 0x14);
         *(s32 *)(draw_context + 0x14) = gpu_AddSpriteCells(arg1);
 
         arg1->header = sheet_headers[11];
-        v1 = arg1->header->cells;
-        arg1->table = v1;
+        cells = arg1->header->cells;
+        arg1->table = cells;
         arg1->sprt_out = *(s32 *)(draw_context + 0x14);
         *(s32 *)(draw_context + 0x14) = gpu_AddSpriteCells(arg1);
     }
@@ -1633,12 +1633,12 @@ void gpu_DrawIndexedSheetPair(s32 arg0, s32 y_offset, Unk8007352CRec *draw_desc,
                               s32 highlighted_cell_index) {
     /* sprite-sheet header pointers, two per arg0: the sheet_pairs list of the
        MOD.BIN root (g_row_menu_work_block->menu_resource_root) */
-    Unk8009B0E0Record **var_0;
+    Unk8009B0E0Record **sheet_pairs;
     /* the sheet's 8-byte cells, just past its 12-byte header */
     Unk8009B400Record *cells;
     s32 i, cell_index, cell_count;
 
-    var_0 = g_row_menu_work_block->menu_resource_root->sheet_pairs;
+    sheet_pairs = g_row_menu_work_block->menu_resource_root->sheet_pairs;
 
     draw_desc->col_b = 0x30;
     draw_desc->col_g = 0x30;
@@ -1648,7 +1648,7 @@ void gpu_DrawIndexedSheetPair(s32 arg0, s32 y_offset, Unk8007352CRec *draw_desc,
         /* FAKE: operand grouping (or-tree-shape-shift carve-out): with
          * (var_0 + i) + arg0 * 2, arg0 * 8 is hoisted alone as in the target;
          * var_0[arg0 * 2 + i]: score 33. */
-        draw_desc->header = *(var_0 + i + arg0 * 2);
+        draw_desc->header = *(sheet_pairs + i + arg0 * 2);
         if (draw_desc->header == (Unk8009B0E0Record *)-1)
             return;
 
