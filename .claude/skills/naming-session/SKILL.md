@@ -223,7 +223,10 @@ per kind, rows it lands after, and the open rows' targets it leaves alone.
 - **Close.** Every placeholder `homes` lists for the scope ends RENAMEd, FINAL (N7, fresh
   reviewer, ledger), or NO_NAME with the specific missing evidence: a function in
   `no_name.tsv` (`add`), others in `pending/<sweep id>/notes.txt`, each citing the foundation
-  row the sweep files for that question (a trace capture, a layout fix). When `homes` lists
+  row the sweep files for that question (a trace capture, a layout fix). A trace row goes to
+  lane `trace-b`, id `trace-<unit id>`, claims `path:tools/trace/scenarios/sweep-lead-<sweep
+  id>-*` `path:docs/naming/runtime/sweep-lead-<sweep id>-*`, its note the Q124 role question
+  per placeholder (`file:line`). When `homes` lists
   only those, the row moves to `landed`; per filed foundation row, an `idea` sweep row
   `<sweep id>-r<n>` with `Lands after <foundation row>` takes its placeholders back up (it owns
   exactly the ones its note lists). A placeholder that later shows in `homes` for a landed

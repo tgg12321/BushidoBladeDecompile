@@ -1026,6 +1026,14 @@ def plan_starts(bl: dict, reg: dict, st: dict, now: float, only: str | None,
     paused = paused or {}
     busy = {s["lane"] for s in st["sessions"].values()} | set(live)
     given = {s["lane"]: s["row"] for s in st["sessions"].values() if s.get("row")}
+    # A no-progress foundation lane is skipped until its rows change (a naming sweep files it a
+    # new row, for example). A lane skipped before keys were kept is keyed now.
+    keys = st.setdefault("no_progress_keys", {})
+    for lane in list(st["no_progress"]):
+        key = progress_key(bl, lane)
+        if keys.setdefault(lane, key) != key:
+            st["no_progress"] = [l for l in st["no_progress"] if l != lane]
+            del keys[lane]
     skip = set(st["no_progress"])
     hold = naming_hold(bl)
     workable_ids = hold["workable"]
@@ -1121,6 +1129,7 @@ def update_slots(st: dict, ag: dict, reg: dict, bl: dict, now: float) -> list[tu
                     st["no_progress_naming"] = naming_hold(bl)
                 else:
                     st["no_progress"] = sorted(set(st["no_progress"]) | {group})
+                    st.setdefault("no_progress_keys", {})[group] = progress_key(bl, group)
                 phase = "no-progress"
             events.append((phase, sid))
         elif phase == "stalled" and not slot.get("warned"):
@@ -1699,6 +1708,7 @@ def cmd_run(args):
                  f"change the count with: python tools/lanes/orchestrate.py max {args.n}")
     st["runner_pid"] = os.getpid()
     st["no_progress"] = []
+    st.pop("no_progress_keys", None)
     st.pop("no_progress_naming", None)
     write_state(st)
     write_max(args.n)

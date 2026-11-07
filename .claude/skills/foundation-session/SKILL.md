@@ -109,6 +109,9 @@ live session owns, and say which one you took.
   updating `bb2.ld` object order: run `tus-check`.
 - **fake**: one TU per unit, claimed as `path:src/main/<tu>.c`. Naming lanes may still rename
   symbols in it; that merges line by line on land.
+- **trace-b** serves the trace rows naming sweeps file (`trace-<unit id>`, owner 2026-11-06): answer
+  each row's role questions (an EVIDENCE line per placeholder on the sweep's `-r<n>` row), then land
+  the row `landed` (that `-r<n>` row waits on it).
 - **assets / trace** (also trace-a, trace-b, trace-c: parallel trace lanes, each its own row; each
   agent runs its own headless emulators via the shared runner): tools and docs only, no build input. A capture unit adds an evidence line to the naming row it feeds, spelled ` EVIDENCE <capture id> (<lane> <date>, ...)` in the row's note (the id may be left out; the `(<lane> <date>` part is what counts); the orchestrator moves a `blocked` row with a new EVIDENCE line back to `idea` after it lands (`tools/lanes/heal.py`), so the unit need not. Each trace row claims its own `tools/trace/scenarios/<prefix>-*` glob, never the whole directory. `land` still runs the full gates when
   anything outside `docs/` or `memory/` changes (a `tools/` script can be a build input).

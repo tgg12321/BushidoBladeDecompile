@@ -333,6 +333,17 @@ class Candidates(unittest.TestCase):
         self.assertEqual(o.candidates(bl(), reg(), s, NOW, None),
                          ["pins"])
 
+    def test_no_progress_foundation_lane_returns_when_its_rows_change(self):
+        b = bl()
+        s = st(no_progress=["data"])
+        self.assertNotIn("data", o.candidates(b, reg(), s, NOW, "foundation"))
+        self.assertIn("data", s["no_progress"])  # keyed on first sight, still skipped
+        b["foundation"].append({"id": "data-new", "lane": "data", "stage": "idea",
+                                "claims": "-", "note": "filed by a sweep"})
+        self.assertIn("data", o.candidates(b, reg(), s, NOW, "foundation"))
+        self.assertNotIn("data", s["no_progress"])
+        self.assertNotIn("data", s["no_progress_keys"])
+
     def test_stale_owner_does_not_block(self):
         r = reg(pins={"owner": "old", "heartbeat": NOW - o.STALE_SECS - 1})
         self.assertIn("pins", o.candidates(bl(), r, st(), NOW, "foundation"))
@@ -677,16 +688,17 @@ class Slots(unittest.TestCase):
             self.assertEqual(o.candidates(b, reg(), s, NOW, "naming"), ["naming-a", "naming-b"])
             self.assertNotIn("no_progress_naming", s)
 
-    def test_foundation_no_progress_still_holds_for_run(self):
+    def test_foundation_no_progress_holds_until_its_rows_change(self):
         b = bl()
         s = st({"a1": slot("pins", progress_at_start=o.progress_key(b, "pins"))})
         self.assertEqual(o.update_slots(s, {"a1": {"state": "done", "pid": 1}},
                                         reg(pins={"owner": None, "closed": NOW}), b, NOW),
                          [("no-progress", "a1")])
         self.assertEqual(s["no_progress"], ["pins"])
-        b["foundation"][0]["stage"] = "active"
-        b["naming"][0]["id"] = "new"
+        b["naming"][0]["id"] = "new"  # another backlog's change does not lift it
         self.assertEqual(o.candidates(b, reg(), s, NOW, "foundation"), ["data"])
+        b["foundation"][0]["stage"] = "active"  # its own rows changed
+        self.assertEqual(o.candidates(b, reg(), s, NOW, "foundation"), ["pins", "data"])
 
     def test_codex_naming_session_is_exempt_from_no_progress(self):
         b = bl()
