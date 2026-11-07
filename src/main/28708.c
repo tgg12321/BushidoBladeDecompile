@@ -8,6 +8,15 @@
 #include "bb2.h"
 #include "bb2_const.h"
 
+enum MemcardSavePromptState {
+    MEMCARD_SAVE_PROMPT_START = 0,
+    MEMCARD_SAVE_PROMPT_CONFIRM_SAVE = 1,
+    MEMCARD_SAVE_PROMPT_FOLLOW_STATUS = 2,
+    MEMCARD_SAVE_PROMPT_AFTER_FORMAT = 3,
+    MEMCARD_SAVE_PROMPT_CONFIRM_OVERWRITE = 4,
+    MEMCARD_SAVE_PROMPT_FORMAT_DECLINED = 5,
+};
+
 enum MemcardRequestStatus {
     MEMCARD_STATUS_SAVE_BUSY = 1,
     MEMCARD_STATUS_SAVE_DONE = 2,
@@ -830,7 +839,7 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
     s32 sheet_pair_index;
 
     if (!D_800A3207) {
-        D_800A3207 = 1;
+        D_800A3207 = MEMCARD_SAVE_PROMPT_CONFIRM_SAVE;
         g_memcard_message_countdown = 0x5A;
         g_memcard_prompt_choice = 0;
         D_800A3354 = 0;
@@ -845,7 +854,7 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
         if (((u8)g_memcard_message_countdown) == 0 ||
             (g_pad_state.pressed & 0x100010)) {
             snd_QueueSound(2, 0x7F, 0x7F);
-            D_800A3207 = 1;
+            D_800A3207 = MEMCARD_SAVE_PROMPT_CONFIRM_SAVE;
             g_memcard_message_countdown = 0x5A;
             g_memcard_prompt_choice = 0;
             D_800A3354 = 0;
@@ -859,11 +868,11 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
      * _SsSndSetVabAttr lists its reverb modes 1-3 (without them: score 5;
      * a switch: 14) */
     /* SOTN: src/main/psxsdk/libsnd/seqread.c:396 @db41b28 */
-    if (D_800A3207 == 1) {
+    if (D_800A3207 == MEMCARD_SAVE_PROMPT_CONFIRM_SAVE) {
         v0 = 0;
-    } else if (D_800A3207 == 2) {
-    } else if (D_800A3207 == 3) {
-    } else if (D_800A3207 == 4) {
+    } else if (D_800A3207 == MEMCARD_SAVE_PROMPT_FOLLOW_STATUS) {
+    } else if (D_800A3207 == MEMCARD_SAVE_PROMPT_AFTER_FORMAT) {
+    } else if (D_800A3207 == MEMCARD_SAVE_PROMPT_CONFIRM_OVERWRITE) {
         v0 = 0x11;
     }
 
@@ -872,7 +881,7 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
         goto sel_dispatch;
     }
 
-    if (D_800A3207 == 3) {
+    if (D_800A3207 == MEMCARD_SAVE_PROMPT_AFTER_FORMAT) {
         if (v0 == MEMCARD_STATUS_NO_CARD) {
             goto case8_sel;
         }
@@ -925,7 +934,7 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
                 goto sel_dispatch;
             }
             v0 = 0;
-            D_800A3207 = 5;
+            D_800A3207 = MEMCARD_SAVE_PROMPT_FORMAT_DECLINED;
             g_memcard_message_countdown = 0x5A;
             g_memcard_prompt_choice = 0;
             sheet_pair_index = -1;
@@ -996,7 +1005,7 @@ sel_dispatch:
         default:
             break;
         }
-    } else if (D_800A3207 == 3) {
+    } else if (D_800A3207 == MEMCARD_SAVE_PROMPT_AFTER_FORMAT) {
         switch (v0 - 4) {
         case 0:
             break;
@@ -1014,7 +1023,7 @@ sel_dispatch:
         case 11:
         default:
             memcard_RequestSave();
-            D_800A3207 = 2;
+            D_800A3207 = MEMCARD_SAVE_PROMPT_FOLLOW_STATUS;
             g_memcard_message_countdown = 0x5A;
             g_memcard_prompt_choice = 0;
             break;
@@ -1046,7 +1055,7 @@ sel_dispatch:
                     result = 1;
                     break;
                 }
-                D_800A3207 = 1;
+                D_800A3207 = MEMCARD_SAVE_PROMPT_CONFIRM_SAVE;
                 g_memcard_message_countdown = 0x5A;
                 g_memcard_prompt_choice = 0;
                 D_800A3354 = 0;
@@ -1056,17 +1065,17 @@ sel_dispatch:
         case MEMCARD_STATUS_FORMAT_DONE:
             g_memcard_validation_load_active = 1;
             memcard_RequestLoad();
-            D_800A3207 = 3;
+            D_800A3207 = MEMCARD_SAVE_PROMPT_AFTER_FORMAT;
             g_memcard_message_countdown = 0x5A;
             break;
         case MEMCARD_STATUS_SAVE_FILE_EXISTS:
-            D_800A3207 = 4;
+            D_800A3207 = MEMCARD_SAVE_PROMPT_CONFIRM_OVERWRITE;
             g_memcard_message_countdown = 0x5A;
             g_memcard_prompt_choice = 0;
             break;
         case 0:
-            if (D_800A3207 == 5) {
-                D_800A3207 = 1;
+            if (D_800A3207 == MEMCARD_SAVE_PROMPT_FORMAT_DECLINED) {
+                D_800A3207 = MEMCARD_SAVE_PROMPT_CONFIRM_SAVE;
                 break;
             }
             goto sw4_L2;
@@ -1090,11 +1099,11 @@ sel_dispatch:
                         goto area_c_long;
                     memcard_RequestOverwrite();
                 }
-                D_800A3207 = 2;
+                D_800A3207 = MEMCARD_SAVE_PROMPT_FOLLOW_STATUS;
                 break;
             area_c_long:
                 v0 = 0;
-                D_800A3207 = 1;
+                D_800A3207 = MEMCARD_SAVE_PROMPT_CONFIRM_SAVE;
                 g_memcard_message_countdown = 0x5A;
                 g_memcard_prompt_choice = 0;
                 break;
@@ -1137,7 +1146,7 @@ d_check:
 
 end:
     if (result != 0) {
-        D_800A3207 = 0;
+        D_800A3207 = MEMCARD_SAVE_PROMPT_START;
         g_memcard_validation_load_active = 0;
     }
     return result;
