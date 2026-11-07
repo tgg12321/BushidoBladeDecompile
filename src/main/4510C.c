@@ -17,6 +17,12 @@
 #include <psxsdk/libgte.h>
 #include "bb2_const.h"
 
+enum OpponentGroundBand {
+    OPPONENT_GROUND_LEVEL = 0,
+    OPPONENT_GROUND_ABOVE = 1,
+    OPPONENT_GROUND_BELOW = 2,
+};
+
 enum CpuIncomingAttackState {
     CPU_INCOMING_ATTACK_NONE = 0,
     CPU_INCOMING_ATTACK_MID = 2,
@@ -538,7 +544,7 @@ s32 fighter_StepCpuPadScript(Unk80101EC8Record *fighter_record) {
             goto reset_ret_neg1;
         if ((u32)(fighter_record->incoming_projectile_state - 1) < 2U)
             goto reset_ret_neg1;
-        if (fighter_record->opponent_ground_y_band != 0)
+        if (fighter_record->opponent_ground_y_band != OPPONENT_GROUND_LEVEL)
             goto reset_ret_neg1;
         {
             Unk80101EC8Record *other_record = fighter_record->other;
@@ -753,11 +759,11 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
 
     temp = rec->other->ground_y - rec->ground_y;
     if (temp < -1000) {
-        rec->opponent_ground_y_band = 1;
+        rec->opponent_ground_y_band = OPPONENT_GROUND_ABOVE;
     } else if (temp > 1000) {
-        rec->opponent_ground_y_band = 2;
+        rec->opponent_ground_y_band = OPPONENT_GROUND_BELOW;
     } else {
-        rec->opponent_ground_y_band = 0;
+        rec->opponent_ground_y_band = OPPONENT_GROUND_LEVEL;
     }
     if (rec->cpu_state_flags & 0x15500) {
         fighter_UpdateCpuProbes(rec);
@@ -847,7 +853,7 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
                     opponent_hit_start_frame;
                 temp2 = fighter_CalcOpponentDistanceThresholdFromTables(rec);
                 temp3 = temp2 + 800;
-                if (rec->opponent_ground_y_band != 0 ||
+                if (rec->opponent_ground_y_band != OPPONENT_GROUND_LEVEL ||
                     ((rec->cpu_state_flags & 0x100) &&
                      rec->opponent_angle_from_orientation_abs > 0x400)) {
                     if (temp2 / 2 >= g_fighter_horizontal_separation) {
@@ -957,7 +963,7 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
            rec->other->move_kind == 0x16 || rec->other->move_kind == 0x17 ||
            rec->other->move_kind == 0xA ||
            (rec->other->move_kind == 0x22 &&
-            rec->opponent_ground_y_band == 0) ||
+            rec->opponent_ground_y_band == OPPONENT_GROUND_LEVEL) ||
            rec->other->opponent_angle_from_orientation_abs > 0x400)))) {
         rec->cpu_state_flags |= 2;
     } else {
@@ -1979,9 +1985,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                   p->incoming_projectile_state == 2) &&
                 p->incoming_attack_state != CPU_INCOMING_ATTACK_MID &&
                 (p->cpu_pad_decision_result == 0 ||
-                 p->opponent_ground_y_band != 0 || p->other->move_kind == 2 ||
-                 p->other->move_kind == 0x29 || p->other->move_kind == 0x13 ||
-                 p->other->move_kind == 6 ||
+                 p->opponent_ground_y_band != OPPONENT_GROUND_LEVEL ||
+                 p->other->move_kind == 2 || p->other->move_kind == 0x29 ||
+                 p->other->move_kind == 0x13 || p->other->move_kind == 6 ||
                  p->other->filtered_script_max_distances[p->other
                                                              ->variant_index] <
                      g_fighter_horizontal_separation)) {
@@ -2156,14 +2162,15 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 work1 = p->cpu_probes[6];
                 if (!(p->cpu_state_flags & 0x800) ||
                     g_fighter_horizontal_separation < 4000) {
-                    if (p->opponent_ground_y_band == 2 &&
+                    if (p->opponent_ground_y_band == OPPONENT_GROUND_BELOW &&
                         !(work1 == 1 || work1 == 2)) {
                         lim =
                             p->other
                                 ->script_min_distances[p->other->variant_index];
-                    } else if ((p->opponent_ground_y_band == 1 ||
-                                p->opponent_ground_y_band == 2) ||
-                               p->opponent_ground_y_band == 3) {
+                    } else if (
+                        (p->opponent_ground_y_band == OPPONENT_GROUND_ABOVE ||
+                         p->opponent_ground_y_band == OPPONENT_GROUND_BELOW) ||
+                        p->opponent_ground_y_band == 3) {
                         if (!(g_cpu_profiles[p->cpu_profile].flags & 0x4000)) {
                             lim = p->other->script_max_distances
                                       [p->other->variant_index];
@@ -2518,7 +2525,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 }
             } else if (
                 (p->cpu_state_flags & 0x800) ||
-                p->opponent_ground_y_band != 0 ||
+                p->opponent_ground_y_band != OPPONENT_GROUND_LEVEL ||
                 (p->cpu_pad_decision_result == 0x2000 &&
                  g_fighter_horizontal_separation <
                      p->other->script_min_distances[p->other->variant_index])) {
@@ -2677,7 +2684,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
         if (state == 0x15 ||
             (state == 0x19 && p->motion_metadata_nibble >= 2)) {
             if ((p->cpu_pad_build_count & 1) || p->weapon_id >= 6) {
-                if (p->opponent_ground_y_band == 0 && p->cpu_probes[3] != 1 &&
+                if (p->opponent_ground_y_band == OPPONENT_GROUND_LEVEL &&
+                    p->cpu_probes[3] != 1 &&
                     (p->weapon_id < 6 || p->weapon_ammo != 0)) {
                     best_script_score = -1;
                     if (p->cpu_script_rotation_counter %
@@ -2927,7 +2935,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         (g_cpu_profiles[p->cpu_profile].script_kind_weight[5] >>
                          2) &&
                     ((0x78 >> p->collision_hit_tag) & 1) &&
-                    p->opponent_ground_y_band == 0 &&
+                    p->opponent_ground_y_band == OPPONENT_GROUND_LEVEL &&
                     p->other->filtered_script_max_distances
                             [p->other->variant_index] <
                         g_fighter_horizontal_separation &&
@@ -2961,7 +2969,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         stock_count != 0 &&
                         work1 < g_fighter_horizontal_separation &&
                         p->nearest_nav_crossing_distance == 100000 &&
-                        p->opponent_ground_y_band == 0 &&
+                        p->opponent_ground_y_band == OPPONENT_GROUND_LEVEL &&
                         (p->cpu_state_flags & 0xA002) &&
                         (p->cpu_profile != 0x15 ||
                          g_fighter_horizontal_separation < 3000) &&
@@ -3017,8 +3025,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                    (g_cpu_profiles[p->cpu_profile].flags & 1) &&
                    g_fighter_horizontal_separation < 4000 &&
                    p->latched_motion_metadata_nibble != 4 &&
-                   (p->opponent_ground_y_band == 0 ||
-                    p->opponent_ground_y_band == 2)) {
+                   (p->opponent_ground_y_band == OPPONENT_GROUND_LEVEL ||
+                    p->opponent_ground_y_band == OPPONENT_GROUND_BELOW)) {
             fighter_StartCpuPadScript(
                 p, D_8009A898, 1, p->cpu_script_start_delay);
             p->cpu_script_rotation_counter++;
