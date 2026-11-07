@@ -1,0 +1,40 @@
+==============================================================================
+DATA WAVE — 16 addresses, 16 identifiers remapped
+  0x8009b0c0: D_8009B0C0 -> g_gpu_time_record_presentation_cell_digit_set
+  0x8009adb4: D_8009ADB4 -> g_gpu_character_cell_sheet_header
+  0x8009add8: D_8009ADD8 -> g_gpu_character_cell_rows
+  0x8009adc0: D_8009ADC0 -> g_gpu_character_cell_row_8_tail_cells
+  0x8009afb8: D_8009AFB8 -> g_gpu_time_record_character_x_offsets
+  0x8009b58c: D_8009B58C -> g_gpu_comparison_character_x_offsets
+  0x8009b0b4: D_8009B0B4 -> g_gpu_time_record_digit_sheet_header
+  0x800a3264: D_800A3264 -> g_gpu_time_record_digit_cell
+  0x8009b890: D_8009B890 -> g_eff_multi_quad_particle_tex_rec
+  0x8009b8b0: D_8009B8B0 -> g_eff_additive_single_quad_particle_tex_rec
+  0x8009b998: D_8009B998 -> g_eff_texture_selected_particle_default_tex_recs
+  0x8009b9b8: D_8009B9B8 -> g_eff_texture_selected_particle_alternate_tex_recs
+  0x8009bbe4: D_8009BBE4 -> g_eff_yawed_slot_quad_top_left_vertex
+  0x8009bbec: D_8009BBEC -> g_eff_yawed_slot_quad_top_right_vertex
+  0x8009bbf4: D_8009BBF4 -> g_eff_yawed_slot_quad_bottom_left_vertex
+  0x8009bbfc: D_8009BBFC -> g_eff_yawed_slot_quad_bottom_right_vertex
+
+-- file edits (9) --
+  asm/funcs/eff_DrawYawedSlotQuads.s  (8)
+  asm/funcs/eff_PrepareParticles.s  (10)
+  asm/funcs/gpu_DrawIndexedCellsDigitPairsAndGrowingBars.s  (2)
+  asm/funcs/gpu_DrawPackedComparisonRowsAndTotals.s  (10)
+  include/bb2.h  (4)
+  src/main/4D0A8.c  (24)
+  src/main/d_8BC50.c  (9)
+  src/main/eff.c  (13)
+  symbol_addrs.txt  (7)
+
+-- registry lines --
+  symbol_addrs.txt:221 D_8009ADD8 -> g_gpu_character_cell_rows
+  symbol_addrs.txt:479 D_8009B58C -> g_gpu_comparison_character_x_offsets
+  symbol_addrs.txt:735 D_8009BBEC -> g_eff_yawed_slot_quad_top_right_vertex
+  symbol_addrs.txt:736 D_8009BBFC -> g_eff_yawed_slot_quad_bottom_right_vertex
+  symbol_addrs.txt:808 D_8009ADD8 -> g_gpu_character_cell_rows
+  symbol_addrs.txt:1053 D_8009B0C0 -> g_gpu_time_record_presentation_cell_digit_set
+  symbol_addrs.txt:1070 D_8009B58C -> g_gpu_comparison_character_x_offsets
+
+DRY RUN — nothing written. Re-run with --apply.
