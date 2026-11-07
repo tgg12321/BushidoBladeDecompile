@@ -1,0 +1,7 @@
+sweep-368e4-r3.2 (naming-e 2026-11-07): 1 local binding in 1 function of 368E4.c; research tmp/codex/sweep-368e4-r3.2-research.md (written for 'point_pair_records'; re-derived here for counted_record_list).
+Tree: ln-naming-e = 87e43078a (src identical to main b97c7a603). Drafting aid (not the gate): naming_keycheck.scoped_plan(read_working_tree(), pairs, {}), run in WSL from tmp/r32_plan.py.
+ALL: scoped_plan ACCEPT, 3 substitutions (token indices 228, 533, 1062), only src/main/368E4.c
+  resource_LoadOrReuseSelectedBlock:sp18=counted_record_list 3 (lines 48, 111, 187)
+Alone line list equals grep -n -w sp18 over the function: decl 48, assign 111, read 187. New name: 0 whole-word hits in src/ include/ symbol_addrs.txt (git grep -w -F counted_record_list).
+Comment edits required: none (no comment in the function names sp18; grep -w sp18 in 368E4.c = lines 48/111/187 only).
+Note: main moved to f3a36adbc during the run (not by this draft).
