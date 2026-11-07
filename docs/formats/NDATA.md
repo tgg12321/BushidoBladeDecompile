@@ -206,6 +206,26 @@ Arena blocks in use: 0..2 slot objects, 3..5 their asset blocks (slot + 3;
 `src/main/35000.c:530-560`), 6 selected entries (`resource_LoadSelectedEntriesTexturesAndSound`),
 7 stage, 8 tiny-model node asset, 9 unused, 0xA motion playback.
 
+**Stage header section 3 (word 3 up to word 4) is a counted list of 20-byte records that
+nothing in the shipped game reads.** `resource_LoadOrReuseSelectedBlock` stores its address in
+`D_800A33B0` (`src/main/368E4.c:111`, `:181`); the retained-subblock path stores block 7's
+base plus the third offset word of that subblock's record instead (`:246`, `:253`) and the
+move callback rebases it (`:272`). Layout, in
+all 38 files and in `S34`'s four retained subblocks (third words `0x4FD8`, `0x9A14`,
+`0xD6EC`, `0x110E4`): one u32 count, then count records of five s32, and the section is
+exactly `4 + 20 * count` bytes. 25 files (and all four `S34` subblocks) hold count 0; 13 hold
+records: `S03` 7, `S06` 1, `S07` 3, `S10` 1, `S12` 3, `S15` 5, `S16` 1, `S19` 3, `S23` 2,
+`S24` 1, `S25` 1, `S27` 1, `S31` 4. Words 0-1 and 2-3 of a record are shaped like two
+coordinate pairs (shape only, no reader; values within ±24000; records share endpoints in
+`S03`, `S07`, `S19` and `S31`); word 4 takes only the values -4000, -2100, -2000, 0, 499
+and 1999; `S15` repeats its last record. Example `S06`: `(-1999, -5000) (-1999, 4999) 0`.
+No reader exists: in `SLUS_006.63` and `MOVOVL.EXE` the only accesses to
+`%gp_rel(D_800A33B0)` (`0x2E4($gp)`) are the two stores, the move callback's rebase (load,
+add, store) and the getter `func_80046780` (`src/main/368E4.c:325`), which no `jal`/`j`,
+data word or `%hi/%lo` pair references; neither image holds the word
+`0x800A33B0` (word scan of both images). The records' use is therefore not shown by this
+executable.
+
 ## Contents of a typical entry
 
 Entries hold opaque data of various formats. The first 64 bytes of entry 0:
