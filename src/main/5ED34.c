@@ -260,7 +260,7 @@ s32 StepSlideBuildFrameRecordAndDispatchStateHandler(
     s32 held_buttons, s32 pad_buttons) {
     Unk8006EACCRec draw_context;
     Unk8006E49CRec *prim_buffer_record;
-    s32 temp_v1;
+    s32 buffer_counter;
 
     g_entry_menu_gpu_db = &g_gpu_db[g_gpu_presented_frame_count & 1];
     g_entry_menu_held_buttons = held_buttons;
@@ -269,11 +269,11 @@ s32 StepSlideBuildFrameRecordAndDispatchStateHandler(
         g_entry_menu_pressed_buttons = pad_buttons & 0xFFFF;
     }
     StepSlideProgressCommitPendingStateAndQueueSound();
-    temp_v1 = g_entry_menu_work_block->prim_buffer_counter + 1;
+    buffer_counter = g_entry_menu_work_block->prim_buffer_counter + 1;
     g_entry_menu_work_block->animation_frame_counter =
         g_entry_menu_work_block->animation_frame_counter + 1;
-    g_entry_menu_work_block->prim_buffer_counter = temp_v1;
-    prim_buffer_record = gpu_GetIndexedPrimBufferRecord(temp_v1 & 1);
+    g_entry_menu_work_block->prim_buffer_counter = buffer_counter;
+    prim_buffer_record = gpu_GetIndexedPrimBufferRecord(buffer_counter & 1);
     draw_context.resource_root.v8006EA28 = g_entry_menu_resources;
     draw_context.primitive_cursors.textured_quad_prims =
         prim_buffer_record->textured_quad_prims;

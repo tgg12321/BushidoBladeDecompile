@@ -5891,10 +5891,10 @@ void fight_AdvanceOpponentOrder(void) {
         if (order_cursor == 0x14) {
             u8 group_flag = g_fighter_group_flags[g_fighter_records[0]
                                                       .character_data_index];
-            s32 val = 2;
+            s32 presentation_index = 2;
             if (group_flag != 0)
-                val = 3;
-            g_fight_presentation_index = val;
+                presentation_index = 3;
+            g_fight_presentation_index = presentation_index;
             g_main_loop_handler_index = MAIN_LOOP_IMAGE_PLAYBACK_INIT;
         } else {
             g_main_loop_handler_index = MAIN_LOOP_DECIMAL_PRESENTATION_INIT;

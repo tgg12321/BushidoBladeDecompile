@@ -36,15 +36,15 @@ extern void AddPrim(void *, void *);
 extern u8 g_row_menu_subflow_state;
 
 void menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows(void) {
-    s32 a0;
+    s32 enabled_row_mask;
     g_row_menu_subflow_state = ROW_MENU_SUBFLOW_TOP_MENU;
     CopySavedFlagsButtonMappingsAndTimesToWorkingRecord();
     if (g_saved_record.staff_roll_character_mask == 0x3F) {
-        a0 = 0xFF;
+        enabled_row_mask = 0xFF;
     } else {
-        a0 = 0xF7;
+        enabled_row_mask = 0xF7;
     }
-    menu_SetEnabledRows(a0);
+    menu_SetEnabledRows(enabled_row_mask);
 }
 
 extern u8 g_menu_release_closes_non_common_vabs;
@@ -111,14 +111,14 @@ void cdrom_EnableSerialMixAndStartRepeatingAudio(void) {
 #include "common.h"
 #include "include_asm.h"
 
-void menu_InitSubflowForMode(s32 arg0) {
+void menu_InitSubflowForMode(s32 mode_selector) {
     s32 handshake_result;
 
-    if ((u32)arg0 >= 8) {
+    if ((u32)mode_selector >= 8) {
         return;
     }
 
-    switch (arg0) {
+    switch (mode_selector) {
     case FIGHT_MODE_STORY:
         if (g_menu_mode_subflow_init_pending == 0) {
             InitTimedSpriteSequence(0x80118800);

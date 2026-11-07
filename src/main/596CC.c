@@ -40,25 +40,25 @@ s32 reloc_RelocateTwelveListsAndLoadVabPack();
 void gpu_DrawWhiteTileAndSheets();
 extern void gpu_LoadVramBottomStrip();
 
-void menu_SetEnabledRows(s32 arg0) {
+void menu_SetEnabledRows(s32 enabled_row_mask) {
     s32 *p = &g_row_menu_row_state.rows_on;
     s32 v = *p;
     v &= ~0x1;
-    v |= arg0 & 0x1;
+    v |= enabled_row_mask & 0x1;
     v &= ~0x2;
-    v |= arg0 & 0x2;
+    v |= enabled_row_mask & 0x2;
     v &= ~0x4;
-    v |= arg0 & 0x4;
+    v |= enabled_row_mask & 0x4;
     v &= ~0x8;
-    v |= (((u32)arg0 >> 4) & 1) << 3;
+    v |= (((u32)enabled_row_mask >> 4) & 1) << 3;
     v &= ~0x10;
-    v |= (((u32)arg0 >> 5) & 1) << 4;
+    v |= (((u32)enabled_row_mask >> 5) & 1) << 4;
     v &= ~0x20;
-    v |= (((u32)arg0 >> 6) & 1) << 5;
+    v |= (((u32)enabled_row_mask >> 6) & 1) << 5;
     v &= ~0x40;
-    v |= (arg0 << 3) & 0x40;
+    v |= (enabled_row_mask << 3) & 0x40;
     v &= ~0x80;
-    v |= arg0 & 0x80;
+    v |= enabled_row_mask & 0x80;
     *p = v;
 }
 

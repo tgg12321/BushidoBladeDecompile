@@ -2110,7 +2110,7 @@ u8 eff_DrawAndAdvanceSpinningQuadWithFixedTextureSecondSlot(void) {
 u8 eff_DrawAnimatedQuads(s32 mode_index) {
     extern s16 g_main_loop_handler_index;
     extern s32 ReadGeomScreen(void);
-    Unk1F8000B8_80065800 *var_0;
+    Unk1F8000B8_80065800 *base;
     POLY_FT4 *prim;
     s32 *var_2;
     VECTOR *p_t;
@@ -2133,17 +2133,17 @@ u8 eff_DrawAnimatedQuads(s32 mode_index) {
     s16 *var_18;
     s32 vertex_index;
 
-    var_0 = &g_eff_work_area->v80065800;
+    base = &g_eff_work_area->v80065800;
     prim = g_eff_quad_cursor;
-    var_2 = &var_0->depth_cue;
-    p_t = var_0->unk14;
-    relative_position = &var_0->view_relative_position;
-    p_v = &var_0->unk64;
-    p_w = &var_0->quad_extent_x;
-    p_h = &var_0->quad_extent_y;
-    rotation_matrix = &var_0->corner_rotation_matrix;
-    texture_width = &var_0->tex_width;
-    texture_height = &var_0->tex_height;
+    var_2 = &base->depth_cue;
+    p_t = base->unk14;
+    relative_position = &base->view_relative_position;
+    p_v = &base->unk64;
+    p_w = &base->quad_extent_x;
+    p_h = &base->quad_extent_y;
+    rotation_matrix = &base->corner_rotation_matrix;
+    texture_width = &base->tex_width;
+    texture_height = &base->tex_height;
 
     gte_SetRotMatrix(g_eff_view_rotation_matrix);
     relative_position->vx = g_eff_animated_quad_positions[mode_index].world_x -
@@ -2153,7 +2153,7 @@ u8 eff_DrawAnimatedQuads(s32 mode_index) {
     relative_position->vz = g_eff_animated_quad_positions[mode_index].world_z -
                             g_eff_view_origin[2];
     ApplyRotMatrixLV(relative_position, p_t);
-    gte_SetTransMatrix((MATRIX *)var_0);
+    gte_SetTransMatrix((MATRIX *)base);
     p_v->vz = 0;
     p_v->vy = 0;
     p_v->vx = 0;
