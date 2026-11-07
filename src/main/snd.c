@@ -9,6 +9,7 @@
 #include "common.h"
 #include "bb2.h"
 #include "include_asm.h"
+#include "bb2_const.h"
 #include <psxsdk/libgte.h>
 
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
@@ -455,7 +456,7 @@ s32 snd_LoadVabPack(
     s16 vab_index;
     s16 id;
 
-    if (GetWorkingRecord()->menu_mode == 3 && vab_id == 5) {
+    if (GetWorkingRecord()->menu_mode == FIGHT_MODE_CHANBARA && vab_id == 5) {
         return 0;
     }
     func_800858D0(0);

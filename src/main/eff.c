@@ -177,13 +177,13 @@ s32 eff_LoadImagesAndSetup(s32 arg0, s32 quad_storage) {
     new_var = arg0;
     cdrom_WaitIdle();
     v = g_working_record.menu_mode;
-    if (v == 0) {
+    if (v == FIGHT_MODE_STORY) {
         cdrom_StartRead(cdrom_GetFileIndex(2, 0x3C), arg0);
-    } else if (v == 3) {
+    } else if (v == FIGHT_MODE_CHANBARA) {
         cdrom_StartRead(cdrom_GetFileIndex(2, 0x2F), new_var);
-    } else if (v == 2) {
+    } else if (v == FIGHT_MODE_PRACTICE) {
         cdrom_StartRead(cdrom_GetFileIndex(2, 0x30), new_var);
-    } else if (v == 5) {
+    } else if (v == FIGHT_MODE_TEAM) {
         cdrom_StartRead(cdrom_GetFileIndex(2, 0x31), new_var);
     } else {
         cdrom_StartRead(cdrom_GetFileIndex(2, 0), new_var);

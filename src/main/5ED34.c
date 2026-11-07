@@ -10,6 +10,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
+#include "bb2_const.h"
 
 enum EntryMenuHandler {
     ENTRY_MENU_ENTRY_GRID = 0,
@@ -89,16 +90,16 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
     resource_FreeSlotsAndBlocksAndInvalidateEntryCache();
 
     switch (g_entry_menu_mode) {
-    case 0:
+    case FIGHT_MODE_STORY:
         gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
             5, (Unk8006E950Head *)g_entry_menu_arena_cursor);
         break;
-    case 4:
-    case 6:
+    case FIGHT_MODE_VS:
+    case FIGHT_MODE_NETWORK:
         gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
             3, (Unk8006E950Head *)g_entry_menu_arena_cursor);
         break;
-    case 2:
+    case FIGHT_MODE_PRACTICE:
         if (g_entry_menu_working_record_ptr->unk14_17) {
             gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
                 3, (Unk8006E950Head *)g_entry_menu_arena_cursor);
@@ -107,8 +108,8 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
                 4, (Unk8006E950Head *)g_entry_menu_arena_cursor);
         }
         break;
-    case 1:
-    case 3:
+    case FIGHT_MODE_VSCPU:
+    case FIGHT_MODE_CHANBARA:
         gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
             4, (Unk8006E950Head *)g_entry_menu_arena_cursor);
         break;
@@ -265,7 +266,7 @@ s32 StepSlideBuildFrameRecordAndDispatchStateHandler(
     g_entry_menu_gpu_db = &g_gpu_db[g_gpu_presented_frame_count & 1];
     g_entry_menu_held_buttons = held_buttons;
     g_entry_menu_pressed_buttons = pad_buttons;
-    if (g_entry_menu_mode == 2) {
+    if (g_entry_menu_mode == FIGHT_MODE_PRACTICE) {
         g_entry_menu_pressed_buttons = pad_buttons & 0xFFFF;
     }
     StepSlideProgressCommitPendingStateAndQueueSound();
@@ -414,7 +415,7 @@ void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *draw_context) {
             !(g_entry_menu_entry_flags[g_entry_menu_slot_records.rec[slot_index]
                                            .cursor_entry_value] &
               2) &&
-            (g_entry_menu_mode != 2 ||
+            (g_entry_menu_mode != FIGHT_MODE_PRACTICE ||
              !g_entry_menu_working_record_ptr->unk14_17)) {
             s.table = header_block->slot_cell_tables[1];
         } else {
@@ -505,7 +506,7 @@ void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
          slot_index++) {
         obj = base[g_entry_menu_slot_records.rec[slot_index].row_pick];
         header_index = 1;
-        if (g_entry_menu_mode == 2 &&
+        if (g_entry_menu_mode == FIGHT_MODE_PRACTICE &&
             !(g_entry_menu_working_record_ptr->unk14_17) && slot_index == 1) {
             if (g_entry_menu_entry_flags[g_entry_menu_slot_records.rec[0]
                                              .cursor_entry_value] &
@@ -847,8 +848,10 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
 
     for (row = 0; row < 4; row++) {
         for (col = 0; col < 5; col++) {
-            if ((g_entry_menu_mode == 0 || g_entry_menu_mode == 1 ||
-                 g_entry_menu_mode == 2 || g_entry_menu_mode == 3) &&
+            if ((g_entry_menu_mode == FIGHT_MODE_STORY ||
+                 g_entry_menu_mode == FIGHT_MODE_VSCPU ||
+                 g_entry_menu_mode == FIGHT_MODE_PRACTICE ||
+                 g_entry_menu_mode == FIGHT_MODE_CHANBARA) &&
                 col == 4 && (row == 1 || row == 3)) {
                 continue;
             }
@@ -1069,7 +1072,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
                     0x7F);
                 g_entry_menu_selection_offset_countdowns[0] = 0xF;
                 g_entry_menu_selection_offset_countdowns[1] = 0x14;
-                if (g_entry_menu_mode == 2 &&
+                if (g_entry_menu_mode == FIGHT_MODE_PRACTICE &&
                     (g_entry_menu_working_record_ptr->unk14_17) &&
                     slot_index == 0) {
                     if (g_entry_menu_entry_flags[g_entry_menu_slot_records
@@ -1146,7 +1149,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
     if (g_entry_menu_handler_index == ENTRY_MENU_ENTRY_GRID &&
         g_entry_menu_slot_records.rec[0].grid_pick != 0xFF &&
         g_entry_menu_work_block->entry_countdowns[0] == 0) {
-        if (g_entry_menu_mode == 2 &&
+        if (g_entry_menu_mode == FIGHT_MODE_PRACTICE &&
             (g_entry_menu_working_record_ptr->unk14_17)) {
             g_entry_menu_grid_phase_extra_slot_count = 1;
         }
@@ -1157,7 +1160,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
                 0) {
             g_entry_menu_slide_phase = 1;
             g_entry_menu_row_phase_extra_slot_count = 0;
-            if (g_entry_menu_mode == 2) {
+            if (g_entry_menu_mode == FIGHT_MODE_PRACTICE) {
                 g_entry_menu_slot_records.rec[1].row_pick = 0xFF;
                 g_entry_menu_row_phase_choice_cursors[1] = 2;
             }
@@ -1251,7 +1254,7 @@ void menu_UpdateRow(Unk8006EACCRec *draw_context) {
             var_1.table += g_entry_menu_row_phase_choice_cursors[var_s0] * 2;
             if (((g_entry_menu_init_extra_slot_count +
                   g_entry_menu_row_phase_extra_slot_count) != 0) ||
-                (g_entry_menu_mode == 2)) {
+                (g_entry_menu_mode == FIGHT_MODE_PRACTICE)) {
                 var_1.x = 0x50 + var_s0 * 0x16C;
             } else {
                 var_1.x = 0x105;
@@ -1336,7 +1339,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
             s32 max;
             s32 min;
 
-            if (g_entry_menu_mode == 2 &&
+            if (g_entry_menu_mode == FIGHT_MODE_PRACTICE &&
                 !(g_entry_menu_working_record_ptr->unk14_17) && i == 1) {
                 if (g_entry_menu_entry_flags[g_entry_menu_slot_records.rec[0]
                                                  .cursor_entry_value] &
@@ -1372,7 +1375,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                     g_entry_menu_row_phase_choice_cursors[i]--;
                 }
                 g_entry_menu_row_cursor_y_slots[i] = i;
-                if (g_entry_menu_mode == 3) {
+                if (g_entry_menu_mode == FIGHT_MODE_CHANBARA) {
                     s32 sel;
                     s32 id;
                     /* FAKE: named intermediate for the address of the image
@@ -1411,7 +1414,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                         g_entry_menu_row_picks_by_choice_cursor
                             [g_entry_menu_row_phase_choice_cursors[i]];
                     sel = 1;
-                    if (g_entry_menu_mode == 2 &&
+                    if (g_entry_menu_mode == FIGHT_MODE_PRACTICE &&
                         !(g_entry_menu_working_record_ptr->unk14_17) &&
                         i == 1) {
                         if (!(g_entry_menu_entry_flags
@@ -1453,7 +1456,8 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                 }
             } else {
                 if ((g_entry_menu_pressed_buttons & (PADRup << (var_4 * 16))) &&
-                    g_entry_menu_slide_phase == 0 && g_entry_menu_mode != 3) {
+                    g_entry_menu_slide_phase == 0 &&
+                    g_entry_menu_mode != FIGHT_MODE_CHANBARA) {
                     snd_QueueSound(2, 0x7F, 0x7F);
                     g_entry_menu_selection_offset_countdowns[0] = 0xF;
                     g_entry_menu_selection_offset_countdowns[1] = 0x14;
@@ -1579,7 +1583,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
             s->table = cells;
             s->x = (g_entry_menu_row_phase_choice_cursors[i] << 6) + 0x80;
             s->y = 0xAC - (g_entry_menu_row_cursor_y_slots[i] << 5);
-            if (g_entry_menu_mode == 2 &&
+            if (g_entry_menu_mode == FIGHT_MODE_PRACTICE &&
                 !(g_entry_menu_working_record_ptr->unk14_17) && i == 1) {
                 if (g_entry_menu_entry_flags[g_entry_menu_slot_records.rec[0]
                                                  .cursor_entry_value] &
@@ -1599,7 +1603,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
     }
     if (g_entry_menu_slot_records.rec[0].row_pick != 0xFF &&
         g_entry_menu_work_block->row_countdowns[0] == 0) {
-        if (g_entry_menu_mode == 2) {
+        if (g_entry_menu_mode == FIGHT_MODE_PRACTICE) {
             g_entry_menu_row_phase_extra_slot_count = 1;
         }
         if (((g_entry_menu_slot_records.rec[1].row_pick != 0xFF &&
@@ -1652,7 +1656,7 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
             s.has_color = 0;
             obj = base[g_entry_menu_slot_records.rec[slot_index].row_pick];
             header_index = 1;
-            if (g_entry_menu_mode == 2 &&
+            if (g_entry_menu_mode == FIGHT_MODE_PRACTICE &&
                 !(g_entry_menu_working_record_ptr->unk14_17) &&
                 slot_index == 1) {
                 if (g_entry_menu_entry_flags[g_entry_menu_slot_records.rec[0]
@@ -1710,9 +1714,9 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
             g_entry_menu_working_record_ptr->stage_index =
                 menu_SelectStageIndexFromFirstSlotEntryFlag();
             g_entry_menu_exit_result = 1;
-        } else if (g_entry_menu_mode == 4) {
+        } else if (g_entry_menu_mode == FIGHT_MODE_VS) {
             g_entry_menu_next_handler_index = ENTRY_MENU_CHOICE_GRID_PAGE2;
-        } else if (g_entry_menu_mode == 6) {
+        } else if (g_entry_menu_mode == FIGHT_MODE_NETWORK) {
             g_entry_menu_next_handler_index = ENTRY_MENU_CHOICE_GRID_PAGE3;
             g_entry_menu_choice_grid_row = 1;
             g_entry_menu_choice_grid_column = 1;
@@ -1803,7 +1807,7 @@ void menu_UpdateChoiceGrid(
         if (!(g_entry_menu_choice_grid_row * 2 +
                       g_entry_menu_choice_grid_column ==
                   3 &&
-              g_entry_menu_mode == 6 && mode == 2)) {
+              g_entry_menu_mode == FIGHT_MODE_NETWORK && mode == 2)) {
             s.table = cells;
             s.table += (g_entry_menu_choice_grid_row + mode * 3) * 2 +
                        g_entry_menu_choice_grid_column;
@@ -1813,7 +1817,8 @@ void menu_UpdateChoiceGrid(
         }
         s.header++;
         for (i = 0; i < 6; i++) {
-            if (!(i == 3 && g_entry_menu_mode == 6 && mode == 2) &&
+            if (!(i == 3 && g_entry_menu_mode == FIGHT_MODE_NETWORK &&
+                  mode == 2) &&
                 g_entry_menu_choice_grid_row * 2 +
                         g_entry_menu_choice_grid_column !=
                     i) {
@@ -1973,8 +1978,8 @@ void menu_UpdateChoiceGrid(
             } else {
                 s.has_color = 0;
             }
-            if (i + i + column_index != 3 || g_entry_menu_mode != 6 ||
-                mode != 2) {
+            if (i + i + column_index != 3 ||
+                g_entry_menu_mode != FIGHT_MODE_NETWORK || mode != 2) {
                 s.header = (sheet_headers + (i + i))[column_index + 3];
             } else {
                 s.header = sheet_headers[12];
@@ -2023,7 +2028,8 @@ void menu_UpdateChoiceGrid(
                              g_entry_menu_choice_grid_row * 2 +
                              g_entry_menu_choice_grid_column];
             snd_QueueSound(1, 0x7F, 0x7F);
-            if (chosen_stage_index != 0xD || g_entry_menu_mode != 6) {
+            if (chosen_stage_index != 0xD ||
+                g_entry_menu_mode != FIGHT_MODE_NETWORK) {
                 g_entry_menu_working_record_ptr->stage_index =
                     chosen_stage_index;
             } else {
