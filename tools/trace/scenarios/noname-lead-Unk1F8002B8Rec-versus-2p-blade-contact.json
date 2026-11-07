@@ -1,0 +1,8 @@
+{
+  "description": "versus-2p-blade-contact re-run unchanged with read and write watches on Unk1F8002B8Rec.unkC8 (0x1F800380, 12 bytes) and .unkF8 (0x1F8003B0, 8 bytes), 60000 hits each, and a breakpoint on fighter_ResolveWeaponContact (a0, a1, ra): trace-noname-leads runtime evidence (which code stores and loads the two scratch members, and around the blade contacts)",
+  "evidence": [
+    "docs/naming/runtime/noname-lead-Unk1F8002B8Rec-versus-2p-blade-contact-1/spec.json"
+  ],
+  "extends": "versus-2p-blade-contact",
+  "refines": "versus-2p-blade-contact"
+}
