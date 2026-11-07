@@ -66,3 +66,8 @@ NO_NAME, confirmed by the reviewer (missing evidence as corrected):
 - Unk8009B0E0Record.unk3: an asset scan of byte +3 in every resource sheet header
   (SEL / MOD / NAR.BIN) plus a padding ruling on the 0xFF bytes (4D0A8.c:1894, 1911, 1924,
   1943): the FINAL never-accessed route; no reader exists.
+
+## sweep-eff.3 (members unit, landed by naming-c 2026-11-07)
+
+The sweep-eff.2 rename leads landed (pre-apply 7 PASS, R6 OK): the six chunk SPRT
+arrays = chunk_sprites, Unk1F8000B8_800678A8.unk6E = loop_index. No FAIL, no new NO_NAME.
