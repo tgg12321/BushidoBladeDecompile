@@ -227,7 +227,7 @@ void resource_SelectRetainedSubblockOrApplyHeaderSections(s32 subblock_index) {
     s32 *s4p;
     s32 *s1p;
     s32 *grid_stream;
-    s32 v0;
+    s32 offset_cursor;
     if (subblock_index < 0) {
         resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks();
         return;
@@ -235,18 +235,18 @@ void resource_SelectRetainedSubblockOrApplyHeaderSections(s32 subblock_index) {
     if (g_resource_has_retained_subblocks == 0) {
         return;
     }
-    v0 = arena_GetBlockAddr(7);
-    block_base = (s32 *)v0;
-    v0 += 4;
-    v0 = v0 + subblock_index * 20;
-    reloc_section = (s32 *)((u8 *)block_base + *(s32 *)v0);
-    v0 += 4;
-    collision_grid = (s32 *)((u8 *)block_base + *(s32 *)v0);
-    v0 += 4;
-    s4p = (s32 *)((u8 *)block_base + *(s32 *)v0);
-    v0 += 4;
-    s1p = (s32 *)((u8 *)block_base + *(s32 *)v0);
-    grid_stream = (s32 *)((u8 *)block_base + *(s32 *)(v0 + 4));
+    offset_cursor = arena_GetBlockAddr(7);
+    block_base = (s32 *)offset_cursor;
+    offset_cursor += 4;
+    offset_cursor = offset_cursor + subblock_index * 20;
+    reloc_section = (s32 *)((u8 *)block_base + *(s32 *)offset_cursor);
+    offset_cursor += 4;
+    collision_grid = (s32 *)((u8 *)block_base + *(s32 *)offset_cursor);
+    offset_cursor += 4;
+    s4p = (s32 *)((u8 *)block_base + *(s32 *)offset_cursor);
+    offset_cursor += 4;
+    s1p = (s32 *)((u8 *)block_base + *(s32 *)offset_cursor);
+    grid_stream = (s32 *)((u8 *)block_base + *(s32 *)(offset_cursor + 4));
     reloc_UnrelocateBlock(7);
     reloc_RelocateBlock(reloc_section, 7);
     collision_SetGrid((s32)collision_grid);
@@ -264,7 +264,7 @@ void resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks(void) {
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern void wave_RebaseCellBuffer(s32);
 
-void resource_RebaseLoadedBlockSections(s32 a0, s32 byte_offset) {
+void resource_RebaseLoadedBlockSections(s32 block_id, s32 byte_offset) {
     s32 rebase_delta;
     reloc_RebaseBlock(7, byte_offset);
     collision_RebaseGrid(byte_offset);
@@ -320,7 +320,7 @@ extern s16 g_color_mode;
 extern s16 D_800F665A;
 extern s16 g_resource_cached_node_asset_id;
 
-void resource_RebaseNodeAssetBlock(s32 a0, s32 byte_offset);
+void resource_RebaseNodeAssetBlock(s32 block_id, s32 byte_offset);
 
 s32 func_80046780(void) { return D_800A33B0; }
 
@@ -370,7 +370,7 @@ void resource_ResizeNodeAssetBlockAndUpdatePeak(s32 new_size) {
     arena_UpdatePeak(0);
 }
 
-void resource_RebaseNodeAssetBlock(s32 a0, s32 byte_offset) {
+void resource_RebaseNodeAssetBlock(s32 block_id, s32 byte_offset) {
     node_RebaseRetainedDrawNodeBuffer(byte_offset);
     reloc_RebaseBlock(9, byte_offset);
 }
@@ -410,7 +410,7 @@ s32 *motion_LoadPlaybackBlock(s32 playback_file_id) {
 
 void motion_FreePlaybackBlock(void) { arena_Free(0xA); }
 
-void motion_RebasePlaybackBlock(s32 a0, s32 byte_offset) {
+void motion_RebasePlaybackBlock(s32 block_id, s32 byte_offset) {
     motion_RebasePlayback(byte_offset);
 }
 
@@ -569,19 +569,19 @@ void *fight_GetStartPositionPairTable(void) {
 void math_SetLightPlaneProjection(void) {
     s32 num = (s32)g_light_setups[0].lmat.m[0][0] << 12;
     s32 div = g_light_setups[0].lmat.m[0][1];
-    s32 v0 = num / div;
-    s32 v1 = ((s32)g_light_setups[0].lmat.m[0][2] << 12) / div;
+    s32 x_shear = num / div;
+    s32 z_shear = ((s32)g_light_setups[0].lmat.m[0][2] << 12) / div;
     g_math_light_plane_projection.m[0][2] = 0;
     g_math_light_plane_projection.m[1][0] = 0;
-    v1 = -(s16)v1;
+    z_shear = -(s16)z_shear;
     g_math_light_plane_projection.m[1][1] = 0;
     g_math_light_plane_projection.m[1][2] = 0;
     g_math_light_plane_projection.m[2][0] = 0;
     g_math_light_plane_projection.m[0][0] = 0x1000;
     g_math_light_plane_projection.m[2][2] = 0x1000;
-    v0 = -(s16)v0;
-    g_math_light_plane_projection.m[0][1] = v0;
-    g_math_light_plane_projection.m[2][1] = v1;
+    x_shear = -(s16)x_shear;
+    g_math_light_plane_projection.m[0][1] = x_shear;
+    g_math_light_plane_projection.m[2][1] = z_shear;
 }
 
 void math_ApplyLightPlaneProjection(
@@ -662,21 +662,21 @@ void node_InitIdentity(Unk80101DF0Record *node) {
 
 s16 *camera_CalcAngles(void) {
     SVECTOR rot;
-    VECTOR var_1;
+    VECTOR view_dir;
     MATRIX mtx;
-    s16 var_3;
+    s16 yaw;
 
     math_RotMatrixYXZ((u16 *)&g_view_camera_root_ptr->xf.rot, &mtx);
     rot.vx = 0;
     rot.vy = 0;
     rot.vz = 0x1000;
-    ApplyMatrix(&mtx, &rot, &var_1);
-    var_3 = ratan2(var_1.vx, var_1.vz);
-    var_1.vz = ((s32)Judge[(var_3 + 0x400) & 0xFFF] * var_1.vz +
-                (s32)Judge[var_3 & 0xFFF] * var_1.vx) >>
-               12;
-    g_camera_calculated_angles[0] = -ratan2(var_1.vy, var_1.vz);
-    g_camera_calculated_angles[1] = var_3;
+    ApplyMatrix(&mtx, &rot, &view_dir);
+    yaw = ratan2(view_dir.vx, view_dir.vz);
+    view_dir.vz = ((s32)Judge[(yaw + 0x400) & 0xFFF] * view_dir.vz +
+                   (s32)Judge[yaw & 0xFFF] * view_dir.vx) >>
+                  12;
+    g_camera_calculated_angles[0] = -ratan2(view_dir.vy, view_dir.vz);
+    g_camera_calculated_angles[1] = yaw;
     return g_camera_calculated_angles;
 }
 
@@ -715,7 +715,7 @@ void node_OrientAndQueueViewOffsetNode(void) {
     MATRIX buf1;
     MATRIX buf2;
     s16 angle;
-    s32 var_5;
+    s32 horizontal_length;
     Unk80101DF0Record *base;
 
     if (resource_HasRetainedSubblocks() != 0) {
@@ -729,17 +729,17 @@ void node_OrientAndQueueViewOffsetNode(void) {
 
     angle = ratan2(result.vx, result.vz);
 
-    var_5 = ((s32)Judge[(angle + 0x400) & 0xFFF] * result.vz +
-             (s32)Judge[angle & 0xFFF] * result.vx) >>
-            12;
-    result.vz = var_5;
+    horizontal_length = ((s32)Judge[(angle + 0x400) & 0xFFF] * result.vz +
+                         (s32)Judge[angle & 0xFFF] * result.vx) >>
+                        12;
+    result.vz = horizontal_length;
 
     base = &g_view_offset_node;
     {
         /* FAKE: s16 temporary for the negated pitch; storing -ratan2()
          * straight into base->xf.rot.vx moves its negu and the addiu: score
          * 3 (Q129). */
-        s16 neg = -ratan2(result.vy, var_5);
+        s16 neg = -ratan2(result.vy, horizontal_length);
         base->xf.rot.vx = neg;
     }
     base->xf.rot.vy = angle;
@@ -792,8 +792,8 @@ s32 wave_Init(void) {
     s32 s2val;
     u16 s1val;
     u16 t1val;
-    s32 a3;
-    s32 a0;
+    s32 row;
+    s32 column_index;
     s32 a2;
     s32 a1;
     s32 t0;
@@ -810,16 +810,16 @@ s32 wave_Init(void) {
     s2val = GetTPage(0, 0, 0x2C0, 0x180);
     s1val = GetClut(0x10, 0x1E0);
     t1val = GetClut(0x10, 0x1E0);
-    a3 = 0;
+    row = 0;
     t2 = 0x2C00;
-    a0 = 0;
+    column_index = 0;
     do {
         t0 = 0x1200;
         a2 = 0x13;
         a1 = 0;
         v1 = 1;
         do {
-            if (a3 >= 5) {
+            if (row >= 5) {
                 *cell_cursor = s3val;
                 cell_cursor += 1;
                 *cell_cursor = t2;
@@ -856,7 +856,7 @@ s32 wave_Init(void) {
             }
             *cell_cursor = v0;
             cell_cursor += 1;
-            if (a3 & 1) {
+            if (row & 1) {
                 v0 = a2 | t0;
                 *cell_cursor = v0;
                 cell_cursor += 1;
@@ -879,12 +879,12 @@ s32 wave_Init(void) {
             t0 += 0x100;
             a2 += 1;
             a1 += 0x100;
-            a0 += 1;
+            column_index += 1;
             v1 += 1;
-        } while (a0 < 0x10);
-        a3 += 1;
-        a0 = 0;
-    } while (a3 < 8);
+        } while (column_index < 0x10);
+        row += 1;
+        column_index = 0;
+    } while (row < 8);
 
     {
         Unk80101DF0Record *node = &g_wave_draw_node;
@@ -903,25 +903,25 @@ s32 wave_Init(void) {
         node_UpdateWorldMatrix(node);
     }
 
-    a3 = 0;
+    row = 0;
     w = 0;
     do {
         val = w;
-        p = g_wave_vertex_grid[a3];
-        for (a0 = 0x10; a0 >= 0; a0--) {
-            p[a0] = val;
+        p = g_wave_vertex_grid[row];
+        for (column_index = 0x10; column_index >= 0; column_index--) {
+            p[column_index] = val;
         }
         w += 0x7D0;
-        a3 += 1;
-    } while (a3 < 9);
+        row += 1;
+    } while (row < 9);
 
-    a0 = 0;
+    column_index = 0;
     ptr = &g_wave_column_phases[0];
 loop3:
-    *ptr = (a0 << 7) & 0xFFF;
-    a0++;
+    *ptr = (column_index << 7) & 0xFFF;
+    column_index++;
     ptr++;
-    if (0x11 > a0)
+    if (0x11 > column_index)
         goto loop3;
 
     return (s32)cell_cursor - (s32)g_wave_cell_buffer;
@@ -963,7 +963,7 @@ extern SVECTOR g_wave_even_row_vertices[17];
 extern SVECTOR g_wave_odd_row_vertices[17];
 
 void wave_Draw(void) {
-    s32 sxy0, sxy1, sxy2, var_3, flag;
+    s32 sxy0, sxy1, sxy2, p, flag;
     s32 sz0, sz1, sz2;
     s16 *cell_cursor;
     s32 i, j;
@@ -1001,8 +1001,7 @@ void wave_Draw(void) {
         v = base;
         j = 0;
         while (j < 6) {
-            RotTransPers3(
-                &v[0], &v[1], &v[2], &sxy0, &sxy1, &sxy2, &var_3, &flag);
+            RotTransPers3(&v[0], &v[1], &v[2], &sxy0, &sxy1, &sxy2, &p, &flag);
             v += 3;
             ReadSZfifo3(&sz0, &sz1, &sz2);
             *dst32++ = sxy0;
@@ -1297,16 +1296,16 @@ u16 arg4;
 }
 
 void gpu_LoadTimGroupClutsOffset(
-    s32 arg0, s32 arg1, s16 clut_x_offset, s16 clut_y_offset) {
+    s32 cursor, s32 arg1, s16 clut_x_offset, s16 clut_y_offset) {
     s32 base;
     s32 count;
     s32 off;
-    arg1 = (((s32)(arg1 << 16)) >> 14) + arg0;
-    base = arg0;
+    arg1 = (((s32)(arg1 << 16)) >> 14) + cursor;
+    base = cursor;
     off = *(s32 *)arg1;
-    arg0 += off;
-    count = *(s32 *)arg0;
-    arg0 += 4;
+    cursor += off;
+    count = *(s32 *)cursor;
+    cursor += 4;
     if (count != 0) {
         s32 sx_arg2;
         s32 sx_arg3;
@@ -1319,12 +1318,12 @@ void gpu_LoadTimGroupClutsOffset(
             u32 dy_u;
             s32 dx;
             s32 dy;
-            entry = base + *(s32 *)arg0;
-            arg0 += 8;
-            dx_u = *(u16 *)arg0;
-            arg0 += 2;
-            dy_u = *(u16 *)arg0;
-            arg0 += 2;
+            entry = base + *(s32 *)cursor;
+            cursor += 8;
+            dx_u = *(u16 *)cursor;
+            cursor += 2;
+            dy_u = *(u16 *)cursor;
+            cursor += 2;
             dx = ((s32)(dx_u << 16)) >> 16;
             dy = ((s32)(dy_u << 16)) >> 16;
             gpu_LoadTimClut(entry, dx + sx_arg2, dy + sx_arg3);
@@ -1365,27 +1364,27 @@ s16 arg2;
 extern void gpu_ReadTim();
 
 s32 gpu_ReadTimGroupEntry(
-    s32 arg0, s32 group_index, u32 entry_index, s32 tim_image_out) {
+    s32 cursor, s32 group_index, u32 entry_index, s32 tim_image_out) {
     s32 base, count, entry, a, b, c, d, off;
-    off = ((s32 *)arg0)[group_index];
-    base = arg0;
+    off = ((s32 *)cursor)[group_index];
+    base = cursor;
     /* the group's offset relocated against the file base, written as
      * `entry += base` relocates the entry's offset below */
-    arg0 = off + base;
-    count = *(s32 *)arg0;
-    arg0 += 4;
+    cursor = off + base;
+    count = *(s32 *)cursor;
+    cursor += 4;
     if (entry_index >= (u32)count)
         return -1;
-    arg0 += entry_index * 0xC;
-    entry = *(s32 *)arg0;
-    arg0 += 4;
-    a = (s32) * (u16 *)arg0;
-    arg0 += 2;
-    b = (s32) * (u16 *)arg0;
-    arg0 += 2;
-    c = (s32) * (u16 *)arg0;
-    arg0 += 2;
-    d = (s32) * (u16 *)arg0;
+    cursor += entry_index * 0xC;
+    entry = *(s32 *)cursor;
+    cursor += 4;
+    a = (s32) * (u16 *)cursor;
+    cursor += 2;
+    b = (s32) * (u16 *)cursor;
+    cursor += 2;
+    c = (s32) * (u16 *)cursor;
+    cursor += 2;
+    d = (s32) * (u16 *)cursor;
     entry += base;
     gpu_ReadTim(entry, tim_image_out, (s16)a, (s16)b, (s16)c, (s16)d);
     return count;
@@ -1468,16 +1467,16 @@ void gpu_SetColorMode(s32 grayscale_flag) {
 void math_GrayscaleRgb555(u16 *src_pixels, s32 pixel_count, u16 *write_cursor) {
     s32 temp_a3;
     s32 temp_v1;
-    s32 var_t0;
+    s32 countdown;
     u16 *read_cursor;
     s32 source_pixel;
     read_cursor = src_pixels;
-    var_t0 = pixel_count - 1;
-    if (var_t0 != -1) {
+    countdown = pixel_count - 1;
+    if (countdown != -1) {
         do {
             source_pixel = *read_cursor;
             read_cursor += 1;
-            var_t0 -= 1;
+            countdown -= 1;
             temp_v1 = source_pixel << 0x10;
             {
                 s32 b;
@@ -1495,19 +1494,19 @@ void math_GrayscaleRgb555(u16 *src_pixels, s32 pixel_count, u16 *write_cursor) {
                        (temp_a3 << 5)) +
                       temp_a3);
             write_cursor += 1;
-        } while (var_t0 != (-1));
+        } while (countdown != (-1));
     }
 }
 
-s32 math_Grayscale3(s32 arg0, s32 arg1, s32 arg2) {
+s32 math_Grayscale3(s32 arg0, s32 green, s32 arg2) {
     arg0 = arg0 * 0x547;
-    arg1 = arg1 << 11;
+    green = green << 11;
     arg2 = arg2 * 0x2B8;
-    return (arg0 + arg1 + arg2) >> 12;
+    return (arg0 + green + arg2) >> 12;
 }
 
 void gpu_TintVramRow(
-    s32 mode, s32 sx, s32 sy, s32 w, s32 arg4, s32 mg, s32 mb, s32 dx, s32 dy) {
+    s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 dx, s32 dy) {
     u16 buf[256];
     u16 out[256];
     RECT rect;
@@ -1539,7 +1538,7 @@ void gpu_TintVramRow(
         src++;
         switch (mode) {
         case 0:
-            r = (r * arg4) >> 15;
+            r = (r * mr) >> 15;
             g = (g * mg) >> 15;
             b = (b * mb) >> 15;
             break;
@@ -1548,7 +1547,7 @@ void gpu_TintVramRow(
             g = g << 11;
             b = b * 0x2B8;
             r = (r + g + b) >> 15;
-            r = (r * arg4) >> 12;
+            r = (r * mr) >> 12;
             g = (r * mg) >> 12;
             b = (r * mb) >> 12;
             break;
@@ -1629,7 +1628,7 @@ extern u32 g_gpu_ot256_db[][256];
 extern s16 g_node_retained_draw_matrix_indices[];
 
 void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
-    s32 arg0, s32 weapon_id, s32 arg2) {
+    s32 yaw, s32 weapon_id, s32 arg2) {
     MATRIX mtx;
     SVECTOR rot;
     s32 index;
@@ -1650,8 +1649,8 @@ void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
     rot.vx = 0x1770;
     rot.vy = 0;
     rot.vz = 0;
-    rot.vz = ((s32)Judge[arg0 & 0xFFF] * rot.vx) >> 12;
-    rot.vx = ((s32)Judge[(arg0 + 0x400) & 0xFFF] * rot.vx) >> 12;
+    rot.vz = ((s32)Judge[yaw & 0xFFF] * rot.vx) >> 12;
+    rot.vx = ((s32)Judge[(yaw + 0x400) & 0xFFF] * rot.vx) >> 12;
     node = (Unk80045878Node *)g_node_retained_draw_node_buffer;
     ApplyMatrix(mat_tbl[0], &rot, (VECTOR *)g_node_slot_relative_matrix.t);
     g_node_slot_relative_matrix.t[0] += mat_tbl[0]->t[0];
@@ -1659,7 +1658,7 @@ void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
     g_node_slot_relative_matrix.t[2] += mat_tbl[2]->t[2];
 
     rot.vx = 0;
-    rot.vy = 0xC00 - arg0;
+    rot.vy = 0xC00 - yaw;
     rot.vz = 0;
     indices = g_node_retained_draw_matrix_indices;
     math_RotMatrixZYX(&rot, &mtx);
@@ -1739,10 +1738,10 @@ void gpu_QueueVramScroll(s32 scroll_index) {
     s32 i;
     Unk800EF848Rec *scroll_record;
     DR_MOVE *p;
-    s32 var_15;
+    s32 scroll_phase;
 
     scroll_record = &g_gpu_vram_scrolls[scroll_index];
-    var_15 = scroll_record->phase;
+    scroll_phase = scroll_record->phase;
     scroll_controls = scroll_record->ctl;
     p = scroll_record->move[g_gpu_presented_frame_count & 1];
     x = scroll_controls[0] & ~0x3F;
@@ -1759,16 +1758,16 @@ void gpu_QueueVramScroll(s32 scroll_index) {
         s32 dest_x = dx + dest_x_offset;
         s32 dest_y = dy + dest_y_offset;
         s32 sy = y + source_y_offset;
-        s32 h1 = scroll_height - var_15;
+        s32 h1 = scroll_height - scroll_phase;
         /* FAKE: strip two's height taken as an s16 at the top of the level;
          * rect.h = var_15 directly, an s32 copy or a (s16) cast drops the t1
          * copy: score 57 */
-        s16 h2 = var_15;
+        s16 h2 = scroll_phase;
         rect.x = x + source_x_offset;
         rect.y = sy;
         rect.w = w;
         rect.h = h1;
-        SetDrawMove(p, &rect, dest_x, dest_y + var_15);
+        SetDrawMove(p, &rect, dest_x, dest_y + scroll_phase);
         addPrim(&g_gpu_ot_offset_ptr[0xFFF], p);
         p++;
         rect.y = sy + h1;
@@ -1782,7 +1781,7 @@ void gpu_QueueVramScroll(s32 scroll_index) {
         dest_y_offset >>= 1;
         w >>= 1;
         scroll_height >>= 1;
-        var_15 >>= 1;
+        scroll_phase >>= 1;
     }
     scroll_record->phase += scroll_controls[6];
     if (scroll_record->phase >= scroll_controls[3]) {
@@ -1851,14 +1850,14 @@ void resource_SetPairSelectionSlotWithBoundChecks(s32 idx, s32 val) {
     g_resource_pair_selection[idx] = (s16)val;
 }
 
-s32 math_UnorderedPairIndex(s32 arg0, s32 arg1, s32 arg2) {
+s32 math_UnorderedPairIndex(s32 row_length, s32 lo, s32 hi) {
     s32 sum = 0;
     s32 i;
-    for (i = 0; i < arg1; i++) {
-        sum += arg0;
-        arg0--;
+    for (i = 0; i < lo; i++) {
+        sum += row_length;
+        row_length--;
     }
-    sum += arg2 - arg1;
+    sum += hi - lo;
     return sum;
 }
 
@@ -2072,7 +2071,8 @@ extern s16 g_node_entry_pair_local_transforms[];
  * costing a sixth callee-saved register, and the function is loopless, so no
  * back-edge carrier exists; hence the FAKE pad. SOTN precedent: `volatile char
  * pad[8] //! FAKE`. */
-void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
+void node_QueueTableEntryNodePairUnderSlotNode(
+    s32 entry_index, s32 arg1, s32 link_index) {
     // !FAKE: phantom-frame-slot pad, without it: score 12
     // (no-new-park-categories): target reserves 8 locals bytes at
     // sp+0x10..sp+0x17 that no instruction touches
@@ -2084,7 +2084,8 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     Unk80045878Obj *slot_obj;
     void **list;
 
-    linked_entry_index = g_resource_entry_linked_entries[arg0][arg2];
+    linked_entry_index =
+        g_resource_entry_linked_entries[entry_index][link_index];
     if (linked_entry_index == 0xFF) {
         return;
     }
@@ -2142,7 +2143,8 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     g_prim_buf_cursor = (u32 *)(obj + 1);
 }
 
-s32 snd_CopySelectedPackSectionsAndLoadVabPacks(s32 arg0, s32 output_addr) {
+s32 snd_CopySelectedPackSectionsAndLoadVabPacks(
+    s32 pack_table_addr, s32 output_addr) {
     s32 count;
     s32 tail_off;
     s32 first_section_end_offset;
@@ -2159,7 +2161,7 @@ s32 snd_CopySelectedPackSectionsAndLoadVabPacks(s32 arg0, s32 output_addr) {
     s32 *count_slot;
     u32 var_14;
     s32 copy_end_addr;
-    s32 *tbl = (s32 *)arg0;
+    s32 *tbl = (s32 *)pack_table_addr;
 
     count = tbl[0];
     header_cursor_addr = output_addr;
@@ -2167,14 +2169,14 @@ s32 snd_CopySelectedPackSectionsAndLoadVabPacks(s32 arg0, s32 output_addr) {
     first_section_end_offset = tbl[2];
     /* FAKE: var_s7 built in two steps; `var_s7 = arg0 + tail_off` swaps
      * s7 / s8: score 6 (Q129) */
-    var_s7 = arg0;
+    var_s7 = pack_table_addr;
     var_s7 += tail_off;
     first_section_offset = tbl[1];
-    first_section_addr = arg0 + first_section_offset;
+    first_section_addr = pack_table_addr + first_section_offset;
     first_section_size = first_section_end_offset - first_section_offset;
 
     if (count >= 2) {
-        second_section_addr = arg0 + first_section_end_offset;
+        second_section_addr = pack_table_addr + first_section_end_offset;
         second_section_size = tbl[3] - first_section_end_offset;
     } else {
         second_section_addr = 0;

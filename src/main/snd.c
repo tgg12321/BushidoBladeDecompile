@@ -391,7 +391,7 @@ s32 snd_MoveVabBody(
  * slot that is not already contiguous and every slot after it. `arg0` is never
  * read. `addr` is assigned inside the first (otherwise empty) loop: the target
  * computes it after the loop's `vab_count > 0` guard. */
-s32 snd_CompactVabBodies(s16 arg0, s32 base) {
+s32 snd_CompactVabBodies(s16 loading_vab_id, s32 base) {
     s16 sorted_vab_ids[16];
     s16 vab_count;
     u16 mask;
@@ -564,7 +564,7 @@ s32 snd_QueueSound(s32 sound_index, s32 right_volume, s32 left_volume) {
  */
 void snd_FlushSoundQueue(void) {
 
-    u8 var_0[24];
+    u8 key_status[24];
     s16 queue_index;
     s16 voice_index;
     s16 next_voice_index;
@@ -572,7 +572,7 @@ void snd_FlushSoundQueue(void) {
     u16 *sound_vab_entry;
     u32 *key_on_entry;
 
-    SpuGetAllKeysStatus(var_0);
+    SpuGetAllKeysStatus(key_status);
     next_voice_index = 0;
     for (queue_index = 0; queue_index < 0x18; queue_index++) {
         sound_vab_entry = g_snd_queue[queue_index].req;
