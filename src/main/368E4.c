@@ -799,7 +799,7 @@ s32 wave_Init(void) {
     s32 t0;
     s32 v1;
     s32 t2;
-    s32 v0;
+    s32 cell_halfword;
     s32 *ptr;
     s32 *p;
     s32 w;
@@ -826,16 +826,16 @@ s32 wave_Init(void) {
                 cell_cursor += 1;
                 *cell_cursor = s1val;
                 cell_cursor += 1;
-                v0 = -0xC1;
-                *cell_cursor = v0;
+                cell_halfword = -0xC1;
+                *cell_cursor = cell_halfword;
                 cell_cursor += 1;
-                v0 = -0x100;
-                *cell_cursor = v0;
+                cell_halfword = -0x100;
+                *cell_cursor = cell_halfword;
                 cell_cursor += 1;
-                v0 = -0x3FC1;
-                *cell_cursor = v0;
+                cell_halfword = -0x3FC1;
+                *cell_cursor = cell_halfword;
                 cell_cursor += 1;
-                v0 = -0x4000;
+                cell_halfword = -0x4000;
             } else {
                 *cell_cursor = s2val;
                 cell_cursor += 1;
@@ -843,38 +843,38 @@ s32 wave_Init(void) {
                 cell_cursor += 1;
                 *cell_cursor = t1val;
                 cell_cursor += 1;
-                v0 = -0x40C1;
-                *cell_cursor = v0;
+                cell_halfword = -0x40C1;
+                *cell_cursor = cell_halfword;
                 cell_cursor += 1;
-                v0 = -0x4100;
-                *cell_cursor = v0;
+                cell_halfword = -0x4100;
+                *cell_cursor = cell_halfword;
                 cell_cursor += 1;
-                v0 = -0x7FC1;
-                *cell_cursor = v0;
+                cell_halfword = -0x7FC1;
+                *cell_cursor = cell_halfword;
                 cell_cursor += 1;
-                v0 = -0x8000;
+                cell_halfword = -0x8000;
             }
-            *cell_cursor = v0;
+            *cell_cursor = cell_halfword;
             cell_cursor += 1;
             if (row & 1) {
-                v0 = a2 | t0;
-                *cell_cursor = v0;
+                cell_halfword = a2 | t0;
+                *cell_cursor = cell_halfword;
                 cell_cursor += 1;
-                v0 = v1 | a1;
+                cell_halfword = v1 | a1;
             } else {
-                v0 = v1 | a1;
-                *cell_cursor = v0;
+                cell_halfword = v1 | a1;
+                *cell_cursor = cell_halfword;
                 cell_cursor += 1;
-                v0 = a2 | t0;
+                cell_halfword = a2 | t0;
             }
-            *cell_cursor = v0;
+            *cell_cursor = cell_halfword;
             cell_cursor += 1;
             *cell_cursor = 0;
             cell_cursor += 1;
             *cell_cursor = 0;
             cell_cursor += 1;
-            v0 = -0x1000;
-            *cell_cursor = v0;
+            cell_halfword = -0x1000;
+            *cell_cursor = cell_halfword;
             cell_cursor += 1;
             t0 += 0x100;
             a2 += 1;
@@ -2155,12 +2155,12 @@ s32 snd_CopySelectedPackSectionsAndLoadVabPacks(
     s32 first_section_size;
     s32 second_section_addr;
     s32 second_section_size;
-    s32 var_s0;
-    s32 var_s2;
+    s32 slot0_selection;
+    s32 slot1_selection;
     s32 pack_cursor_addr;
     s32 header_cursor_addr;
     s32 *count_slot;
-    u32 var_14;
+    u32 header_entry_count;
     s32 copy_end_addr;
     s32 *tbl = (s32 *)pack_table_addr;
 
@@ -2184,29 +2184,29 @@ s32 snd_CopySelectedPackSectionsAndLoadVabPacks(
         second_section_size = 0;
     }
 
-    var_s0 = g_resource_pair_selection[0];
-    var_s2 = g_resource_pair_selection[1];
+    slot0_selection = g_resource_pair_selection[0];
+    slot1_selection = g_resource_pair_selection[1];
     pack_cursor_addr = header_cursor_addr + 0xC;
 
-    if (var_s0 == -1) {
-        if (var_s2 == var_s0) {
+    if (slot0_selection == -1) {
+        if (slot1_selection == slot0_selection) {
             /* FAKE: a no-op copy (both are -1); the target's `move s0,s2`;
              * without it the test inverts (score 4). */
-            var_s0 = var_s2;
+            slot0_selection = slot1_selection;
         } else {
-            var_s2 = 0;
+            slot1_selection = 0;
         }
-    } else if (var_s2 == -1) {
-        var_s0 = 0;
-    } else if (var_s0 == var_s2) {
-        var_s0 = 0;
-        var_s2 = 0;
-    } else if (var_s0 < var_s2) {
-        var_s0 = 0;
-        var_s2 = 1;
-    } else if (var_s2 < var_s0) {
-        var_s0 = 1;
-        var_s2 = 0;
+    } else if (slot1_selection == -1) {
+        slot0_selection = 0;
+    } else if (slot0_selection == slot1_selection) {
+        slot0_selection = 0;
+        slot1_selection = 0;
+    } else if (slot0_selection < slot1_selection) {
+        slot0_selection = 0;
+        slot1_selection = 1;
+    } else if (slot1_selection < slot0_selection) {
+        slot0_selection = 1;
+        slot1_selection = 0;
     } else {
         sys_StoreZeroPastScratchpadOnFailedCheck();
     }
@@ -2214,19 +2214,19 @@ s32 snd_CopySelectedPackSectionsAndLoadVabPacks(
     /* the entry count's header slot is reserved before the entries are
      * written; the count is (var_s0 >= 0) + (var_s2 >= 0), its first term
      * built as ~var_s0 >> 31 (Ruling 4 split; one expression: score 2) */
-    var_14 = ~var_s0;
+    header_entry_count = ~slot0_selection;
     count_slot = (s32 *)header_cursor_addr;
     header_cursor_addr += 4;
-    var_14 >>= 31;
-    if (var_s2 >= 0) {
-        var_14 += 1;
+    header_entry_count >>= 31;
+    if (slot1_selection >= 0) {
+        header_entry_count += 1;
     }
-    *count_slot = var_14;
+    *count_slot = header_entry_count;
 
-    if (var_s0 >= 0) {
+    if (slot0_selection >= 0) {
         *(s32 *)header_cursor_addr = 2;
         header_cursor_addr += 4;
-        if (var_s0 == 0) {
+        if (slot0_selection == 0) {
             mem_MoveBlockRoundedUpToWords(
                 first_section_addr, pack_cursor_addr, first_section_size);
             copy_end_addr = pack_cursor_addr + first_section_size;
@@ -2240,9 +2240,9 @@ s32 snd_CopySelectedPackSectionsAndLoadVabPacks(
             snd_LoadVabPack((Unk8005C2A8Pack *)pack_cursor_addr, 2, var_s7);
     }
 
-    if (var_s2 >= 0) {
+    if (slot1_selection >= 0) {
         *(s32 *)header_cursor_addr = 5;
-        if (var_s2 == 0) {
+        if (slot1_selection == 0) {
             mem_MoveBlockRoundedUpToWords(
                 first_section_addr, pack_cursor_addr, first_section_size);
             copy_end_addr = pack_cursor_addr + first_section_size;
