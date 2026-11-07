@@ -3051,11 +3051,11 @@ void math_ComputeBallisticVelocityXZ(
                     ((vertical_velocity_x32 + var_0) * dist) / dy2 / 32;
 
                 if (horizontal_speed < 0) {
-                    /* FAKE: dead dy reused as the arm-2 (a2-var_0) temp:
-                     * var_0's register preference flows through dy to the /32
-                     * quotient, which takes $v1 as in the target. The
-                     * natural spelling or a fresh temp: score 6; reusing
-                     * var_0: 8. */
+                    /* FAKE: dead dy reused as the arm-2
+                     * (vertical_velocity_x32-var_0) temp: var_0's register
+                     * preference flows through dy to the /32 quotient, which
+                     * takes $v1 as in the target. The natural spelling or a
+                     * fresh temp: score 6; reusing var_0: 8. */
                     dy = vertical_velocity_x32 - var_0;
                     horizontal_speed = (dy * dist) / dy2 / 32;
                 }

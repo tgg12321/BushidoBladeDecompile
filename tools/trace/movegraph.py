@@ -256,7 +256,7 @@ class Fight:
         else:
             if not m.covered(KEY_CONFIG, 3):
                 raise SystemExit("movegraph: key config 0x80106A70 not read")
-            shift = 0 if mode == 6 else 4 * idx  # fighter_BuildCpuOrMappedPadState's temp
+            shift = 0 if mode == 6 else 4 * idx  # fighter_BuildCpuOrMappedPadState's player_field_shift
             nib = [(m.u8(KEY_CONFIG + i) >> shift) & 0xF for i in range(3)]
         for bit, n in zip((5, 6, 7), nib):
             pads = [name for k, (name, _) in enumerate(NIBBLE_PAD) if n & (1 << k)]
