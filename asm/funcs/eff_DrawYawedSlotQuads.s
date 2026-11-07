@@ -292,12 +292,12 @@ glabel eff_DrawYawedSlotQuads
     /* 54A8C 8006428C 1C00AE8E */  lw         $t6, 0x1C($s5)
     /* 54A90 80064290 0030CD48 */  ctc2       $t5, $6 /* handwritten instruction */
     /* 54A94 80064294 0038CE48 */  ctc2       $t6, $7 /* handwritten instruction */
-    /* 54A98 80064298 0A800A3C */  lui        $t2, %hi(D_8009BBE4)
-    /* 54A9C 8006429C E4BB4A25 */  addiu      $t2, $t2, %lo(D_8009BBE4)
-    /* 54AA0 800642A0 0A800B3C */  lui        $t3, %hi(D_8009BBEC)
-    /* 54AA4 800642A4 ECBB6B25 */  addiu      $t3, $t3, %lo(D_8009BBEC)
-    /* 54AA8 800642A8 0A80093C */  lui        $t1, %hi(D_8009BBF4)
-    /* 54AAC 800642AC F4BB2925 */  addiu      $t1, $t1, %lo(D_8009BBF4)
+    /* 54A98 80064298 0A800A3C */  lui        $t2, %hi(g_eff_yawed_slot_quad_top_left_vertex)
+    /* 54A9C 8006429C E4BB4A25 */  addiu      $t2, $t2, %lo(g_eff_yawed_slot_quad_top_left_vertex)
+    /* 54AA0 800642A0 0A800B3C */  lui        $t3, %hi(g_eff_yawed_slot_quad_top_right_vertex)
+    /* 54AA4 800642A4 ECBB6B25 */  addiu      $t3, $t3, %lo(g_eff_yawed_slot_quad_top_right_vertex)
+    /* 54AA8 800642A8 0A80093C */  lui        $t1, %hi(g_eff_yawed_slot_quad_bottom_left_vertex)
+    /* 54AAC 800642AC F4BB2925 */  addiu      $t1, $t1, %lo(g_eff_yawed_slot_quad_bottom_left_vertex)
     /* 54AB0 800642B0 000040C9 */  lwc2       $0, 0x0($t2)
     /* 54AB4 800642B4 040041C9 */  lwc2       $1, 0x4($t2)
     /* 54AB8 800642B8 000062C9 */  lwc2       $2, 0x0($t3)
@@ -342,8 +342,8 @@ glabel eff_DrawYawedSlotQuads
     /* 54B54 80064354 31004010 */  beqz       $v0, .L8006441C
     /* 54B58 80064358 00000000 */   nop
     /* 54B5C 8006435C 0000C397 */  lhu        $v1, 0x0($fp)
-    /* 54B60 80064360 0A80093C */  lui        $t1, %hi(D_8009BBFC)
-    /* 54B64 80064364 FCBB2925 */  addiu      $t1, $t1, %lo(D_8009BBFC)
+    /* 54B60 80064360 0A80093C */  lui        $t1, %hi(g_eff_yawed_slot_quad_bottom_right_vertex)
+    /* 54B64 80064364 FCBB2925 */  addiu      $t1, $t1, %lo(g_eff_yawed_slot_quad_bottom_right_vertex)
     /* 54B68 80064368 01006224 */  addiu      $v0, $v1, 0x1
     /* 54B6C 8006436C 40180300 */  sll        $v1, $v1, 1
     /* 54B70 80064370 0000C2A7 */  sh         $v0, 0x0($fp)

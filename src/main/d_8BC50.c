@@ -13,14 +13,16 @@
  * g_gpu_captioned_picture_cell, g_gpu_captioned_picture_ippon_caption_cell,
  * g_gpu_stage_card_map_cell (4D0A8.c), the one-record TexRec tables
  * g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec
- * .. g_eff_two_animated_quads_early_tex_rec and the SVECTORs D_8009BBE4
- * .. D_8009BBFC (eff.c). Under -G8 the original compiler puts them in .sdata,
- * so no -G8 file defined them.
+ * .. g_eff_two_animated_quads_early_tex_rec and the SVECTORs
+ * g_eff_yawed_slot_quad_top_left_vertex
+ * .. g_eff_yawed_slot_quad_bottom_right_vertex (eff.c). Under -G8 the original
+ * compiler puts them in .sdata, so no -G8 file defined them.
  * 3. Neighbours in .data link order: 4D0A8.c and eff.c, -G8 code modules
  *    with their own .sdata / .sbss and gp accesses, whose .text is adjacent
  *    (0x8005C8A8 + 0x41C0 = 0x80060A68); so no code module owns them.
  * Readers: g_gpu_time_and_counter_line_origins .. g_gpu_packed_sprite_positions
- * (4D0A8.c), D_8009B890 .. D_8009BBFC (eff.c). */
+ * (4D0A8.c), g_eff_multi_quad_particle_tex_rec ..
+ * g_eff_yawed_slot_quad_bottom_right_vertex (eff.c). */
 #include "common.h"
 #include "bb2.h"
 #include <psxsdk/libgte.h>
@@ -70,7 +72,7 @@ Unk8009B400Record D_8009B56C[2] = {
     {101, 18, 0x00, 0x00, 0x40, 0x0A}, {165, 18, 0x40, 0x00, 0x35, 0x0A}};
 Unk8009B400Record D_8009B57C[2] = {
     {123, 18, 0x00, 0x00, 0x40, 0x0A}, {187, 18, 0x40, 0x00, 0x09, 0x0A}};
-u8 D_8009B58C[20] = {
+u8 g_gpu_comparison_character_x_offsets[20] = {
     0x7B, 0x7B, 0x7F, 0x75, 0x66, 0x77, 0x78, 0x64, 0x60, 0x67,
     0x74, 0x88, 0x95, 0x79, 0x86, 0x63, 0x7C, 0x76, 0x66, 0x77};
 Unk8009B0E0Record g_gpu_paired_mark_sheet_headers[2] = {
@@ -167,15 +169,18 @@ u16 g_gpu_packed_sprite_positions[32] = {
  * g_eff_command_handler_bases and the handler table g_eff_command_handlers
  * (eff_StartCommand / eff_StepCommand), g_eff_rotation_matrix_scale
  * (eff_SetRotMatrix), g_eff_rotated_quad_cluster_vertices
- * (eff_DrawAndAdvanceRotatedQuadClusters) and D_8009BBE4 .. D_8009BBFC
- * (eff_DrawYawedSlotQuads). */
-TexRec D_8009B890[4] = {{0x380, 0xFF, 0xA0, 0xE0},
-                        {0x380, 0xFF, 0xA0, 0xE8},
-                        {0x380, 0xFF, 0xA0, 0xE8},
-                        {0x380, 0xFF, 0xA0, 0xE8}};
-TexRec D_8009B8B0[3] = {{0x380, 0xFF, 0xA0, 0xE8},
-                        {0x380, 0xFF, 0xA0, 0xE8},
-                        {0x380, 0xFF, 0xA0, 0xE8}};
+ * (eff_DrawAndAdvanceRotatedQuadClusters) and
+ * g_eff_yawed_slot_quad_top_left_vertex ..
+ * g_eff_yawed_slot_quad_bottom_right_vertex (eff_DrawYawedSlotQuads). */
+TexRec g_eff_multi_quad_particle_tex_rec[4] = {
+    {0x380, 0xFF, 0xA0, 0xE0},
+    {0x380, 0xFF, 0xA0, 0xE8},
+    {0x380, 0xFF, 0xA0, 0xE8},
+    {0x380, 0xFF, 0xA0, 0xE8}};
+TexRec g_eff_additive_single_quad_particle_tex_rec[3] = {
+    {0x380, 0xFF, 0xA0, 0xE8},
+    {0x380, 0xFF, 0xA0, 0xE8},
+    {0x380, 0xFF, 0xA0, 0xE8}};
 TexRec
     g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec
         [1] = {{0x380, 0xFC, 0x0, 0x0}};
@@ -213,14 +218,16 @@ TexRec g_eff_quad_pair_first_early_strip_tex_rec[1] = {
     {0x3B0, 0xFD, 0x0, 0xE0}};
 TexRec g_eff_quad_pair_first_late_and_pair_first_shaped_quad_strip_tex_rec[1] =
     {{0x380, 0xFE, 0x40, 0xE0}};
-TexRec D_8009B998[4] = {{0x3E0, 0xFC, 0xC0, 0x40},
-                        {0x3E0, 0xFC, 0xE0, 0x40},
-                        {0x3E0, 0xFC, 0xC0, 0x60},
-                        {0x3E0, 0xFC, 0xE0, 0x60}};
-TexRec D_8009B9B8[4] = {{0x3D0, 0xFC, 0xC0, 0x0},
-                        {0x3D0, 0xFC, 0xE0, 0x0},
-                        {0x3D0, 0xFC, 0xC0, 0x20},
-                        {0x3D0, 0xFC, 0xE0, 0x20}};
+TexRec g_eff_texture_selected_particle_default_tex_recs[4] = {
+    {0x3E0, 0xFC, 0xC0, 0x40},
+    {0x3E0, 0xFC, 0xE0, 0x40},
+    {0x3E0, 0xFC, 0xC0, 0x60},
+    {0x3E0, 0xFC, 0xE0, 0x60}};
+TexRec g_eff_texture_selected_particle_alternate_tex_recs[4] = {
+    {0x3D0, 0xFC, 0xC0, 0x0},
+    {0x3D0, 0xFC, 0xE0, 0x0},
+    {0x3D0, 0xFC, 0xC0, 0x20},
+    {0x3D0, 0xFC, 0xE0, 0x20}};
 TexRec
     g_eff_quad_pair_first_early_and_pair_first_shaped_quad_square_tex_rec[1] = {
         {0x3C0, 0xFC, 0x0, 0x0}};
@@ -372,7 +379,7 @@ s16 g_eff_rotated_quad_cluster_vertices[48] = {
     -125, -125, 0, 0, 125,  -125, 0,   0, -125, 125, 0, 0, 125, 125, 0,   0,
     -125, 0,    0, 0, -125, 0,    500, 0, 125,  0,   0, 0, 125, 0,   500, 0,
     0,    -125, 0, 0, 0,    -125, 500, 0, 0,    125, 0, 0, 0,   125, 500, 0};
-SVECTOR D_8009BBE4 = {-82, 0, -220, 0};
-SVECTOR D_8009BBEC = {82, 0, -220, 0};
-SVECTOR D_8009BBF4 = {-82, 0, 78, 0};
-SVECTOR D_8009BBFC = {82, 0, 78, 0};
+SVECTOR g_eff_yawed_slot_quad_top_left_vertex = {-82, 0, -220, 0};
+SVECTOR g_eff_yawed_slot_quad_top_right_vertex = {82, 0, -220, 0};
+SVECTOR g_eff_yawed_slot_quad_bottom_left_vertex = {-82, 0, 78, 0};
+SVECTOR g_eff_yawed_slot_quad_bottom_right_vertex = {82, 0, 78, 0};

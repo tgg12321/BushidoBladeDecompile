@@ -2746,10 +2746,10 @@ s32 g_row_menu_resource_root;
 s32 g_sheet_pair_selection_y_offset;
 
 /* .data 0x8009BC04..0x8009BC1C, this file's whole .data (eff.c's
- * D_8009BBFC ends at 0x8009BC04, d_8C41C.c's g_entry_menu_handlers follows):
- * the list menu's state, rows 0-7 switched on, row mask 0xBF, then the eight
- * option rows {state, mode}. Defined after every function, so no body sees a
- * definition where it saw an extern. */
+ * g_eff_yawed_slot_quad_bottom_right_vertex ends at 0x8009BC04, d_8C41C.c's
+ * g_entry_menu_handlers follows): the list menu's state, rows 0-7 switched on,
+ * row mask 0xBF, then the eight option rows {state, mode}. Defined after every
+ * function, so no body sees a definition where it saw an extern. */
 MenuState g_row_menu_row_state = {
     0xFF,
     0xBF,

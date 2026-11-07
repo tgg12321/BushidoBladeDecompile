@@ -5,8 +5,9 @@
  * gpu_DrawIndexedCellsDigitPairsAndGrowingBars, ...). .text 0x8005C8A8 (ROM
  * 0x4D0A8). Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #136): no
  * direct call crosses the cut; the static g_gpu_jitter_random_state and the
- * .sdata D_800A3264..g_gpu_fixed_bar_progress (RECTs and draw records) are used
- * only here and follow snd.c's .sbss and 4510C.c's .sdata in address order.
+ * .sdata g_gpu_time_record_digit_cell..g_gpu_fixed_bar_progress (RECTs and draw
+ * records) are used only here and follow snd.c's .sbss and 4510C.c's .sdata in
+ * address order.
  */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
@@ -766,9 +767,9 @@ s32 gpu_DrawDecrementedSingleSideCounter(
         -1, counter_value - 1, draw_chunk_addr, ot_index);
 }
 
-extern Unk8009B0E0Record D_8009ADB4;
-extern Unk8009B400Record D_8009ADC0[3];
-extern Unk8009B400Record D_8009ADD8[][3];
+extern Unk8009B0E0Record g_gpu_character_cell_sheet_header;
+extern Unk8009B400Record g_gpu_character_cell_row_8_tail_cells[3];
+extern Unk8009B400Record g_gpu_character_cell_rows[][3];
 extern Unk8009B0E0Record g_gpu_comparison_unrecorded_match_sheet_header;
 extern Unk8009B400Record g_gpu_comparison_unrecorded_match_cells[5];
 extern Unk8009B0E0Record g_gpu_comparison_score_and_center_sheet_header;
@@ -785,7 +786,7 @@ extern Unk8009B0E0Record D_8009B548;
 extern Unk8009B400Record D_8009B554[3];
 extern Unk8009B400Record D_8009B56C[2];
 extern Unk8009B400Record D_8009B57C[2];
-extern u8 D_8009B58C[];
+extern u8 g_gpu_comparison_character_x_offsets[];
 extern u8 g_gpu_comparison_unrecorded_match_cell_indices[];
 
 s32 gpu_DrawPackedComparisonRowsAndTotals(
@@ -959,7 +960,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     s.ot_idx = ot_index;
     higher_score_match_counts[0] = higher_score_match_counts[1] = 0;
     for (i = 0; i < g_working_record.match_count_index + 3; i++) {
-        s.header = &D_8009ADB4;
+        s.header = &g_gpu_character_cell_sheet_header;
         s.semi = 0;
         var_1[0] = (packed_row_values >> (i * 4)) & 3;
         var_1[1] = (packed_row_values >> (i * 4 + 2)) & 3;
@@ -981,8 +982,8 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
             if (c >= 12) {
                 c -= 2;
             }
-            s.table = D_8009ADD8[c];
-            s.x = j * 320 + D_8009B58C[c];
+            s.table = g_gpu_character_cell_rows[c];
+            s.x = j * 320 + g_gpu_comparison_character_x_offsets[c];
             if (g_working_record.match_count_index == 2) {
                 s.y = i * 24 - 8;
             } else if (g_working_record.match_count_index == 1) {
@@ -993,7 +994,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
             s.sprt_out = cur;
             cur = gpu_AddSpriteCells(&s);
             if (g_working_record.match_picks[j][i].round_grid_pick == 8) {
-                s.table = D_8009ADC0;
+                s.table = g_gpu_character_cell_row_8_tail_cells;
                 s.sprt_out = cur;
                 cur = gpu_AddSpriteCells(&s);
             }
@@ -1076,7 +1077,8 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     tile->h = 1;
     SetSemiTrans(tile, 0);
     AddPrim(g_gpu_ot_ptr + ot_index, tile);
-    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(&D_8009ADB4, 0), 0);
+    SetDrawMode(dr_mode, 1, 0,
+                gpu_GetSheetTPage(&g_gpu_character_cell_sheet_header, 0), 0);
     AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     return end_addr - draw_chunk_addr;
 }
@@ -1685,7 +1687,7 @@ void gpu_ResetGrowingBarProgress(void) {
     g_gpu_highlighted_row_bar_progress = 0;
 }
 
-extern Unk8006D808Rec D_8009B0C0;
+extern Unk8006D808Rec g_gpu_time_record_presentation_cell_digit_set;
 
 s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
     s32 draw_chunk_addr, s32 ot_index, s32 highlighted_row_index) {
@@ -1706,7 +1708,8 @@ s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
     sprt_out_addr = draw_chunk_addr;
     dr_mode_out_addr = draw_chunk_addr + 0x870;
     gpu_DrawIndexedCellsAndDecimalDigitPairs(
-        &sprt_out_addr, &dr_mode_out_addr, &D_8009B0C0, ot_index,
+        &sprt_out_addr, &dr_mode_out_addr,
+        &g_gpu_time_record_presentation_cell_digit_set, ot_index,
         highlighted_row_index);
     if ((u32)highlighted_row_index < 3U) {
         SetTile((TILE *)tile_out_addr);
@@ -1786,22 +1789,26 @@ s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
 
 /* .data 0x8009ADB4..0x8009B450, this file's .data (d_8A588.c's g_vab_id_list
  * and snd.c's g_snd_stage_reverb_types precede; the data-only d_8BC50.c's
- * g_gpu_time_and_counter_line_origins .. follow). D_8009ADB4 is the 3-cell
- * sheet header whose cells are D_8009ADC0; D_8009ADD8 is 20 rows of three cells
- * (gpu_DrawPackedComparisonRowsAndTotals picks a row by g_working_record's
- * round_grid_pick, less 2 from 12; the old D_8009AF94 label inside row 18 was
- * only sin_1's folded rsin_tbl base), D_8009AFB8 20 x offsets
- * (D_8009B0C0.character_x_offsets). D_8009ADD8 must follow D_8009ADC0:
+ * g_gpu_time_and_counter_line_origins .. follow).
+ * g_gpu_character_cell_sheet_header is the 3-cell sheet header whose cells are
+ * g_gpu_character_cell_row_8_tail_cells; g_gpu_character_cell_rows is 20 rows
+ * of three cells (gpu_DrawPackedComparisonRowsAndTotals picks a row by
+ * g_working_record's round_grid_pick, less 2 from 12; the old D_8009AF94 label
+ * inside row 18 was only sin_1's folded rsin_tbl base),
+ * g_gpu_time_record_character_x_offsets 20 x offsets
+ * (g_gpu_time_record_presentation_cell_digit_set.character_x_offsets).
+ * g_gpu_character_cell_rows must follow g_gpu_character_cell_row_8_tail_cells:
  * gpu_DrawIndexedCellsAndDecimalDigitPairs reaches row idx as
- * D_8009B0C0.character_cells + 3 + idx * 3, so the two read as one table of a
- * 3-cell group and 20 rows. */
-Unk8009B0E0Record D_8009ADB4 = {0x1F, 0x00, 3, 0x00, 0x3C0, 0x1FF, 0x0, 0x77};
-Unk8009B400Record D_8009ADC0[3] = {
+ * g_gpu_time_record_presentation_cell_digit_set.character_cells + 3 + idx * 3,
+ * so the two read as one table of a 3-cell group and 20 rows. */
+Unk8009B0E0Record g_gpu_character_cell_sheet_header = {
+    0x1F, 0x00, 3, 0x00, 0x3C0, 0x1FF, 0x0, 0x77};
+Unk8009B400Record g_gpu_character_cell_row_8_tail_cells[3] = {
     {48, 80, 0xB0, 0x00, 0x10, 0x0C},
     {64, 80, 0xC0, 0x00, 0x10, 0x0C},
     {80, 80, 0xD0, 0x00, 0x30, 0x0C},
 };
-Unk8009B400Record D_8009ADD8[20][3] = {
+Unk8009B400Record g_gpu_character_cell_rows[20][3] = {
     {{0, 80, 0x00, 0x00, 0x20, 0x0C},
      {32, 80, 0x20, 0x00, 0x20, 0x0C},
      {64, 80, 0x40, 0x00, 0x0B, 0x0C}},
@@ -1863,21 +1870,23 @@ Unk8009B400Record D_8009ADD8[20][3] = {
      {32, 80, 0x6E, 0x6C, 0x20, 0x0C},
      {64, 80, 0x8E, 0x6C, 0x12, 0x0C}},
 };
-s16 D_8009AFB8[20] = {
+s16 g_gpu_time_record_character_x_offsets[20] = {
     0x1B0, 0x1B0, 0x1B4, 0x1AA, 0x19B, 0x1AC, 0x1AD, 0x19A, 0x195, 0x19C,
     0x1A9, 0x1BD, 0x1CB, 0x1AE, 0x1BB, 0x198, 0x1B1, 0x1AA, 0x19B, 0x1AC,
 };
 
-/* The sheets D_8009B0C0 points at: three frame sheets (count 6 / 3 / 12, each
- * header followed by its cells; after D_8009AFE0's six cells come 8 zero
- * bytes, kept as a seventh, empty cell), the digit sheet D_8009B0B4 (its one
- * cell is the .sdata D_800A3264), then D_8009B0C0 itself.
+/* The sheets g_gpu_time_record_presentation_cell_digit_set points at: three
+ * frame sheets (count 6 / 3 / 12, each header followed by its cells; after
+ * D_8009AFE0's six cells come 8 zero bytes, kept as a seventh, empty cell), the
+ * digit sheet g_gpu_time_record_digit_sheet_header (its one cell is the .sdata
+ * g_gpu_time_record_digit_cell), then
+ * g_gpu_time_record_presentation_cell_digit_set itself.
  * g_gpu_mode_panel_sheet_headers is
  * gpu_DrawModeSizedPanelWithSelectedCellOpaque's table of 9 headers;
  * g_gpu_mode_panel_toggle_row_label_sheet_header /
  * g_gpu_mode_panel_toggle_state_sheet_header two more. These cells sit in the
  * header's cells[0] tail (a GNU extension; .size says 12) because only the
- * header is ever named, unlike D_8009ADC0. */
+ * header is ever named, unlike g_gpu_character_cell_row_8_tail_cells. */
 Unk8009B0E0Record D_8009AFE0 = {
     0x1E,
     0x00,
@@ -1930,15 +1939,16 @@ Unk8009B0E0Record D_8009B048 = {
      {265, 176, 0x00, 0x00, 0x03, 0x04},
      {270, 176, 0x00, 0x00, 0x03, 0x04}},
 };
-Unk8009B0E0Record D_8009B0B4 = {0x1E, 0x00, 1, 0xFF, 0x380, 0x1FF, 0x0, 0x1A};
-extern Unk8009B400Record D_800A3264;
-Unk8006D808Rec D_8009B0C0 = {
+Unk8009B0E0Record g_gpu_time_record_digit_sheet_header = {
+    0x1E, 0x00, 1, 0xFF, 0x380, 0x1FF, 0x0, 0x1A};
+extern Unk8009B400Record g_gpu_time_record_digit_cell;
+Unk8006D808Rec g_gpu_time_record_presentation_cell_digit_set = {
     {&D_8009AFE0, &D_8009B024, &D_8009B048},
-    &D_8009ADB4,
-    D_8009ADC0,
-    &D_8009B0B4,
-    &D_800A3264,
-    D_8009AFB8,
+    &g_gpu_character_cell_sheet_header,
+    g_gpu_character_cell_row_8_tail_cells,
+    &g_gpu_time_record_digit_sheet_header,
+    &g_gpu_time_record_digit_cell,
+    g_gpu_time_record_character_x_offsets,
 };
 Unk8009B0E0Record g_gpu_mode_panel_sheet_headers[9] = {
     {0x1F, 0x00, 2, 0x00, 0x3D0, 0x1FD, 0xA0, 0x1C},
@@ -2086,9 +2096,11 @@ Unk8009B400Record g_gpu_decimal_digit_cells[10] = {
 };
 
 /* This file's initialized small data (.sdata), in address order (Q65). */
-/* D_8009B0C0.digit_cell, the one cell of the digit sheet D_8009B0B4; this
- * file's by layout, between its gp-reached objects (Q80) */
-Unk8009B400Record D_800A3264 = {0xB3, 0x4E, 0x00, 0x00, 0x18, 0x0C};
+/* g_gpu_time_record_presentation_cell_digit_set.digit_cell, the one cell of the
+ * digit sheet g_gpu_time_record_digit_sheet_header; this file's by layout,
+ * between its gp-reached objects (Q80) */
+Unk8009B400Record g_gpu_time_record_digit_cell = {
+    0xB3, 0x4E, 0x00, 0x00, 0x18, 0x0C};
 s32 g_gpu_jittered_quad_pair_cycle = 0;
 u8 g_gpu_comparison_unrecorded_match_cell_indices[8] = {0, 1, 2, 3, 4, 0, 0, 0};
 s32 g_gpu_split_wipe_frame = 0;

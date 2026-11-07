@@ -1454,10 +1454,10 @@ u8 eff_AllocateOrRecycleYawedQuadSlot(s32 command_slot_index) {
  * the slot's matrix, keep it when its depth is in range, then link every new
  * quad into the OT at its depth. Returns 1. */
 s32 eff_DrawYawedSlotQuads(s32 arg0) {
-    extern SVECTOR D_8009BBE4;
-    extern SVECTOR D_8009BBEC;
-    extern SVECTOR D_8009BBF4;
-    extern SVECTOR D_8009BBFC;
+    extern SVECTOR g_eff_yawed_slot_quad_top_left_vertex;
+    extern SVECTOR g_eff_yawed_slot_quad_top_right_vertex;
+    extern SVECTOR g_eff_yawed_slot_quad_bottom_left_vertex;
+    extern SVECTOR g_eff_yawed_slot_quad_bottom_right_vertex;
     s32 count;
     MATRIX *mats;
     MATRIX *var_2;
@@ -1531,7 +1531,9 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
         gte_CompMatrix(g_eff_view_rotation_matrix, &mats[i], var_2);
         gte_SetRotMatrix(var_2);
         gte_SetTransMatrix(var_2);
-        gte_ldv3(&D_8009BBE4, &D_8009BBEC, &D_8009BBF4);
+        gte_ldv3(&g_eff_yawed_slot_quad_top_left_vertex,
+                 &g_eff_yawed_slot_quad_top_right_vertex,
+                 &g_eff_yawed_slot_quad_bottom_left_vertex);
         gte_rtpt();
         gte_stsxy3(sxy, sxy + 1, sxy + 2);
         gte_stsz(g_eff_depth_work);
@@ -1546,7 +1548,7 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
             continue;
         }
         quad_ot_indices[(*var_5)++] = *g_eff_depth_work;
-        gte_ldv0(&D_8009BBFC);
+        gte_ldv0(&g_eff_yawed_slot_quad_bottom_right_vertex);
         gte_rtps();
         gte_stsxy(sxy + 3);
         *(s32 *)&var_6->x0 = sxy[0];
@@ -2827,14 +2829,14 @@ u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
     *g_eff_tpage_word = 0x2E;
 
     if (particle_mode < 2) {
-        g_eff_current_tex_rec = D_8009B890;
+        g_eff_current_tex_rec = g_eff_multi_quad_particle_tex_rec;
         *p2 = 7;
         *p0 = 7;
         *g_eff_base_width = 0x40;
         *g_eff_base_height = 0x20;
         g_eff_particle_mode_position_counts[particle_mode] = 3;
     } else if (particle_mode < 4) {
-        g_eff_current_tex_rec = D_8009B890;
+        g_eff_current_tex_rec = g_eff_multi_quad_particle_tex_rec;
         *p2 = 7;
         *p0 = 7;
         *g_eff_base_width = 0x20;
@@ -2849,9 +2851,12 @@ u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
         }
         if (g_eff_yawed_particle_alternate_texture_flags[particle_mode - 4] !=
             0) {
-            g_eff_current_tex_rec = &D_8009B9B8[var_0->unk70];
+            g_eff_current_tex_rec =
+                &g_eff_texture_selected_particle_alternate_tex_recs
+                    [var_0->unk70];
         } else {
-            g_eff_current_tex_rec = &D_8009B998[var_0->unk70];
+            g_eff_current_tex_rec =
+                &g_eff_texture_selected_particle_default_tex_recs[var_0->unk70];
         }
         *p0 = 0x1F;
         *p2 = 0x20;
@@ -2861,7 +2866,7 @@ u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
         g_eff_particle_mode_position_counts[particle_mode] = 1;
     } else if (particle_mode < 8) {
         *g_eff_tpage_word = 0x2E;
-        g_eff_current_tex_rec = D_8009B8B0;
+        g_eff_current_tex_rec = g_eff_additive_single_quad_particle_tex_rec;
         *p2 = 0xF;
         *p0 = 0xF;
         *g_eff_base_width = 0xC0;

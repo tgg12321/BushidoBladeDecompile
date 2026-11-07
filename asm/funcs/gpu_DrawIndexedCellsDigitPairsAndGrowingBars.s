@@ -10,8 +10,8 @@ glabel gpu_DrawIndexedCellsDigitPairsAndGrowingBars
     /* 50F88 80060788 D0075126 */  addiu      $s1, $s2, 0x7D0
     /* 50F8C 8006078C 1800A427 */  addiu      $a0, $sp, 0x18
     /* 50F90 80060790 1C00A527 */  addiu      $a1, $sp, 0x1C
-    /* 50F94 80060794 0A80063C */  lui        $a2, %hi(D_8009B0C0)
-    /* 50F98 80060798 C0B0C624 */  addiu      $a2, $a2, %lo(D_8009B0C0)
+    /* 50F94 80060794 0A80063C */  lui        $a2, %hi(g_gpu_time_record_presentation_cell_digit_set)
+    /* 50F98 80060798 C0B0C624 */  addiu      $a2, $a2, %lo(g_gpu_time_record_presentation_cell_digit_set)
     /* 50F9C 8006079C 21386002 */  addu       $a3, $s3, $zero
     /* 50FA0 800607A0 70084226 */  addiu      $v0, $s2, 0x870
     /* 50FA4 800607A4 3400BFAF */  sw         $ra, 0x34($sp)

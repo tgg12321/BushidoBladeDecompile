@@ -602,8 +602,8 @@ extern s32 g_snd_stage_sound_slot_positions[2][4];
 extern u8 g_fight_step_row_object_ids[][5];
 /* eff.c's sprite texture records (TexRec runs 0x8009B890..0x8009B9FF; sizes
  * from the data labels) */
-extern TexRec D_8009B890[4];
-extern TexRec D_8009B8B0[3];
+extern TexRec g_eff_multi_quad_particle_tex_rec[4];
+extern TexRec g_eff_additive_single_quad_particle_tex_rec[3];
 extern TexRec
     g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec
         [1];
@@ -624,8 +624,8 @@ extern TexRec g_eff_growing_quad_and_quad_pair_second_early_tex_rec[1];
 extern TexRec g_eff_quad_pair_first_early_strip_tex_rec[1];
 extern TexRec
     g_eff_quad_pair_first_late_and_pair_first_shaped_quad_strip_tex_rec[1];
-extern TexRec D_8009B998[4];
-extern TexRec D_8009B9B8[4];
+extern TexRec g_eff_texture_selected_particle_default_tex_recs[4];
+extern TexRec g_eff_texture_selected_particle_alternate_tex_recs[4];
 extern TexRec
     g_eff_quad_pair_first_early_and_pair_first_shaped_quad_square_tex_rec[1];
 extern TexRec g_eff_quad_pair_first_late_square_tex_rec[1];

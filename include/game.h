@@ -517,7 +517,8 @@ typedef struct {
 
 /* 0x8009BD24: two players x five rounds of 2-byte records; byte 0 is an
    index (round_grid_pick; gpu_DrawPackedComparisonRowsAndTotals reads it at
-   j * 10 + i * 2 and picks D_8009ADD8 / D_8009B58C by it;
+   j * 10 + i * 2 and picks g_gpu_character_cell_rows /
+   g_gpu_comparison_character_x_offsets by it;
    gpu_DrawSpriteAtPackedTablePosition reads player 0 round 0); byte 1 is the
    weapon id picked for that player and round (round_weapon_id; the 25788.c
    weapon copies read it at +1 of each 2-byte record).
@@ -984,8 +985,8 @@ typedef struct {
 
 /* One 8-byte texture record: the CLUT position (PsyQ getClut(x, y) = (y << 6) |
  * ((x >> 4) & 0x3F)) and the texture u/v origin. eff.c's g_eff_current_tex_rec
- * / g_eff_clut_tex_rec point at one; the D_8009B890 .. D_8009BA58 tables are
- * runs of them. */
+ * / g_eff_clut_tex_rec point at one; the g_eff_multi_quad_particle_tex_rec ..
+ * D_8009BA58 tables are runs of them. */
 typedef struct {
     u16 clut_x;
     u16 clut_y;
@@ -2525,8 +2526,8 @@ typedef struct Size2s16 {
  * character_cells, three cells per character after a first group), the digit
  * sheet and its cells (digit_sheet / digit_cell; the walker shifts the sheet's
  * ubase per digit), and per-character x offsets (character_x_offsets). 4D0A8
- * hands it D_8009B0C0, menu_DrawConfirmSheetsAndDigitPairs MOD.BIN's
- * confirm_list. */
+ * hands it g_gpu_time_record_presentation_cell_digit_set,
+ * menu_DrawConfirmSheetsAndDigitPairs MOD.BIN's confirm_list. */
 typedef struct {
     Unk8009B0E0Record *unk_00[3];
     Unk8009B0E0Record *character_sheet;

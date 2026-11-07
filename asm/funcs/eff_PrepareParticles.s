@@ -17,8 +17,8 @@ glabel eff_PrepareParticles
     /* 580E4 800678E4 0200E228 */  slti       $v0, $a3, 0x2
     /* 580E8 800678E8 10004010 */  beqz       $v0, .L8006792C
     /* 580EC 800678EC 6C00C924 */   addiu     $t1, $a2, 0x6C
-    /* 580F0 800678F0 0A80023C */  lui        $v0, %hi(D_8009B890)
-    /* 580F4 800678F4 90B84224 */  addiu      $v0, $v0, %lo(D_8009B890)
+    /* 580F0 800678F0 0A80023C */  lui        $v0, %hi(g_eff_multi_quad_particle_tex_rec)
+    /* 580F4 800678F4 90B84224 */  addiu      $v0, $v0, %lo(g_eff_multi_quad_particle_tex_rec)
     /* 580F8 800678F8 BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 580FC 800678FC 07000224 */  addiu      $v0, $zero, 0x7
     /* 58100 80067900 0200C2A4 */  sh         $v0, 0x2($a2)
@@ -36,8 +36,8 @@ glabel eff_PrepareParticles
     /* 5812C 8006792C 0400E228 */  slti       $v0, $a3, 0x4
     /* 58130 80067930 10004010 */  beqz       $v0, .L80067974
     /* 58134 80067934 00000000 */   nop
-    /* 58138 80067938 0A80023C */  lui        $v0, %hi(D_8009B890)
-    /* 5813C 8006793C 90B84224 */  addiu      $v0, $v0, %lo(D_8009B890)
+    /* 58138 80067938 0A80023C */  lui        $v0, %hi(g_eff_multi_quad_particle_tex_rec)
+    /* 5813C 8006793C 90B84224 */  addiu      $v0, $v0, %lo(g_eff_multi_quad_particle_tex_rec)
     /* 58140 80067940 BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 58144 80067944 07000224 */  addiu      $v0, $zero, 0x7
     /* 58148 80067948 0200C2A4 */  sh         $v0, 0x2($a2)
@@ -78,14 +78,14 @@ glabel eff_PrepareParticles
     /* 581CC 800679CC 06004010 */  beqz       $v0, .L800679E8
     /* 581D0 800679D0 00000000 */   nop
     /* 581D4 800679D4 7000C284 */  lh         $v0, 0x70($a2)
-    /* 581D8 800679D8 0A80033C */  lui        $v1, %hi(D_8009B9B8)
-    /* 581DC 800679DC B8B96324 */  addiu      $v1, $v1, %lo(D_8009B9B8)
+    /* 581D8 800679D8 0A80033C */  lui        $v1, %hi(g_eff_texture_selected_particle_alternate_tex_recs)
+    /* 581DC 800679DC B8B96324 */  addiu      $v1, $v1, %lo(g_eff_texture_selected_particle_alternate_tex_recs)
     /* 581E0 800679E0 7E9E0108 */  j          .L800679F8
     /* 581E4 800679E4 C0100200 */   sll       $v0, $v0, 3
   .L800679E8:
     /* 581E8 800679E8 7000C284 */  lh         $v0, 0x70($a2)
-    /* 581EC 800679EC 0A80033C */  lui        $v1, %hi(D_8009B998)
-    /* 581F0 800679F0 98B96324 */  addiu      $v1, $v1, %lo(D_8009B998)
+    /* 581EC 800679EC 0A80033C */  lui        $v1, %hi(g_eff_texture_selected_particle_default_tex_recs)
+    /* 581F0 800679F0 98B96324 */  addiu      $v1, $v1, %lo(g_eff_texture_selected_particle_default_tex_recs)
     /* 581F4 800679F4 C0100200 */  sll        $v0, $v0, 3
   .L800679F8:
     /* 581F8 800679F8 21104300 */  addu       $v0, $v0, $v1
@@ -113,8 +113,8 @@ glabel eff_PrepareParticles
     /* 5824C 80067A4C C403828F */  lw         $v0, %gp_rel(g_eff_tpage_word)($gp)
     /* 58250 80067A50 00000000 */  nop
     /* 58254 80067A54 000043AC */  sw         $v1, 0x0($v0)
-    /* 58258 80067A58 0A80023C */  lui        $v0, %hi(D_8009B8B0)
-    /* 5825C 80067A5C B0B84224 */  addiu      $v0, $v0, %lo(D_8009B8B0)
+    /* 58258 80067A58 0A80023C */  lui        $v0, %hi(g_eff_additive_single_quad_particle_tex_rec)
+    /* 5825C 80067A5C B0B84224 */  addiu      $v0, $v0, %lo(g_eff_additive_single_quad_particle_tex_rec)
     /* 58260 80067A60 BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 58264 80067A64 0F000224 */  addiu      $v0, $zero, 0xF
     /* 58268 80067A68 0200C2A4 */  sh         $v0, 0x2($a2)
