@@ -905,7 +905,7 @@ typedef struct {
 typedef struct Unk80104E88Rec {
     /* 0 = free; fight_CreateBallisticRecordAndDispatchEvent's type (1 / 2) */
     u8 ballistic_kind;
-    u8 unk_01;
+    u8 ever_created;
     u8 flight_frames;
     u8 owner_index; /* player index (Unk80101EC8Record.index) */
     Vec3i32 ballistic_pos;
@@ -1710,7 +1710,7 @@ typedef struct Unk80101EC8Record {
     s32 ground_y;
     s16 remaining_turn;
     s16 forward_move_rate;
-    s16 unk_150;
+    s16 forward_move_rate_reduction;
     s16 use_root_offset_yaw;
     s16 root_offset_yaw;
     s16 base_velocity_damping_x;
@@ -1740,7 +1740,7 @@ typedef struct Unk80101EC8Record {
     s16 ground_probe_1_yaw; /* the same for bone 14 */
     u8 unk_1C4[0x1C8 - 0x1C4];
     SVec4i16 orientation;
-    SVec4i16 unk_1D0;
+    SVec4i16 initial_orientation;
     s16 opponent_bearing;
     s16 bone_triangle_cross_y_positive;
     s16 downward_probe_hit;
@@ -1759,7 +1759,7 @@ typedef struct Unk80101EC8Record {
     /* fight_UpdateFighterInteractionsAndPointCaches: copy of scratchpad points
      * 0x1F800048 + idx * 0x18 */
     Unk80107850Rec prev_second_weapon_points[2];
-    VECTOR unk_24C;
+    VECTOR saved_base_velocity;
     /* fighter_Update: copy of scratchpad point
      * weapon_points[fighter_index][0] */
     Unk80107850Rec opponent_elevation_origin;

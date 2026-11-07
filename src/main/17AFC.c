@@ -4794,7 +4794,7 @@ Unk80104E88Rec *fight_CreateBallisticRecordAndDispatchEvent(
         return 0;
 
     ballistic_record->ballistic_kind = type;
-    ballistic_record->unk_01 = 1;
+    ballistic_record->ever_created = 1;
     ballistic_record->flight_frames = 0;
     ballistic_record->owner_index = src->index;
     ballistic_record->ballistic_pos.x = src->world_pos.x;

@@ -1313,7 +1313,7 @@ void fight_ResetFighter0ToStartPosition(void) {
     fighter_record->base_velocity.vx = 0;
     fighter_record->base_velocity.vy = 0;
     fighter_record->base_velocity.vz = 0;
-    fighter_record->unk_24C = fighter_record->base_velocity;
+    fighter_record->saved_base_velocity = fighter_record->base_velocity;
     /* Player 1's start position is raised by 0x384 as player 0's is, but not
      * read again here (the target performs these stores). */
     setVector(&local, local.vx, local.vy - 0x384, local.vz);
@@ -1328,7 +1328,7 @@ void fight_ResetFighter0ToStartPosition(void) {
     fighter_record->decaying_velocity.vz = 0;
     fighter_record->unk_144 = 0;
     fighter_record->remaining_turn = 0;
-    fighter_record->unk_150 = 0;
+    fighter_record->forward_move_rate_reduction = 0;
     fighter_record->use_root_offset_yaw = 0;
     fighter_record->forward_move_rate = 0;
     fighter_record->ground_y = fighter_record->collision_pos.vy;
@@ -4154,7 +4154,7 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
     p->base_velocity.vx = 0;
     p->base_velocity.vy = 0;
     p->base_velocity.vz = 0;
-    p->unk_24C = p->base_velocity;
+    p->saved_base_velocity = p->base_velocity;
     p->weapon_point_delta[0].vx = 0;
     p->weapon_point_delta[0].vy = 0;
     p->weapon_point_delta[0].vz = 0;
@@ -4167,7 +4167,7 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
     p->unk_144 = 0;
     p->ground_y = p->collision_pos.vy;
     p->remaining_turn = 0;
-    p->unk_150 = 0;
+    p->forward_move_rate_reduction = 0;
     p->use_root_offset_yaw = 0;
     p->forward_move_rate = 0;
     p->base_velocity_damping_x = 0xC00;
@@ -4193,7 +4193,7 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
     if (p->character_roster_index == 0x1F) {
         p->orientation.vy = ang + 0x800;
     }
-    p->unk_1D0 = p->orientation;
+    p->initial_orientation = p->orientation;
     fighter_ScaleBoneHitRecords(fighter_index, p->size_scale);
     if (g_fight_mode_selector != 0 || fighter_index != 0 ||
         g_fight_stage_start_count < 2 || g_fight_reinit_reuses_assets != 0) {
@@ -4512,7 +4512,7 @@ void fighter_UpdateInputSteeredForwardMotion(Unk80101EC8Record *arg0) {
              * pseudo keeps every staged value in $a2, as in the target;
              * separate locals land in $a2/$a0/$a1 (a fresh local here:
              * score 15). */
-            a2 = arg0->unk_150;
+            a2 = arg0->forward_move_rate_reduction;
             if (a2 < 0) {
                 a2 = -a2;
             }
@@ -5757,7 +5757,7 @@ skip_62:
     fighter_record->opponent_bearing = ratan2(
         fighter_record->other->world_pos.x - fighter_record->world_pos.x,
         fighter_record->other->world_pos.z - fighter_record->world_pos.z);
-    fighter_record->unk_24C = fighter_record->base_velocity;
+    fighter_record->saved_base_velocity = fighter_record->base_velocity;
     fighter_CacheDownwardProbeHit(fighter_record);
     fighter_UpdateBoneWorldData(fighter_record, SPAD->spadA8[fighter_index],
                                 SPAD->weapon_points[fighter_index],
