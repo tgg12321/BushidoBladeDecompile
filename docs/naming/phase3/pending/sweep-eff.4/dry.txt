@@ -1,0 +1,55 @@
+sweep-eff.4 (naming-b 2026-11-07): 17 research RENAME rows, 17 kept, 0 dropped (4D0A8.c 3 functions, 4 pairs, 52 substitutions: panel 9, Jittered 7, TimeFields 36; eff.c 10 functions, 13 pairs, 66 substitutions).
+Tree: ln-naming-b = main 73beb8bc1 (clean). Run in WSL via a script file (tmp/se4/dry.py + run.sh in the lane worktree; NAMING_KEYCHECK_ROOT = the worktree, venv active).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (same as var-locals-43 .. -55). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree (base = naming_keycheck.read_working_tree()).
+The 17 pairs of pairs.txt together were accepted (118 token substitutions: 4D0A8.c 52, eff.c 66; no include/ file touched). Each pair was also run alone: all accepted and every pair's alone count equals the drafter's independent token scan (17/17; tmp/se4/scan.py, written separately from scoped_plan: comments and strings blanked, ./-> member tokens excluded, signature plus body found by brace matching) and equals the research. Lines below come from that scan (token index to line mapping equal in count for every pair).
+Rejected by scoped_plan: none. The research's one scoped_plan refusal, eff_DrawYawedSlotQuads:var_2 (gte_CompMatrix macro argument), is not in pairs.txt (NO_NAME, see notes.txt).
+Specs naming two block-local bindings of the same name: none among the 17 (each name has a single declaration line in its function range; tmp/se4/scan.py decl_lines: one for each local, none needed for parameters).
+Fresh check (tmp/se4/fresh.py): none of the 14 distinct new names is a #define, enum constant, global or symbol_addrs.txt symbol. Outside the function, `base` occurs as other functions' locals and the PTR_OFF macro parameter (368E4.c:20); `selected_row` as 6CF8.c's local; `particle_mode` / `particle_row_index` / `rotated_position` as include/game.h members and comment text; `digits` in two comments; no hit for ft4_cursor, grey_level_out, image_buffer_addr, quad_ot_index_count, selected_row_and_toggle_bits, view_origin.
+Per-pair substitutions (function:old=new count (lines)):
+  gpu_DrawModeSizedPanelWithSelectedCellOpaque:arg1=selected_row_and_toggle_bits 3 (37,58,109)
+  gpu_DrawModeSizedPanelWithSelectedCellOpaque:var_4=selected_row 6 (42,58,95,144,199,216)
+  gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle:var_4=ft4_cursor 7 (381,400,439,442,461,464,469)
+  gpu_DrawTimeFieldsAndDecimalCounter:var_2=digits 36 (481,533,535,537,539,540,548,550,552,554,555,563,565,567,569,570,584,585,586,587,588,592,593,596)
+  eff_DrawBillboardList:var_3=rotated_position 4 (763,798,850,854)
+  eff_DrawAndAdvanceBillboardPairs:var_2=rotated_position 4 (1138,1152,1197,1201)
+  eff_DrawAndAdvanceJitteredBillboards:var_5=rotated_position 4 (1650,1665,1695,1699)
+  eff_DrawAndAdvanceRotatedQuadClusters:var_5=grey_level_out 3 (953,981,1010)
+  eff_DrawYawedSlotQuads:arg0=command_slot_index 8 (1456,1487,1488,1492,1516,1525,1527,1529)
+  eff_DrawYawedSlotQuads:var_5=quad_ot_index_count 4 (1466,1486,1509,1550)
+  eff_LinkParticleQuads:arg0=particle_mode 1 (3194)
+  eff_LinkParticleQuads:arg1=particle_row_index 1 (3194)
+  eff_LoadImagesAndSetup:arg0=image_buffer_addr 3 (174,182,186)
+  eff_PrepareParticles:var_0=base 11 (2813,2820,2821,2822,2823,2824,2826,2848,2850,2856,2859)
+  eff_SetRotMatrix:a1=view_origin 1 (717)
+  eff_UpdateParticles:var_0=base 19 (2932,2964,2965,2967,2968,2969,2970,2971,2972,2973,2974,2975,2976,2977,2978,2979,2980,2981,2982)
+  eff_UpdateParticles:var_9=quad_ot_indices 3 (2952,2982,3140)
+
+Line widths after substitution (over 80; python tools/format.py reflows them in the naming commit; token-preserving), all pairs applied together (pairs of one function on the same line applied together):
+  src/main/4D0A8.c 37 (60->84)
+  src/main/eff.c 1516 (68->82)
+  src/main/eff.c 1525 (78->92)
+  src/main/eff.c 1527 (78->92)
+  src/main/eff.c 1529 (78->92)
+Comment replacement texts were checked to be <= 80 columns (notes.txt).
+
+Raw driver output (HEAD 73beb8bc1, scoped_plan together then alone per pair; token-index maps omitted):
+SET 17 pairs ACCEPT
+  src/main/4D0A8.c 52 token substitutions
+  src/main/eff.c 66 token substitutions
+ALONE gpu_DrawModeSizedPanelWithSelectedCellOpaque:arg1 = selected_row_and_toggle_bits ACCEPT 3 src/main/4D0A8.c
+ALONE gpu_DrawModeSizedPanelWithSelectedCellOpaque:var_4 = selected_row ACCEPT 6 src/main/4D0A8.c
+ALONE gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle:var_4 = ft4_cursor ACCEPT 7 src/main/4D0A8.c
+ALONE gpu_DrawTimeFieldsAndDecimalCounter:var_2 = digits ACCEPT 36 src/main/4D0A8.c
+ALONE eff_DrawBillboardList:var_3 = rotated_position ACCEPT 4 src/main/eff.c
+ALONE eff_DrawAndAdvanceBillboardPairs:var_2 = rotated_position ACCEPT 4 src/main/eff.c
+ALONE eff_DrawAndAdvanceJitteredBillboards:var_5 = rotated_position ACCEPT 4 src/main/eff.c
+ALONE eff_DrawAndAdvanceRotatedQuadClusters:var_5 = grey_level_out ACCEPT 3 src/main/eff.c
+ALONE eff_DrawYawedSlotQuads:arg0 = command_slot_index ACCEPT 8 src/main/eff.c
+ALONE eff_DrawYawedSlotQuads:var_5 = quad_ot_index_count ACCEPT 4 src/main/eff.c
+ALONE eff_LinkParticleQuads:arg0 = particle_mode ACCEPT 1 src/main/eff.c
+ALONE eff_LinkParticleQuads:arg1 = particle_row_index ACCEPT 1 src/main/eff.c
+ALONE eff_LoadImagesAndSetup:arg0 = image_buffer_addr ACCEPT 3 src/main/eff.c
+ALONE eff_PrepareParticles:var_0 = base ACCEPT 11 src/main/eff.c
+ALONE eff_SetRotMatrix:a1 = view_origin ACCEPT 1 src/main/eff.c
+ALONE eff_UpdateParticles:var_0 = base ACCEPT 19 src/main/eff.c
+ALONE eff_UpdateParticles:var_9 = quad_ot_indices ACCEPT 3 src/main/eff.c

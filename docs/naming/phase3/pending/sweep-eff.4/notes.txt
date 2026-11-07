@@ -1,0 +1,132 @@
+sweep-eff.4 (naming-b 2026-11-07): 17 research RENAME rows, 17 drafted, 0 dropped; 118 substitutions (4D0A8.c 52, eff.c 66); no include/ file touched.
+Class: m2c / register-style placeholder locals and parameters (arg0, a1, var_N) in 4D0A8.c (UI panel, jittered quads, time/decimal counter) and eff.c (billboards, rotated quad clusters, yawed slot quads, particles, image setup).
+Tree: ln-naming-b = main 73beb8bc1 (clean). Research: tmp/codex/sweep-eff.4-research.md (its line numbers match HEAD).
+Method (drafter, re-derived, not copied): every definition read at 73beb8bc1 with its callers (C and asm/funcs/*.s for parameters); tmp/se4/scan.py gives every use line of signature + body (all 17 equal the research and scoped_plan alone); tmp/se4/comscan.py scans every comment in each function range and its doc comment, plus every comment in src/ and include/ mentioning the function and the old name; tmp/se4/fresh.py checks each new name.
+
+Specific checks / risk notes for the reviewer:
+- gpu_DrawModeSizedPanelWithSelectedCellOpaque:arg1=selected_row_and_toggle_bits: in modes 0 and 1 the caller passes only a row / menu cursor (high half 0); only the mode-2 call packs `selected_row | (g_fight_toggle_option_bits << 16)`. The name claims the packed word of that form and the body reads both halves (58, 109). If a reviewer holds that modes 0/1 contradict "and toggle bits", drop it; selected_row (var_4) does not depend on it.
+- Panel arg1 / var_4 and the three rotated_position rows and eff_LoadImagesAndSetup:arg0 name bindings that a FAKE comment SPELLS (as the rejected alternative form or the FAKE'd cast), but none of them is the FAKE binding; the comments are rewritten with the pair. This is the FAKE-label-does-not-cover-the-binding position of naming-close-final-2; if a reviewer holds the older var-locals-49 view for the rotated_position rows, drop those three (and their comment edits); the others do not depend on them.
+- gpu_DrawTimeFieldsAndDecimalCounter:var_2=digits: the array transiently holds the raw time field / arg1 (533, 548, 563, 584) before the next statements reduce each element to one decimal digit; every glyph-index read is of a digit.
+- eff_DrawAndAdvanceRotatedQuadClusters:var_5=grey_level_out: single write-only store (1010); no fade claim.
+- eff_LinkParticleQuads:arg0/arg1, eff_SetRotMatrix:a1: never-read parameters named by what every caller supplies (Q136).
+- eff_PrepareParticles:var_0 and eff_UpdateParticles:var_0 = base (one name for both, the sibling convention); eff_UpdateParticles:var_9=quad_ot_indices (the sibling LinkParticleQuads name).
+- The spec forms fn:var each address one binding in their function (no duplicate block-local twin).
+
+Required comment edits (Q133: comments naming an old name are rewritten with the pair, names only; the FAKE labels and their content are kept). The research's Comments list was re-checked with the comment scan; differences: eff.c:3013 also spells `&var_0->unk10` (research listed 3011-3012); eff.c:1451 and 1513 are the two `arg0` comment lines (1450 itself is unchanged); everything else matches. Rewritten blocks that grow past 80 columns are reflowed here (checked <= 80). The comment scan found no other comment in the 17 functions' ranges, their doc comments, or any src/ or include/ comment that spells an old name together with its function (the doc comment at eff.c:2927 `*var_1` and the FAKE `direct var_2` at eff.c:1478 stay: those bindings are not renamed).
+4D0A8.c:55-57 (FAKE, panel arg1 / var_4). Replace:
+  -     /* FAKE: the low half read from arg1's stack home, which keeps arg1 in
+  -        memory for the in-loop `lw 0xBC($sp)` too; (s16)arg1 does not. `var_4 =
+  -        arg1`: score 58. */
+with (names only, text otherwise kept; tools/format.py reflows):
+  +     /* FAKE: the low half read from selected_row_and_toggle_bits's stack home,
+  +        which keeps it in memory for the in-loop `lw 0xBC($sp)` too;
+  +        (s16)selected_row_and_toggle_bits does not. `selected_row =
+  +        selected_row_and_toggle_bits`: score 58. */
+  widths: max 78
+4D0A8.c:429-432 (FAKE, Jittered var_4). Replace:
+  -             /* FAKE: tmp1 is written twice (y base, then a copy of var_4) so
+  -              * sched1 places the y base after the argument setup; dropping
+  -              * either write or one carrier for both halves does not match (no
+  -              * y-base write: score 4; no var_4 copy: 35; one carrier: 30) */
+with (names only, text otherwise kept; tools/format.py reflows):
+  +             /* FAKE: tmp1 is written twice (y base, then a copy of
+  +              * ft4_cursor) so sched1 places the y base after the argument
+  +              * setup; dropping either write or one carrier for both halves does
+  +              * not match (no y-base write: score 4; no ft4_cursor copy: 35; one
+  +              * carrier: 30) */
+  widths: max 79
+4D0A8.c:453-454 (FAKE, Jittered var_4 (second line of the tmp2 comment only)). Replace:
+  -             /* FAKE: tmp2 written twice, as tmp1 above (no y-base write: score
+  -              * 4; no var_4 copy: 35) */
+with (names only, text otherwise kept; tools/format.py reflows):
+  +              * 4; no ft4_cursor copy: 35) */
+  widths: max 44
+eff.c:175-177 (FAKE, LoadImagesAndSetup arg0). Replace:
+  -     /* FAKE: single forward-order param alias; flips the s2/s1 save+copy pair
+  -      * order to the target's (param-local-alias-prologue-pair-flip); arg0
+  -      * throughout: score 4 */
+with (names only, text otherwise kept; tools/format.py reflows):
+  +     /* FAKE: single forward-order param alias; flips the s2/s1 save+copy pair
+  +      * order to the target's (param-local-alias-prologue-pair-flip);
+  +      * image_buffer_addr throughout: score 4 */
+  widths: max 77
+eff.c:851-853 (FAKE, BillboardList var_3). Replace:
+  -         /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the address 0x14
+  -          * below var_3, it loads var_3 as the translation (there is no whole
+  -          * MATRIX here). Spelled (MATRIX *)base: score 65. */
+with (names only, text otherwise kept; tools/format.py reflows):
+  +         /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the address 0x14
+  +          * below rotated_position, it loads rotated_position as the translation
+  +          * (there is no whole MATRIX here). Spelled (MATRIX *)base: score 65. */
+  widths: max 80
+eff.c:1198-1200 (FAKE, BillboardPairs var_2). Replace:
+  -                 /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the
+  -                  * address 0x14 below var_2, it loads var_2 as the translation.
+  -                  * Spelled (MATRIX *)base: score 55. */
+with (names only, text otherwise kept; tools/format.py reflows):
+  +                 /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the
+  +                  * address 0x14 below rotated_position, it loads
+  +                  * rotated_position as the translation. Spelled (MATRIX *)base:
+  +                  * score 55. */
+  widths: max 79
+eff.c:1696-1698 (FAKE, JitteredBillboards var_5). Replace:
+  -             /* FAKE: the MATRIX whose t[] is *var_5: SetTransMatrix reads only
+  -              * m->t (there is no whole MATRIX here). Spelled
+  -              * (MATRIX *)((u8 *)base + 4): score 68. */
+with (names only, text otherwise kept; tools/format.py reflows):
+  +             /* FAKE: the MATRIX whose t[] is *rotated_position: SetTransMatrix
+  +              * reads only m->t (there is no whole MATRIX here). Spelled
+  +              * (MATRIX *)((u8 *)base + 4): score 68. */
+  widths: max 78
+eff.c:1451-1451 (doc comment, YawedSlotQuads arg0; line 1450 unchanged). Replace:
+  -  * `arg0`: per slot whose bit is set in g_eff_yawed_quad_slot_masks[arg0], emit
+with (names only, text otherwise kept; tools/format.py reflows):
+  +  * `command_slot_index`: per slot whose bit is set in
+  +  * g_eff_yawed_quad_slot_masks[command_slot_index], emit
+  widths: max 56
+eff.c:1477-1477 (FAKE, YawedSlotQuads var_5). Replace:
+  -      * declaration / var_5-first order: 56 / 88; direct sxy: 17;
+with (names only, text otherwise kept; tools/format.py reflows):
+  +      * declaration / quad_ot_index_count-first order: 56 / 88; direct sxy: 17;
+  widths: max 78
+eff.c:1512-1515 (FAKE, YawedSlotQuads arg0 (reflowed)). Replace:
+  -         /* FAKE: the slot's mask is named `bit` inside the test and not read
+  -          * again; it stretches the g_eff_yawed_quad_slot_masks[arg0] address's
+  -          * life so loop.c hoists it (target spills it to 32(sp)), and keeps
+  -          * combine from making the test srav/andi. Without `bit`: score 43. */
+with (names only, text otherwise kept; tools/format.py reflows):
+  +         /* FAKE: the slot's mask is named `bit` inside the test and not read
+  +          * again; it stretches the life of the
+  +          * g_eff_yawed_quad_slot_masks[command_slot_index] address so loop.c
+  +          * hoists it (target spills it to 32(sp)), and keeps combine from making
+  +          * the test srav/andi. Without `bit`: score 43. */
+  widths: max 80
+eff.c:2929-2929 (doc comment, UpdateParticles var_9). Replace:
+  -  * *g_eff_depth_work for each in var_9[]. */
+with (names only, text otherwise kept; tools/format.py reflows):
+  +  * *g_eff_depth_work for each in quad_ot_indices[]. */
+  widths: max 54
+eff.c:3010-3013 (FAKE, UpdateParticles var_0 (research said 3011-3012; 3013 spells it too)). Replace:
+  -         /* FAKE: SetTransMatrix reads only m->t (+0x14): handed p_out - 0x14,
+  -          * i.e. &var_0->unk10 reached through p_out, it loads p_out as the
+  -          * translation. Spelled &var_0->unk10: score 82; through a MATRIX *
+  -          * local m = &var_0->unk10 (p_out = m->t): score 58. */
+with (names only, text otherwise kept; tools/format.py reflows):
+  +         /* FAKE: SetTransMatrix reads only m->t (+0x14): handed p_out - 0x14,
+  +          * i.e. &base->unk10 reached through p_out, it loads p_out as the
+  +          * translation. Spelled &base->unk10: score 82; through a MATRIX *
+  +          * local m = &base->unk10 (p_out = m->t): score 58. */
+  widths: max 77
+
+DROPPED: none.
+
+Research NO_NAME list carried over (not proposed here):
+- gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle:arg1 (4D0A8.c:376): 401-402 decrement when > 0, then 413 / 415 used as the zero-based row; two values in one binding. Fix: byte-checked rewrite with a separate row local.
+- gpu_DrawTimeFieldsAndDecimalCounter:arg1 (4D0A8.c:478): passed next-row value, decremented in place at 493, shown value read 514 / 584; two values. Missing: a ruling or a separate local.
+- gpu_DrawPackedComparisonRowsAndTotals:var_1 (4D0A8.c:798): two roles per its own comment (795-797): per-round 2-bit side values (3 = unrecorded), then summed totals (929-941). LEAD: `side_scores`, or a two-role final candidate.
+- eff_DrawAndAdvanceBillboardPairs:var_6 (eff.c:1142): `*var_6 = age - 15` (1299), read 1300 / 1303; wave-19 FAILed `age_from_last_frame`; missing: whether the age 9..15 colour ramp is a fade-out.
+- eff_DrawAnimatedQuads:var_2 -> depth_cue_out (eff.c:2122): dropped at apply in var-locals-55 (keycheck "sentinel emitted at wrong source line", use on the continuation line of `gte_RotTransPers(` 2167-2168). Fix: line_span over the whole macro call (naming_keycheck.py:2686-2690).
+- eff_DrawYawedSlotQuads:var_2 (eff.c:1463): composite matrix role (sibling `composite_matrix`), scoped_plan refuses it (gte_CompMatrix macro argument, gtemac.h:347-352). Fix: keycheck support for that macro shape.
+- eff_UpdateParticles:var_1 / var_2 / var_8 (eff.c:2944 / 2945 / 2951): FAKE member stand-ins (2933-2943), class of finals var_10 / var_14. LEAD: fake-copy finality candidates.
+- eff_UpdateParticles:var_13 (eff.c:2956): `= var_0->unk44`; [0] anchor for gte_ApplyRotMatrix then a vertex; [1] / [2] vertices; GTE macro argument; same open question as unk44 (sweep-eff.2).
+- Excluded finals: RotatedQuadClusters:var_9, DrawYawedSlotQuads:var_6, LoadImagesAndSetup:new_var, UpdateParticles:var_10 / var_14, DrawAnimatedQuads:var_18, Jittered var_10 / var_11 / var_12, PackedComparison var_4.
