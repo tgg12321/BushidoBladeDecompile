@@ -1,0 +1,32 @@
+sweep-596cc.5 (naming-a 2026-11-07): 9 local bindings in 8 functions (33 token substitutions in src/main/596CC.c, 27 in src/main/5ED34.c = 60); no include/ file touched. Research rows 9 of 9 kept, 0 dropped; 0 names changed by the drafter.
+Tree: ln-naming-a = lanes/naming-a 8d45e4d3f (tracked tree clean; src/ and include/ equal 8efaedf66 of the research except 368E4.c, which holds no target). Run in WSL via a script file (tmp/naming-a-596cc4/dry5.sh running dry5.py in the main checkout's tmp, scratch removed afterwards; NAMING_KEYCHECK_ROOT = the worktree, venv active).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs. Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree (base = naming_keycheck.read_working_tree()); lines are mapped from the token index through naming_keycheck.code_spans.
+The 9 pairs of pairs.txt together were accepted (60 token substitutions; the union of the alone line lists equals the together line set). Each pair was also run alone: all accepted (alone counts sum to 60) and every alone line list equals the drafter's own use scan (a brace-matched scan of each function definition for the word, read line by line: member tokens after . / -> are not the binding, comments are not counted) and the research's lists.
+Widths after substitution (per-line, all substitutions of the line counted): one line over 80, 5ED34.c:1814 (94 columns, `cursor_and_choice_cell_sheets = g_entry_menu_resources->cursor_and_choice_cell_sheets;`, no macro call); python tools/format.py reflows it, token-preserving. The comment at 596CC.c:1649 is hand-edited (notes.txt). No other substituted line exceeds 80.
+Required comment edit: 596CC.c:1649-1650 (gpu_DrawIndexedSheetPair's FAKE), see notes.txt.
+Per-pair substitutions (function:old=new count (lines)):
+  menu_DrawModeBit1Sheets:var_4=cells 5 (701,737,738,745,746)
+  menu_DrawModeBit0Sheets:var_4=cells 7 (779,816,817,824,825,835,836)
+  menu_DrawRowThreeThinTilesAndTwoSheets:v1=cells 5 (939,957,959,965,966)
+  menu_UpdateEntryGrid:var_4=cells 9 (756,776,808,903,904,914,915,928,929)
+  gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer:s1=cells 10 (2284,2298,2311,2315,2319,2323,2341,2342,2355,2356)
+  menu_UpdateChoiceGrid:var_4=cursor_and_choice_cell_sheets 4 (1778,1814,1815,1841)
+  gpu_DrawIndexedSheetPair:var_0=sheet_pairs 3 (1636,1641,1651)
+  menu_UpdateChoiceGrid:var_11=grid_pick 4 (2015,2018,2020,2020)
+  menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads:var_10=far_corner_red 13 (1802,1935,1942,1945,1952,1959,1962,1973,1980,1983,1996,2003,2006)
+
+Raw driver output (HEAD 8d45e4d3f, scoped_plan together then alone per pair; line numbers are working-tree lines):
+Tree: ln-naming-a HEAD 8d45e4d3f; scoped_plan(read_working_tree(), pairs, {})
+SET 9 pairs ACCEPT {'src/main/596CC.c': 33, 'src/main/5ED34.c': 27} total 60
+ALONE menu_DrawModeBit1Sheets:var_4=cells ACCEPT 5 596CC.c [701, 737, 738, 745, 746]
+ALONE menu_DrawModeBit0Sheets:var_4=cells ACCEPT 7 596CC.c [779, 816, 817, 824, 825, 835, 836]
+ALONE menu_DrawRowThreeThinTilesAndTwoSheets:v1=cells ACCEPT 5 596CC.c [939, 957, 959, 965, 966]
+ALONE menu_UpdateEntryGrid:var_4=cells ACCEPT 9 5ED34.c [756, 776, 808, 903, 904, 914, 915, 928, 929]
+ALONE gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer:s1=cells ACCEPT 10 5ED34.c [2284, 2298, 2311, 2315, 2319, 2323, 2341, 2342, 2355, 2356]
+ALONE menu_UpdateChoiceGrid:var_4=cursor_and_choice_cell_sheets ACCEPT 4 5ED34.c [1778, 1814, 1815, 1841] WIDE [(1814, 94)]
+ALONE gpu_DrawIndexedSheetPair:var_0=sheet_pairs ACCEPT 3 596CC.c [1636, 1641, 1651]
+ALONE menu_UpdateChoiceGrid:var_11=grid_pick ACCEPT 4 5ED34.c [2015, 2018, 2020, 2020]
+ALONE menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads:var_10=far_corner_red ACCEPT 13 596CC.c [1802, 1935, 1942, 1945, 1952, 1959, 1962, 1973, 1980, 1983, 1996, 2003, 2006]
+ALONE SUM 60
+TOGETHER lines {'596CC.c': 33, '5ED34.c': 27}
+TOGETHER union of alone lines == together lines: True
