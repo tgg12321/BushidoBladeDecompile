@@ -4786,20 +4786,20 @@ s32 fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface(
 }
 
 void fighter_UpdateGroundYByMoveKind(Unk80101EC8Record *fighter_record) {
-    SegmentTestScratch *s1 = SEGMENT_TEST_SCRATCH;
+    SegmentTestScratch *scratch = SEGMENT_TEST_SCRATCH;
     u16 state = fighter_record->move_kind;
 
     if (state == 8 || state == 0x22) {
         return;
     }
     if (state == 0x17 || state == 0x18 || state == 0x28 || state == 0xA) {
-        s1->segment_end.vx = fighter_record->collision_pos.vx;
-        s1->segment_end.vy = fighter_record->collision_pos.vy + 0x1F40;
-        s1->segment_end.vz = fighter_record->collision_pos.vz;
+        scratch->segment_end.vx = fighter_record->collision_pos.vx;
+        scratch->segment_end.vy = fighter_record->collision_pos.vy + 0x1F40;
+        scratch->segment_end.vz = fighter_record->collision_pos.vz;
         if (collision_TestSegmentWithWork(
-                &fighter_record->collision_pos.vx, &s1->segment_end.vx,
-                &s1->hit.vx, &s1->normal.vx, 0x1F8002B8) != 0) {
-            fighter_record->ground_y = s1->hit.vy;
+                &fighter_record->collision_pos.vx, &scratch->segment_end.vx,
+                &scratch->hit.vx, &scratch->normal.vx, 0x1F8002B8) != 0) {
+            fighter_record->ground_y = scratch->hit.vy;
         }
     } else {
         fighter_record->ground_y = fighter_record->collision_pos.vy;
