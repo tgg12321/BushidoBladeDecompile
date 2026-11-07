@@ -184,7 +184,7 @@ void softbody_SolveSprings(Func80017A44Output *softbody) {
     Func80017A44Record *base;
     s32 count;
     s32 var_4;
-    s32 var_5;
+    s32 rest_length;
     s32 nthresh;
     Func80017A44Record *p1, *p2;
     s32 dx, dy, dz;
@@ -204,10 +204,10 @@ void softbody_SolveSprings(Func80017A44Output *softbody) {
      * `var_4` so it shares var_4's register ($t1); its own local takes $a1:
      * score 5 (staged-value-reused-variable) */
     var_4 = data->ends.pair;
-    var_5 = data->dist;
+    rest_length = data->dist;
     p1 = &base[var_4 >> 16];
     p2 = &base[var_4 & 0xFFFF];
-    var_4 = var_5 * 3;
+    var_4 = rest_length * 3;
     nthresh = -var_4;
     dx = p2->pos[0] - p1->pos[0];
     dy = p2->pos[1] - p1->pos[1];
@@ -267,9 +267,9 @@ void softbody_SolveSprings(Func80017A44Output *softbody) {
             len = (u32)(byte << 16) >> (0x10 - ((s32)shift >> 1));
         }
         gte_ldlvl(SCR->d0);
-        f = (s32)((len - var_5) << 14) / (s32)len;
-        var_5 = data->dist;
-        var_4 = var_5 * 3;
+        f = (s32)((len - rest_length) << 14) / (s32)len;
+        rest_length = data->dist;
+        var_4 = rest_length * 3;
         nthresh = -var_4;
         gte_lddp(f);
         gte_gpf12();
@@ -298,7 +298,7 @@ void softbody_SolveSprings(Func80017A44Output *softbody) {
         len = (u32)(sum << 16) >> (0x10 - ((s32)len >> 1));
     }
     gte_ldlvl(SCR->d0);
-    f = (s32)((len - var_5) << 14) / (s32)len;
+    f = (s32)((len - rest_length) << 14) / (s32)len;
     gte_lddp(f);
     gte_gpf12();
     gte_stlvl(out);
@@ -322,7 +322,7 @@ void softbody_Step(Unk80017FA0Rec *step_desc, Func80017A44Output *softbody) {
     s32 bits, bits2;
     s32 r;
     s32 vy_new;
-    s32 tot, var_11;
+    s32 tot, push_magnitude;
     /* FAKE: frame layout -- lz[0] (first gte_stlzc) and lz[1] (second
      * gte_stlzc) are the live LZC outputs; the unwritten 16-byte tail gives the
      * 0x78 frame (as s32 lz[2]: frame 0x68, score 24) (dead-vars-local-array,
@@ -521,18 +521,18 @@ void softbody_Step(Unk80017FA0Rec *step_desc, Func80017A44Output *softbody) {
                 gte_lddp(1);
                 gte_ldlvl(SCR->scr18);
                 gte_gpf0();
-                var_11 = (r - tot) << 17;
-                if (var_11 > 0x400000) {
-                    var_11 = 0x400000;
+                push_magnitude = (r - tot) << 17;
+                if (push_magnitude > 0x400000) {
+                    push_magnitude = 0x400000;
                 }
                 if (work != 0) {
-                    work = var_11 / work;
+                    work = push_magnitude / work;
                 }
                 gte_ldlvl(SCR->d0);
                 gte_lddp(work);
                 gte_gpl12();
                 if (dist2 != 0) {
-                    dist2 = var_11 / dist2;
+                    dist2 = push_magnitude / dist2;
                 }
                 gte_ldlvl(SCR->d1);
                 gte_lddp(dist2);

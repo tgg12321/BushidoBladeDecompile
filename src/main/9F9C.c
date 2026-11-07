@@ -115,7 +115,7 @@ void motion_DecodeFrame(
     s32 bits;
     s32 index_in_group;
     s32 group_index;
-    s32 var_9;
+    s32 old_slot_counter;
     /* Ruling 11 (ordinary-c-judge-decidable): two values, both loop indices --
      * the group-start loop's over the 63 values and the post-pass column
      * loop's. */
@@ -141,15 +141,15 @@ void motion_DecodeFrame(
     if (g_motion_decode_skip_code_copy == 0) {
         COPY33(work + 0x84, rec->code);
     }
-    var_9 = rec->ctr;
-    rec->ctr = var_9 + 1;
-    slot = &rec->slot[(var_9 + 1) & 3];
+    old_slot_counter = rec->ctr;
+    rec->ctr = old_slot_counter + 1;
+    slot = &rec->slot[(old_slot_counter + 1) & 3];
     if (slot->frame == frame_index) {
         COPY33(out, slot->pose);
         rec->ctr -= 1;
         return;
     }
-    prev = &rec->slot[var_9 & 3];
+    prev = &rec->slot[old_slot_counter & 3];
     if (prev->frame == frame_index) {
         COPY33(out, prev->pose);
         rec->ctr -= 1;
@@ -535,9 +535,9 @@ void camera_UpdateTwoFighterView(
             lzcr = lzc_out;
         }
         {
-            s32 var_22 = 0x16 - (lzcr & ~1);
-            dist = (u32)(g_sqrt_table_u8[dist_sq >> var_22] << 16) >>
-                   (0x13 - ((u32)var_22 >> 1));
+            s32 sqrt_table_shift = 0x16 - (lzcr & ~1);
+            dist = (u32)(g_sqrt_table_u8[dist_sq >> sqrt_table_shift] << 16) >>
+                   (0x13 - ((u32)sqrt_table_shift >> 1));
         }
     }
     dist <<= shift;
@@ -763,7 +763,7 @@ void camera_InitTwoFighterView(
 }
 
 void camera_InitTrackedFighterFocus(
-    Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
+    Unk80101EC8Record *fighter, Unk80101EC8Record *second_fighter) {
     g_camera_fight_view_mode = CAMERA_FIGHT_VIEW_TRACKED;
     g_camera_alternate_view_record.forced_cell_coordinates[0][0] = 0x64;
     g_camera_alternate_view_record.forced_cell_coordinates[0][1] = 0;
@@ -773,12 +773,12 @@ void camera_InitTrackedFighterFocus(
     g_camera_alternate_view_record.forced_cell_coordinates[1][2] = 0x64;
     gpu_SetFarViewGridFogControlAndCoordinateShift(0);
     if (g_fight_tracked_fighter_index != 0) {
-        a0 = a1;
+        fighter = second_fighter;
     }
-    g_camera_alternate_view_record.focus_point.x = a0->bone_hit_point_0.x;
-    g_camera_alternate_view_record.focus_point.z = a0->bone_hit_point_0.z;
+    g_camera_alternate_view_record.focus_point.x = fighter->bone_hit_point_0.x;
+    g_camera_alternate_view_record.focus_point.z = fighter->bone_hit_point_0.z;
     {
-        s32 v = a0->bone_hit_point_0.y;
+        s32 v = fighter->bone_hit_point_0.y;
         g_camera_alternate_view_record.b40 = 0;
         g_camera_alternate_view_record.focus_point.y = v;
     }
@@ -1014,14 +1014,14 @@ void camera_UpdateReplayView(
 void camera_UpdateReplayViewWithSineYawOffset(
     Rec1C *followup_frame, Rec1C *other_frame, s32 playback_fraction) {
     s32 bearing_to_other;
-    s32 var_s3;
+    s32 followup_focus_weight;
     s32 var_v1;
     s32 var_v0;
 
     if (g_fighter_horizontal_separation < 0x2711) {
-        var_s3 = (playback_fraction / 2) + 0x800;
+        followup_focus_weight = (playback_fraction / 2) + 0x800;
     } else {
-        var_s3 = 0x1000;
+        followup_focus_weight = 0x1000;
     }
     bearing_to_other =
         ratan2(other_frame->replay_pos_x - followup_frame->replay_pos_x,
@@ -1036,7 +1036,8 @@ void camera_UpdateReplayViewWithSineYawOffset(
     }
     camera_UpdateReplayView(
         &g_camera_default_view_record, followup_frame, other_frame,
-        playback_fraction, var_s3, (0x500 - bearing_to_other) - (var_v0 >> 2));
+        playback_fraction, followup_focus_weight,
+        (0x500 - bearing_to_other) - (var_v0 >> 2));
 }
 
 void camera_UpdateReplayViewWithConstantYawOffset(
@@ -1061,28 +1062,31 @@ void camera_SetFighterFocusView(Unk80101EC8Record *fighter_record, s32 yaw) {
     g_camera_default_view_record.eye_distance = 0x1162;
 }
 
-void camera_SetInterpolatedFighterView(Unk80101EC8Record *arg0, s32 arg1) {
-    s32 diff = 0x1000 - arg1;
+void camera_SetInterpolatedFighterView(
+    Unk80101EC8Record *fighter_record, s32 blend_fraction) {
+    s32 diff = 0x1000 - blend_fraction;
 
     gpu_SetFarViewGridFogControlAndCoordinateShift(0);
 
     /* FAKE: block copy of collision_pos's x / y / z (three lw, then three sw
        through one base); the three member assignments interleave the loads and
        stores (score 27). */
-    g_camera_default_view_record.focus_point = *(Vec3i32 *)&arg0->collision_pos;
+    g_camera_default_view_record.focus_point =
+        *(Vec3i32 *)&fighter_record->collision_pos;
 
     g_camera_default_view_record.focus_point.y -= 0x44C;
 
-    g_camera_default_view_record.camera_angles.vx = 0x100 - (arg1 * 288) / 4096;
+    g_camera_default_view_record.camera_angles.vx =
+        0x100 - (blend_fraction * 288) / 4096;
 
     {
         /* FAKE: div4 taken first; written at its use the multiply chain is
          * rebuilt after the shift (score 17) (Q129). */
-        s32 div4 = arg1 / 4;
-        u16 rot_y = arg0->orientation.vy;
+        s32 div4 = blend_fraction / 4;
+        u16 rot_y = fighter_record->orientation.vy;
         s32 val;
         g_camera_default_view_record.eye_distance =
-            (arg1 * 3000 + diff * 8000) >> 12;
+            (blend_fraction * 3000 + diff * 8000) >> 12;
         val = 0xB00 - div4;
         g_camera_default_view_record.camera_angles.vz = 0;
         g_camera_default_view_record.camera_angles.vy = val - rot_y;
@@ -1106,7 +1110,7 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
      * words; (2) 0 or fighter_index * 4, the bit offset of this player's config
      * nibble.
      */
-    s32 temp;
+    s32 player_field_shift;
     s32 mapped_buttons;
 
     g_fighter_records[fighter_index == 0].unk_34E =
@@ -1117,15 +1121,15 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
         return;
     }
     *pad_out = g_pad_state;
-    temp = fighter_index * 16;
-    pad_words[0] = (g_pad_state.held >> temp) & 0xFFFF;
-    pad_words[1] = (g_pad_state.pressed >> temp) & 0xFFFF;
-    pad_words[2] = (g_pad_state.released >> temp) & 0xFFFF;
-    pad_words[3] = (g_pad_state.unheld >> temp) & 0xFFFF;
+    player_field_shift = fighter_index * 16;
+    pad_words[0] = (g_pad_state.held >> player_field_shift) & 0xFFFF;
+    pad_words[1] = (g_pad_state.pressed >> player_field_shift) & 0xFFFF;
+    pad_words[2] = (g_pad_state.released >> player_field_shift) & 0xFFFF;
+    pad_words[3] = (g_pad_state.unheld >> player_field_shift) & 0xFFFF;
     if (g_fight_mode_selector == FIGHT_MODE_NETWORK) {
-        temp = 0;
+        player_field_shift = 0;
     } else {
-        temp = fighter_index * 4;
+        player_field_shift = fighter_index * 4;
     }
     for (i = 0; i < 4; i++) {
         if (g_fight_mode_selector == FIGHT_MODE_NETWORK &&
@@ -1161,7 +1165,7 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
         } else {
             mapped_buttons = pad_words[i] & ~0xF0;
             {
-                u8 r = g_saved_record.frec20[0] >> temp;
+                u8 r = g_saved_record.frec20[0] >> player_field_shift;
                 if ((r & 1) && (pad_words[i] & PADRright) ||
                     (r & 2) && (pad_words[i] & PADRup) ||
                     (r & 4) && (pad_words[i] & PADRdown) ||
@@ -1170,7 +1174,7 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
                 }
             }
             {
-                u8 g = g_saved_record.frec20[1] >> temp;
+                u8 g = g_saved_record.frec20[1] >> player_field_shift;
                 if ((g & 1) && (pad_words[i] & PADRright) ||
                     (g & 2) && (pad_words[i] & PADRup) ||
                     (g & 4) && (pad_words[i] & PADRdown) ||
@@ -1179,7 +1183,7 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
                 }
             }
             {
-                u8 b = g_saved_record.frec20[2] >> temp;
+                u8 b = g_saved_record.frec20[2] >> player_field_shift;
                 if ((b & 1) && (pad_words[i] & PADRright) ||
                     (b & 2) && (pad_words[i] & PADRup) ||
                     (b & 4) && (pad_words[i] & PADRdown) ||
@@ -3005,8 +3009,8 @@ s32 fight_UpdateSeparationAndPairedMoves(void) {
 }
 
 void math_ComputeBallisticVelocityXZ(
-    s32 *start_point, s32 *target_point, s32 vertical_velocity, s32 arg3,
-    s32 *velocity_out) {
+    s32 *start_point, s32 *target_point, s32 vertical_velocity,
+    s32 vertical_acceleration, s32 *velocity_out) {
     s32 var_0;
     s32 dx;
     s32 dz;
@@ -3028,41 +3032,43 @@ void math_ComputeBallisticVelocityXZ(
         dy = target_point[1] - start_point[1];
 
         if (dy == 0) {
-            s32 neg = -arg3;
+            s32 neg = -vertical_acceleration;
             s32 denom = vertical_velocity * 2;
             velocity_out[0] = (neg * dx) / denom;
             velocity_out[2] = (neg * dz) / denom;
         } else {
             s32 dy2 = dy * 2;
-            s32 a0;
+            s32 horizontal_speed;
 
-            var_0 = vertical_velocity * vertical_velocity + arg3 * dy2;
+            var_0 = vertical_velocity * vertical_velocity +
+                    vertical_acceleration * dy2;
 
             if (var_0 >= 0) {
-                s32 a2;
+                s32 vertical_velocity_x32;
                 var_0 = SquareRoot0(var_0 << 10);
-                a2 = vertical_velocity << 5;
-                a0 = ((a2 + var_0) * dist) / dy2 / 32;
+                vertical_velocity_x32 = vertical_velocity << 5;
+                horizontal_speed =
+                    ((vertical_velocity_x32 + var_0) * dist) / dy2 / 32;
 
-                if (a0 < 0) {
+                if (horizontal_speed < 0) {
                     /* FAKE: dead dy reused as the arm-2 (a2-var_0) temp:
                      * var_0's register preference flows through dy to the /32
                      * quotient, which takes $v1 as in the target. The
                      * natural spelling or a fresh temp: score 6; reusing
                      * var_0: 8. */
-                    dy = a2 - var_0;
-                    a0 = (dy * dist) / dy2 / 32;
+                    dy = vertical_velocity_x32 - var_0;
+                    horizontal_speed = (dy * dist) / dy2 / 32;
                 }
             } else {
-                a0 = 300;
+                horizontal_speed = 300;
             }
 
-            if (a0 >= 301) {
-                a0 = 300;
+            if (horizontal_speed >= 301) {
+                horizontal_speed = 300;
             }
 
-            velocity_out[0] = (a0 * dx) / dist;
-            velocity_out[2] = (a0 * dz) / dist;
+            velocity_out[0] = (horizontal_speed * dx) / dist;
+            velocity_out[2] = (horizontal_speed * dz) / dist;
         }
     }
 }
@@ -3306,16 +3312,17 @@ void motion_InitBuffers(void) {
 }
 
 void motion_LoadCommonData(void) {
-    s32 v1;
+    s32 file_base;
     cdrom_StartRead(cdrom_GetFileIndex(1, 1), g_motion_common_buffer);
     cdrom_WaitIdle();
-    v1 = g_motion_common_buffer;
-    g_motion_common_sections.move_scripts = (u16 *)(v1 + 0x14);
-    g_motion_common_sections.motion_entries = (u16 *)(v1 + *(s32 *)(v1 + 4));
+    file_base = g_motion_common_buffer;
+    g_motion_common_sections.move_scripts = (u16 *)(file_base + 0x14);
+    g_motion_common_sections.motion_entries =
+        (u16 *)(file_base + *(s32 *)(file_base + 4));
     g_motion_common_sections.motion_metadata_base =
-        (u8 *)(v1 + *(s32 *)(v1 + 8));
+        (u8 *)(file_base + *(s32 *)(file_base + 8));
     g_motion_common_sections.motion_bitstream =
-        (u32 *)(v1 + *(s32 *)(v1 + 0x10));
+        (u32 *)(file_base + *(s32 *)(file_base + 0x10));
     g_motion_common_loaded = 1;
 }
 
@@ -3707,21 +3714,22 @@ void fighter_StartMoveScript(
     fighter_record->borrow_other_motion = 0;
     fighter_record->cur_move = move_script;
     {
-        u16 v1 = move_script->motion_bank_entry_index;
-        fighter_record->motion_entry_index = v1;
+        u16 entry_index = move_script->motion_bank_entry_index;
+        fighter_record->motion_entry_index = entry_index;
         if (is_common != 0) {
-            u16 *v0 = &g_motion_common_sections.motion_entries[v1 * 2];
-            fighter_record->motion_entry = v0;
+            u16 *entry =
+                &g_motion_common_sections.motion_entries[entry_index * 2];
+            fighter_record->motion_entry = entry;
             fighter_record->motion_metadata =
-                g_motion_common_sections.motion_metadata_base + v0[1];
+                g_motion_common_sections.motion_metadata_base + entry[1];
         } else {
-            u16 *v0 = &g_motion_fighter_sections[motion_slot_index]
-                           .motion_entries[v1 * 2];
-            fighter_record->motion_entry = v0;
+            u16 *entry = &g_motion_fighter_sections[motion_slot_index]
+                              .motion_entries[entry_index * 2];
+            fighter_record->motion_entry = entry;
             fighter_record->motion_metadata =
                 g_motion_fighter_sections[motion_slot_index]
                     .motion_metadata_base +
-                v0[1];
+                entry[1];
         }
     }
     {
@@ -4419,9 +4427,9 @@ s32 fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow(
         {
             s32 angle =
                 (fighter_record->opponent_bearing + bearing_offset) & 0xFFF;
-            s16 var_12 = Judge[angle];
+            s16 probe_bearing_sin = Judge[angle];
 
-            off[0] = px + var_12 / 4;
+            off[0] = px + probe_bearing_sin / 4;
             off[1] = pos[1];
         }
 
@@ -4429,9 +4437,9 @@ s32 fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow(
             s32 angle2 =
                 (fighter_record->opponent_bearing + bearing_offset + 0x400) &
                 0xFFF;
-            s16 var_14 = Judge[angle2];
+            s16 probe_bearing_cos = Judge[angle2];
 
-            off[2] = pos[2] + var_14 / 4;
+            off[2] = pos[2] + probe_bearing_cos / 4;
         }
     }
 
@@ -4454,16 +4462,16 @@ s32 fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow(
 
         {
             s32 angle3 = reversed_normal_heading & 0xFFF;
-            s16 var_18 = Judge[angle3];
-            off[0] = pos[0] + var_18 / 8;
+            s16 reversed_normal_sin = Judge[angle3];
+            off[0] = pos[0] + reversed_normal_sin / 8;
         }
 
         off[1] = pos[1];
 
         {
             s32 angle4 = (normal_heading + 0xC00) & 0xFFF;
-            s16 var_20 = Judge[angle4];
-            off[2] = pos[2] + var_20 / 8;
+            s16 reversed_normal_cos = Judge[angle4];
+            off[2] = pos[2] + reversed_normal_cos / 8;
         }
 
         if (collision_TestSegmentWithWork(
