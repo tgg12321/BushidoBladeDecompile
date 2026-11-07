@@ -1,0 +1,41 @@
+wave125 (func-second-pass-33): 3 RENAME kept; 0 dropped; 3 NO_NAME (notes only, not in FUNCS). Verdicts are PENDING: the naming-reviewer sets them.
+Wave id: wave125 (lane naming-a). Drafted 2026-11-06 at HEAD 95f22b253 in the lane worktree.
+Research input tmp/codex/func-second-pass-33-research.md (untrusted; written by an Opus subagent, block-9 trio set to NO_NAME by the session per the backlog row text); every claim below re-derived at HEAD in the lane worktree unless marked. Research tag for the NO_NAME record at land: w125.
+Kept rows:
+ 0x80044F30 func_80044F30 -> ndata_ReadStageFile
+ 0x80044F80 func_80044F80 -> ndata_ReadNodeAssetFile
+ 0x80046A80 func_80046A80 -> motion_RebasePlaybackBlock
+
+CORRECTIONS to the research file
+ - Block 7 is opened at 368E4.c:84 (research: :83).
+ - Selector path: 9F9C.c:1752-1753 and 43500.c:834/:837/:841 call the wrapper resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels, which calls resource_LoadOrReuseSelectedBlock (368E4.c:560); the research file names the inner function directly.
+ - The per-selector switch in resource_LoadOrReuseSelectedBlock is 368E4.c:140-175 (cases 3, 4, 7, 11, 13, 18, 34; case 11 is a cell-buffer case, not a header-word case; NDATA.md:187-193 lists the six header-word selectors).
+ - Pool strings for the stage names are src/main/d_15EC.c:519-537 (DATA2 S37 downward; S00 follows); the research cited :519 only.
+ - 'Destruction tiny model.' string is 43500.c:774 (research/NDATA.md: 772-773/774-792).
+ - symbol_addrs.txt:986 is a MISNAMED note line for func_80044F80 (not a census alias); the dry run lists it among the registry line deletions.
+ - NOT re-derived (taken from the research file, marked in the evidence): facts.tsv hit/never-hit lines (:347/:1149/:349/:1151/:818/:814/:816/:817).
+
+ALIAS HANDLING (naming_wave.py): census aliases column is empty for all three rows. The dry run lists one symbol-registry line deletion (symbol_addrs.txt:986, the MISNAMED func_80044F80 note, which would otherwise keep the old name). Link map reported STALE, tolerated by apply.sh with --stale-map-ok.
+HAZARD (old names in recorded data, must stay): docs/naming/runtime/** (matrix tsvs, hitmaps), docs/naming/function-names.csv evidence text, docs/formats/NDATA.md (cites func_80044F30 / func_80044F80 / func_80046A80 in prose and tables), older wave manifests, docs/naming/phase3/no_name.tsv, named_syms.txt:268.
+
+### 0x80044F30 -> ndata_ReadStageFile (RENAME)
+- BODY 35000.c:238 ndata_Read(a0 + 0x27, dest_addr). Two calls, both resource_LoadOrReuseSelectedBlock (368E4.c:87, :89). Stage selector at every origin (g_fight_stage_index, or (control_word & 0x3F) - 1); file parsed as a stage. Ids 0x27..0x4C = DATA2 S00..S37.
+- Weak spots: no range check in the reader; the S<n> filename and the caller parse are not independent; forwarder class argued not met because of the 0x27 bias.
+
+### 0x80044F80 -> ndata_ReadNodeAssetFile (RENAME)
+- BODY 35000.c:248 ndata_Read(a0 + 0x4D, dest_addr). One call, resource_LoadOrReuseGrayscaleAdjustedNodeAsset (368E4.c:351) into block 8. Ids 0x4D..0x82 = DATA5 T00..T26 and DATA6 TINYM00..TINYM26.
+- Weak spots: alternative ndata_ReadTinyModelFile (only the TINYM half and the string at 43500.c:774 say tiny); the grayscale adjustment is the caller's.
+
+### 0x80046A80 -> motion_RebasePlaybackBlock (RENAME)
+- BODY 368E4.c:413-415 motion_RebasePlayback(byte_offset); a0 dropped. Only use: arena_SetMoveCallback(0xA, ..) at 368E4.c:407. Completes motion_LoadPlaybackBlock / motion_FreePlaybackBlock; follows resource_RebaseNodeAssetBlock / resource_RebaseLoadedBlockSections.
+- Weak spots: the prior no_name.tsv:26 objection (name restates the callee) and naming-final-classes forwarder (a0 dropped, a1 moved, so not unchanged pass-through, but near it). If the reviewer rules forwarder, drop the row.
+
+### The three NO_NAME rows (recorded in the NO_NAME ledger at land from the research file; none in FUNCS)
+Bodies verified at HEAD (368E4.c:380-390): none has a caller or address use in src/include/asm beyond the definitions/glabels and each other.
+- 0x80046934 func_80046934 (368E4.c:380): arena_OpenBlock(9), result dropped. Missing evidence: what arena block 9 holds. The shipped game never fills block 9 (NDATA.md:195-207); no reader, no caller. Researcher alternative arena_OpenBlock9.
+- 0x8004695C func_8004695C (368E4.c:384-388): arena_UpdatePeak(end_addr), arena_SetBlockEnd(9, end_addr), arena_SetMoveCallback(9, func_80046954) (func_80046954 is an empty hook, 368E4.c:382). Missing evidence: the identity of block 9. Researcher alternatives arena_UpdatePeakAndSetBlock9EndAndNoOpCallback / arena_SetBlock9EndAndUpdatePeak.
+- 0x800469A0 func_800469A0 (368E4.c:390): arena_Resize(9, new_size). Missing evidence: the identity of block 9. Former libscan _SpuCallback claim rejected (docs/naming/libscan/ambiguous_resolutions.md:64-67, :205; not re-opened here). Researcher alternative arena_ResizeBlock9.
+Row text keeps an unidentified block NO_NAME; the researcher's N7-dead / Q132 argument for numbered effect names is recorded as an alternative only.
+
+DRY RUN: see dry.txt. dry.sh stages a CONFIRM copy under phase3/zz-wave125-dry (removed) and restores function-names.csv; the generated docs/naming/phase3/wave125/ is kept for the lander (build.py regenerates it); tmp/p3w125 is scratch.
+LAND steps: the lander copies the latest tmp/p3w*/gates.sh into tmp/p3w125 before gates.ps1; record the three NO_NAME rows with naming_noname.py add tmp/codex/func-second-pass-33-research.md --tag w125 (dropping any RENAME the reviewer fails).

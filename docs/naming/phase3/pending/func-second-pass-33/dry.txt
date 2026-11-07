@@ -1,0 +1,36 @@
+rc=0
+==============================================================================
+NAMING WAVE — 3 operations (0 RESET, 3 RENAME)
+  3 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_funcs_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (10) --
+  (root): 1 files, 1 substitutions
+      symbol_addrs.txt  (1)
+  asm: 6 files, 10 substitutions
+      asm/funcs/func_80044F30.s  (2)
+      asm/funcs/func_80044F80.s  (2)
+      asm/funcs/func_80046A80.s  (2)
+      asm/funcs/motion_LoadPlaybackBlock.s  (2)
+      asm/funcs/resource_LoadOrReuseGrayscaleAdjustedNodeAsset.s  (1)
+      asm/funcs/resource_LoadOrReuseSelectedBlock.s  (1)
+  include: 1 files, 2 substitutions
+      include/bb2.h  (2)
+  src: 2 files, 8 substitutions
+      src/main/35000.c  (2)
+      src/main/368E4.c  (6)
+
+-- .s file renames (3) --
+  asm/funcs/func_80044F30.s -> asm/funcs/ndata_ReadStageFile.s
+  asm/funcs/func_80044F80.s -> asm/funcs/ndata_ReadNodeAssetFile.s
+  asm/funcs/func_80046A80.s -> asm/funcs/motion_RebasePlaybackBlock.s
+
+-- ledger directory renames (0) --
+
+-- symbol-registry line deletions (1) --
+  symbol_addrs.txt:986  func_80044F80 = 0x80044F80; /* MISNAMED: not Satan2 info init; 1-line wrapper of ndata_Read(a0+0x4D, dest_addr
+
+-- JSON key/field edits (0) --
+
+DRY RUN — nothing written. Re-run with --apply.
