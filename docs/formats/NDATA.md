@@ -208,7 +208,7 @@ Arena blocks in use: 0..2 slot objects, 3..5 their asset blocks (slot + 3;
 
 **Stage header section 3 (word 3 up to word 4) is a counted list of 20-byte records that
 nothing in the shipped game reads.** `resource_LoadOrReuseSelectedBlock` stores its address in
-`D_800A33B0` (`src/main/368E4.c:111`, `:187`); the retained-subblock path stores block 7's
+`g_resource_stage_counted_record_list` (`src/main/368E4.c:111`, `:187`); the retained-subblock path stores block 7's
 base plus the third offset word of that subblock's record instead (`:252`, `:259`) and the
 move callback rebases it (`:278`). Layout, in
 all 38 files and in `S34`'s four retained subblocks (third words `0x4FD8`, `0x9A14`,
@@ -220,7 +220,7 @@ coordinate pairs (shape only, no reader; values within ±24000; records share en
 `S03`, `S07`, `S19` and `S31`); word 4 takes only the values -4000, -2100, -2000, 0, 499
 and 1999; `S15` repeats its last record. Example `S06`: `(-1999, -5000) (-1999, 4999) 0`.
 No reader exists: in `SLUS_006.63` and `MOVOVL.EXE` the only accesses to
-`%gp_rel(D_800A33B0)` (`0x2E4($gp)`) are the two stores, the move callback's rebase (load,
+`%gp_rel(g_resource_stage_counted_record_list)` (`0x2E4($gp)`) are the two stores, the move callback's rebase (load,
 add, store) and the getter `func_80046780` (`src/main/368E4.c:331`), which no `jal`/`j`,
 data word or `%hi/%lo` pair references; neither image holds the word
 `0x800A33B0` (word scan of both images). The records' use is therefore not shown by this
