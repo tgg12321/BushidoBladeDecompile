@@ -1567,7 +1567,7 @@ Unk8006E49CRec *gpu_GetTimedSpritePrimBuffer(s32 buffer_index) {
     return &g_gpu_timed_sprite_prim_buffers[buffer_index];
 }
 
-extern RECT D_800A32FC;
+extern RECT g_gpu_timed_sprite_image_rect;
 
 void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *draw_context) {
     Unk8007352CRec s;
@@ -1696,7 +1696,7 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *draw_context) {
             }
             break;
         case 3:
-            rect = D_800A32FC;
+            rect = g_gpu_timed_sprite_image_rect;
             for (i = 0; i < 5; i++) {
                 /* FAKE: named slot address lets loop.c strength-reduce it;
                  * inline `g_gpu_timed_sprite_resources->img38[i]`: score 9
@@ -1927,7 +1927,7 @@ s32 StepScrollingSpriteDisplay(void) {
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
-RECT D_800A32FC = {640, 0, 64, 184};
+RECT g_gpu_timed_sprite_image_rect = {640, 0, 64, 184};
 s32 g_gpu_scrolling_sprite_step_count = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */

@@ -428,11 +428,11 @@ dlabel g_eff_quad_buffer_base
     /* 93F20 800A3720 00000000 */ .word 0x00000000
 enddlabel g_eff_quad_buffer_base
 
-nonmatching D_800A3724
+nonmatching g_eff_particle_random_accumulator_ptr
 
-dlabel D_800A3724
+dlabel g_eff_particle_random_accumulator_ptr
     /* 93F24 800A3724 00000000 */ .word 0x00000000
-enddlabel D_800A3724
+enddlabel g_eff_particle_random_accumulator_ptr
 
 nonmatching g_fight_start_position_pair_changed
 

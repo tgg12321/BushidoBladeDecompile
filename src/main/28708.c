@@ -1177,7 +1177,7 @@ void replay_BeginFrame(void) {
 void replay_RecordModelDraw(
     s32 pool_index, s32 entry_index, s32 *position, s16 *angles) {
     extern s16 g_replay_model_draw_search_cursor;
-    extern u8 D_800A3209;
+    extern u8 g_replay_model_draw_overflow_count;
     Unk800F68E0Rec *model_draw_cursor;
     s32 i;
     s16 idx;
@@ -1227,7 +1227,7 @@ void replay_RecordModelDraw(
     }
 
     if (g_replay_model_draw_search_cursor == 0xB4) {
-        D_800A3209++;
+        g_replay_model_draw_overflow_count++;
         return;
     }
 
@@ -2042,7 +2042,7 @@ u8 D_800A3205 = 1;
 u8 D_800A3206 = 0;
 u8 D_800A3207 = 0;
 u8 g_replay_replaying_event = 0;
-u8 D_800A3209 = 0;
+u8 g_replay_model_draw_overflow_count = 0;
 s16 D_800A320A = 0; /* not named by any code or data: size from the gap */
 u8 g_comb_events_enabled = 0;
 char g_str_sio_800A3210[5] = "sio:";

@@ -14,7 +14,7 @@ glabel eff_UpdateParticles
     /* 58544 80067D44 9400B1AF */  sw         $s1, 0x94($sp)
     /* 58548 80067D48 1000A5AF */  sw         $a1, 0x10($sp)
     /* 5854C 80067D4C AC010226 */  addiu      $v0, $s0, 0x1AC
-    /* 58550 80067D50 580682AF */  sw         $v0, %gp_rel(D_800A3724)($gp)
+    /* 58550 80067D50 580682AF */  sw         $v0, %gp_rel(g_eff_particle_random_accumulator_ptr)($gp)
     /* 58554 80067D54 55E4010C */  jal        rand
     /* 58558 80067D58 6000A2AF */   sw        $v0, 0x60($sp)
     /* 5855C 80067D5C 04000926 */  addiu      $t1, $s0, 0x4

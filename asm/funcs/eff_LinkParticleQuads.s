@@ -5,7 +5,7 @@ glabel eff_LinkParticleQuads
     /* 59594 80068D94 6E008824 */  addiu      $t0, $a0, 0x6E
     /* 59598 80068D98 7C008A24 */  addiu      $t2, $a0, 0x7C
     /* 5959C 80068D9C 80008624 */  addiu      $a2, $a0, 0x80
-    /* 595A0 80068DA0 580682AF */  sw         $v0, %gp_rel(D_800A3724)($gp)
+    /* 595A0 80068DA0 580682AF */  sw         $v0, %gp_rel(g_eff_particle_random_accumulator_ptr)($gp)
     /* 595A4 80068DA4 8000858C */  lw         $a1, 0x80($a0)
     /* 595A8 80068DA8 00000000 */  nop
     /* 595AC 80068DAC 2318A700 */  subu       $v1, $a1, $a3

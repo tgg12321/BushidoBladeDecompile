@@ -92,10 +92,10 @@ glabel replay_RecordModelDraw
     /* 29D20 80039520 B4000224 */  addiu      $v0, $zero, 0xB4
     /* 29D24 80039524 09006214 */  bne        $v1, $v0, .L8003954C
     /* 29D28 80039528 001B0C00 */   sll       $v1, $t4, 12
-    /* 29D2C 8003952C 3D018293 */  lbu        $v0, %gp_rel(D_800A3209)($gp)
+    /* 29D2C 8003952C 3D018293 */  lbu        $v0, %gp_rel(g_replay_model_draw_overflow_count)($gp)
     /* 29D30 80039530 00000000 */  nop
     /* 29D34 80039534 01004224 */  addiu      $v0, $v0, 0x1
-    /* 29D38 80039538 3D0182A3 */  sb         $v0, %gp_rel(D_800A3209)($gp)
+    /* 29D38 80039538 3D0182A3 */  sb         $v0, %gp_rel(g_replay_model_draw_overflow_count)($gp)
     /* 29D3C 8003953C 6AE50008 */  j          .L800395A8
     /* 29D40 80039540 00000000 */   nop
   .L80039544:

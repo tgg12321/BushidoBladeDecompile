@@ -11,15 +11,15 @@ void snd_SerialMixOn(void) {
     SsSetSerialVol(0, 0x7F, 0x7F);
 }
 
-extern u8 D_800A31E4;
+extern u8 g_cdrom_init_done;
 
 void cdrom_Init(void) {
     CdInit();
     CdSetDebug(0);
     cdrom_SetMix(0, 0, 0, 0);
     g_cdrom_state.rec.io_state = 0;
-    if (D_800A31E4 == 0) {
-        D_800A31E4 = 1;
+    if (g_cdrom_init_done == 0) {
+        g_cdrom_init_done = 1;
     }
 }
 
@@ -58,4 +58,4 @@ void cdrom_ReadyCallback(u8 intr, u8 *result) {
 
 /* Q65: this file's initialized small data (.sdata), in address order; values
  * from the original EXE. */
-u8 D_800A31E4 = 0;
+u8 g_cdrom_init_done = 0;

@@ -3194,7 +3194,7 @@ s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj) {
     return 1;
 }
 
-extern s32 D_800A314C;
+extern s32 g_fighter_weapon_contact_zero_z_span_count;
 
 /* Rotates the three points p0/p1/p2 (relative to the origin) by the current GTE
  * rotation matrix, cuts the rotated triangle with the plane z = 0, and returns
@@ -3270,7 +3270,7 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0, Unk80107850Rec *p1,
     /* where the min->max edge crosses z = 0 */
     dz_a = obj->unk118[max_i].z - obj->unk118[min_i].z;
     if (dz_a == 0) {
-        D_800A314C++;
+        g_fighter_weapon_contact_zero_z_span_count++;
         dz_a = 1;
     }
     x1 = obj->unk118[min_i].x +
@@ -3287,7 +3287,7 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0, Unk80107850Rec *p1,
     if (obj->unk118[mid_i].z >= 0) {
         dz_b = obj->unk118[mid_i].z - obj->unk118[min_i].z;
         if (dz_b == 0) {
-            D_800A314C++;
+            g_fighter_weapon_contact_zero_z_span_count++;
             dz_b = 1;
         }
         x2 = obj->unk118[min_i].x +
@@ -3301,7 +3301,7 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0, Unk80107850Rec *p1,
     } else {
         dz_b = obj->unk118[max_i].z - obj->unk118[mid_i].z;
         if (dz_b == 0) {
-            D_800A314C++;
+            g_fighter_weapon_contact_zero_z_span_count++;
             dz_b = 1;
         }
         x2 = obj->unk118[mid_i].x +
@@ -6181,7 +6181,7 @@ s32 g_fight_force_weapon_inner_bone_hits = 0;
 /* address taken (lui/addiu) in fighter_ResolveBodyOverlap: size from the blob
  * label */
 s32 g_fighter_body_overlap_radii[2] = {0x15e, 0x172};
-s32 D_800A314C = 0;
+s32 g_fighter_weapon_contact_zero_z_span_count = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
 u8 D_800A36F2[2];

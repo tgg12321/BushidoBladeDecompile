@@ -285,8 +285,8 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 689C4 800781C4 C5E00108 */  j          .L80078314
     /* 689C8 800781C8 00000000 */   nop
   jlabel .L800781CC
-    /* 689CC 800781CC 0A80053C */  lui        $a1, %hi(D_800A32FC)
-    /* 689D0 800781D0 FC32A524 */  addiu      $a1, $a1, %lo(D_800A32FC)
+    /* 689CC 800781CC 0A80053C */  lui        $a1, %hi(g_gpu_timed_sprite_image_rect)
+    /* 689D0 800781D0 FC32A524 */  addiu      $a1, $a1, %lo(g_gpu_timed_sprite_image_rect)
     /* 689D4 800781D4 0300A288 */  lwl        $v0, 0x3($a1)
     /* 689D8 800781D8 0000A298 */  lwr        $v0, 0x0($a1)
     /* 689DC 800781DC 0700A388 */  lwl        $v1, 0x7($a1)

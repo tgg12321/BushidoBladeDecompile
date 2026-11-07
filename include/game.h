@@ -1164,7 +1164,8 @@ typedef struct {
     /* per quad, its depth, the OT slot index (eff_UpdateParticles stores,
        eff_LinkParticleQuads reads) */
     u16 quad_ot_index_table[0x90];
-    /* eff_UpdateParticles stores rand() values here; D_800A3724 points at it */
+    /* eff_UpdateParticles stores rand() values here;
+     * g_eff_particle_random_accumulator_ptr points at it */
     s32 random_accumulator;
 } Unk1F8000B8_800678A8;
 

@@ -27,7 +27,7 @@ glabel motion_LoadPlaybackBlock
     /* 37228 80046A28 21280002 */   addu      $a1, $s0, $zero
     /* 3722C 80046A2C 0480053C */  lui        $a1, %hi(func_80046A80)
     /* 37230 80046A30 806AA524 */  addiu      $a1, $a1, %lo(func_80046A80)
-    /* 37234 80046A34 7E0192A7 */  sh         $s2, %gp_rel(D_800A324A)($gp)
+    /* 37234 80046A34 7E0192A7 */  sh         $s2, %gp_rel(g_motion_playback_block_ndata_index)($gp)
     /* 37238 80046A38 A515010C */  jal        arena_SetMoveCallback
     /* 3723C 80046A3C 0A000424 */   addiu     $a0, $zero, 0xA
     /* 37240 80046A40 21102002 */  addu       $v0, $s1, $zero

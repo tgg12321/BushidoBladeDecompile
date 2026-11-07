@@ -299,7 +299,7 @@ extern void node_RebaseRetainedDrawNodeBuffer(s32);
 extern void resource_LoadOrReuseSelectedBlock(s32, s32);
 extern void resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks(void);
 
-extern s16 D_800A324A;
+extern s16 g_motion_playback_block_ndata_index;
 
 extern MATRIX g_math_light_plane_projection;
 
@@ -400,7 +400,7 @@ s32 *motion_LoadPlaybackBlock(s32 playback_file_id) {
         arena_UpdatePeak((s32)end_addr);
         arena_SetBlockEnd(0xA, (s32)end_addr);
     }
-    D_800A324A = (s16)playback_file_id;
+    g_motion_playback_block_ndata_index = (s16)playback_file_id;
     arena_SetMoveCallback(0xA, (s32)func_80046A80);
     return block_base;
 }
@@ -2378,7 +2378,7 @@ void calc_LightMatrix(arg0) Unk800F62E0Rec *arg0;
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
 s16 g_resource_cached_node_asset_id = -1;
-s16 D_800A324A = -1;
+s16 g_motion_playback_block_ndata_index = -1;
 s32 g_resource_last_selection_index = -1;
 /* Q65: tentative definitions (COMMON) of small data reached gp-relative. */
 u32 *g_gpu_ot256_ptr;

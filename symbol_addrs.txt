@@ -166,7 +166,7 @@ g_color_mode = 0x800F6652; // grayscale flag
 
 // === Input ===
 g_pad_buf = 0x800FF580; // pad data buffer  // data-wave 2026-09-24: was g_pad_data
-D_800A324A = 0x800A324A; // active pad/selection  // data-wave 2026-09-25: was g_pad_selection
+g_motion_playback_block_ndata_index = 0x800A324A; // active pad/selection  // data-wave 2026-09-25: was g_pad_selection
 
 // === Display ===
 g_gpu_db = 0x800F7438; // GpuDb[2] display double buffer (DRAWENV, DISPENV, OT per frame)  // data-wave 2026-09-24: was g_disp_fb_base
@@ -321,7 +321,7 @@ g_gpu_fullscreen_image_rect = 0x800A32D8;  // data-wave 2026-10-28: was D_800A32
 g_gpu_fullscreen_image_end_clear_rect = 0x800A32E0;  // data-wave 2026-10-28: was D_800A32E0
 g_entry_menu_vram_copy_source_rect = 0x800A32EC;  // data-wave 2026-10-28: was D_800A32EC
 g_entry_menu_entry_upload_rect = 0x800A32F4;  // data-wave 2026-10-28: was D_800A32F4
-D_800A32FC = 0x800A32FC;
+g_gpu_timed_sprite_image_rect = 0x800A32FC;  // data-wave 2026-11-06: was D_800A32FC
 g_entry_menu_grid_pulse_shifts = 0x800A3530;  // data-wave 2026-10-28: was D_800A3530
 g_entry_menu_grid_cursor_cell_counts = 0x800A3534;  // data-wave 2026-10-28: was D_800A3534
 D_800A3618 = 0x800A3618;
@@ -614,7 +614,7 @@ D_8009B390 = 0x8009B390;
 g_sheet_pair_panel_tile_cursor = 0x800A36DC;  // data-wave 2026-10-27: was D_800A36DC
 g_sheet_pair_draw_mode_cursor = 0x800A36E0;  // data-wave 2026-10-28: was D_800A36E0
 g_sheet_pair_sprite_cursor = 0x800A36E4;  // data-wave 2026-10-28: was D_800A36E4
-D_800A3724 = 0x800A3724;
+g_eff_particle_random_accumulator_ptr = 0x800A3724;  // data-wave 2026-11-06: was D_800A3724
 g_str_date_time_stamp = 0x8001004C; /* data-wave 2026-10-09: was g_str_build_date */
 libcd_CDRegister1 = 0x800A1480; /* -> 0x1F801801 CD register 1: command / response (index-dependent) */  /* data-wave 2026-10-08: was g_cd_reg1 */
 libcd_CDRegister2 = 0x800A1484; /* -> 0x1F801802 CD register 2: parameter / interrupt enable (index-dependent) */  /* data-wave 2026-10-08: was g_cd_reg2 */
@@ -920,7 +920,7 @@ g_entry_menu_entry_flags = 0x8009BC7C; /* per-entry byte flags indexed by an ent
 g_memcard_save_file_name = 0x800A31F0; /* pointer to the const save-file name g_str_memcard_save_file_name (28708.c:2006; never written); passed to memcard_HasFile, a card-directory name compare (memcard.c:190-240), and to memcard_WriteFile / memcard_ReadFile (28708.c:344-380) */  /* data-wave 2026-10-09: was g_memcard_filename_buf */
 g_comb_events_enabled = 0x800A320C; /* set to 1 / 0 by the serial-link (_comb_control) routines (28708.c:1667 / :1672) */  /* data-wave 2026-10-08: was g_memcard_op_active_flag */
 g_menu_release_closes_non_common_vabs = 0x800A31D8; /* initial value 1; when nonzero, menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu closes the non-common VABs and resets g_fight_loaded_stage_index, then stores 1 either way (25C38.c:44-48); the row-menu quit path clears it (25C38.c:390) */  /* data-wave 2026-10-08: was g_scene_already_init_flag */
-D_800A31E4 = 0x800A31E4; /* paired init flag (= 0 / = 1 set) */  /* data-wave 2026-10-08: was g_scene_another_init_flag */
+g_cdrom_init_done = 0x800A31E4; /* paired init flag (= 0 / = 1 set) */  /* data-wave 2026-10-08: was g_scene_another_init_flag */
 g_memcard_card_loaded = 0x800A31E8; /* set to 1 when the poll after _card_load returns 1; read after the next _card_info poll to skip to the result state (memcard_StepCardInfoAndLoad) */  /* data-wave 2026-10-08: was g_memcard_op_input_flag */
 g_gpu_cd_file_image_rect = 0x800A30D4; /* 8-byte RECT, a 256x48 band at (0x20, 0x60): read once by gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth as a LoadImage destination (6CF8.c:193, :202) */  /* data-wave 2026-10-09: was g_init_screen_rect */
 D_800A3744 = 0x800A3744; /* zeroed by sys_InitAtBoot; never read */  /* data-wave 2026-10-08: was g_sys_init_byte_a */
@@ -1007,7 +1007,7 @@ D_800A2D1C = 0x800A2D1C; /* +4 from g_spu_timer (0x800A2D18) */  /* data-wave 20
 g_fight_followup_playback_red_light_effect_vector = 0x800A312C; /* +8 from g_str_motion_file_gn (0x800A3124) */  /* data-wave 2026-09-29: was g_str_gn_bbm_800A3124_plus_8 */
 g_memcard_title_plus_sign_sjis_lead_byte = 0x800A3200; /* +4 from g_memcard_validation_load_active (0x800A31FC) */  /* data-wave 2026-10-08: was g_damage_debug_enabled_plus_4 */
 g_memcard_title_plus_sign_sjis_trail_byte = 0x800A3201; /* +5 from g_memcard_validation_load_active (0x800A31FC) */  /* data-wave 2026-10-08: was g_damage_debug_enabled_plus_5 */
-D_800A3209 = 0x800A3209; /* +5 from g_menu_prompt_rearm (0x800A3204) */  /* data-wave 2026-10-08: was g_input_pause_pending_clear_plus_5 */
+g_replay_model_draw_overflow_count = 0x800A3209; /* +5 from g_menu_prompt_rearm (0x800A3204) */  /* data-wave 2026-10-08: was g_input_pause_pending_clear_plus_5 */
 D_800A3240 = 0x800A3240; /* flag gating the file-size term of ndata_ReadChecked; init 1, never written */  /* data-wave 2026-10-08: was g_text1a_color_blue_plus_4 */
 g_gpu_comparison_unrecorded_match_cell_indices = 0x800A3270; /* +4 from g_gpu_jittered_quad_pair_cycle (0x800A326C) */  /* data-wave 2026-10-08: was g_eff_particle_remaining_plus_4 */
 g_gpu_split_wipe_image_clut_rect = 0x800A3284; /* RECT {0x3E0, 0x1FF, 0x10, 1}, LoadImage destination in gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe */  /* data-wave 2026-10-08: was g_text1b_byte_pair_table_8x7_plus_8 */
@@ -1020,7 +1020,7 @@ D_800A36C6 = 0x800A36C6; /* +2 from g_comb_received_payload_check_word (its high
 g_fight_time_limit_seconds = 0x800A36CC; /* limit in units of 30 frames */  /* data-wave 2026-10-08: was g_char_id_saved_d_plus_4 */
 D_800A36D2 = 0x800A36D2; /* +2 from g_comb_prev_send_word */  /* data-wave 2026-10-08: was g_pad_rec_prev_packed_plus_2 */
 g_fight_displaced_bone_group_tim_requests = 0x800A36F4; /* saved byte, passed as slot_RequestTimGroupsAndMarkReloadOnChange's second argument */  /* data-wave 2026-10-08: was g_char_class_state_array_plus_2 */
-D_800A3724 = 0x800A3724; /* +4 from g_eff_quad_buffer_base (0x800A3720) */  /* data-wave 2026-10-08: was g_gnd_fog_prev_plus_4 */
+g_eff_particle_random_accumulator_ptr = 0x800A3724; /* +4 from g_eff_quad_buffer_base (0x800A3720) */  /* data-wave 2026-10-08: was g_gnd_fog_prev_plus_4 */
 g_fight_start_position_pair_changed = 0x800A3728; /* +8 from g_eff_quad_buffer_base (0x800A3720) */  /* data-wave 2026-10-08: was g_gnd_fog_prev_plus_8 */
 g_fight_missing_support_fighter_index = 0x800A3758; /* +8 from g_snd_stage_sound_state (0x800A3750) */  /* data-wave 2026-10-08: was g_leaf_random_buffer_plus_8 */
 g_fight_playback_file_base_index = 0x800A376C; /* +1 from D_800A376B (0x800A376B) */  /* data-wave 2026-10-08: was g_mottest_substate_plus_1 */

@@ -150,10 +150,10 @@ glabel func_8002DE20
     /* 1E854 8002E054 23386200 */  subu       $a3, $v1, $v0
     /* 1E858 8002E058 0500E014 */  bnez       $a3, .L8002E070
     /* 1E85C 8002E05C 00000000 */   nop
-    /* 1E860 8002E060 8000828F */  lw         $v0, %gp_rel(D_800A314C)($gp)
+    /* 1E860 8002E060 8000828F */  lw         $v0, %gp_rel(g_fighter_weapon_contact_zero_z_span_count)($gp)
     /* 1E864 8002E064 01000724 */  addiu      $a3, $zero, 0x1
     /* 1E868 8002E068 01004224 */  addiu      $v0, $v0, 0x1
-    /* 1E86C 8002E06C 800082AF */  sw         $v0, %gp_rel(D_800A314C)($gp)
+    /* 1E86C 8002E06C 800082AF */  sw         $v0, %gp_rel(g_fighter_weapon_contact_zero_z_span_count)($gp)
   .L8002E070:
     /* 1E870 8002E070 20012E8D */  lw         $t6, 0x120($t1)
     /* 1E874 8002E074 1801428D */  lw         $v0, 0x118($t2)
@@ -213,10 +213,10 @@ glabel func_8002DE20
     /* 1E93C 8002E13C 23386E00 */  subu       $a3, $v1, $t6
     /* 1E940 8002E140 0500E014 */  bnez       $a3, .L8002E158
     /* 1E944 8002E144 00000000 */   nop
-    /* 1E948 8002E148 8000828F */  lw         $v0, %gp_rel(D_800A314C)($gp)
+    /* 1E948 8002E148 8000828F */  lw         $v0, %gp_rel(g_fighter_weapon_contact_zero_z_span_count)($gp)
     /* 1E94C 8002E14C 01000724 */  addiu      $a3, $zero, 0x1
     /* 1E950 8002E150 01004224 */  addiu      $v0, $v0, 0x1
-    /* 1E954 8002E154 800082AF */  sw         $v0, %gp_rel(D_800A314C)($gp)
+    /* 1E954 8002E154 800082AF */  sw         $v0, %gp_rel(g_fighter_weapon_contact_zero_z_span_count)($gp)
   .L8002E158:
     /* 1E958 8002E158 2001238D */  lw         $v1, 0x120($t1)
     /* 1E95C 8002E15C 1801828C */  lw         $v0, 0x118($a0)
@@ -250,10 +250,10 @@ glabel func_8002DE20
     /* 1E9C0 8002E1C0 23384300 */  subu       $a3, $v0, $v1
     /* 1E9C4 8002E1C4 0500E014 */  bnez       $a3, .L8002E1DC
     /* 1E9C8 8002E1C8 00000000 */   nop
-    /* 1E9CC 8002E1CC 8000828F */  lw         $v0, %gp_rel(D_800A314C)($gp)
+    /* 1E9CC 8002E1CC 8000828F */  lw         $v0, %gp_rel(g_fighter_weapon_contact_zero_z_span_count)($gp)
     /* 1E9D0 8002E1D0 01000724 */  addiu      $a3, $zero, 0x1
     /* 1E9D4 8002E1D4 01004224 */  addiu      $v0, $v0, 0x1
-    /* 1E9D8 8002E1D8 800082AF */  sw         $v0, %gp_rel(D_800A314C)($gp)
+    /* 1E9D8 8002E1D8 800082AF */  sw         $v0, %gp_rel(g_fighter_weapon_contact_zero_z_span_count)($gp)
   .L8002E1DC:
     /* 1E9DC 8002E1DC 2001838C */  lw         $v1, 0x120($a0)
     /* 1E9E0 8002E1E0 1801428D */  lw         $v0, 0x118($t2)

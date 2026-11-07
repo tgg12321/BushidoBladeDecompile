@@ -2803,7 +2803,7 @@ extern s16 D_800EFC8A[];
 extern s16 g_eff_particle_mode_position_counts[];
 
 u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
-    extern s32 *D_800A3724;
+    extern s32 *g_eff_particle_random_accumulator_ptr;
     Unk1F8000B8_800678A8 *var_0 = &g_eff_work_area->v800678A8;
     /* FAKE: tex_right_u_offset / tex_bottom_v_offset /
      * base_squared_distance_limit / particle_scan_count / particle_quad_cursor
@@ -2817,7 +2817,7 @@ u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
     s16 *p6C = &var_0->particle_scan_count;
     POLY_FT4 **p80 = &var_0->particle_quad_cursor;
 
-    D_800A3724 = &var_0->random_accumulator;
+    g_eff_particle_random_accumulator_ptr = &var_0->random_accumulator;
     *p80 = g_eff_quad_cursor;
     *p4 = 0x895440;
     *g_eff_tpage_word = 0x2E;
@@ -2918,7 +2918,7 @@ u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
  * (particle_mode), then emit up to three POLY_FT4 quads, storing
  * *g_eff_depth_work for each in var_9[]. */
 void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
-    extern s32 *D_800A3724;
+    extern s32 *g_eff_particle_random_accumulator_ptr;
     Unk1F8000B8_800678A8 *var_0 = &g_eff_work_area->v800678A8;
     /* FAKE: scratchpad members are reached through the plain pointers below.
      * Replacing p_count alone spills the unk70 address from s8 to 96(sp),
@@ -2951,7 +2951,7 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
     u32 squared_length;
     s16 *sxy;
 
-    D_800A3724 = &var_0->random_accumulator;
+    g_eff_particle_random_accumulator_ptr = &var_0->random_accumulator;
     var_10 = &var_0->random_accumulator;
     *var_10 = rand();
     var_1 = &var_0->base_squared_distance_limit;
@@ -3182,7 +3182,7 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
 }
 
 u8 eff_LinkParticleQuads(s32 arg0, s32 arg1) {
-    extern s32 *D_800A3724;
+    extern s32 *g_eff_particle_random_accumulator_ptr;
     Unk1F8000B8_800678A8 *work_area = &g_eff_work_area->v800678A8;
     s16 *quad_index = &work_area->unk6E;
     POLY_FT4 **quad_end = &work_area->new_quads_end;
@@ -3193,7 +3193,7 @@ u8 eff_LinkParticleQuads(s32 arg0, s32 arg1) {
     s32 quad_count;
     s32 has_quads;
 
-    D_800A3724 = &work_area->random_accumulator;
+    g_eff_particle_random_accumulator_ptr = &work_area->random_accumulator;
     first_quad = g_eff_quad_cursor;
     entry_quad_cursor = *quad_cursor;
     quad_count = entry_quad_cursor - first_quad;
@@ -3237,5 +3237,5 @@ s32 g_eff_point_light_countdown = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
 POLY_FT4 *g_eff_quad_buffer_base;
-s32 *D_800A3724;
+s32 *g_eff_particle_random_accumulator_ptr;
 POLY_FT4 *g_eff_quad_cursor;
