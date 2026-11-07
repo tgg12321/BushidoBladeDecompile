@@ -19,7 +19,7 @@ void CopyWorkingFlagsAndButtonMappingsToSavedRecord(void) {
     working_record = GetWorkingRecord();
     g_saved_record.flags &= ~7;
     g_saved_record.flags |= working_record->grayscale ? 1 : 0;
-    g_saved_record.flags |= working_record->unk20_1 ? 2 : 0;
+    g_saved_record.flags |= working_record->cpu_behavior_adjust ? 2 : 0;
     g_saved_record.flags |= working_record->cd_audio_suppressed ? 4 : 0;
     for (i = 0; i < 3; i++) {
         g_saved_record.frec20[i] = working_record->button_mappings[i];
@@ -69,7 +69,7 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
 
     if (mode_selector == FIGHT_MODE_PRACTICE) {
         D_800A389A = p->unk14_17;
-        g_fight_toggle_option_bits = p->unk14_18;
+        g_fight_toggle_option_bits = p->toggle_option_bits;
     } else if (mode_selector == FIGHT_MODE_TEAM) {
         s32 win_target;
 
@@ -82,7 +82,7 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
         }
         g_fight_win_target = win_target;
         s = g_fight_match_weapon_ids[0];
-        D_800A38E1 = p->unk14_15;
+        D_800A38E1 = p->selected_grid_page_bits;
         {
             s32 j = 0;
             u8 *weapon_id_row = s;
@@ -125,7 +125,7 @@ void CopySavedFlagsButtonMappingsAndTimesToWorkingRecord(void) {
     working_record = GetWorkingRecord();
     i = 0;
     working_record->grayscale = g_saved_record.flags & 1;
-    working_record->unk20_1 = (g_saved_record.flags >> 1) & 1;
+    working_record->cpu_behavior_adjust = (g_saved_record.flags >> 1) & 1;
     working_record->cd_audio_suppressed = (g_saved_record.flags >> 2) & 1;
     src = g_saved_record.frec20;
     for (; i < 3; i++) {

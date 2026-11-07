@@ -834,7 +834,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     end_addr = draw_chunk_addr + sizeof(Unk8005E54CRec);
     s.ot_idx = ot_index;
     for (i = 0; i < 2; i++) {
-        if (!(g_working_record.unk14_15 >> i & 1)) {
+        if (!(g_working_record.selected_grid_page_bits >> i & 1)) {
             s.header = &D_8009B524;
         } else {
             s.header = &D_8009B53C;
@@ -843,7 +843,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
         s.table = D_8009B554;
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
-        if (!(g_working_record.unk14_15 >> i & 1)) {
+        if (!(g_working_record.selected_grid_page_bits >> i & 1)) {
             s.header = &D_8009B530;
             s.table = D_8009B56C;
         } else {

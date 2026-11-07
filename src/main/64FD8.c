@@ -1128,7 +1128,7 @@ s32 menu_FadeOutSelAndWriteResult(Unk8006EACCRec *draw_context) {
         }
         working_record->time_limit_index = var_6;
         working_record->win_target_index = SELWORK->selected_win_target_index;
-        working_record->unk14_15 =
+        working_record->selected_grid_page_bits =
             SELWORK->selected_grid_page[0] + SELWORK->selected_grid_page[1] * 2;
         for (i = 0; i < 2; i++) {
             for (j = 0; j < SELWORK->selected_match_count_index + 3; j++) {
@@ -1137,7 +1137,7 @@ s32 menu_FadeOutSelAndWriteResult(Unk8006EACCRec *draw_context) {
                 working_record->match_picks[i][j].round_grid_pick =
                     g_sel_grid_page_cells[0][SELWORK->grid_pick_slots[i][j]]
                         .cell_pick_value;
-                working_record->match_picks[i][j].unk1 =
+                working_record->match_picks[i][j].round_weapon_id =
                     SELWORK->picked_list_entries[i][j];
             }
         }

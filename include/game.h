@@ -314,7 +314,7 @@ typedef struct {
  * iteration the values 12, 13, 14, 0 and 3 take entry_headers[22..26]). */
 typedef struct {
     Unk8009B400Record *slot_cell_tables[2];
-    s32 unk_08;
+    s32 offset_list_terminator;
     Unk8009B0E0Record entry_headers[0];
 } Unk8006ECF4Rec;
 
@@ -521,7 +521,7 @@ typedef struct {
    Unk8009BD24Block.match_picks. */
 typedef struct {
     u8 round_grid_pick;
-    u8 unk1;
+    u8 round_weapon_id;
 } Unk8009BD24Record;
 
 /* One of the three 4-byte records at Unk8009BD24Block.time_records
@@ -561,15 +561,15 @@ typedef struct {
     u32 match_count_index : 2;
     u32 time_limit_index : 2;
     u32 win_target_index : 1;
-    u32 unk14_15 : 2;
+    u32 selected_grid_page_bits : 2;
     u32 unk14_17 : 1;
-    u32 unk14_18 : 3;
+    u32 toggle_option_bits : 3;
     u32 unk14_21 : 3;
     u8 button_mappings[3];
     u8 default_button_mappings[3];
     u8 committed_button_mappings[3];
     u32 grayscale : 1;
-    u32 unk20_1 : 1;
+    u32 cpu_behavior_adjust : 1;
     u32 cd_audio_suppressed : 1;
     u32 view_setting : 1;
     u32 unk20_4 : 4;

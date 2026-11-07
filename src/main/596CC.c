@@ -1307,7 +1307,7 @@ void menu_DrawOptionMenuChoices(s32 *draw_context) {
         s.header = tbl[i + 9];
         s.x = 0;
         s.has_color = 0;
-        if (g_row_menu_working_record_ptr->unk20_1 == i) {
+        if (g_row_menu_working_record_ptr->cpu_behavior_adjust == i) {
             s.semi = 0;
             if ((g_menu_packed_cursors & 0x1C00) == 0x400) {
                 s32 c;
@@ -1431,7 +1431,7 @@ s32 menu_HandleOptionMenuChoices(s32 *arg0, u32 *pressed_buttons) {
         break;
     case 1:
         if ((direction_events & 0xFF) != 0) {
-            g_row_menu_working_record_ptr->unk20_1 ^= 1;
+            g_row_menu_working_record_ptr->cpu_behavior_adjust ^= 1;
             snd_QueueSound(0, 0x7F, 0x7F);
         }
         if (*pressed_buttons & 0x400040) {

@@ -1735,7 +1735,8 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
              slot_index < 1 + g_entry_menu_init_extra_slot_count +
                               g_entry_menu_row_phase_extra_slot_count;
              slot_index++) {
-            g_entry_menu_working_record_ptr->match_picks[slot_index][0].unk1 =
+            g_entry_menu_working_record_ptr->match_picks[slot_index][0]
+                .round_weapon_id =
                 g_entry_menu_slot_records.rec[slot_index].row_pick;
         }
     }
