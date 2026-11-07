@@ -698,7 +698,7 @@ glabel fighter_ProcessWeaponContacts
     /* 1A678 80029E78 6C00058E */  lw         $a1, 0x6C($s0)
     /* 1A67C 80029E7C 7000068E */  lw         $a2, 0x70($s0)
     /* 1A680 80029E80 7400078E */  lw         $a3, 0x74($s0)
-    /* 1A684 80029E84 88B7000C */  jal        func_8002DE20
+    /* 1A684 80029E84 88B7000C */  jal        fighter_TestWeaponSweepTriangleContact
     /* 1A688 80029E88 21200002 */   addu      $a0, $s0, $zero
     /* 1A68C 80029E8C 13004010 */  beqz       $v0, .L80029EDC
     /* 1A690 80029E90 21380000 */   addu      $a3, $zero, $zero
@@ -1048,7 +1048,7 @@ glabel fighter_ProcessWeaponContacts
     /* 1AB5C 8002A35C 6C00058E */  lw         $a1, 0x6C($s0)
     /* 1AB60 8002A360 7000068E */  lw         $a2, 0x70($s0)
     /* 1AB64 8002A364 7400078E */  lw         $a3, 0x74($s0)
-    /* 1AB68 8002A368 88B7000C */  jal        func_8002DE20
+    /* 1AB68 8002A368 88B7000C */  jal        fighter_TestWeaponSweepTriangleContact
     /* 1AB6C 8002A36C 21200002 */   addu      $a0, $s0, $zero
     /* 1AB70 8002A370 13004010 */  beqz       $v0, .L8002A3C0
     /* 1AB74 8002A374 21380000 */   addu      $a3, $zero, $zero

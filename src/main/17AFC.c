@@ -1217,8 +1217,9 @@ static inline s32 box_overlap(Unk1F8002B8Rec *scr) {
 
 /* Both are defined further down this file. */
 extern s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj);
-extern s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0,
-                         Unk80107850Rec *p1, Unk80107850Rec *p2);
+extern s32 fighter_TestWeaponSweepTriangleContact(
+    Unk1F8002B8Rec *obj, Unk80107850Rec *p0, Unk80107850Rec *p1,
+    Unk80107850Rec *p2);
 
 /* Weapon contact test between the two g_fighter_records records (called by
  * fight_UpdateFighterInteractionsAndPointCaches; the result goes to
@@ -1230,8 +1231,9 @@ extern s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0,
  * sets +0x286 to 0x19 or 0xB; the hit counts only when +0x40 lies within
  * +0xA1..+0xA3 (+0xA2..+0xA4 for grid 1, which is tested only with +0x8C set).
  * Then each record-0 triangle math_TryPrepareTriangleNormalFrame accepts is
- * tested against each record-1 triangle (bounding boxes, then func_8002DE20),
- * the rejected ones again with the roles swapped. A hit returns (record-1 grid
+ * tested against each record-1 triangle (bounding boxes, then
+ * fighter_TestWeaponSweepTriangleContact), the rejected ones again with the
+ * roles swapped. A hit returns (record-1 grid
  * << 1) | record-0 grid, else -1; the points are restored. */
 s32 fighter_ProcessWeaponContacts(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
@@ -1448,7 +1450,7 @@ s32 fighter_ProcessWeaponContacts(void) {
                 }
             }
             if (box_overlap(scr) &&
-                func_8002DE20(
+                fighter_TestWeaponSweepTriangleContact(
                     scr, scr->other_shape_points[0], scr->other_shape_points[1],
                     scr->other_shape_points[2]) != 0) {
                 for (k = 0; k < 16; k++) {
@@ -1559,7 +1561,7 @@ s32 fighter_ProcessWeaponContacts(void) {
                 }
             }
             if (box_overlap(scr) &&
-                func_8002DE20(
+                fighter_TestWeaponSweepTriangleContact(
                     scr, scr->other_shape_points[0], scr->other_shape_points[1],
                     scr->other_shape_points[2]) != 0) {
                 for (k = 0; k < 16; k++) {
@@ -3204,8 +3206,9 @@ extern s32 g_fighter_weapon_contact_zero_z_span_count;
  * 1 if the resulting segment (x1,y1)-(x2,y2) touches the triangle (0,0) / A / B
  * in the x-y plane: either endpoint inside it (same side of every edge as the
  * centroid), or the segment crossing one of its edges. */
-s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0, Unk80107850Rec *p1,
-                  Unk80107850Rec *p2) {
+s32 fighter_TestWeaponSweepTriangleContact(
+    Unk1F8002B8Rec *obj, Unk80107850Rec *p0, Unk80107850Rec *p1,
+    Unk80107850Rec *p2) {
     s32 i;
     s32 max_i;
     s32 min_i;

@@ -1366,10 +1366,11 @@ typedef union {
  * fighter_TestTriangleBoneHits's two hit masks (outer and inner sphere tests;
  * fighter_ProcessWeaponBodyHits reads them; no 17AFC code
  * accesses unkD4 as a member); rot_matrix is the matrix the RotMatrix* calls
- * build, and the GTE rotates unkA8 through it; func_8002DE20 rotates three
- * points, relative to the origin *shape_points[0], into unk118 and tests them
- * against the triangle (0,0) / unkA8 / unkB8. point_slots is scratch
- * (Unk1F8002B8Unk00): fighter_CastWeaponSegment / object_ResolveFighterHits /
+ * build, and the GTE rotates unkA8 through it;
+ * fighter_TestWeaponSweepTriangleContact rotates three points, relative to the
+ * origin *shape_points[0], into unk118 and tests them against the triangle
+ * (0,0) / unkA8 / unkB8. point_slots is scratch (Unk1F8002B8Unk00):
+ * fighter_CastWeaponSegment / object_ResolveFighterHits /
  * fighter_ProcessWeaponBodyHits use its points. */
 typedef struct {
     Unk1F8002B8Unk00 point_slots;

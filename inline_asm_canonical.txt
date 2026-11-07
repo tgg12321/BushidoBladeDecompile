@@ -391,7 +391,7 @@ eff_DrawAndAdvanceRotatedQuadClusters  # gcc-cannot-emit:gte_psyq_macro_call. Mi
 eff_DrawYawedSlotQuads  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_c.h with gtemac.h: gte_CompMatrix, gte_SetRotMatrix, gte_SetTransMatrix, gte_ldv3, gte_rtpt, gte_stsxy3, gte_stsz, gte_ldv0, gte_rtps, gte_stsxy); the C remains audited.
 eff_DrawAndAdvanceJitteredBillboards  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_c.h: gte_SetRotMatrix, gte_stsz); the C remains audited.
 math_TryPrepareTriangleNormalFrame  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_OuterProduct0, gte_Lzc, gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl); the C remains audited.
-func_8002DE20  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_ldv0, gte_rtv0, gte_stlvnl, gte_ApplyRotMatrix); the C remains audited.
+fighter_TestWeaponSweepTriangleContact  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_ldv0, gte_rtv0, gte_stlvnl, gte_ApplyRotMatrix); the C remains audited.
 eff_DrawBillboardList  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_c.h: gte_stsz); the C remains audited.
 camera_UpdateTwoFighterView  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_Lzc); the C remains audited.
 fighter_CastWeaponSegment  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_Lzc); the C remains audited.

@@ -1,4 +1,4 @@
-glabel func_8002DE20
+glabel fighter_TestWeaponSweepTriangleContact
     /* 1E620 8002DE20 F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 1E624 8002DE24 21408000 */  addu       $t0, $a0, $zero
     /* 1E628 8002DE28 0000B0AF */  sw         $s0, 0x0($sp)
@@ -574,4 +574,4 @@ glabel func_8002DE20
     /* 1EEA4 8002E6A4 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 1EEA8 8002E6A8 0800E003 */  jr         $ra
     /* 1EEAC 8002E6AC 00000000 */   nop
-endlabel func_8002DE20
+endlabel fighter_TestWeaponSweepTriangleContact
