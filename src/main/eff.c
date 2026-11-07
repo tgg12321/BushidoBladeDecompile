@@ -11,6 +11,11 @@
 #include <psxsdk/inline_c.h>
 #include <psxsdk/gtemac.h>
 
+enum ParticleLifeState {
+    PARTICLE_LIFE_ACTIVE = 1,
+    PARTICLE_LIFE_ENDED = 3,
+};
+
 /* eff_StartCommand .. eff_BindScratchpad belong here by the per-file gp
  * evidence (Q65). */
 
@@ -2735,7 +2740,7 @@ u8 eff_SpawnParticles(
         particle->offset_z = 0;
         particle->offset_y = 0;
         particle->offset_x = 0;
-        particle->life_state = 1;
+        particle->life_state = PARTICLE_LIFE_ACTIVE;
         RotMatrix(&rotation_angles, &m);
         gte_ApplyMatrix(&m, &v, &out);
         particle->velocity_x = out.vx;
@@ -2973,7 +2978,7 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
 
     for (*p_idx = 0; *p_idx < *p_count; (*p_idx)++) {
         *p_ent = &g_eff_particles[particle_row_index][*p_idx];
-        if ((*p_ent)->life_state != 1) {
+        if ((*p_ent)->life_state != PARTICLE_LIFE_ACTIVE) {
             continue;
         }
         (*p_ent)->frame_age++;
@@ -2981,7 +2986,7 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
         *p_r = (*var_14 << 2) < 0xFF ? ~(*var_14 << 2) : 0;
         *p_g = (*var_14 << 5) < 200 ? 200 - (*var_14 << 5) : 0;
         if (*p_r <= 0x50 && *p_g <= 0x20) {
-            (*p_ent)->life_state = 3;
+            (*p_ent)->life_state = PARTICLE_LIFE_ENDED;
             continue;
         }
         *p_b = (*var_14 << 5) < 100 ? 100 - (*var_14 << 5) : 0;
@@ -3028,7 +3033,7 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
         *var_10 ^= rand();
         if ((u32)(p_out[0] + p_out[1] + p_out[2]) >
             *var_1 + *var_10 * 3000 / 32768 * 3000) {
-            (*p_ent)->life_state = 3;
+            (*p_ent)->life_state = PARTICLE_LIFE_ENDED;
             continue;
         }
 
