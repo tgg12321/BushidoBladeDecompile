@@ -2935,8 +2935,8 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
      * adding stack reloads before its halfword loads (1052 vs 1047 insns).
      * Single-pointer direct-member scores (pointer / member): var_1 /
      * base_squared_distance_limit 101, var_2 / group_position 112, p_count /
-     * particle_scan_count 94, p_idx / unk6E 109, p_r / particle_red 119, p_g /
-     * particle_green 102, p_b / particle_blue 104, var_8 /
+     * particle_scan_count 94, p_idx / loop_index 109, p_r / particle_red 119,
+     * p_g / particle_green 102, p_b / particle_blue 104, var_8 /
      * group_position_entry 99, var_10 / random_accumulator 91, p_work / unk34
      * 75, var_14 / unk70 95, p_n / screen_xy_index 74, p_prim /
      * particle_quad_cursor 43, p_ent / current_particle 65;
