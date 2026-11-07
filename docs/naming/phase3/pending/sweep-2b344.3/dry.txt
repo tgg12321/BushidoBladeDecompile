@@ -1,0 +1,21 @@
+sweep-2b344.3 (naming-a 2026-11-06): 5 local / parameter bindings in 4 functions (15 token substitutions in src/main/2B344.c, 2 in src/main/309CC.c = 17); no include/ file touched. Research rows 5 of 5 kept, 0 dropped; 0 names changed by the drafter.
+Tree: ln-naming-a = lanes/naming-a df15e20c9 (tracked tree clean). Run in WSL via a script file (tmp/d3/run.sh in the lane worktree, running tmp/d3/dry3.py; NAMING_KEYCHECK_ROOT = the worktree, venv active).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (same tool result as var-locals-43 .. -55). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree (base = naming_keycheck.read_working_tree()); lines are mapped from the token index through naming_keycheck.code_spans.
+The 5 pairs of pairs.txt together were accepted (17 token substitutions). Each pair was also run alone: all accepted (alone counts sum to 17) and every alone line list equals the drafter's own use scan from reading the code at df15e20c9 and the research's lists.
+Required comment edits: none (no comment in the touched ranges spells an old name), see notes.txt.
+Per-pair substitutions (function:old=new count (lines)):
+  fight_RunCommandStream:var_0=handler_selected 8 (359,363,414,429,436,450,456,462)
+  gpu_BuildFogImageLevels:var_22=weighted_source_red 3 (1704,1715,1717)
+  gpu_BuildFogImageLevels:var_23=weighted_source_green 3 (1705,1720,1722)
+  gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards:arg0=eye_distance 1 (1998)
+  node_SetWordOnAllListedNodes:a1=ground_y 2 (118,123)
+
+Raw driver output (HEAD df15e20c9, scoped_plan together then alone per pair; line numbers are working-tree lines):
+Tree: ln-naming-a HEAD df15e20c9; scoped_plan(read_working_tree(), pairs, {})
+SET 5 pairs ACCEPT {'2B344.c': 15, '309CC.c': 2} total 17
+ALONE fight_RunCommandStream:var_0=handler_selected ACCEPT 8 2B344.c [359, 363, 414, 429, 436, 450, 456, 462]
+ALONE gpu_BuildFogImageLevels:var_22=weighted_source_red ACCEPT 3 2B344.c [1704, 1715, 1717]
+ALONE gpu_BuildFogImageLevels:var_23=weighted_source_green ACCEPT 3 2B344.c [1705, 1720, 1722]
+ALONE gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards:arg0=eye_distance ACCEPT 1 2B344.c [1998]
+ALONE node_SetWordOnAllListedNodes:a1=ground_y ACCEPT 2 309CC.c [118, 123]
+ALONE SUM 17

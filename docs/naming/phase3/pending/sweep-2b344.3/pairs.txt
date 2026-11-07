@@ -1,0 +1,5 @@
+fight_RunCommandStream:var_0=handler_selected
+gpu_BuildFogImageLevels:var_22=weighted_source_red
+gpu_BuildFogImageLevels:var_23=weighted_source_green
+gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards:arg0=eye_distance
+node_SetWordOnAllListedNodes:a1=ground_y
