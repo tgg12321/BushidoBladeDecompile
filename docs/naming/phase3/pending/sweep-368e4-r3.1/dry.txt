@@ -1,0 +1,43 @@
+RE-RUN after pre-apply 1 (resubmitted as the suggested ALT):
+==============================================================================
+DATA WAVE — 1 addresses, 1 identifiers remapped
+  0x800a33b0: D_800A33B0 -> g_resource_stage_counted_record_list
+
+-- file edits (6) --
+  asm/funcs/func_80046780.s  (1)
+  asm/funcs/resource_LoadOrReuseSelectedBlock.s  (1)
+  asm/funcs/resource_RebaseLoadedBlockSections.s  (2)
+  asm/funcs/resource_SelectRetainedSubblockOrApplyHeaderSections.s  (1)
+  src/main/368E4.c  (5)
+  symbol_addrs.txt  (1)
+
+-- registry lines --
+  symbol_addrs.txt:152 D_800A33B0 -> g_resource_stage_counted_record_list
+
+DRY RUN — nothing written. Re-run with --apply.
+rc=0
+
+---- first dry run (superseded name) ----
+==============================================================================
+DATA WAVE — 1 addresses, 1 identifiers remapped
+  0x800a33b0: D_800A33B0 -> g_resource_stage_point_pair_records
+
+-- file edits (6) --
+  asm/funcs/func_80046780.s  (1)
+  asm/funcs/resource_LoadOrReuseSelectedBlock.s  (1)
+  asm/funcs/resource_RebaseLoadedBlockSections.s  (2)
+  asm/funcs/resource_SelectRetainedSubblockOrApplyHeaderSections.s  (1)
+  src/main/368E4.c  (5)
+  symbol_addrs.txt  (1)
+
+-- registry lines --
+  symbol_addrs.txt:152 D_800A33B0 -> g_resource_stage_point_pair_records
+
+DRY RUN — nothing written. Re-run with --apply.
+rc=0
+
+COMMENT-PASS ITEMS (not covered by the dry run)
+- symbol_addrs.txt:152 stale note "current BGM track  // data-wave 2026-09-25: was g_snd_bgm_id": replace with a section-3 pointer note (the dry run only renames the identifier).
+- docs/formats/NDATA.md:211 and :223 cite `D_800A33B0` / `%gp_rel(D_800A33B0)`: substitute the new name (asm symbol text).
+- src comments: none mention D_800A33B0 (git grep -n -w over src include: only code lines 368E4.c:24, :181, :253, :272, :325).
+- docs/naming/function-names.csv (1 hit) and docs/naming/phase3/no_name.tsv:18 (func_80046780 row, "returns D_800A33B0") name the old symbol: check at LAND whether they are history or live text.
