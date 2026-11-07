@@ -297,8 +297,9 @@ void fighter_InitCpuControl(
     /* temp holds six values in turn, each read before the next write: case 2's
      * level g_fight_first_fighter_win_count / 5; case 2's practice level
      * g_fight_first_fighter_win_count / 3 (0 once it reaches 3); case 3's row
-     * in D_8009A9B4; a move entry's byte-assembled character mask; the entry's
-     * stat bytes e[1] and e[2] (Ruling 11, ordinary-c-judge-decidable). */
+     * in g_cpu_chanbara_tally_threshold_wait_limits; a move entry's
+     * byte-assembled character mask; the entry's stat bytes e[1] and e[2]
+     * (Ruling 11, ordinary-c-judge-decidable). */
     s32 temp;
     u32 var_15;
     s32 lo_val, hi1_val, var_18;
@@ -319,8 +320,8 @@ void fighter_InitCpuControl(
             fighter_ClearCpuTally(p->index);
         }
         if (g_cpu_profiles[p->cpu_profile].flags & 0x300) {
-            src =
-                &D_8009A8C8[p->variant_index][g_fight_stage_command_count - 1];
+            src = &g_cpu_limits_and_entry_masks_by_stage_command_count
+                      [p->variant_index][g_fight_stage_command_count - 1];
             p->cpu_tracked_move_tally_threshold =
                 src->tracked_move_tally_threshold;
             p->cpu_script_wait_limit = src->script_wait_limit;
@@ -367,7 +368,7 @@ void fighter_InitCpuControl(
         if (g_fight_step_table_next_row % 10 == 0) {
             temp--;
         }
-        limits_row = D_8009A9B4[temp];
+        limits_row = g_cpu_chanbara_tally_threshold_wait_limits[temp];
         p->cpu_tracked_move_tally_threshold = limits_row[0];
         p->cpu_script_wait_limit = limits_row[1];
         break;
@@ -1750,11 +1751,11 @@ extern u8 g_cpu_double_stock_use_pad_script[];
 extern u8 g_cpu_ballistic_pad_script[];
 extern u8 g_cpu_move_range_rules[8][4];
 extern NavVertexChainSet g_cpu_stage_nav_sets[];
-extern u16 D_8009A928[][23];
-extern u8 D_8009A9DC[][3];
-extern s32 D_8009A9F0[][8];
-extern u8 D_800A325C[4];
-extern u8 D_800A3260[4];
+extern u16 g_cpu_chanbara_script_entry_masks[][23];
+extern u8 g_cpu_practice_entry_class_list_rows[][3];
+extern s32 g_cpu_practice_script_entry_class_lists[][8];
+extern u8 g_cpu_dpad_press_action_by_opponent_nibble[4];
+extern u8 g_cpu_dpad_double_tap_action_by_opponent_nibble[4];
 extern void fighter_AppendNavDetour(
     Unk80101EC8Record *, NavVertexChainSet *, s32, s32);
 
@@ -1778,11 +1779,12 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
      * distance base (100000, or D_8009A838[stage] * 8) of the
      * g_cpu_move_range_rules scan; cpu_probes[6] for the lim chain;
      * cpu_probes[6] again for the waypoint script; the x of waypoint 1; the
-     * cpu_probes[1] == 0 flag of the 0x394 choice; case 2's D_8009A9F0 pattern
-     * word, shifted in place; a script entry's low distance bound (e[1] * 40,
-     * then adjusted); the state-0x15 script's near bound (the opponent's
-     * script_min_distances entry, or its filtered_script_max_distances entry +
-     * 300) (Ruling 11, reused-local-necessity). */
+     * cpu_probes[1] == 0 flag of the 0x394 choice; case 2's
+     * g_cpu_practice_script_entry_class_lists pattern word, shifted in place; a
+     * script entry's low distance bound (e[1] * 40, then adjusted); the
+     * state-0x15 script's near bound (the opponent's script_min_distances
+     * entry, or its filtered_script_max_distances entry + 300) (Ruling 11,
+     * reused-local-necessity). */
     s32 work1;
     /* work2 holds seven values in turn, each read before the next write: the
      * cpu_probes[1] == 0 flag of the state-0x15 script choice; a
@@ -1799,15 +1801,16 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
      * 12; the forced-scan flag of the g_cpu_move_range_rules scan; the "longer
      * than lim" flag; the bearing to the next waypoint, wrapped; the 0x394
      * choice's coin bit, stepped per try; the 0x394 slot (cpu_action_index, or
-     * a D_800A325C / D_800A3260 entry); case 3's column in D_8009A928; the
-     * entry-type mask; a script entry's character mask; the entry's accept
-     * flag. Read-before-write kept from the original (Q74): the 0x394 slot
-     * switch below reads work3 with no write on the path
-     * cpu_action_from_opponent == 1, opponent state neither 0x19 nor 0x1A
-     * (target 0x80059D18 -> 0x80059D6C -> 0x80059DB0; $s3 read by the sltiu at
-     * 0x80059D70 and the sll at 0x80059DB4), switching on whatever earlier work
-     * left there (that read is excluded from the value grouping above) (Ruling
-     * 11, reused-local-necessity). */
+     * a g_cpu_dpad_press_action_by_opponent_nibble /
+     * g_cpu_dpad_double_tap_action_by_opponent_nibble entry); case 3's column
+     * in g_cpu_chanbara_script_entry_masks; the entry-type mask; a script
+     * entry's character mask; the entry's accept flag. Read-before-write kept
+     * from the original (Q74): the 0x394 slot switch below reads work3 with no
+     * write on the path cpu_action_from_opponent == 1, opponent state neither
+     * 0x19 nor 0x1A (target 0x80059D18 -> 0x80059D6C -> 0x80059DB0; $s3 read by
+     * the sltiu at 0x80059D70 and the sll at 0x80059DB4), switching on whatever
+     * earlier work left there (that read is excluded from the value grouping
+     * above) (Ruling 11, reused-local-necessity). */
     s32 work3;
     /* work4 holds three values in turn, each read before the next write: the
      * g_cpu_move_range_rules scan index; a copy of last_route_node_index taken
@@ -2436,11 +2439,13 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 work3 = p->cpu_action_index;
             } else if (p->other->move_kind == 0x19) {
                 u8 var_54[4];
-                __builtin_memcpy(var_54, D_800A325C, 4);
+                __builtin_memcpy(
+                    var_54, g_cpu_dpad_press_action_by_opponent_nibble, 4);
                 work3 = var_54[p->other->motion_metadata_nibble];
             } else if (p->other->move_kind == 0x1A) {
                 u8 var_55[4];
-                __builtin_memcpy(var_55, D_800A3260, 4);
+                __builtin_memcpy(
+                    var_55, g_cpu_dpad_double_tap_action_by_opponent_nibble, 4);
                 work3 = var_55[p->other->motion_metadata_nibble];
             }
             switch (work3) {
@@ -2739,12 +2744,12 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                 } else {
                                     work3 = 0x16;
                                 }
-                                work3 = D_8009A928
+                                work3 = g_cpu_chanbara_script_entry_masks
                                     [p->latched_motion_metadata_nibble][work3];
                                 break;
                             case FIGHT_MODE_PRACTICE:
-                                work1 = D_8009A9F0
-                                    [D_8009A9DC
+                                work1 = g_cpu_practice_script_entry_class_lists
+                                    [g_cpu_practice_entry_class_list_rows
                                          [p->weapon_id]
                                          [p->latched_motion_metadata_nibble]]
                                     [g_fight_toggle_option_bits];
@@ -2770,10 +2775,11 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                 }
                                 break;
                             default:
-                                work3 = D_8009A8C8
-                                            [p->latched_motion_metadata_nibble]
-                                            [g_fight_stage_command_count - 1]
-                                                .mask;
+                                work3 =
+                                    g_cpu_limits_and_entry_masks_by_stage_command_count
+                                        [p->latched_motion_metadata_nibble]
+                                        [g_fight_stage_command_count - 1]
+                                            .mask;
                                 break;
                             }
                             if ((e[3] >> 4) == 0 ||
@@ -3381,5 +3387,5 @@ Unk80099D88Rec g_cpu_profiles[32] = {
  * (gp-relative): size from the blob label */
 s32 g_motion_null_stream_tag[2] = {0x4c4c554e, 0};
 PadBitTable g_cpu_pad_metadata_nibble_dpad_bits = {{0xd, 0xf, 0xc, 0xe}};
-u8 D_800A325C[4] = {1, 0, 2, 3};
-u8 D_800A3260[4] = {5, 4, 6, 7};
+u8 g_cpu_dpad_press_action_by_opponent_nibble[4] = {1, 0, 2, 3};
+u8 g_cpu_dpad_double_tap_action_by_opponent_nibble[4] = {5, 4, 6, 7};

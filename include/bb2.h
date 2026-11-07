@@ -305,8 +305,10 @@ extern s32 g_gpu_fog_depth_span_limits[38];
 extern s16 g_gpu_fog_move_settings[39][2];
 extern u16 g_object_scale_factors[];
 extern Unk80099D88Rec g_cpu_profiles[];
-extern Unk8009A8C8Entry D_8009A8C8[][8];
-extern u8 D_8009A9B4[][2]; /* byte pairs (fighter_InitCpuControl) */
+extern Unk8009A8C8Entry
+    g_cpu_limits_and_entry_masks_by_stage_command_count[][8];
+/* byte pairs (fighter_InitCpuControl) */
+extern u8 g_cpu_chanbara_tally_threshold_wait_limits[][2];
 /* [g_fighter_group_flags flag] -> 3 bytes
  * (gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels args), stride
  * 4 */

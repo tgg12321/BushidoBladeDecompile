@@ -257,8 +257,8 @@ glabel fighter_InitCpuControl
     /* 45D04 80055504 FFFFC624 */  addiu      $a2, $a2, -0x1
     /* 45D08 80055508 40100600 */  sll        $v0, $a2, 1
   .L8005550C:
-    /* 45D0C 8005550C 0A80033C */  lui        $v1, %hi(D_8009A9B4)
-    /* 45D10 80055510 B4A96324 */  addiu      $v1, $v1, %lo(D_8009A9B4)
+    /* 45D0C 8005550C 0A80033C */  lui        $v1, %hi(g_cpu_chanbara_tally_threshold_wait_limits)
+    /* 45D10 80055510 B4A96324 */  addiu      $v1, $v1, %lo(g_cpu_chanbara_tally_threshold_wait_limits)
   .L80055514:
     /* 45D14 80055514 21104300 */  addu       $v0, $v0, $v1
     /* 45D18 80055518 00004390 */  lbu        $v1, 0x0($v0)
