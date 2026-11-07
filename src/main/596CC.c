@@ -982,7 +982,8 @@ void menu_DrawRowThreeThinTilesAndTwoSheets(
  * cursor, +0x14 SPRT cursor, +0x18 TILE cursor, +0x1C DR_MODE cursor, +0x20
  * DR_AREA cursor, +0x24 DR_OFFSET cursor), accessed as byte offsets like
  * menu_DrawRowThreeThinTilesAndTwoSheets; draw_env = the drawing environment's
- * clip RECT and ofs[2]; arg2 (passed by menu_UpdateRowMenu) is unused. */
+ * clip RECT and ofs[2]; cursor_row_mode (passed by menu_UpdateRowMenu) is
+ * unused. */
 void menu_DrawMaskedRowList(
     u8 *draw_context, u16 *draw_env, s32 cursor_row_mode) {
     Unk8007352CRec s;

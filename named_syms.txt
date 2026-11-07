@@ -921,7 +921,7 @@
 /* menu_RunOptionModeFlowStateWithRowBitEdit (64FD8.c:1352-1410), switching on g_option_mode_flow_state: on */
 /* entering state 4 it copies unk1D[] into unk17[]; when menu_UpdateRowBitMenu */
 /* returns 1 it copies unk17[] back into unk1D[].  The code that edits */
-/* the bytes works on unk17[] (596CC.c:1939-1941). */
+/* the bytes works on unk17[] (596CC.c:2045-2054). */
 
 /* === LIBAPI root-counter statics (2026-05-17) -- 8 highs === */
 /* SetRCnt (0x80078A68) / GetRCnt / StartRCnt / StopRCnt / ResetRCnt */
@@ -1711,7 +1711,7 @@ D_1F800060                       = 0x1F800060;  /* 6 refs; scratchpad RAM offset
 /* RESET 0x80069898: retired name 'gpu_draw_layered_box_80069898' — preserved note: 3x SetTile at y, y-1, y-2 (grey 0x80 / 0x80 / 0x40, SetSemiTrans 0 / 1 / 1) + AddPrim(g_gpu_ot_ptr + arg2) */
 /* RESET 0x8006E950: retired name 'replay_setup_display_8006E950' — preserved note: game_FrameLoop + replay_camera_Init + 2x gpu_LoadImage (VRAM regions); replay-mode display init */
 /* RENAME 0x800484A0: retired name 'gpu_decode_load_image_800484A0' — preserved note: checks image header tag 0x10+flag, decodes via func_800486FC/8004876C into 0x400 buffer, gpu_LoadImage to VRAM */
-/* RESET 0x8006BB68: retired name 'draw_anim_sprites_seq_8006BB68' — preserved note: animated-sprite render (satan_sprite_batch_render+saMotionSet+initTexPage+ot_Link) looped over i = 0..2, comparing i with D_800A34F8 bits 13-15 (596CC.c:1515), a cursor func_8006B92C steps (:1435-1448) */
+/* RESET 0x8006BB68: retired name 'draw_anim_sprites_seq_8006BB68' — preserved note: animated-sprite render (satan_sprite_batch_render+saMotionSet+initTexPage+ot_Link) looped over i = 0..2, comparing i with D_800A34F8 bits 13-15 (596CC.c:1602), a cursor func_8006B92C steps (:1515-1534) */
 /* RESET 0x8002BEA0: retired name 'calc_fighter_separation_stored_8002BEA0' — preserved note: inter-fighter distance from STORED pos (+0xF4/+0xFC of both records) via sqrt LUT D_8008D118; sibling of func_8002BC68 (which uses world_pos +0xD8) */
 /* RESET 0x80053754: retired name 'move_to_target_step_80053754' — preserved note: per-frame handler for the move-to-target state machine (set as ctx[0x5C] by init_move_to_target when within distance threshold); processes ~28 char/ctx fields */
 /* RESET 0x80053E9C: retired name 'move_to_target_step_80053E9C' — preserved note: per-frame handler for the move-to-target state machine (set as ctx[0x5C] by init_move_to_target when beyond distance threshold) */

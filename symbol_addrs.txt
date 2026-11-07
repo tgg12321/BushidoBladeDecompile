@@ -887,7 +887,7 @@ g_eff_point_light_countdown = 0x800A32BC; /* set to 0xA by eff_StartCommand when
 is_pad_init = 0x8009BD80; /* PAD-initialised flag: 1 by PAD_init / InitPAD, 0 by StopPAD; set by SetInitPadFlag, returned by ReadInitPadFlag (libapi/pad.c:15-68) */  /* data-wave 2026-10-09: was g_intro_get_set_value */
 g_gpu_scrolling_sprite_step_count = 0x800A3304; /* incremented & ANDed with 1 to select alternating buffer in gpu_GetScrollingSpritePrimBuffer */  /* data-wave 2026-10-08: was g_intro_dbuf_parity */
 _ctype__plus_0x1 = 0x8009BD8D; /* 256-byte char-class lookup; bit 1 = is_upper, bit 2 = is_lower */  /* data-wave 2026-09-24: was g_char_class_table */
-D_8009BD3C = 0x8009BD3C; /* g_working_record.button_mappings[1]: edited in place (596CC.c:1939-1941), loaded from committed_button_mappings[1] by menu_RunOptionModeFlowStateWithRowBitEdit */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_b */
+D_8009BD3C = 0x8009BD3C; /* g_working_record.button_mappings[1]: edited in place (596CC.c:2048-2052), loaded from committed_button_mappings[1] by menu_RunOptionModeFlowStateWithRowBitEdit */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_b */
 D_8009BD41 = 0x8009BD41; /* g_working_record.committed_button_mappings[0]: copied into button_mappings[0] on entering state 4, written back from it when menu_UpdateRowBitMenu returns 1 (menu_RunOptionModeFlowStateWithRowBitEdit) */  /* data-wave 2026-10-08: was g_menu_screen_live_byte_a */
 D_8009BD42 = 0x8009BD42; /* data-wave 2026-10-08: was g_menu_screen_live_byte_b */
 D_8009BD68 = 0x8009BD68; /* holds 0x1F801070 (I_STAT); [1] = I_MASK, where StartRCnt / StopRCnt set and clear a counter's bit (counter.c:61, :68) */  /* data-wave 2026-10-09: was g_irq_event_struct_ptr */
@@ -983,7 +983,7 @@ def_cbread = 0x80080064; /* MISNAMED: not motion-pre-calc; duplicate of 0x800800
 // RENAME 0x80077B20: retired name 'func_80077B20' — preserved note: MISNAMED: not gauge init; 1-line D_800A35E4 = 1
 // RENAME 0x80077D00: retired name 'func_80077D00' — preserved note: MISNAMED: not gauge init; returns &D_8009BD24 (gauge data struct ptr)
 // RENAME 0x80044F80: retired name 'func_80044F80' — preserved note: MISNAMED: not Satan2 info init; 1-line wrapper of ndata_Read(a0+0x4D, dest_addr)
-func_8006C1FC = 0x8006C1FC; /* MISNAMED: not Satan2 info init; 1-line wrapper of menu_UpdateMemCardChoices(a0, pressed_buttons) */
+func_8006C1FC = 0x8006C1FC; /* MISNAMED: not Satan2 info init; 1-line wrapper of menu_UpdateMemCardChoices(held_buttons, pressed_buttons) */
 func_80077A60 = 0x80077A60; /* MISNAMED: not Satan2 info init; 1-line wrapper of menu_UpdateConfirmMenu() */
 func_80077AC0 = 0x80077AC0; /* 1-line wrapper of menu_StepSelScreen() */
 func_800444BC = 0x800444BC; /* MISNAMED: not ground display; 1-line wrapper of gpu_PrepareViewAndFlushDrawQueue(g_gpu_ot_offset_ptr) */
@@ -1318,8 +1318,8 @@ mode_handler_14_NoOp = 0x80035430; /* empty body -- no-op */
 D_800A33CA = 0x800A33CA; /* vertical angle (single_game_getEnemyCharId(x, z) result) */  /* data-wave 2026-09-29: was g_sound_3d_angle_v */
 D_800A350E = 0x800A350E; /* g_menu_draw_offset_steps[1]: pad_StepOffsetsGetDirectionEvents's second-axis step (see g_menu_draw_offset_steps) */  /* data-wave 2026-10-08: was g_menuctl_pad_result_1 */
 D_800A3512 = 0x800A3512; /* only a zero store found */  /* data-wave 2026-10-08: was g_menuctl_pad_result_3 */
-D_8009BD3B = 0x8009BD3B; /* g_working_record.button_mappings[0]: edited in place (596CC.c:1939-1941), loaded from committed_button_mappings[0] by menu_RunOptionModeFlowStateWithRowBitEdit */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_a */
-D_8009BD3D = 0x8009BD3D; /* g_working_record.button_mappings[2]: edited in place (596CC.c:1939-1941), loaded from committed_button_mappings[2] by menu_RunOptionModeFlowStateWithRowBitEdit */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_c */
+D_8009BD3B = 0x8009BD3B; /* g_working_record.button_mappings[0]: edited in place (596CC.c:2048-2052), loaded from committed_button_mappings[0] by menu_RunOptionModeFlowStateWithRowBitEdit */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_a */
+D_8009BD3D = 0x8009BD3D; /* g_working_record.button_mappings[2]: edited in place (596CC.c:2048-2052), loaded from committed_button_mappings[2] by menu_RunOptionModeFlowStateWithRowBitEdit */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_c */
 D_8009BD43 = 0x8009BD43; /* data-wave 2026-10-08: was g_menu_screen_live_byte_c */
 D_800A33EA = 0x800A33EA; /* element [1] of the g_resource_pair_selection pair; -1 = unset */  /* data-wave 2026-10-08: was g_gnd_target_id_1 */
 D_800A3450 = 0x800A3450; /* data-wave 2026-10-08: was g_satan1_gauge_state_b */
@@ -1390,7 +1390,7 @@ g_entry_menu_exit_result = 0x800A35A0; /* StepSlideBuildFrameRecordAndDispatchSt
 g_entry_menu_mode = 0x800A35BC; /* mode = working_record->menu_mode (InitDisplayStateLoadPackAndSetEntryFlags), compared with 0..6 across 5ED34.c */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_c */
 g_entry_menu_slot_records = 0x800A3560; /* 2x3-byte per-slot records (union Unk800A3560Slots, include/game.h) */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_e */
 g_entry_menu_darken_level = 0x800A3550; /* shorts; full-screen tile intensity ramp */  /* data-wave 2026-10-08: was g_motion_shift_state_a */
-g_menu_packed_cursors = 0x800A34F8; /* packed cursor state: bits 0-3, 10-12 and 13-15 step over 8, 6 and 3 entries (596CC.c:303-326, :1325-1339, :1435-1448) */  /* data-wave 2026-10-09: was g_menuctl_state_bitfield */
+g_menu_packed_cursors = 0x800A34F8; /* packed cursor state: bits 0-3, 10-12 and 13-15 step over 8, 6 and 3 entries (596CC.c:317-346, :1396-1415, :1515-1534) */  /* data-wave 2026-10-09: was g_menuctl_state_bitfield */
 g_row_menu_work_block = 0x800A34FC; /* Unk800A34FCRec *: menu_LoadResourcesInitStateSelectFirstEnabledRow stores gpu_InitPrimBufferPair(..., g_row_menu_prim_buffers)'s result (596CC.c:71-74); read throughout 596CC.c */  /* data-wave 2026-10-09: was g_menuctl_mode_state_ptr */
 g_menu_draw_offset_steps = 0x800A350C; /* s16[2]: pad_StepOffsetsGetDirectionEvents's per-axis step (its arg3): set to 1 / -1 / -6 / 0 and added to g_row_menu_work_block->menu_draw_offsets[i]; zeroed by menu_LoadResourcesInitStateSelectFirstEnabledRow with D_800A3510 / D_800A3512 */  /* data-wave 2026-10-08: was g_menuctl_pad_result_buf */
 g_row_menu_pulse_counter = 0x800A3514; /* counter: += 1 per call of menu_UpdateOptionMenuChoices / C168 / D338 / D74C / E068 and per cursor-row draw in menu_DrawMaskedRowList; zeroed at init and on cursor moves; read as the rsin phase ((x & 0x1F) << 7) of a pulsing colour */  /* data-wave 2026-10-08: was g_menuctl_frame_counter */
@@ -1455,7 +1455,7 @@ g_memcard_save_prompt_status5_to_7_and_13_to_15_retry_count = 0x800A3340; /* +4 
 g_memcard_save_prompt_status10_retry_count = 0x800A3344; /* +8 from g_memcard_retry_load_status8_latched (0x800A333C) */  /* data-wave 2026-10-08: was g_result_timer_complete_flag_plus_8 */
 g_eff_billboard_pair_slot_mask = 0x800A3448; /* +4 from g_eff_jittered_billboard_slot_mask */  /* data-wave 2026-10-08: was g_particle_slot_bitmap_plus_4 */
 g_eff_yawed_particle_alternate_texture_flags = 0x800A34F0; /* s16[2]: eff_StartRecycledYawedParticlesWithTextureSelection stores arg2 into [0] / [1]; eff_PrepareParticles / eff_UpdateParticles test [particle_mode - 4] */  /* data-wave 2026-10-08: was g_scratchpad_ptr_b8_plus_4 */
-g_row_menu_current_prim_buffer = 0x800A3520; /* Unk8006E49CRec *: gpu_AdvanceBufferCounterAndBuildDrawContext stores gpu_GetPrimBufferAndRefreshStrip(draw_buffer_counter[0] & 1), i.e. &g_row_menu_prim_buffers[parity] (596CC.c:2515, :2524, :172) */  /* data-wave 2026-10-08: was g_menuctl_arg0_saved_plus_4 */
+g_row_menu_current_prim_buffer = 0x800A3520; /* Unk8006E49CRec *: gpu_AdvanceBufferCounterAndBuildDrawContext stores gpu_GetPrimBufferAndRefreshStrip(draw_buffer_counter[0] & 1), i.e. &g_row_menu_prim_buffers[parity] (596CC.c:2672, :2681, :189) */  /* data-wave 2026-10-08: was g_menuctl_arg0_saved_plus_4 */
 g_menu_confirm_cursor = 0x800A352C; /* +4 from g_menu_stored_choice_cursor */  /* data-wave 2026-10-08: was g_menuctl_call_counter_plus_4 */
 g_entry_menu_row_phase_extra_slot_count = 0x800A3558; /* +8 from g_entry_menu_darken_level */  /* data-wave 2026-10-08: was g_motion_shift_state_a_plus_8 */
 g_entry_menu_grid_column_cursors = 0x800A3588; /* +4 from g_entry_menu_next_handler_index (0x800A3584) */  /* data-wave 2026-10-08: was g_fade_next_dispatch_idx_plus_4 */
