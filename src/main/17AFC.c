@@ -357,9 +357,9 @@ extern u8 g_fighter_power_difference_move_events[3][2][2];
 
 /* the tail fighter_ResolveBoneHit's cases 0, 1-3 and 4-5 share */
 static inline s32 fighter_ResolveBoneHitTail(
-    s32 is_object_hit, Tbl8008E194 *var_0, Unk80101EC8Record *fighter_record,
-    s32 fighter_index, s32 *hit_point) {
-    if (is_object_hit == 1 && var_0->unkD == 2) {
+    s32 is_object_hit, Tbl8008E194 *object_kind_params,
+    Unk80101EC8Record *fighter_record, s32 fighter_index, s32 *hit_point) {
+    if (is_object_hit == 1 && object_kind_params->unkD == 2) {
         fighter_record->power_scale_tally++;
     }
     if (g_fight_mode_selector != FIGHT_MODE_TEAM) {
@@ -645,7 +645,7 @@ s32 fighter_ResolveWeaponContact(
     Unk80101EC8Record *other_record;
     u16 state;
     s32 var_s1;
-    s16 var_v0;
+    s16 move_event;
     s32 ret;
 
     other_record = fighter_record->other;
@@ -700,13 +700,13 @@ s32 fighter_ResolveWeaponContact(
                 other_record->weapon_hit_phases[other_weapon_set_index];
             if (other_hit_phase == 0) {
                 if (fighter_record->weapon_hit_phases[weapon_set_index] > 0) {
-                    var_v0 = 0x19;
+                    move_event = 0x19;
                     if (var_s1 == 0) {
                     set_0xB:
-                        var_v0 = 0xB;
+                        move_event = 0xB;
                     }
                 do_store_calls:
-                    fighter_record->pending_move_event = var_v0;
+                    fighter_record->pending_move_event = move_event;
                 do_calls:
                     fight_RecordReplayEventAndDispatchSoundOrEffect(
                         fighter_record->index, 1, contact_point, (s16 *)0);
@@ -1750,7 +1750,8 @@ done:
 }
 
 extern void fighter_TestTriangleBoneHits(
-    Unk80101EC8Record *fighter_record, s32 a1, s32 test_inner_spheres);
+    Unk80101EC8Record *fighter_record, s32 frame_from_normal,
+    s32 test_inner_spheres);
 extern s32 math_PrepareTriangleCollisionFrame(Unk1F8002B8Rec *obj);
 
 void fighter_ProcessWeaponBodyHits(s32 mode) {
@@ -1896,24 +1897,24 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             /* var_32: fighter_TestTriangleBoneHits's third argument, per-branch
              * constants 1 / 1 / 0 (Q20); the wielded_object_live_state arm's
              * store is shared with the first iteration (Q85, Ruling 11) */
-            s32 var_32;
+            s32 test_inner_spheres;
 
             if (other_weapon_quad_index == 0) {
                 var_12 = 0;
                 temp1 = 0;
                 temp2 = 1;
-                var_32 = 1;
+                test_inner_spheres = 1;
             } else if (other_record->wielded_object_live_state != 0) {
                 var_12 = 1;
                 temp1 = 0;
                 temp2 = 1;
-                var_32 = 1;
+                test_inner_spheres = 1;
             } else if (
                 other_record->weapon_id == 4 || other_record->weapon_id == 5) {
                 var_12 = 0;
                 temp1 = 1;
                 temp2 = 2;
-                var_32 = 0;
+                test_inner_spheres = 0;
             }
             if (var_12 == 0) {
                 scr->point_slots.work_points[0] =
@@ -2025,7 +2026,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 }
                 fighter_TestTriangleBoneHits(
                     fighter_record, math_PrepareTriangleCollisionFrame(scr),
-                    var_32);
+                    test_inner_spheres);
                 outer_hit_mask |= scr->bone_hit_mask;
                 inner_hit_mask |= scr->inner_bone_hit_mask;
                 if (var_12 != 0) {
@@ -2602,7 +2603,8 @@ extern s32 math_TestPreparedTriangleSphere(
     s32 arg0, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq);
 
 void fighter_TestTriangleBoneHits(
-    Unk80101EC8Record *fighter_record, s32 a1, s32 test_inner_spheres) {
+    Unk80101EC8Record *fighter_record, s32 frame_from_normal,
+    s32 test_inner_spheres) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     s32 id = fighter_record->index;
     BoneHitRec *recbase = g_fighter_bone_hit_records[id];
@@ -2646,7 +2648,7 @@ void fighter_TestTriangleBoneHits(
             continue;
         }
 
-        if (a1 != 0) {
+        if (frame_from_normal != 0) {
             var_11 = math_TestPreparedTriangleSphere(
                 0, scr, (s32 *)&SPAD->spadA8[id][i], r,
                 rec->outer_dist_sq_limit);
@@ -3628,9 +3630,9 @@ void math_ScaleVectorInDirectionFrame(
     gte_stlvnl(out);
 }
 
-void math_InvertMatrix3x3(void *arg0, void *arg1) {
-    MATRIX *src = arg0;
-    MATRIX *dst = arg1;
+void math_InvertMatrix3x3(void *matrix, void *inverse) {
+    MATRIX *src = matrix;
+    MATRIX *dst = inverse;
     s16 temp_a3;
     s16 temp_t0;
     s16 temp_t1;
@@ -4573,14 +4575,14 @@ void object_DeflectFromFighterHit(
     if (ent->kind != 0xE) {
         s32 vx = ent->vel.x;
         s32 vz = ent->vel.z;
-        s32 var_8 = ent->rot_vel[1];
+        s32 rot_vel_y = ent->rot_vel[1];
         sum_sq = vx * vx + vz * vz;
         if (rng_Next() & 1) {
             spin_delta = sum_sq / 64;
         } else {
             spin_delta = -sum_sq / 64;
         }
-        ent->rot_vel[1] = var_8 + spin_delta;
+        ent->rot_vel[1] = rot_vel_y + spin_delta;
     }
 
     mat = &scr->rot_matrix;
@@ -4781,10 +4783,11 @@ Unk80104E88Rec *fight_CreateBallisticRecordAndDispatchEvent(
     ballistic_record->owner_index = src->index;
     ballistic_record->ballistic_pos.x = src->world_pos.x;
     {
-        s32 v1 = src->size_scale;
-        if (v1 < 0)
-            v1 += 0x1F;
-        ballistic_record->ballistic_pos.y = src->collision_pos.vy - (v1 >> 5);
+        s32 scale = src->size_scale;
+        if (scale < 0)
+            scale += 0x1F;
+        ballistic_record->ballistic_pos.y =
+            src->collision_pos.vy - (scale >> 5);
     }
     ballistic_record->ballistic_pos.z = src->world_pos.z;
     ballistic_record->ballistic_velocity.x =
@@ -4958,7 +4961,7 @@ void snd_QueuePositionalSound(s32 sound_index, s32 *sound_position) {
     u32 distance;
     s32 distance_scale;
     s16 listener_yaw;
-    s32 var_7;
+    s32 pan_offset;
     u32 swap_channels;
     s32 var_9;
     s32 var_10;
@@ -4998,17 +5001,17 @@ void snd_QueuePositionalSound(s32 sound_index, s32 *sound_position) {
     }
 
     listener_yaw = g_listener_cam->camera_angles.vy;
-    var_7 = (s32)((dx * (s32)Judge[(listener_yaw + 0x400) & 0xFFF]) +
-                  (dz * (s32)Judge[listener_yaw & 0xFFF])) >>
-            12;
-    swap_channels = ~(u32)var_7;
+    pan_offset = (s32)((dx * (s32)Judge[(listener_yaw + 0x400) & 0xFFF]) +
+                       (dz * (s32)Judge[listener_yaw & 0xFFF])) >>
+                 12;
+    swap_channels = ~(u32)pan_offset;
     swap_channels >>= 31;
-    if (var_7 < 0) {
-        var_7 = -var_7;
+    if (pan_offset < 0) {
+        pan_offset = -pan_offset;
     }
 
-    var_9 = (s32)((0x7530 - var_7) << 12) / 30000;
-    var_10 = (s32)((0x2710 - var_7) << 12) / 10000;
+    var_9 = (s32)((0x7530 - pan_offset) << 12) / 30000;
+    var_10 = (s32)((0x2710 - pan_offset) << 12) / 10000;
     if (var_9 < 0)
         var_9 = 0;
     if (var_10 < 0)
