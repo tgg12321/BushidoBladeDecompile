@@ -33,9 +33,8 @@ Byte length on disc      = `length_sectors * 0x800`.
 
 Unused / reserved indices are filled with the sentinel pair `0xFFFF, 0xFFFF`.
 Of the 901 indices, **762** are non-sentinel entries, of which 760 pack the 28,376
-sectors; 139 are sentinels
-that break the ID space into named "buckets" (one bucket per `DATA<n>\` prefix
-in the source filename table — see below).
+sectors; 139 are sentinels: named files the build left out (138 trailing motions of
+the `DATA7` characters, plus `HAND`; see the pool-to-INF rule below).
 
 Of the 762 non-sentinel entries, 760 pack the 28,376 sectors = the entire DAT file. There
 are no gaps in the actual on-disc layout; each active entry begins where the
@@ -57,14 +56,14 @@ the build pipeline (DAT was finalised earlier in development than INF was
 trimmed). The runtime never indexes past 897 in the address-walking code paths
 observed in the source. Neither `ndata_Read` nor `ndata_ReadChecked` range-checks
 the id (the mirror has 1024 slots). Most callers compute the id at run time from a
-base plus an offset (e.g. `a0 + 0x131` in func_80054604, `a0 + 0x4D` in
+base plus an offset (e.g. `playback_index + 0x131` in motion_StartPlayback, `a0 + 0x4D` in
 func_80044F80); that every id lands on one of the 760 entries addressing NDATA.DAT
 is not established from the code.
 
 ## In-RAM mirror
 
-`g_ndata_inf` (`NdataInfEntry[]`, 0x800963EC, one 0x1000-byte `.data` label in
-`asm/data/7D920.data.s`; `src/main/35000.c`) holds the INF: 1024 4-byte
+`g_ndata_inf` (`NdataInfEntry[1024]`, 0x800963EC, `.data`, defined at
+`src/main/35000.c:1133`) holds the INF: 1024 4-byte
 `{s16 start_sector; s16 length_sectors;}` slots. The EXE ships it pre-filled (its
 bytes equal NDATA.INF except entries 899-900, then zeros), and `ndata_StartReadInf`
 re-reads the file over it at init. Splat had cut it at +2 (`D_800963EE`, where the
@@ -103,166 +102,109 @@ tries the pack, and falls back to `ndata_Read`.
 
 ## File-ID → name mapping (source-side filename tables)
 
-Source `rodata` at `0x80010DEC..0x80015294` is a contiguous pool of 899
-NUL-terminated ASCII strings of the form `DATA<n>\<NAME>.DAT`:
+Source `rodata` at `0x80010DEC..0x8001528C` (`D_80010DEC[17568]`, `src/main/d_15EC.c:7`) is
+a contiguous pool of 899 `DATA<n>\<NAME>.DAT` strings, each NUL-padded to a 4-byte
+boundary (count strings, not NUL-separated pieces), followed by the
+`Marionation over flow` format string. The executable also holds the pool's 899
+pointers as `.data` words at 0x800955E0 (`D_800955E0`, `const char *[899]` at the head
+of 35000.c's `.data`, right after 32D04.c's g_gpu_prim_type_halfword_sizes). No code
+reads them: the shipped game does no name lookup, and every caller passes a numeric id.
+The table is in INF order: `D_800955E0[i]` points at slot `i`'s name for all 899
+entries (`src/main/35000.c:831`), the direct statement of the rule below.
 
-```
-DATA0\CHANBARA{0,1}.DAT  2  intro / chambara cinematic
-DATA0\Mxxx.DAT           37 character cinematic-motion modules
-DATA1\HAND.DAT           1  hand / cursor data (single file)
-DATA2\Sxx.DAT            38 stage geometry/data files (S00..S37)
-DATA5\Txx.DAT            27 texture-page archives    (T00..T26)
-DATA6\TINYMxx.DAT        27 reduced-LOD "tiny" models (TINYM00..TINYM26)
-DATA7\MARxx_yy.DAT       593 marionation animation files
-                              (character XX, motion YY)
-DATA8\...                137 placeholder names — never indexed at runtime
-DATA9\WEPccww.DAT        37 per-character weapon data + WEPNULL
-                              (character c, weapon w)
-```
+### Pool-to-INF rule: one name per slot, in reverse
 
-Total: 899 names. The runtime indexes 762 of them; the 137 `DATA8\*` names
-are placeholders that exist for build-pipeline bookkeeping but have no
-corresponding INF entry — they were never copied into NDATA.DAT.
+**INF slot `i` (0..898) is named by pool string `898 - i`.** The pool is written
+last-id-first, so walking it backwards walks the INF forwards. Every slot has a name,
+sentinels included (a sentinel is a named file the DAT does not carry); slots 899 and 900
+have none. Evidence (read from NDATA.INF, NDATA.DAT and the EXE pool):
 
-The executable does hold the pool's 899 pointers, as `.data` words at 0x800955E0
-(`D_800955E0`, `const char *[899]` at the head of 35000.c's `.data`), right after 32D04.c's 44-halfword per-type size
-table g_gpu_prim_type_halfword_sizes. No code reads them.
+* Each of the 139 sentinels falls on a name the build left out: 138 are the
+  highest-numbered motions of one `MARcc` character, each run ending exactly on that
+  character's last slot (slots 328..336 = `MAR00_23..MAR00_31`, 361..368 =
+  `MAR01_24..MAR01_31`, and so on); the 139th is slot 898 = `DATA1\HAND.DAT`.
+* Group boundaries match the header shapes in the DAT (the 38 stage files carry the
+  multi-section header `resource_LoadOrReuseSelectedBlock` parses, the 54 node assets are
+  12,288-byte files with a 1-entry header), and the group byte totals in the table below
+  sum to exactly 58,114,048, the DAT size.
+* The code's base offsets land on group starts: `0x25` (`ndata_LoadPack`,
+  `src/main/35000.c:294`) on `CHANBARA0`, `0x27` on `S00`, `0x4D` on `T00`, `0x4D + 0x1B`
+  on `TINYM00`, `0x83` and `0x10C` on the two `WEP0000`s, `0x131`
+  (`src/main/43500.c:780`) on `MAR00_00`.
 
-The mapping from filename to file-ID is NOT a pointer table at runtime — it
-is fixed at build time by the *order* in which the path-string pool appears
-in rodata. Code paths like `ndata_LoadPack`'s `ndata_Read(a0 + 0x25, ...)` (`src/main/35000.c`)
-pass hard-coded numeric IDs that correspond to specific slots in the on-disc
-directory. The string pool exists only for debug / build identification —
-the shipped game does not perform name-based lookup.
+`tools/extract_ndata_names.py` and the committed [`ndata_filemap.csv`](ndata_filemap.csv)
+still use an earlier rule (pool order forwards, `DATA8\*` and sentinels skipped) and so
+misname almost every id (id 0 is `M000`, not `HAND`). Don't cite a name from the CSV until
+it is regenerated under the rule above (backlog row `ndata-filemap-reverse`).
 
-### Pool-to-INF alignment rule
+### File-ID layout (by ID range)
 
-The 762 active INF slots align 1:1 with the **non-DATA8** strings in the
-pool, taken in pool order. To recover a name for INF entry `i`:
+| File IDs (hex) | Group | Names | Live / slots | Bytes | Read by |
+|----------------|-------|-------|-------------:|------:|---------|
+| `0x000..0x026` | DATA0 | `M000..M306`, `CHANBARA0/1` | 39 / 39 | 5,410,816 | slot assets (`ndata_ReadRemappedIndexPackFirstElseRead`, `src/main/35000.c:227-233`, blocks 3..5), served from the pack for ids `0x1E..0x24`; packs `0x25 + n` (`ndata_LoadPack`) |
+| `0x027..0x04C` | DATA2 | `S00..S37` (stages) | 38 / 38 | 5,048,320 | `func_80044F30` (`0x27 + selector`) |
+| `0x04D..0x067` | DATA5 | `T00..T26` | 27 / 27 | 331,776 | `func_80044F80` (`0x4D + id`) |
+| `0x068..0x082` | DATA6 | `TINYM00..TINYM26` | 27 / 27 | 331,776 | `func_80044F80` (`0x4D + id + 0x1B`, grayscale mode) |
+| `0x083..0x10B` | DATA8 | `WEP0000..WEP1515`, `WEPNULL` | 137 / 137 | 31,516,672 | `ndata_ReadIndexInRangeSelectedByFlag(0, k)` (`0x83 + k`) |
+| `0x10C..0x130` | DATA9 | `WEP0000..WEP0707`, `WEPNULL` | 37 / 37 | 3,182,592 | `ndata_ReadIndexInRangeSelectedByFlag(!0, k)` (`0x10C + k`) |
+| `0x131..0x381` | DATA7 | `MAR00_00..MAR22_13` | 455 / 593 | 12,292,096 | `motion_StartPlayback` (`0x131 + index`) |
+| `0x382` (898) | DATA1 | `HAND` | 0 / 1 | 0 | sentinel |
+| `0x383..0x384` | — | (no name) | leftovers | — | never |
 
-1. Walk the INF entries; keep a counter `k` that increments only on
-   non-sentinel entries.
-2. Walk the string pool; keep a counter `m` that increments only on
-   non-`DATA8\` strings.
-3. The name for INF entry `i` is the m-th non-`DATA8\` string where m is
-   `k` at the moment `i` was visited.
+Within a group the ids run in name order (`S00` = `0x27`, `MAR00_00` = `0x131`). DATA0's
+order is `M000..M002`, `M100..M111`, `M003..M005`, `M200..M211`, `M301..M305`, `M300`,
+`M306`, `CHANBARA0`, `CHANBARA1`: the pack ids `0x1E..0x24` are the `M3xx` set, and the two
+pack blocks `0x25`/`0x26` (`CHANBARA0/1`) have header count word 5, the value
+`ndata_ReadFromPack` requires (so do `M302..M305`, ids `0x1F..0x22`). Each `T<n>`/`TINYM<n>` pair has the same
+header and size and differs in a few hundred bytes (colour vs grayscale). DATA8 names are
+the 136 unordered weapon pairs `WEPaabb` (`aa <= bb`, both 00..15) plus `WEPNULL`; DATA9 the
+36 pairs over 00..07 plus `WEPNULL`.
 
-The `tools/extract_ndata_names.py` tool implements this and emits
-[`docs/formats/ndata_filemap.csv`](ndata_filemap.csv) — 762 rows with
-columns `file_id, name_vaddr, group, filename, content_guess,
-start_sector, len_sectors, byte_offset, byte_length`.
+DATA7 by character (19 characters 00..22; 05, 10, 11, 16 absent). Each block lists motions
+`_00` upwards and ends with its sentinels:
 
-### File-ID layout (canonical groups, by ID range)
+| Char | IDs (dec) | Live | Sentinel tail | Char | IDs (dec) | Live | Sentinel tail |
+|-----:|-----------|-----:|--------------:|-----:|-----------|-----:|--------------:|
+| 00 | 305..336 | 23 | 9 | 13 | 612..646 | 27 | 8 |
+| 01 | 337..368 | 24 | 8 | 14 | 647..681 | 27 | 8 |
+| 02 | 369..401 | 23 | 10 | 15 | 682..716 | 27 | 8 |
+| 03 | 402..428 | 20 | 7 | 17 | 717..751 | 27 | 8 |
+| 04 | 429..458 | 24 | 6 | 18 | 752..782 | 23 | 8 |
+| 06 | 459..485 | 19 | 8 | 19 | 783..813 | 23 | 8 |
+| 07 | 486..515 | 24 | 6 | 20 | 814..848 | 27 | 8 |
+| 08 | 516..545 | 24 | 6 | 21 | 849..883 | 27 | 8 |
+| 09 | 546..576 | 24 | 7 | 22 | 884..897 | 14 | 0 |
+| 12 | 577..611 | 28 | 7 | | | | |
 
-| File IDs   | Group | Files | Total bytes  | Content                                 |
-|-----------:|:------|------:|-------------:|:----------------------------------------|
-| `   0`     | DATA1 |     1 |      149,504 | `HAND.DAT` — hand / cursor sprite data  |
-| `   1..683`| DATA7 |   593 |   53,776,384 | `MARcc_mm.DAT` marionation animations   |
-| ` 684..728`| DATA9 |    37 |      876,544 | `WEPccww.DAT` weapon data + `WEPNULL`   |
-| ` 729..763`| DATA6 |    27 |      708,608 | `TINYMcc.DAT` reduced-LOD character models |
-| ` 764..798`| DATA5 |    27 |      612,352 | `Tcc.DAT` texture page archives          |
-| ` 799..852`| DATA2 |    38 |      997,376 | `Scc.DAT` stage geometry                |
-| ` 853..900`| DATA0 |    39 |   49,420,288 | `CHANBARA{0,1}.DAT` + `Mxxx.DAT` cinematics |
+### Runtime selectors and the arena blocks they fill
 
-(Note the absent ID **898** is a sentinel within the DATA0 range; **899**
-and **900** are the leftover slots discussed below. Sentinels also
-appear inside DATA0 between `M004` (id 875) and `M003` (id 884), and inside
-DATA9 between `WEP0105` (id 708) and `WEP0104` (id 717) — they don't only
-fall on group boundaries.)
+| Reader | NDATA ids | Group | Arena block | Evidence |
+|--------|-----------|-------|-------------|----------|
+| `func_80044F30(selector, dst)` = `ndata_Read(selector + 0x27)` | `0x27..0x4C` for selector 0..37 | DATA2 stage `S<selector>` | 7 (stage) | `src/main/35000.c:238`; `resource_LoadOrReuseSelectedBlock` opens block 7 and reads into it or into the staging buffer (`src/main/368E4.c:84-89`); selector = `g_fight_stage_index` (`src/main/9F9C.c:1752-1753`) or `(control_word & 0x3F) - 1` of a motion block (`src/main/43500.c:833-842`) |
+| `func_80044F80(id, dst)` = `ndata_Read(id + 0x4D)` | `0x4D..0x67`, or `0x68..0x82` in grayscale mode | DATA5 `T<id>` / DATA6 `TINYM<id>` (tiny models) | 8 (node asset) | `src/main/35000.c:248`; caller `src/main/368E4.c:335-366` adds `0x1B` when `gpu_RefreshGrayscaleMode()`; ids from `g_node_retained_draw_asset_ids` (`src/main/d_89C78.c:201`: 0x00..0x1A, 0xFF = none; `src/main/368E4.c:1591-1594`); `motion_StartPlayback` frees block 8 with "Destruction tiny model." when the arena is short (`src/main/43500.c:774-792`) |
+| `motion_LoadPlaybackBlock(file_id)` = `ndata_ReadChecked(file_id)` | `0x131..0x381` (`0x131 + playback_index`) | DATA7 `MARcc_mm` | 0xA (motion playback) | `src/main/368E4.c:394-409`, caller `src/main/43500.c:780-794`; move callback `func_80046A80` -> `motion_RebasePlayback` (`src/main/368E4.c:413-415`) |
 
-### Marionation character index
+The selector ranges are data facts, not code bounds: no reader range-checks its argument.
+Stage selectors 0..37 are exactly the 38 files whose header the stage loader parses. Its
+per-selector cases read header words past the common five only for selectors 3, 4, 7, 13,
+18 and 34 (`src/main/368E4.c:140-175`), and those six files (`0x2A`, `0x2B`, `0x2E`,
+`0x34`, `0x39`, `0x49`) are the only stage files whose header count word exceeds 6 (8, 8,
+8, 9, 8, 21). Selector 38 or more would read `T00` and the later tiny models, whose 1-word
+header the stage loader does not fit.
 
-The 593 MAR entries cover 19 character indices (numbered 00..22, with
-05, 10, 11, 16 absent — those slots presumably belonged to characters cut
-during development). The first ID in each character's block is the
-character's *highest-numbered* motion (the build-pipeline order writes each
-character's motion table in reverse); within DATA7 the character order is
-also reversed (MAR22 first, MAR00 last):
+**Arena block 9 has no reader and no caller.** Its three accessors, `func_80046934`
+(`arena_OpenBlock(9)`), `func_8004695C` (peak, end, no-op move callback `func_80046954`) and
+`func_800469A0` (`arena_Resize(9, n)`) (`src/main/368E4.c:380-390`), are referenced by no
+`jal`, `j`, data word or `%hi/%lo` pair in `SLUS_006.63` or `MOVOVL.EXE` (word scan of
+both images for the call encodings and the addresses; `%hi/%lo` and
+named references searched in `asm/funcs/` and `src/`). No
+other arena call passes 9: every `arena_*` call in `asm/funcs/` and `src/` takes a constant
+6, 7, 8 or 0xA, or slot `n` / `n + 3` for slots 0..2. No `ndata_Read*` reads into it. The
+shipped game never fills block 9, so this executable doesn't show what it held.
 
-| Character | Motions | Total bytes | First ID | First filename       |
-|----------:|--------:|------------:|---------:|:---------------------|
-| MAR22     |     14  |   1,980,416 |        1 | `MAR22_13.DAT`       |
-| MAR21     |     35  |   4,831,232 |       15 | `MAR21_34.DAT`       |
-| MAR20     |     35  |   3,596,288 |       50 | `MAR20_34.DAT`       |
-| MAR19     |     31  |     380,928 |       85 | `MAR19_30.DAT`       |
-| MAR18     |     31  |   3,964,928 |      116 | `MAR18_30.DAT`       |
-| MAR17     |     35  |   8,386,560 |      147 | `MAR17_34.DAT`       |
-| MAR15     |     35  |   8,206,336 |      182 | `MAR15_34.DAT`       |
-| MAR14     |     35  |   7,849,984 |      217 | `MAR14_34.DAT`       |
-| MAR13     |     35  |   5,066,752 |      252 | `MAR13_34.DAT`       |
-| MAR12     |     35  |   1,794,048 |      287 | `MAR12_34.DAT`       |
-| MAR09     |     31  |   1,026,048 |      322 | `MAR09_30.DAT`       |
-| MAR08     |     30  |     786,432 |      353 | `MAR08_29.DAT`       |
-| MAR07     |     30  |     772,096 |      383 | `MAR07_29.DAT`       |
-| MAR06     |     27  |     710,656 |      413 | `MAR06_26.DAT`       |
-| MAR04     |     30  |     786,432 |      440 | `MAR04_29.DAT`       |
-| MAR03     |     27  |     761,856 |      470 | `MAR03_26.DAT`       |
-| MAR02     |     33  |     978,944 |      497 | `MAR02_32.DAT`       |
-| MAR01     |     32  |     808,960 |      530 | `MAR01_31.DAT`       |
-| MAR00     |     32  |   1,087,488 |      562 | `MAR00_31.DAT`       |
-
-Per-character size correlates roughly with whether the character is
-**playable** (MAR12..MAR21 are all multi-MB) versus an NPC / background
-fighter (MAR00..MAR09 are sub-1 MB). The 8 most-populated character slots
-(MAR12, 13, 14, 15, 17, 18, 20, 21 — note the 16 / 19 / 22 outliers) total
-about 44 MB of motion data and likely correspond to the 8-fighter playable
-roster.
-
-### DATA9 weapon-data scheme
-
-Names match `WEPccww.DAT` where the first two digits are the character
-slot (00..07) and the last two are the weapon variant (00..07). Of the 64
-possible (character, weapon) pairs, 36 are present plus 1 `WEPNULL.DAT` —
-characters get between 5 and 8 weapon variants:
-
-```
-char 00 : WEP0000..WEP0007  (8 weapons — most-equipped fighter)
-char 01 : WEP0101..WEP0107
-char 02 : WEP0202..WEP0207
-char 03 : WEP0303..WEP0307
-char 04 : WEP0404..WEP0407
-char 05 : WEP0505..WEP0507
-char 06 : WEP0606, WEP0607
-char 07 : WEP0707
-```
-
-`WEPNULL.DAT` (22,528 bytes) is the empty-handed / unarmed weapon body.
-Note the character-index scheme here uses 00..07 (8 fighters) whereas the
-MAR animation scheme uses 00..22 (with gaps) — the two indexes are NOT
-the same and there is no direct numerical correspondence; the mapping from
-MAR-character to WEP-character lives in `motion_make_table` / the
-character roster tables (`src/ings2.c:162`).
-
-### DATA0 cinematic-motion scheme
-
-`Mccvv.DAT` where:
-
-* `M0xx` (id 875, 884, 894..897, 899, 900) — 8 names, character-0 cinematic motions
-* `M1xx` (id 885..893) — 12 names, character-1 cinematic motions
-* `M2xx` (id 862..873) — 12 names, character-2 cinematic motions
-* `M3xx` (id 855..861) — 7 names, character-3 cinematic motions
-* `CHANBARA0.DAT` (id 854) — shared chambara opening (small, 12 KB)
-* `CHANBARA1.DAT` (id 853) — shared chambara opening (large, 120 KB)
-
-The 4 character-cinematic indices `M0..M3` are presumably the 4 ending /
-story-mode characters that receive cinematic treatment.
-
-### Leftover slots (file IDs 898, 899, 900)
-
-Entry 898 is a sentinel; 899 and 900 run past the end of NDATA.DAT and are
-believed to be build-pipeline residue:
-
-```
-[898] start=0xFFFF  len=0xFFFF        (sentinel)
-[899] start=0x9800  len=0x0308        addresses byte 0x4C00000 (past DAT end)
-[900] start=0x1900  len=0x5956        starts inside the DAT (overlapping live entries), ends past it
-```
-
-The pool, however, supplies names for the 762-th and 761-st non-DATA8
-slots — `DATA0\M001.DAT` and `DATA0\M000.DAT`. So these *would-be*
-character-0 motion-0 and motion-1 cinematics simply never made it into the
-final DAT; the runtime never queries IDs 899 or 900 (both would read past
-the end of NDATA.DAT if it did).
+Arena blocks in use: 0..2 slot objects, 3..5 their asset blocks (slot + 3;
+`src/main/35000.c:530-560`), 6 selected entries (`resource_LoadSelectedEntriesTexturesAndSound`),
+7 stage, 8 tiny-model node asset, 9 unused, 0xA motion playback.
 
 ## Contents of a typical entry
 
@@ -355,22 +297,24 @@ python tools/extract_ndata_names.py --stdout   # write CSV to stdout
 The tool re-derives the file-ID -> name mapping every time by parsing the
 rodata string pool out of the live `disc/SLUS_006.63`. The CSV under
 `docs/formats/ndata_filemap.csv` is committed for human review and to make
-the mapping greppable, but it is reproducibly regenerable.
+the mapping greppable, but it is reproducibly regenerable. Both still apply the
+superseded forward rule (see the pool-to-INF rule above), so their names are wrong
+until row `ndata-filemap-reverse` lands.
 
 ## Verified by
 
-* Hex-dump of `disc/NDATA/NDATA.INF` bytes 0x00..0x4F (901 little-endian (u16,
+* Hex-dump of all 3,604 bytes of `disc/NDATA/NDATA.INF` (901 little-endian (u16,
   u16) pairs).
-* Cross-reference with the in-RAM mirror `g_ndata_inf` (`asm/data/7D920.data.s`,
+* Cross-reference with the in-RAM mirror `g_ndata_inf` (`src/main/35000.c:1133`,
   same byte sequence).
 * Loader `ndata_StartReadInf`, which CD-reads 2 sectors of NDATA.INF into it.
 * Reader `ndata_Read`, which passes `g_ndata_inf[id]` (start_sector,
   length_sectors) to `cdrom_StartReadAt` on NDATA.DAT.
-* Filename pool `D_80010DEC..D_80015294` (label `D_80010DEC` in
+* Filename pool `D_80010DEC..0x8001528C` (label `D_80010DEC` in
   `src/main/d_15EC.c`) — 899 `DATA<n>\<NAME>.DAT`
-  strings whose order (after dropping the 137 `DATA8\*` placeholders)
-  matches the 762 active INF entries 1:1. Independently verified by
-  walking both lists with the alignment rule described above.
+  strings, string `898 - i` naming slot `i`: the 139 sentinels fall exactly on
+  the left-out names, and the code's id bases (`0x25`, `0x27`, `0x4D`, `0x83`,
+  `0x10C`, `0x131`) land on group starts.
 * Cumulative-sum sanity check: starting at sector 0, walking only the non-
   sentinel entries in INF order, the running total exactly reaches sector
   0x6ED8 = 28,376 = `len(NDATA.DAT) / 0x800`. No gaps.
