@@ -1,0 +1,9 @@
+sweep-368e4.5 (naming-b 2026-11-07): 4 local bindings in 2 functions of 368E4.c; research tmp/codex/sweep-368e4.5-research.md (Opus; 4 RENAME, 0 NO_NAME), from the sweep-368e4.4 finality FAILs.
+Tree: ln-naming-b = 8fbbef9bd. Drafting aid (not the gate): naming_keycheck.scoped_plan(read_working_tree(), pairs, {}), run in WSL from a tmp script.
+ALL: scoped_plan ACCEPT, 60 substitutions, only src/main/368E4.c
+  wave_Init:v0=cell_halfword 25 (802,829,830,832,833,835,836,838,846,847,849,850,852,853,855,857,860,861,863,865,866,868,870,876,877)
+  snd_CopySelectedPackSectionsAndLoadVabPacks:var_s0=slot0_selection 15 (2157,2186,2190,2191,2194,2199,2200,2201,2203,2204,2206,2207,2216,2225,2228)
+  snd_CopySelectedPackSectionsAndLoadVabPacks:var_s2=slot1_selection 15 (2158,2187,2191,2194,2196,2198,2200,2202,2203,2205,2206,2208,2220,2242,2244)
+  snd_CopySelectedPackSectionsAndLoadVabPacks:var_14=header_entry_count 5 (2162,2216,2219,2221,2223)
+Alone line lists equal the research USES. Each new name: 0 whole-word hits in src/ include/ symbol_addrs.txt.
+Required comment edits: 368E4.c:2213-2215 (codegen note spells var_s0 x2, var_s2 x1): rewrite to the new names, reflow.

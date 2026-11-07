@@ -1,0 +1,4 @@
+wave_Init:v0=cell_halfword
+snd_CopySelectedPackSectionsAndLoadVabPacks:var_s0=slot0_selection
+snd_CopySelectedPackSectionsAndLoadVabPacks:var_s2=slot1_selection
+snd_CopySelectedPackSectionsAndLoadVabPacks:var_14=header_entry_count
