@@ -64,7 +64,7 @@ static Unk8006EA28Rec *g_entry_menu_resources;
 static Unk8006E49CRec *g_entry_menu_prim_buffers;
 static s32 g_entry_menu_init_extra_slot_count;
 static s16 g_entry_menu_grid_last_column;
-static s16 D_800A35B8;
+static s16 g_entry_menu_unlock_mask_bits_24_26;
 static s32 g_entry_menu_mode;
 static GpuDb *g_entry_menu_gpu_db;
 static Unk800A35C4Rec *g_entry_menu_work_block;
@@ -149,7 +149,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
                 4;
         }
     }
-    D_800A35B8 = (compacted_unlock_mask >> 20) & 3;
+    g_entry_menu_unlock_mask_bits_24_26 = (compacted_unlock_mask >> 20) & 3;
     g_entry_menu_grid_last_column = 5;
     g_entry_menu_entry_flags
         [g_entry_menu_grid_entries[g_entry_menu_grid_row_cursors[0]]
