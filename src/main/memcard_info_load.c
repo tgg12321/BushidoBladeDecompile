@@ -5,6 +5,14 @@
 #include "bb2.h"
 #include <psxsdk/libcard.h>
 
+enum MemcardInfoLoadState {
+    MEMCARD_INFO_LOAD_START_INFO = 0,
+    MEMCARD_INFO_LOAD_WAIT_INFO = 1,
+    MEMCARD_INFO_LOAD_START_LOAD = 2,
+    MEMCARD_INFO_LOAD_WAIT_LOAD = 3,
+    MEMCARD_INFO_LOAD_PUBLISH = 4,
+};
+
 /* memcard_Format's (28708.c) path format. It sits in this file's .rodata,
  * before memcard_StepCardInfoAndLoad's jump table, whose .align 3 supplies the
  * zero bytes after it. */
@@ -20,13 +28,13 @@ s32 memcard_StepCardInfoAndLoad(s32 port, s32 card) {
     s32 ev;
 
     switch (g_memcard_info_load_state) {
-    case 0:
+    case MEMCARD_INFO_LOAD_START_INFO:
         _card_info(channel);
-        g_memcard_info_load_state = 1;
+        g_memcard_info_load_state = MEMCARD_INFO_LOAD_WAIT_INFO;
         g_memcard_poll_count = 0;
         g_memcard_info_load_result = 0;
         break;
-    case 1:
+    case MEMCARD_INFO_LOAD_WAIT_INFO:
         ev = memcard_PollSwEventsTimeout();
         if (ev == 0) {
             break;
@@ -35,14 +43,14 @@ s32 memcard_StepCardInfoAndLoad(s32 port, s32 card) {
         case 1:
             g_memcard_info_load_pending_result = ev;
             if (g_memcard_card_loaded != 0) {
-                g_memcard_info_load_state = 4;
+                g_memcard_info_load_state = MEMCARD_INFO_LOAD_PUBLISH;
             } else {
-                g_memcard_info_load_state = 2;
+                g_memcard_info_load_state = MEMCARD_INFO_LOAD_START_LOAD;
             }
             break;
         case 3:
             g_memcard_info_load_pending_result = -1;
-            g_memcard_info_load_state = 4;
+            g_memcard_info_load_state = MEMCARD_INFO_LOAD_PUBLISH;
             g_memcard_card_loaded = 0;
             break;
         case 4:
@@ -50,29 +58,29 @@ s32 memcard_StepCardInfoAndLoad(s32 port, s32 card) {
             memcard_AckHwEvents();
             _card_clear(channel);
             memcard_WaitHwEvent();
-            g_memcard_info_load_state = 2;
+            g_memcard_info_load_state = MEMCARD_INFO_LOAD_START_LOAD;
             g_memcard_card_loaded = 0;
             break;
         case 2:
         default:
             g_memcard_info_load_pending_result = -3;
-            g_memcard_info_load_state = 4;
+            g_memcard_info_load_state = MEMCARD_INFO_LOAD_PUBLISH;
             g_memcard_card_loaded = 0;
             break;
         }
         break;
-    case 2:
+    case MEMCARD_INFO_LOAD_START_LOAD:
         memcard_AckSwEvents();
         _card_load(channel);
-        g_memcard_info_load_state = 3;
+        g_memcard_info_load_state = MEMCARD_INFO_LOAD_WAIT_LOAD;
         g_memcard_poll_count = 0;
         break;
-    case 3:
+    case MEMCARD_INFO_LOAD_WAIT_LOAD:
         ev = memcard_PollSwEventsTimeout();
         if (ev == 0) {
             break;
         }
-        g_memcard_info_load_state = 4;
+        g_memcard_info_load_state = MEMCARD_INFO_LOAD_PUBLISH;
         switch (ev) {
         case 1:
             g_memcard_card_loaded = ev;
@@ -92,9 +100,9 @@ s32 memcard_StepCardInfoAndLoad(s32 port, s32 card) {
             break;
         }
         break;
-    case 4:
+    case MEMCARD_INFO_LOAD_PUBLISH:
         g_memcard_info_load_result = g_memcard_info_load_pending_result;
-        g_memcard_info_load_state = 0;
+        g_memcard_info_load_state = MEMCARD_INFO_LOAD_START_INFO;
         break;
     }
     return g_memcard_info_load_result;
