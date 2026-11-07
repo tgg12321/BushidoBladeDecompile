@@ -1,0 +1,72 @@
+var-locals-55 (naming-b 2026-11-06): 16 research rows, 13 drafted, 3 dropped (1 renamed by the drafter); 76 substitutions: 17AFC.c 3, 25C38.c 7, 28708.c 4, 368E4.c 34, 596CC.c 9, 5ED34.c 4, eff.c 15; no include/ file touched.
+Class: m2c / register-style placeholder locals and parameters (arg0, a0, s2..s6, sp20, var_N, temp_v1, val) in 10 functions of 7 files, reached by the landed row-menu-subflow, main-loop-handler and fight-mode work (menu_InitSubflowForMode carried from var-locals-54).
+Tree: ln-naming-b = main c80650813 (clean). Research: tmp/codex/var-locals-55-research.md (its line numbers match HEAD; this draft uses HEAD numbers).
+Method (drafter, re-derived, not copied): every definition read at c80650813 together with its callers (C and asm/funcs/*.s for the parameters); a regex tokenizer with brace matching (tmp/vl55/scan.py), separate from scoped_plan (comments and strings blanked, ./-> member tokens excluded), gives every use line of signature + body: all 13 lists equal the research and equal the scoped_plan alone lines (dry.txt). Each new name was also scanned as a token inside its own function (no hit), grepped as a declaration / #define / symbol in src/, include/, symbol_addrs.txt (no hit except other functions' locals: block_base, mode_selector, presentation_index, base, depth_cue_out) and in asm/ tools/ engine/ docs/naming (no hit for the others). docs/naming/phase3/no_name.tsv has rows for resource_LoadOrReuseSelectedBlock:s7, comb_ExchangePad:var_7 / var_8 and eff_DrawAnimatedQuads:var_18 only; none is proposed.
+
+Specific checks:
+- resource_LoadOrReuseSelectedBlock:s6=reloc_section, :s4=grid_stream, :s2=tim_section, :s3=tim_offset_index, :sp20=position_records (six pairs of one function; s0 is dropped, see DROPPED): s6 / s4 / s2 / sp20 are the header-offset sections of arena block 7 and are named by their one consumer (reloc_RelocateBlock, the grid unpack, tim_group and the s1 cut-back, g_fight_position_records). The sibling functions 368E4.c:191-253 name the same sections reloc_section and grid_stream. s3 is the word-0 value used as an index: s0[s3] holds the TIM section offset, s0[s3 - 1] the grid offset, s0[s3 - 2] the reloc offset in cases 3 / 13.
+- FAKE adjacency (368E4.c:132-134 and 139-140): the two FAKE comments are about s1 (delta-rebase detour) and hp (once-written pointer). s4 and s2 appear in the first as source / reference point and s3 in the second as the index in `s0[s3 - 1]`; their own uses are plain (s4 is read at 135 as the pointer, s2 is assigned at 115). They are not the FAKE bindings. This is the same shape as var-locals-54 menu_RunPauseMenu:var_2 (named while its FAKE comment spelled it; PASS). If a reviewer holds that a binding spelled in a FAKE comment is covered, drop s4 / s2 / s3 with their comment edits; the other pairs do not depend on them.
+- comb_ExchangePad:var_4=local_side: a once-assigned copy of g_comb_local_side used as that value in the packed word and the 0 test; not FAKE (the FAKEs are var_7 / var_8).
+- menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows:a0 and menu_SetEnabledRows:arg0 = enabled_row_mask (a pair across two functions, one name; the first is the second's only non-literal caller value, same 0xFF / 0xF7 pair as menu_UpdateRowMenuAndSubflows). If a reviewer rejects the mask reading for either, drop both.
+- fight_AdvanceOpponentOrder:val=presentation_index: stored only to g_fight_presentation_index; the sibling at 17AFC.c:6042 has the same local name for the same store.
+- StepSlideBuildFrameRecordAndDispatchStateHandler:temp_v1=buffer_counter: the counter after the increment, stored back and used for the buffer parity; the member keeps its own name prim_buffer_counter.
+- eff_DrawAnimatedQuads:var_0=base and :var_2=depth_cue_out: siblings in eff.c use both names for the same record base and the same RotTransPers p pointer. var_18 (FAKE, no_name final) is not touched.
+- menu_InitSubflowForMode:arg0=mode_selector: carried unchanged from var-locals-54 (that wave deferred it at LAND because 25C38.c was path-claimed by the const lane; evidence passed pre-apply and R6 there). The body is unchanged at HEAD.
+
+DEVIATION (drafter):
+- resource_LoadOrReuseSelectedBlock:s3: research name tim_section_index -> tim_offset_index. "tim_section_index" can be read as the index of the TIM section among the sections; the value is the index of the header word that holds the TIM section offset (every use indexes the offset table relative to it). tim_offset_index claims only that.
+
+Required comment edits (Q133: comments naming an old name are rewritten with the pair, names only; the FAKE labels and their content are kept; s0 is not renamed, so s0 stays in the comments):
+1. src/main/368E4.c:93-96 (Q51 note). Replace these 4 lines:
+        /* s3 is the header word count of the buffer being read (s0's in the
+         * case blocks and below, staging_addr's here), the way SOTN's
+         * white-dragon segment update reuses var_s2 for posX then posY (Q51; a
+         * separate local or the inline read: score 2) */
+with these 4 lines (reflowed, all <= 80 columns):
+        /* tim_offset_index is the header word count of the buffer being read
+         * (s0's in the case blocks and below, staging_addr's here), the way
+         * SOTN's white-dragon segment update reuses var_s2 for posX then posY
+         * (Q51; a separate local or the inline read: score 2) */
+2. src/main/368E4.c:132-134 (FAKE comment, s1 detour). Replace these 3 lines:
+    /* FAKE: s1 = s4 routed through a delta-rebase detour that combine folds
+       back (zero bytes); the extra refs lift s1's allocation priority above
+       the s2 pointer, as in the target; plain s1 = s4: score 32 */
+with these 4 lines (reflowed, all <= 80 columns):
+    /* FAKE: s1 = grid_stream routed through a delta-rebase detour that combine
+       folds back (zero bytes); the extra refs lift s1's allocation priority
+       above the tim_section pointer, as in the target; plain s1 = grid_stream:
+       score 32 */
+3. src/main/368E4.c:139-140 (FAKE comment, hp). Replace these 2 lines:
+        /* FAKE: once-written pointer to s0[s3 - 1]; it fixes the sched1
+         * load/store order; s0[s3 - 1] inline: score 9 */
+with these 2 lines (reflowed, all <= 80 columns):
+        /* FAKE: once-written pointer to s0[tim_offset_index - 1]; it fixes the
+         * sched1 load/store order; s0[tim_offset_index - 1] inline: score 9 */
+No other comment in the 10 functions spells an old name (comment scan of every function range, tmp/vl55/comscan.py: only the three above). eff.c:2131-2133 says "base address" in prose about var_18 (not a token; unchanged). Width: after substitution 368E4.c:99 (69->83) and :120 (71->85) exceed 80 columns; tools/format.py reflows them (token-preserving).
+
+DROPPED:
+- resource_LoadOrReuseSelectedBlock:s0=block_base: scoped_plan REJECTS it alone and in the set ("s0 is an argument of function-like macro PTR_OFF, invoked outside an expression operand position"): the PTR_OFF(s0, off) sites at 368E4.c:64, 125, 152, 154, 164 are macro-argument positions the tool will not substitute, and with s0 in the set the whole set is rejected. The name itself held at all 40 uses (the base of arena block 7). LEAD: reopen once the five PTR_OFF sites are written without the macro, or the tool handles the argument position.
+- fight_AdvanceOpponentOrder:v (5921) = opponent_group_flag and :v (5929) = opponent_stage_index (optional rows): the spec `fight_AdvanceOpponentOrder:v` is ambiguous between the two block-local `v` and scoped_plan renames both together (probe: 4 substitutions 5921, 5922, 5929, 5931 for one pair), so neither row can be addressed uniquely. Dropped for that reason, not for evidence.
+
+Research notes copied below (NO_NAME with reasons, LEADS retitled for var-locals-56)
+## NO_NAME
+- resource_LoadOrReuseSelectedBlock:s7 (368E4.c:43): final two-role in no_name.tsv (FAKE 79-82). Excluded.
+- resource_LoadOrReuseSelectedBlock:s1 (368E4.c:46). Its role is consistent: the block end handed to arena_SetBlockEnd (181), set from s4 / s2 / node_BindFrameDataAndReserveEntryBuffer / wave cell buffer end at 136-168. But its first assignment is the FAKE delta-rebase detour (132-137), which the FAKE covers, so it is excluded per the brief. LEAD: `block_end` if the FAKE is ever retired.
+- resource_LoadOrReuseSelectedBlock:hp (368E4.c:141): FAKE once-written pointer (139-141). Excluded.
+- resource_LoadOrReuseSelectedBlock:sp18 (368E4.c:48; uses 110 `= s0 + ALIGN4(s0[3])`, 178 `D_800A33B0 = sp18`). Its only consumer is the unnamed D_800A33B0, whose getter func_80046780 is NO_NAME (no_name.tsv row 21, "section role still unobserved"), so it is kept. Name the global first.
+- resource_LoadOrReuseSelectedBlock:a0_ptr (368E4.c:107; uses 108 `a0_ptr[-1]` grid offset, 114 `[0]` TIM offset, 124 `[1]` arena_UpdatePeak offset). It points at the TIM-offset header word but is read at three different offsets. A name would have to claim what header word s3 + 1 is (the peak / end offset is only inferred), so it is kept.
+- comb_ExchangePad:var_1 (28708.c:1834). Two roles: first the packed outgoing pad word stored to g_comb_send_buf (1848-1851), then the 16-bit xor fold of that word with the payload (1853-1856) that goes into the low half of g_comb_send_buf_plus_0x4. A multi-role local takes no single name.
+- comb_ExchangePad:var_7 / var_8: final const-holder / fake-copy (no_name.tsv rows 150-151). Excluded.
+- eff_DrawAnimatedQuads:var_18: final fake-copy (no_name.tsv row 153). Excluded.
+- gpu_AdvanceBufferCounterAndBuildDrawContext:s0 (596CC.c:2667). `s32 *s0 = draw_context;` is a plain copy of the parameter and is used only as `s0[1..9]` stores (2671-2680). A no-purpose copy keeps a neutral name ([[completion-bar]] item 3). LEAD: a `fake-copy` final candidate, unless removing it matches.
+- Excluded per brief, not revisited: fight_RecordReplayEventAndDispatchSoundOrEffect:arg0, replay_RecordEvent:arg0, fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags:ranks / moves, menu_UpdateEntryGridCursors:var_6, menu_UpdateRowCursors:var_4 (the only var-globals-ad function), fighter_ProcessWeaponBodyHits:var_1, PatchColorImmediatesAtListedCodeSites:a1, replay_PlayFrame:var_19 / temp (the var-globals-ac function), fight_RunCommandStream:var_0, fight_SearchRadialFlatSurfacePointOrUseStartPositionPair:arg0, pad_Update:arg0, fighter_InitCpuControl:temp / var_18 / var_59 / var_15, fighter_ResolveBoneHit:var_12 / arg6 / var_0 / var_1, fighter_DispatchBoneHitSoundEvent:a3 / stack_v1, 4510C.c var_54 / var_55 / var_41, menu_RunPauseMenu:var_1 / var_7 / arg0, main:var_1.
+- Scanned with no placeholder left to name: comb_Connect, memcard_StepCardInfoAndLoad, menu_UpdateRowMenuAndSubflows (only the `(s8)` cast at 292), sys_InitAtBoot, the three 9F9C.c camera_GetViewMatrixWithHalvedMiddleRow sites, and the rest of the MAIN_LOOP_* / ROW_MENU_SUBFLOW_* functions (the `s8` hits are casts).
+
+## LEADS for var-locals-56
+- resource_LoadOrReuseSelectedBlock:s0 -> block_base, blocked only by the PTR_OFF macro-argument positions (368E4.c:64, 125, 152, 154, 164); the sibling functions already use that name for the same block base.
+- fight_AdvanceOpponentOrder block-local `v` (17AFC.c:5921 u8 group flag of the opponent, 5929 s16 stage index): not addressable by `function:v` while both share the spelling; they need distinct spellings first (or a tool that scopes by block).
+- D_800A33B0 (368E4.c:24; written 178 / 250, rebased 269, read by func_80046780 at 322): name the section, then resource_LoadOrReuseSelectedBlock:sp18 and resource_SelectRetainedSubblockOrApplyHeaderSections:s4p can follow. That function's s4p / s1p / v0 are register-style locals too (368E4.c:224-251): s1p is the g_fight_position_records section (-> position_records), s4p is the D_800A33B0 section, and v0 is multi-role (the block address, then the entry cursor).
+- resource_LoadOrReuseSelectedBlock:s1 -> block_end if the FAKE detour at 132-137 is retired.
+- gpu_AdvanceBufferCounterAndBuildDrawContext:s0 as a fake-copy final candidate.
+- menu_SetEnabledRows:v / p (596CC.c:44-45: the rows_on word and its address) are short-neutral and nameable once the rows_on bit layout is documented.
+- eff_DrawAnimatedQuads:p_t / p_v / p_w / p_h (eff.c:2116-2120) are restatable from the members they point at (unk14 / unk64 are still unnamed, so name those members first).

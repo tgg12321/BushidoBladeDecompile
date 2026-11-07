@@ -1,0 +1,55 @@
+var-locals-55 (naming-b 2026-11-06): 13 local / parameter bindings in 10 functions across 7 files (17AFC.c 3, 25C38.c 7, 28708.c 4, 368E4.c 34, 596CC.c 9, 5ED34.c 4, eff.c 15). Research rows 16, 3 dropped (resource_LoadOrReuseSelectedBlock:s0 and the two fight_AdvanceOpponentOrder:v rows); 1 name changed by the drafter (tim_section_index -> tim_offset_index).
+Tree: ln-naming-b = main c80650813 (clean). Run in WSL via a script file (tmp/vl55/dry.py + run.sh in the lane worktree; NAMING_KEYCHECK_ROOT = the worktree, venv active).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (same tool result as var-locals-43 .. -54). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree (base = naming_keycheck.read_working_tree()).
+The 13 pairs of pairs.txt together were accepted (76 token substitutions: 17AFC.c 3, 25C38.c 7, 28708.c 4, 368E4.c 34, 596CC.c 9, 5ED34.c 4, eff.c 15; no include/ file touched). Each pair was also run alone: all accepted (alone counts sum to 76) and every pair's alone line list equals the drafter's independent token scan (13/13; tmp/vl55/scan.py, written separately from scoped_plan: comments and strings blanked, ./-> member tokens excluded, signature plus body found by brace matching). Lines are mapped from the working-tree text through the token index over naming_keycheck.code_spans.
+Rejected by scoped_plan (dropped, not in pairs.txt): resource_LoadOrReuseSelectedBlock:s0=block_base REJECT "src/main/368E4.c: s0 is an argument of function-like macro PTR_OFF, invoked outside an expression operand position" (the scan finds 40 uses; s0 is a PTR_OFF(s0, ...) macro argument at 64, 125, 152, 154 and 164, a position the tool does not substitute). With s0 in the set, the whole 14-pair set is rejected, so s0 is dropped and the other six 368E4.c pairs stand.
+Dropped as not addressable: fight_AdvanceOpponentOrder:v=opponent_group_flag was run alone as a probe: ACCEPT 4 17AFC.c [5921, 5922, 5929, 5931], that is, the spec `fight_AdvanceOpponentOrder:v` renames BOTH block-local `v` (5921 u8 and 5929 s16) in one pass and cannot address them separately, so the two optional rows (opponent_group_flag at 5921 / opponent_stage_index at 5929) are dropped.
+Required comment edits: 368E4.c:93-96 (Q51 note), 132-134 (FAKE) and 139-140 (FAKE), see notes.txt. A comment scan of every function range (tmp/vl55/comscan.py) finds no other comment spelling an old name.
+Per-pair substitutions (function:old=new count (lines)):
+  menu_InitSubflowForMode:arg0=mode_selector 3 (114,117,121)
+  resource_LoadOrReuseSelectedBlock:s6=reloc_section 5 (44,105,143,162,174)
+  resource_LoadOrReuseSelectedBlock:s4=grid_stream 7 (44,108,135,144,163,170,176)
+  resource_LoadOrReuseSelectedBlock:s2=tim_section 7 (44,115,122,142,151,161,168)
+  resource_LoadOrReuseSelectedBlock:s3=tim_offset_index 12 (45,60,62,98,99,104,107,120,141,143,162,163)
+  resource_LoadOrReuseSelectedBlock:sp20=position_records 3 (48,111,179)
+  comb_ExchangePad:var_4=local_side 4 (1837,1846,1848,1861)
+  menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows:a0=enabled_row_mask 4 (39,43,45,47)
+  menu_SetEnabledRows:arg0=enabled_row_mask 9 (43,47,49,51,53,55,57,59,61)
+  fight_AdvanceOpponentOrder:val=presentation_index 3 (5894,5896,5897)
+  StepSlideBuildFrameRecordAndDispatchStateHandler:temp_v1=buffer_counter 4 (263,272,275,276)
+  eff_DrawAnimatedQuads:var_0=base 12 (2113,2136,2138,2139,2140,2141,2142,2143,2144,2145,2146,2156)
+  eff_DrawAnimatedQuads:var_2=depth_cue_out 3 (2115,2138,2161)
+
+Line widths after substitution (over 80; python tools/format.py reflows them in the naming commit; token-preserving). Set run (all pairs together, pairs of one function applied to the same line together; the macro-argument case does not arise once s0 is out):
+  368E4.c 99 (69->83)
+  368E4.c 120 (71->85)
+0 rows flagged.
+
+Raw driver output (HEAD c80650813, scoped_plan together then alone per pair; line numbers are working-tree lines; the driver's empty per-file entries are omitted):
+SET 13 pairs ACCEPT {'17AFC.c': 3, '25C38.c': 7, '28708.c': 4, '368E4.c': 34, '596CC.c': 9, '5ED34.c': 4, 'eff.c': 15} total 76
+  SETLINES 17AFC.c [5894, 5896, 5897]
+  SETLINES 25C38.c [39, 43, 45, 47, 114, 117, 121]
+  SETLINES 28708.c [1837, 1846, 1848, 1861]
+  SETLINES 368E4.c [44, 44, 44, 45, 48, 60, 62, 98, 99, 104, 105, 107, 108, 111, 115, 120, 122, 135, 141, 142, 143, 143, 144, 151, 161, 162, 162, 163, 163, 168, 170, 174, 176, 179]
+  SETLINES 596CC.c [43, 47, 49, 51, 53, 55, 57, 59, 61]
+  SETLINES 5ED34.c [263, 272, 275, 276]
+  SETLINES eff.c [2113, 2115, 2136, 2138, 2138, 2139, 2140, 2141, 2142, 2143, 2144, 2145, 2146, 2156, 2161]
+SET 14 pairs (the 13 above plus resource_LoadOrReuseSelectedBlock:s0=block_base) REJECT src/main/368E4.c: s0 is an argument of function-like macro PTR_OFF, invoked outside an expression operand position
+ALONE menu_InitSubflowForMode:arg0=mode_selector ACCEPT 3 25C38.c [114, 117, 121]
+ALONE resource_LoadOrReuseSelectedBlock:s0=block_base REJECT src/main/368E4.c: s0 is an argument of function-like macro PTR_OFF, invoked outside an expression operand position
+ALONE resource_LoadOrReuseSelectedBlock:s6=reloc_section ACCEPT 5 368E4.c [44, 105, 143, 162, 174]
+ALONE resource_LoadOrReuseSelectedBlock:s4=grid_stream ACCEPT 7 368E4.c [44, 108, 135, 144, 163, 170, 176]
+ALONE resource_LoadOrReuseSelectedBlock:s2=tim_section ACCEPT 7 368E4.c [44, 115, 122, 142, 151, 161, 168]
+ALONE resource_LoadOrReuseSelectedBlock:s3=tim_offset_index ACCEPT 12 368E4.c [45, 60, 62, 98, 99, 104, 107, 120, 141, 143, 162, 163]
+ALONE resource_LoadOrReuseSelectedBlock:sp20=position_records ACCEPT 3 368E4.c [48, 111, 179]
+ALONE comb_ExchangePad:var_4=local_side ACCEPT 4 28708.c [1837, 1846, 1848, 1861]
+ALONE menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows:a0=enabled_row_mask ACCEPT 4 25C38.c [39, 43, 45, 47]
+ALONE menu_SetEnabledRows:arg0=enabled_row_mask ACCEPT 9 596CC.c [43, 47, 49, 51, 53, 55, 57, 59, 61]
+ALONE fight_AdvanceOpponentOrder:val=presentation_index ACCEPT 3 17AFC.c [5894, 5896, 5897]
+ALONE StepSlideBuildFrameRecordAndDispatchStateHandler:temp_v1=buffer_counter ACCEPT 4 5ED34.c [263, 272, 275, 276]
+ALONE eff_DrawAnimatedQuads:var_0=base ACCEPT 12 eff.c [2113, 2136, 2138, 2139, 2140, 2141, 2142, 2143, 2144, 2145, 2146, 2156]
+ALONE eff_DrawAnimatedQuads:var_2=depth_cue_out ACCEPT 3 eff.c [2115, 2138, 2161]
+ALONE SUM 76 SET 76
+PROBE fight_AdvanceOpponentOrder:v=opponent_group_flag ACCEPT 4 17AFC.c [5921, 5922, 5929, 5931] (both blocks' `v`; not addressable per local, rows dropped)
+
+Independent token scan (tmp/vl55/scan.py) use lines per pair, equal to the ALONE lines for all 13; for the dropped s0 it lists 40 uses [42, 50, 51, 60, 62, 64, 84, 89, 99, 103, 104, 105, 107, 108, 109, 109, 110, 110, 111, 111, 115, 125, 135, 136, 141, 143, 143, 144, 152, 152, 154, 154, 162, 162, 163, 163, 164, 164, 170, 170]. No destination name occurs as a token in its own function (collide_in_fn = [] for all 13 and for the two v candidates).
