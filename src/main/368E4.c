@@ -90,10 +90,10 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
     }
 
     if (staging_addr != 0) {
-        /* s3 is the header word count of the buffer being read (s0's in the
-         * case blocks and below, staging_addr's here), the way SOTN's
-         * white-dragon segment update reuses var_s2 for posX then posY (Q51; a
-         * separate local or the inline read: score 2) */
+        /* tim_offset_index is the header word count of the buffer being read
+         * (s0's in the case blocks and below, staging_addr's here), the way
+         * SOTN's white-dragon segment update reuses var_s2 for posX then posY
+         * (Q51; a separate local or the inline read: score 2) */
         /* SOTN: src/st/rare/e_white_dragon.c:78 @db41b28 */
         tim_offset_index = *(s32 *)staging_addr;
         arena_Copy(
@@ -131,15 +131,16 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
     }
 
     g_resource_has_retained_subblocks = 0;
-    /* FAKE: s1 = s4 routed through a delta-rebase detour that combine folds
-       back (zero bytes); the extra refs lift s1's allocation priority above
-       the s2 pointer, as in the target; plain s1 = s4: score 32 */
+    /* FAKE: s1 = grid_stream routed through a delta-rebase detour that combine
+       folds back (zero bytes); the extra refs lift s1's allocation priority
+       above the tim_section pointer, as in the target; plain s1 = grid_stream:
+       score 32 */
     s1 = (s32 *)((s32)grid_stream - (s32)s0);
     s1 = (s32 *)((s32)s1 + (s32)s0);
     switch (selector) {
     case 3: {
-        /* FAKE: once-written pointer to s0[s3 - 1]; it fixes the sched1
-         * load/store order; s0[s3 - 1] inline: score 9 */
+        /* FAKE: once-written pointer to s0[tim_offset_index - 1]; it fixes the
+         * sched1 load/store order; s0[tim_offset_index - 1] inline: score 9 */
         s32 *hp = (s32 *)((tim_offset_index << 2) + (s32)s0) - 1;
         s1 = tim_section;
         reloc_section = (s32 *)((u8 *)s0 + ALIGN4(s0[tim_offset_index - 2]));
