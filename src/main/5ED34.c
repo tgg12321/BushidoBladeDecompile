@@ -676,12 +676,13 @@ void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(
     draw_context->primitive_cursors.draw_area_prims++;
 
     switch (state) {
-    case 2:
-    case 4:
+    case ENTRY_MENU_SLIDE_RIGHT_RETRACT:
+    case ENTRY_MENU_SLIDE_LEFT_RETRACT:
         g_entry_menu_work_block->draw_offset[0] =
             g_entry_menu_gpu_db->draw.ofs[0] +
-            (state == 2 ? -g_entry_menu_slide_displacement
-                        : g_entry_menu_slide_displacement);
+            (state == ENTRY_MENU_SLIDE_RIGHT_RETRACT
+                 ? -g_entry_menu_slide_displacement
+                 : g_entry_menu_slide_displacement);
         g_entry_menu_work_block->draw_offset[1] =
             g_entry_menu_gpu_db->draw.ofs[1];
         SetDrawOffset(draw_context->primitive_cursors.draw_offset_prims,
