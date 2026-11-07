@@ -18,6 +18,7 @@ INCLUDE_ASM("asm/funcs", gte_ProjectPackedVertices);
 void func_8004A938(void) {}
 
 INCLUDE_ASM("asm/funcs", func_8004A940);
+INCLUDE_ASM("asm/funcs", func_8004B6E4);
 INCLUDE_ASM("asm/funcs", gpu_SubdivideAndEmitTexturedTriangle);
 INCLUDE_ASM("asm/funcs", gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision);
 INCLUDE_ASM("asm/funcs", gpu_SubdivideAndEmitTexturedQuad);

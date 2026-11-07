@@ -65,8 +65,9 @@ extern u8 g_sel_sheet_code_pairs[2][2];
 extern u8 *g_sel_screen_work;
 #define SELWORK ((SelWork *)g_sel_screen_work)
 
-/* One PsyQ MATRIX: func_8004A940 loads it as the GTE rotation, reads t[] and
- * passes it to gte_MulMatrix0ClearTrans;
+/* One PsyQ MATRIX: a jtbl_8001541C case body of gpu_DrawQueuedEntries
+ * (asm/funcs/func_8004A940.s, after its endlabel) loads it as the GTE rotation,
+ * reads t[] and passes it to gte_MulMatrix0ClearTrans;
  * node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable writes m[][]
  * and passes t to ApplyMatrix. */
 extern MATRIX g_node_slot_relative_matrix;

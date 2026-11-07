@@ -2158,7 +2158,8 @@ typedef struct Unk80101DF0Record {
  * matrix row i
  * (+0x18 + i*6, zero when off), scaled by +0x5C.  light_InitDefaults hands
  * record 0's color matrix and back color to SetColorMatrix / SetBackColor; the
- * light matrix goes to gte_MulMatrix0ClearTrans (func_8004A940);
+ * light matrix goes to gte_MulMatrix0ClearTrans (jtbl_8001541C case bodies of
+ * gpu_DrawQueuedEntries, asm/funcs/func_8004A940.s after its endlabel);
  * math_SetLightPlaneProjection / math_LightPlaneProject read its row 0. */
 typedef struct {
     s16 pitch;
