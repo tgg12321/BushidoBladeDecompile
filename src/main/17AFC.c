@@ -1894,9 +1894,10 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         for (other_weapon_quad_index = 0;
              other_weapon_quad_index < other_weapon_quad_count;
              other_weapon_quad_index++) {
-            /* var_32: fighter_TestTriangleBoneHits's third argument, per-branch
-             * constants 1 / 1 / 0 (Q20); the wielded_object_live_state arm's
-             * store is shared with the first iteration (Q85, Ruling 11) */
+            /* test_inner_spheres: fighter_TestTriangleBoneHits's third
+             * argument, per-branch constants 1 / 1 / 0 (Q20); the
+             * wielded_object_live_state arm's store is shared with the first
+             * iteration (Q85, Ruling 11) */
             s32 test_inner_spheres;
 
             if (other_weapon_quad_index == 0) {

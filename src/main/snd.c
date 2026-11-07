@@ -541,7 +541,8 @@ extern u16 g_snd_sound_vab_entries[][2];
 
 /* FAKE: declared int though no value is returned (plausibly an implicit-int
  * function in the original): with void, its call in snd_QueuePositionalSound
- * sets no $v0, so reload re-places the var_7 product in $v0 there (score 2). */
+ * sets no $v0, so reload re-places the pan_offset product in $v0 there (score
+ * 2). */
 s32 snd_QueueSound(s32 sound_index, s32 right_volume, s32 left_volume) {
     s16 queue_index = 0;
     u16 *sound_vab_entry = g_snd_sound_vab_entries[sound_index];
