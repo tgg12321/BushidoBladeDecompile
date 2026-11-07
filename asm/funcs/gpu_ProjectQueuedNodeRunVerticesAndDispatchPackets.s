@@ -320,9 +320,9 @@ glabel gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets
     /* 3D0E0 8004C8E0 02001026 */  addiu      $s0, $s0, 0x2
     /* 3D0E4 8004C8E4 C2400800 */  srl        $t0, $t0, 3
     /* 3D0E8 8004C8E8 80400800 */  sll        $t0, $t0, 2
-    /* 3D0EC 8004C8EC 0180013C */  lui        $at, %hi(D_80015470)
+    /* 3D0EC 8004C8EC 0180013C */  lui        $at, %hi(g_gpu_queued_node_run_packet_handlers)
     /* 3D0F0 8004C8F0 21082800 */  addu       $at, $at, $t0
-    /* 3D0F4 8004C8F4 7054288C */  lw         $t0, %lo(D_80015470)($at)
+    /* 3D0F4 8004C8F4 7054288C */  lw         $t0, %lo(g_gpu_queued_node_run_packet_handlers)($at)
     /* 3D0F8 8004C8F8 21300002 */  addu       $a2, $s0, $zero
     /* 3D0FC 8004C8FC 09F80001 */  jalr       $t0
     /* 3D100 8004C900 2138E002 */   addu      $a3, $s7, $zero

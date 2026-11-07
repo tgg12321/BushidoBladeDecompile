@@ -66,8 +66,8 @@ void * const jtbl_8001545C[5] = {
     L8004A614, L8004A644, L8004A694, L8004A6F0, L8004A730,
 };
 
-/* D_80015470: 4 words (16B) @ 0x80015470 */
-void * const D_80015470[4] = {
+/* g_gpu_queued_node_run_packet_handlers: 4 words (16B) @ 0x80015470 */
+void * const g_gpu_queued_node_run_packet_handlers[4] = {
     gpu_EmitOtCutoffFlatLitTexturedTrianglesWithOptionalSubdivision,
     gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision,
     sys_StoreZeroPastScratchpadOnFailedCheck,
