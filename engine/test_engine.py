@@ -5307,7 +5307,6 @@ def test_queue_non_function_labels() -> None:
     labels = {
         "main/3AB48": ("D_800521AC", "D_800521FC", "D_80052344",
                         "D_80052394"),
-        "main/43500": ("g_color_immediate_patch_first_ori_template", "g_color_immediate_patch_second_lui_template", "g_color_immediate_patch_second_ori_template"),
         "main/d_7D870": ("g_data_start", "g_main_loop_handlers"),
     }
     texts = {stem: Path(f"src/{stem}.c").read_text(encoding="utf-8")
@@ -5385,7 +5384,7 @@ def test_queue_non_function_labels() -> None:
             # working-tree reader to not_a_c_function_text; spotcheck's roster mode
             # a git-ref reader): the alabels of the included asm are data-as-code,
             # and without the asm evidence the same absent names stay outstanding.
-            alabel_stems = ("main/3AB48", "main/43500")
+            alabel_stems = ("main/3AB48",)
             for stem in alabel_stems:
                 for name in labels[stem]:
                     check(f"integrity labels: {name} is data-as-code with its included asm",
@@ -5405,7 +5404,7 @@ def test_queue_non_function_labels() -> None:
             pool_src["main/3AB48"] += "\nvoid real_c_fn(void) {}\n"
             done, _viol, no_body = spot.classify_pool(pool_syms, set(), set(), {}, set(),
                                                       pool_src, Q.read_asm_file)
-            eq("spotcheck labels: the seven alabels are no-C-body, not completions",
+            eq("spotcheck labels: the four alabels are no-C-body, not completions",
                sorted(f for f, _ in no_body),
                sorted(n for stem in alabel_stems for n in labels[stem]))
             eq("spotcheck labels: a real C function stays in the pool",
@@ -5415,7 +5414,7 @@ def test_queue_non_function_labels() -> None:
                 Path(Q.QUEUE_PATH).write_text('{"items": []}')
                 scanned.clear()
                 q = Q.generate(workdir="scan")
-                eq("queue labels: ten labels excluded even with nonzero/missing score",
+                eq("queue labels: six labels excluded even with nonzero/missing score",
                    {it["func"] for it in q["items"]},
                    {"mystery", "real_body", "asm_body"})
                 check("queue labels: excluded labels never reach scoring",

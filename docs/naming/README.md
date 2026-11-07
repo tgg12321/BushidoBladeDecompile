@@ -98,8 +98,10 @@ the C objects' function symbols (one per distinct linked address; no aliases or 
 | plus 45 functions inside a neighbour's listing | 1,481 | splat did not split statics / pointer-only entries: e.g. `setIntr`/`stopIntr`/`restartIntr` inside `trapIntr.s`, `r_sio*`/`HandleSio`/`__nulldev` inside `_comb_control.s`, `SsSeqCalledTbyT` inside `SsStart.s`, `cdrom_IrqHandler` inside `func_80081E1C.s` |
 | plus 3 functions with no listing | **1,484** | `func_8001C624`, `func_80037D14` (`.s` deleted on match, 2026-04-14), `SetVideoMode` (never listed) |
 
-Excluded: the 10 data-as-code symbols the integrity script lists. Two canonical entries,
-`func_800790A4` and `func_800545F4`, are no-`jr $ra` fragments counted as functions.
+Excluded: the 10 data-as-code symbols the integrity script listed (2026-10-03). Two canonical
+entries, `func_800790A4` and `func_800545F4`, were no-`jr $ra` fragments counted as functions.
+Since 2026-11-06 `func_800545F4` and its three template labels are `dlabel` data (four words in
+`.text`), so they are neither functions nor data-as-code: the counts above predate that.
 
 `engine/queue.json` is *not* a universe source: it lists only INCOMPLETE functions
 (empty 2026-10-02, then `_SendPAD` since 2026-10-03).
