@@ -294,7 +294,7 @@ s32 pad_StepOffsetsGetDirectionEvents(
     return sum;
 }
 
-s32 menu_UpdateRowMenu(s32 arg0, s32 pressed_buttons) {
+s32 menu_UpdateRowMenu(s32 held_buttons, s32 pressed_buttons) {
     extern void gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(
         s32 *, s32, GpuDb *);
     extern void menu_DrawMaskedRowList(u8 *, u16 *, s32);
@@ -501,7 +501,7 @@ void gpu_SetPolyF4RgbFromBlockFlag(void *flat_quad_prim) {
 }
 
 void gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(
-    s32 *draw_context, s32 mode, GpuDb *arg2) {
+    s32 *draw_context, s32 mode, GpuDb *gpu_db) {
     TILE *tile;
     POLY_F4 *poly;
     Unk8009B0E0Record **sheet_headers;
@@ -983,7 +983,8 @@ void menu_DrawRowThreeThinTilesAndTwoSheets(
  * DR_AREA cursor, +0x24 DR_OFFSET cursor), accessed as byte offsets like
  * menu_DrawRowThreeThinTilesAndTwoSheets; draw_env = the drawing environment's
  * clip RECT and ofs[2]; arg2 (passed by menu_UpdateRowMenu) is unused. */
-void menu_DrawMaskedRowList(u8 *draw_context, u16 *draw_env, s32 arg2) {
+void menu_DrawMaskedRowList(
+    u8 *draw_context, u16 *draw_env, s32 cursor_row_mode) {
     Unk8007352CRec s;
     RECT rect;
     s16 ofs[2];
@@ -1381,7 +1382,7 @@ void menu_DrawOptionMenuChoices(s32 *draw_context) {
 
 /* menu_HandleOptionMenuChoices — menu/config input dispatch. Its second
  * switch's 6-entry jump table lands at 0x80015988 in this TU's .rodata. */
-s32 menu_HandleOptionMenuChoices(s32 *arg0, u32 *pressed_buttons) {
+s32 menu_HandleOptionMenuChoices(s32 *held_buttons, u32 *pressed_buttons) {
     u32 v;
     s32 merged_pressed_buttons;
     s32 direction_events;
@@ -1487,7 +1488,7 @@ s32 menu_HandleOptionMenuChoices(s32 *arg0, u32 *pressed_buttons) {
  * switch tables. */
 const u8 g_str_warning[16] = "warning\n";
 
-s32 menu_UpdateOptionMenuChoices(s32 arg0, u32 pressed_buttons) {
+s32 menu_UpdateOptionMenuChoices(s32 held_buttons, u32 pressed_buttons) {
     s32 sp10[10];
     GpuDb *gpu_db;
     g_row_menu_pulse_counter += 1;
@@ -1496,10 +1497,10 @@ s32 menu_UpdateOptionMenuChoices(s32 arg0, u32 pressed_buttons) {
         sp10, &g_menu_draw_buffer_counter);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 1, gpu_db);
     menu_DrawOptionMenuChoices(sp10);
-    return menu_HandleOptionMenuChoices(&arg0, &pressed_buttons);
+    return menu_HandleOptionMenuChoices(&held_buttons, &pressed_buttons);
 }
 
-s32 menu_HandleMemCardChoices(s32 *arg0, u32 *pressed_buttons) {
+s32 menu_HandleMemCardChoices(s32 *held_buttons, u32 *pressed_buttons) {
     u32 v;
     s32 merged_pressed_buttons;
     s32 direction_events;
@@ -1748,7 +1749,7 @@ void gpu_DrawSheetPairPanelWithOptionalSelection(
 
 extern s32 menu_HandleMemCardChoices();
 
-s32 menu_UpdateMemCardChoices(s32 arg0, s32 pressed_buttons) {
+s32 menu_UpdateMemCardChoices(s32 held_buttons, s32 pressed_buttons) {
     s32 draw_context[22];
     GpuDb *gpu_db;
     g_row_menu_pulse_counter += 1;
@@ -1757,11 +1758,11 @@ s32 menu_UpdateMemCardChoices(s32 arg0, s32 pressed_buttons) {
         draw_context, &g_menu_draw_buffer_counter);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(draw_context, 1, gpu_db);
     menu_DrawMemCardChoices(draw_context);
-    return menu_HandleMemCardChoices(&arg0, &pressed_buttons);
+    return menu_HandleMemCardChoices(&held_buttons, &pressed_buttons);
 }
 
-s32 func_8006C1FC(s32 a0, s32 pressed_buttons) {
-    return menu_UpdateMemCardChoices(a0, pressed_buttons);
+s32 func_8006C1FC(s32 held_buttons, s32 pressed_buttons) {
+    return menu_UpdateMemCardChoices(held_buttons, pressed_buttons);
 }
 
 #define setXYWH(p, _x0, _y0, _w, _h)                                           \
@@ -1809,7 +1810,7 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *draw_context) {
     s16 xpos;
     s16 ypos;
     s16 var_14;
-    s32 var_15;
+    s32 player;
     s32 x;
     s32 row;
     s32 pulse_brightness;
@@ -1844,13 +1845,13 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *draw_context) {
     s.has_color = 0;
     table = ((Unk8006919CRec *)draw_context[1])->key_config_sheets;
     s.y = ypos;
-    for (var_15 = 0; var_15 < 2; var_15++) {
-        s.x = var_15 * 280;
-        if (g_row_menu_work_block->row_bit_cursors.half[var_15] < 3) {
+    for (player = 0; player < 2; player++) {
+        s.x = player * 280;
+        if (g_row_menu_work_block->row_bit_cursors.half[player] < 3) {
             for (var_9 = 0; var_9 < 4; var_9++) {
                 if (g_row_menu_working_record_ptr->button_mappings
-                        [g_row_menu_work_block->row_bit_cursors.half[var_15]] &
-                    ((1 << var_9) << (var_15 * 4))) {
+                        [g_row_menu_work_block->row_bit_cursors.half[player]] &
+                    ((1 << var_9) << (player * 4))) {
                     s.header = table[var_9 + 13];
                     s.semi = 0;
                     cells = s.header->cells;
@@ -2054,7 +2055,7 @@ void menu_SetExclusiveRowBit(s32 player_index, s32 pressed_buttons) {
 }
 
 s32 menu_HandleRowBitInput(
-    s32 *arg0, s32 *pressed_buttons, s16 empty_row_sides) {
+    s32 *held_buttons, s32 *pressed_buttons, s16 empty_row_sides) {
     s32 player_index;
     s16 lim;
     s32 shift;
@@ -2255,7 +2256,7 @@ void menu_ResetRowBitCursors(void) {
 extern void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *);
 extern s32 menu_DrawKeyConfigRowBitsGetEmptyRowSides(s32 *);
 
-s32 menu_UpdateRowBitMenu(s32 arg0, s32 pressed_buttons) {
+s32 menu_UpdateRowBitMenu(s32 held_buttons, s32 pressed_buttons) {
     s32 draw_context[22];
     GpuDb *gpu_db;
     s32 empty_row_sides;
@@ -2267,7 +2268,7 @@ s32 menu_UpdateRowBitMenu(s32 arg0, s32 pressed_buttons) {
     menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(draw_context);
     empty_row_sides = menu_DrawKeyConfigRowBitsGetEmptyRowSides(draw_context);
     return menu_HandleRowBitInput(
-        &arg0, &pressed_buttons, (s32)((empty_row_sides << 16) >> 16));
+        &held_buttons, &pressed_buttons, (s32)((empty_row_sides << 16) >> 16));
 }
 
 void menu_DrawStoredChoice(s32 *draw_context) {
@@ -2326,7 +2327,7 @@ void menu_DrawStoredChoice(s32 *draw_context) {
     gpu_AddThreeGreyTilesStackedUp(draw_context, tile_rect, 0x11);
 }
 
-s32 menu_HandleStoredChoice(s32 arg0, u32 pressed_buttons) {
+s32 menu_HandleStoredChoice(s32 held_buttons, u32 pressed_buttons) {
     s32 merged_pressed_buttons;
     s32 result = 0;
     s32 direction_events;
@@ -2366,7 +2367,7 @@ s32 menu_HandleStoredChoice(s32 arg0, u32 pressed_buttons) {
 
 extern s32 menu_HandleStoredChoice(s32, u32);
 
-s32 menu_UpdateStoredChoice(s32 arg0, s32 pressed_buttons) {
+s32 menu_UpdateStoredChoice(s32 held_buttons, s32 pressed_buttons) {
     s32 draw_context[22];
     s32 result;
     GpuDb *gpu_db;
@@ -2376,7 +2377,7 @@ s32 menu_UpdateStoredChoice(s32 arg0, s32 pressed_buttons) {
         (s32)&draw_context[0], (s32)&g_menu_draw_buffer_counter);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(&draw_context[0], 1, gpu_db);
     menu_DrawStoredChoice(&draw_context[0]);
-    result = menu_HandleStoredChoice(arg0, pressed_buttons);
+    result = menu_HandleStoredChoice(held_buttons, pressed_buttons);
     snd_FlushSoundQueue();
     return result;
 }
@@ -2563,7 +2564,7 @@ void menu_DrawConfirmSheetsAndDigitPairs(s32 *draw_context) {
     gpu_AddThreeGreyTilesStackedUp(draw_context, var_1, 0x11);
 }
 
-s32 menu_HandleConfirmInput(s32 arg0, u32 pressed_buttons) {
+s32 menu_HandleConfirmInput(s32 held_buttons, u32 pressed_buttons) {
     s32 merged_pressed_buttons;
     s32 direction_events;
     s32 result = 0;
@@ -2595,7 +2596,7 @@ s32 menu_HandleConfirmInput(s32 arg0, u32 pressed_buttons) {
 
 extern s32 menu_HandleConfirmInput();
 
-s32 menu_UpdateConfirmMenu(s32 arg0, s32 pressed_buttons) {
+s32 menu_UpdateConfirmMenu(s32 held_buttons, s32 pressed_buttons) {
     s32 draw_context[22];
     GpuDb *gpu_db;
     g_row_menu_pulse_counter += 1;
@@ -2604,7 +2605,7 @@ s32 menu_UpdateConfirmMenu(s32 arg0, s32 pressed_buttons) {
         draw_context, &g_menu_draw_buffer_counter);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(draw_context, 1, gpu_db);
     menu_DrawConfirmSheetsAndDigitPairs(draw_context);
-    return menu_HandleConfirmInput(arg0, pressed_buttons);
+    return menu_HandleConfirmInput(held_buttons, pressed_buttons);
 }
 
 extern RECT g_gpu_fullscreen_image_rect;

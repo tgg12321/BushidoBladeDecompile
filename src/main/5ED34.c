@@ -2205,7 +2205,7 @@ TILE *gpu_AddPanelGridTile(s32 handler_index, TILE *tile) {
     return tile + 1;
 }
 
-TILE *gpu_AddBrownOrBlackPanelGridTile(s32 arg0, TILE *tile) {
+TILE *gpu_AddBrownOrBlackPanelGridTile(s32 handler_index, TILE *tile) {
     SetTile(tile);
     if (g_entry_menu_handler_index < 4) {
         tile->r0 = 0x46;
