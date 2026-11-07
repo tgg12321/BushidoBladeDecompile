@@ -424,7 +424,7 @@ typedef struct {
  * bytes are never written. */
 typedef struct {
     TILE chunk_tiles[15];
-    SPRT unk_F0[50];
+    SPRT chunk_sprites[50];
     DR_MODE chunk_draw_mode;
     u8 unk_4E4[0xC];
 } Unk8005C8A8Rec;
@@ -439,7 +439,7 @@ typedef struct {
  * chunk's end, outside the chunk. */
 typedef struct {
     TILE chunk_tiles[10];
-    SPRT unk_A0[30];
+    SPRT chunk_sprites[30];
     DR_MODE chunk_draw_mode;
 } Unk8005D814Rec;
 
@@ -451,7 +451,7 @@ typedef struct {
  * at the chunk's end, outside the chunk. */
 typedef struct {
     TILE chunk_tiles[10];
-    SPRT unk_A0[102];
+    SPRT chunk_sprites[102];
     POLY_FT4 chunk_textured_quads[20];
     DR_MODE chunk_draw_mode;
 } Unk8005E54CRec;
@@ -466,7 +466,7 @@ typedef struct {
  * passes draws g_gpu_split_wipe_image_sheet_headers's header and the one 12
  * bytes after it (8 cells each). */
 typedef struct {
-    SPRT unk_00[32];
+    SPRT chunk_sprites[32];
     DR_MODE chunk_draw_mode;
     POLY_G4 chunk_gradient_quads[2];
     DR_AREA chunk_draw_areas[3];
@@ -481,7 +481,7 @@ typedef struct {
  * g_gpu_digit_count_shifted_sprite_and_large_digit_sheet_headers's header holds
  * 3, and D_8009B6FC's holds 1, drawn once per digit for up to two digits. */
 typedef struct {
-    SPRT unk_00[9];
+    SPRT chunk_sprites[9];
     DR_MODE chunk_draw_mode;
 } Unk800600C8Rec;
 
@@ -509,7 +509,7 @@ typedef struct {
  * g_gpu_digit_label_and_line_segment_sheet_headers[2] / [3] 1 each) and 1
  * POLY_FT4 (g_gpu_stage_card_sheet_headers[3] holds 1). */
 typedef struct {
-    SPRT unk_00[63];
+    SPRT chunk_sprites[63];
     POLY_FT4 chunk_textured_quads[6];
     DR_MODE chunk_draw_mode;
     u8 unk_5E8[0xC];
@@ -1151,7 +1151,7 @@ typedef struct {
     /* eff_PrepareParticles stores it; eff_UpdateParticles's loop bound */
     s16 particle_scan_count;
     /* eff_UpdateParticles / eff_LinkParticleQuads loop index */
-    s16 unk6E;
+    s16 loop_index;
     /* eff_PrepareParticles: table index; eff_UpdateParticles: per entry */
     s16 unk70;
     u8 particle_red; /* eff_UpdateParticles colours */

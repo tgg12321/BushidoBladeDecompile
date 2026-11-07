@@ -2970,7 +2970,7 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
     var_13 = var_0->unk44;
     var_2 = &var_0->group_position;
     p_count = &var_0->particle_scan_count;
-    p_idx = &var_0->unk6E;
+    p_idx = &var_0->loop_index;
     var_14 = &var_0->unk70;
     p_r = &var_0->particle_red;
     p_g = &var_0->particle_green;
@@ -3194,7 +3194,7 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
 u8 eff_LinkParticleQuads(s32 arg0, s32 arg1) {
     extern s32 *g_eff_particle_random_accumulator_ptr;
     Unk1F8000B8_800678A8 *work_area = &g_eff_work_area->v800678A8;
-    s16 *quad_index = &work_area->unk6E;
+    s16 *quad_index = &work_area->loop_index;
     POLY_FT4 **quad_end = &work_area->new_quads_end;
     POLY_FT4 **quad_cursor = &work_area->particle_quad_cursor;
     u16 *quad_ot_indices = work_area->quad_ot_index_table;
