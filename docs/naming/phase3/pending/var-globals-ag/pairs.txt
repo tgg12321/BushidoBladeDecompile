@@ -1,0 +1,4 @@
+D_800A38D6=g_gpu_ot_offset_update_count
+D_800A3808=g_gpu_ot_offset_base_ptr
+D_800955E0=g_dat_file_path_ptrs
+D_800A3240=g_ndata_arena_read_size_enabled

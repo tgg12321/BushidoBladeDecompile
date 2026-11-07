@@ -1,0 +1,27 @@
+# python tools/data_wave.py --manifest-csv <tmp copy, CONFIRM> --only 0x800A38D6,0x800A3808,0x800955E0,0x800A3240
+==============================================================================
+DATA WAVE — 4 addresses, 4 identifiers remapped
+  0x800a38d6: D_800A38D6 -> g_gpu_ot_offset_update_count
+  0x800a3808: D_800A3808 -> g_gpu_ot_offset_base_ptr
+  0x800955e0: D_800955E0 -> g_dat_file_path_ptrs
+  0x800a3240: D_800A3240 -> g_ndata_arena_read_size_enabled
+
+-- file edits (9) --
+  asm/data/94000.bss.s  (4)
+  asm/funcs/gpu_ResetDrawQueueAndPrepareViewAndLighting.s  (6)
+  asm/funcs/motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush.s  (6)
+  asm/funcs/ndata_ReadChecked.s  (1)
+  include/bb2.h  (2)
+  src/main/35000.c  (4)
+  src/main/368E4.c  (2)
+  src/main/4510C.c  (3)
+  symbol_addrs.txt  (5)
+
+-- registry lines --
+  symbol_addrs.txt:1011 D_800A3240 -> g_ndata_arena_read_size_enabled
+  symbol_addrs.txt:1487 D_800A3808 -> g_gpu_ot_offset_base_ptr
+  symbol_addrs.txt:1537 D_800A38D6 -> g_gpu_ot_offset_update_count
+  symbol_addrs.txt:1893 D_800A38D6 -> g_gpu_ot_offset_update_count
+  symbol_addrs.txt:2066 D_800A3808 -> g_gpu_ot_offset_base_ptr
+
+DRY RUN — nothing written. Re-run with --apply.
