@@ -1,0 +1,37 @@
+rc=0
+==============================================================================
+NAMING WAVE — 1 operations (0 RESET, 1 RENAME)
+  1 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_funcs_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (4) --
+  (root): 1 files, 1 substitutions
+      inline_asm_canonical.txt  (1)
+  asm: 2 files, 4 substitutions
+      asm/funcs/fighter_ProcessWeaponContacts.s  (2)
+      asm/funcs/func_8002DE20.s  (2)
+  src: 1 files, 4 substitutions
+      src/main/17AFC.c  (4)
+
+-- .s file renames (1) --
+  asm/funcs/func_8002DE20.s -> asm/funcs/fighter_TestWeaponSweepTriangleContact.s
+
+-- ledger directory renames (2) --
+  memory/grind/func_8002DE20 -> memory/grind/fighter_TestWeaponSweepTriangleContact
+  memory/grind/_completed/func_8002DE20 -> memory/grind/_completed/fighter_TestWeaponSweepTriangleContact
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (3) --
+  tools/canonical_asm_regions.json: 1 changes
+      func_8002DE20
+  memory/grind/func_8002DE20/layer2.jsonl: 1 changes
+      line 1: func func_8002DE20 -> fighter_TestWeaponSweepTriangleContact
+  memory/grind/_completed/func_8002DE20/layer2.jsonl: 1 changes
+      line 1: func func_8002DE20 -> fighter_TestWeaponSweepTriangleContact
+
+-- OUT OF SCOPE / manual follow-up (1) --
+  ~ engine/gtemacro.py:L1: ['func_8002DE20'] in prose/docstring — NOT rewritten
+
+DRY RUN — nothing written. Re-run with --apply.

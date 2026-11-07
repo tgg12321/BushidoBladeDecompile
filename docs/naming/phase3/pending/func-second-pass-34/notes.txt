@@ -1,0 +1,29 @@
+wave126 (func-second-pass-34): 1 RENAME drafted; 0 dropped. Verdict is PENDING: the naming-reviewer sets it.
+Wave id: wave126 (lane naming-b). Drafted 2026-11-06 at HEAD f28093628 in the lane worktree.
+Research input tmp/codex/func-second-pass-34-research.md (untrusted); every claim below re-derived at HEAD unless marked.
+
+Row: 0x8002DE20 func_8002DE20 -> fighter_TestWeaponSweepTriangleContact (RENAME)
+
+RE-DERIVED
+ - git grep -w func_8002DE20 over src include asm symbol_addrs.txt named_syms.txt: definition 17AFC.c:3204, extern :1220, comments :1233 and game.h:1369, two calls (:1451, :1562; asm jal at fighter_ProcessWeaponContacts.s:701/:1051), glabel. named_syms.txt:1598 is a RESET note for the retired gte_mvmva_8002DE20 (does not match -w; found by address grep).
+ - Body steps 1-6 (rotate to z=0 plane, z-straddle early-out, nudge, chord endpoints, centroid-side endpoint test, three edge tests, return 0) match the source at :3229-3388.
+ - Same-sign edge tests: (a ^ b) >= 0 at :3352-3386 accepts on SAME side. Own simulation (tmp/p3w126/sim.py, triangle (0,0)/(100,0)/(0,100), the endpoint and edge tests of :3317-3388 only): far chord (5000,5000)-(6000,5200) -> 1; edge-crossing chord (-281,-286)-(186,199) -> 0; 16537 of 20000 random chords in +-300 -> 1. So the geometric words are false and the in-source comment (:3198-3203, "segment crossing one of its edges") is contradicted.
+ - Caller usage, result chain (:2510-2520), weapon sweep quad setup (:1322-1336) and triangle switch (:1359-1380) checked.
+ - Fresh: both candidate names occur nowhere (build.py also asserts this).
+
+DROPPED / CHANGED FROM THE RESEARCH
+ - The 200,000-sample counts (145,004 / 157,840; 22,108) were NOT reproduced; only the qualitative claim plus my own 20,000-sample figure is cited.
+ - Line ranges adjusted to HEAD: first switch :1359-1380 (research :1355-1380); caller pair :1450-1453 and :1561-1564.
+ - The research said "git grep" gave named_syms.txt:1598 as a use; it is a history note only.
+ - Trace figures (49 calls, backlog.tsv:245, events.tsv) NOT re-derived; cited as corroboration only (Q124), tagged as from the research file. The cited runtime backlog path was not located at HEAD under docs/naming/runtime/backlog.tsv.
+ - The tmp/ trace directories named in the research were not opened.
+
+WEAK SPOTS (reviewer decides; set aside if it fails)
+ - Prior ledger no_name.tsv:6 (w52, w81, w92, fsp27) rejected geometric names; this row is a role name. Risk: "Contact" is read as geometric contact, and with the inverted tests most z-straddling chords return 1, so the verdict is close to "triangle straddles the plane". N1 "nothing it does contradicts the name" is arguable. If the reviewer FAILs, fallback is NO_NAME (missing: mechanical meaning for the 2D stage).
+ - "WeaponSweep" rests on the two call sites only (body touches no fighter data).
+ - Honest assessment: borderline; the evidence for the role is solid, the name's fit to the actual return is the contested point.
+
+DRY RUN: see dry.txt. dry.sh stages a CONFIRM copy under phase3/zz-wave126-dry (removed) and restores function-names.csv; docs/naming/phase3/wave126/ is kept for the lander; tmp/p3w126 is scratch.
+LAND: lander copies the latest tmp/p3w*/gates.sh into tmp/p3w126 before gates.ps1.
+
+DRY-RUN FINDINGS: the function is listed in inline_asm_canonical.txt and tools/canonical_asm_regions.json (COMPLETED-INLINE-ASM-CANONICAL, GTE); the wave renames those entries and the memory/grind/{,_completed/}func_8002DE20 ledger dirs. Out-of-scope manual follow-up: engine/gtemacro.py:L1 mentions func_8002DE20 in a docstring (not rewritten; lander decides).

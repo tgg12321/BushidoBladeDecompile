@@ -1,0 +1,46 @@
+"""wave126 rows (func-second-pass-34): func_8002DE20 (src/main/17AFC.c:3204).
+Research input tmp/codex/func-second-pass-34-research.md (untrusted; every claim re-derived at HEAD f28093628, see notes.txt).
+Verdict PENDING: the naming-reviewer sets CONFIRM. (DATA is empty.)
+"""
+VERDICT = "CONFIRM"
+VERIFIER_NOTE = "naming-reviewer pre-apply PASS (round 1, 1/1, 2026-11-06, naming-b)"
+NOTES = {}
+DROPPED = {}
+
+FUNCS = [
+    ("0x8002DE20", "fighter_TestWeaponSweepTriangleContact", "RENAME",
+     "BODY: src/main/17AFC.c:3204-3389: s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0, p1, p2) (asm/funcs/func_8002DE20.s, 548 bytes). "
+     "(1) Writes obj->unkF8 = p_k - *obj->shape_points[0] three times and rotates each through the current GTE rotation matrix into obj->unk118[0..2] "
+     "(gte_ldv0/gte_rtv0/gte_stlvnl and gte_ApplyRotMatrix, :3229-3244); that matrix is rot_matrix, built by math_TryPrepareTriangleNormalFrame (:3186 region), "
+     "which also rotated unkA8/unkB8 (the prepared triangle's edges) in place (:3187-3192), so the prepared triangle is (0,0) / unkA8.xy / unkB8.xy in the z = 0 plane. "
+     "(2) Finds min/max rotated z (:3246-3259); returns 0 when min_z > 0 or max_z < 0 (:3260-3261); when all z are 0 nudges unk118[0].z-- and unk118[1].z++ (:3263-3268). "
+     "(3) Computes the z = 0 crossing points (x1,y1), (x2,y2) (:3270-3315), each zero denominator bumping g_fighter_weapon_contact_zero_z_span_count (:3273, :3290, :3304). "
+     "(4) Returns 1 when an endpoint is on the centroid side of all three edges (:3320-3350). (5) Returns 1 when any of three edge tests (:3352-3386) has both cross-product pairs "
+     "of the SAME sign ((a ^ b) >= 0). (6) Else returns 0 (:3388). Writes besides the return: obj->unkF8, obj->unk118[0..2] (scratch) and the counter; no write to contact_point. "
+     "CALLERS: exactly two, both in fighter_ProcessWeaponContacts (17AFC.c:1236): :1450-1453 and :1561-1564, each `box_overlap(scr) && func_8002DE20(scr, "
+     "other_shape_points[0..2]) != 0`, on a 1 the 16 saved points are restored and the pair index returned (:1455-1458 and the swapped-role loop). asm/funcs/fighter_ProcessWeaponContacts.s:701 and :1051 "
+     "are the two jal. No other jal, j or address word (git grep -w func_8002DE20 over src include asm symbol_addrs.txt named_syms.txt: the definition :3204, extern :1220, comments :1233 and "
+     "include/game.h:1369, those two calls, the glabel/endlabel of func_8002DE20.s; named_syms.txt:1598 is a RESET note under the retired name gte_mvmva_8002DE20, history only). "
+     "The return becomes g_fight_weapon_contact_result (17AFC.c:2510); >= 0 drives fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint (:2511-2512) and, when an attack_hit_armed is set, "
+     "fighter_ResolveWeaponContact (:2514-2520). The triangles are halves of a fighter's weapon sweep quad: weapon_sweep_points[i*8 + 0..3] = SPAD->weapon_points[i][0..1] and "
+     "g_fighter_records[i].prev_weapon_points[0..1], plus the second-weapon set when wielded_object_live_state != 0 (:1322-1336); the switch (:1359-1380) picks triangles "
+     "(2,3,1) and (0,1,2) of each quad, i.e. current/previous weapon points. The prepared triangle is one fighter's and p0..p2 the other's (roles swapped in the second loop). "
+     "WHY: the body's geometry has no correct name: re-derived with a simulation of the :3317-3388 tests on triangle (0,0)/(100,0)/(0,100): the far chord (5000,5000)-(6000,5200) returns 1 "
+     "and the chord (-281,-286)-(186,199) that properly crosses an edge returns 0; 16537 of 20000 random chords in +-300 return 1. The edge tests accept when both pairs lie on the same side "
+     "(no crossing), so intersect/crosses/against names are false and are not used (the w92 objection upheld). What the code shows is the role: in its only caller `box_overlap && this != 0` is the "
+     "complete per-triangle-pair weapon-contact criterion, and a 1 is exactly what fighter_ProcessWeaponContacts reports as a contact (g_fight_weapon_contact_result, fighter_ResolveWeaponContact, "
+     "g_fighter_weapon_contact_zero_z_span_count, the landed vocabulary). Test = it computes and returns a verdict (scratch writes only, as math_TestPreparedTriangleSphere, :3008); "
+     "Contact = the caller's verdict; WeaponSweepTriangle = what p0..p2 are at both call sites (derived from the callers' point setup above, not from the local name). "
+     "fighter_ prefix: the sole caller, its data (g_fighter_records weapon points) and result are fighter weapon contact, as the neighbour fighter_ProcessWeaponBodyHits; not math_ (its siblings are named for geometry that this body does not have). "
+     "COUNTER-EVIDENCE: (1) a strict reviewer may hold that Contact still reads as geometric contact, the w52/w81/w92 objection (no_name.tsv:6); the answer is that the word names the caller's verdict, "
+     "not a geometry, and the in-source comment above the function (:3198-3203, 'the segment crossing one of its edges') is contradicted by the same-sign tests so no geometric word can land; fallback NO_NAME "
+     "(missing: a mechanical meaning for the 2D stage that a geometry word could state); (2) the body touches no fighter data, 'weapon sweep' rests on the two call sites; "
+     "(3) it is not a standalone contact test: the caller's box_overlap is part of the criterion (hence Test...Contact, not IsContact); (4) with these tests most z-straddling chords return 1, "
+     "so in practice the verdict is close to 'the triangle straddles the plane'; that is how the game behaves and the name states only the role; (5) alternatives: fighter_TestWeaponSweepTrianglePairContact (fresh), "
+     "math_TestTriangleAgainstPreparedTriangle (fresh, falls to the w92 'Test...Against' counter). "
+     "Runtime (Q124 corroboration only, from the research file, not re-derived): 49 calls over 2 captures, every 1 return with a >= 0 contact result that frame, every all-0 frame -1 (docs/naming/runtime backlog.tsv:245). "
+     "Fresh: fighter_TestWeaponSweepTriangleContact, fighter_TestWeaponSweepTrianglePairContact occur nowhere in src, include, symbol_addrs.txt, named_syms.txt, function-names.csv. "
+     "Aliases: none (census aliases column empty). Prior ledger: docs/naming/phase3/no_name.tsv:6 (w52,w81,w92,fsp27). Census docs/naming/function-names.csv:181 (splat-auto)."),
+]
+
+DATA = []
