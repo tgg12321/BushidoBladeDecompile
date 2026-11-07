@@ -1,7 +1,7 @@
 # sweep-9f9c: recorded NO_NAME targets (naming-session §Sweeps). Each comes back only with evidence newer than its record.
 
 ## Unit sweep-9f9c.1 (data; research tmp/codex/sweep-9f9c.1-research.md, 2026-11-06; pre-apply naming-reviewer PASS on these notes after the D_800100FC route fix)
-- D_800100FC: NO_NAME. Decompiler container of 66 per-entry strings (wave17 / wave20 rulings); nothing reads it as one array. Missing evidence: the layout split filed as foundation row tables-split-800100fc (docs/foundation/backlog.tsv) into its 66 string literals, then per-string names (g_str_win, g_str_bbm_*). Not final (66 references, describable contents).
+- D_800100FC: resolved. tables-split-800100fc split it into 66 string literals; sweep-9f9c.3 named them (g_str_move_kind_* / g_str_motion_file_*), so it is no longer a target.
 - D_8008D774: NO_NAME. Weapon point set read only for weapon_entry_id == 50 (9F9C.c:3198). Missing evidence: a code-derived word for weapon entry 50 (D_800A385C's command-20 block).
 - D_8008E3F8: NO_NAME. Copied into hit_record_group_10_13_step_scales (9F9C.c:4141). Missing evidence: a worded rename of the hit_record_group_10_13_* members, or an owner ruling that bone-group numbers are admissible in a data name.
 - D_8008EB38: NO_NAME. weapon_id -> weapon_entry_id table used only under TEAM or PRACTICE with D_800A389A == 0 (9F9C.c:3986-3988), key shared with its sibling (ae FAIL). Missing evidence: a word for D_800A389A so the arm can be named for its occasion.
