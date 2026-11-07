@@ -45,7 +45,7 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
     s32 tim_offset_index;
     s32 *s1;
     s32 *tim_group;
-    s32 *collision_grid, *sp18, *position_records;
+    s32 *collision_grid, *counted_record_list, *position_records;
 
     block_base = (s32 *)arena_GetBlockAddr(7);
     if (block_base != NULL) {
@@ -108,7 +108,8 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
             s32 *a0_ptr = (s32 *)((tim_offset_index << 2) + (s32)block_base);
             grid_stream = (s32 *)((u8 *)block_base + ALIGN4(a0_ptr[-1]));
             collision_grid = (s32 *)((u8 *)block_base + ALIGN4(block_base[2]));
-            sp18 = (s32 *)((u8 *)block_base + ALIGN4(block_base[3]));
+            counted_record_list =
+                (s32 *)((u8 *)block_base + ALIGN4(block_base[3]));
             position_records =
                 (s32 *)((u8 *)block_base + ALIGN4(block_base[4]));
 
@@ -184,7 +185,7 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
     gpu_LoadTimGroupWithConditionalClutRowAdvance((u32 *)tim_group, 0);
     gpu_UnpackGridRecordsNodesAndCellRuns((u16 *)grid_stream, 7);
     collision_SetGrid((s32)collision_grid);
-    g_resource_stage_counted_record_list = (s32)sp18;
+    g_resource_stage_counted_record_list = (s32)counted_record_list;
     g_fight_position_records = (s32)position_records;
     DrawSync(0);
     arena_SetBlockEnd(s7, (s32)s1);
