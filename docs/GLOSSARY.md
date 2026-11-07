@@ -91,7 +91,7 @@ Many function and global names in the source use Japanese romanization, inherite
 | Term | Meaning |
 |---|---|
 | **Marionation** | The proprietary engine name (string `"Marionation over flow. No.%d (-%dbyte)"` in BB2's rodata). Marionette + animation. Used in BB2 (PS1) and later in *Kengo: Master of Bushido* (PS2). |
-| **CHANBARA** (チャンバラ) | Chambara/sword-fighting genre. Likely the core combat-system name (`CHANBARA0.DAT`, `CHANBARA1.DAT` data files). |
+| **CHANBARA** (チャンバラ) | Chambara/sword-fighting genre. Also the name of two NDATA files, `CHANBARA0.DAT` / `CHANBARA1.DAT` (below). |
 | **saTan** (`saTan0`, `saTan1`, ...) | "Sa" = sato (developer surname), "tan" = tantou / tan(?). Sato-san's source files in Kengo: `sa_tan0`–`sa_tan5` and `sa_tan_m`. Likely effect/gauge modules. BB2's `saTan0GaugeDraw`, `saTan2Main`, `saTan4GaugeInit`, etc. mirror these. |
 | **saSe** | Sato's sound-effect module (Kengo: `sa_se`). |
 | **saFid** | Sato's file-handling module. `saFidLoad` is a generic file loader. |
@@ -152,7 +152,7 @@ Many function and global names in the source use Japanese romanization, inherite
 | **`NDATA.DAT`** + **`NDATA.INF`** | Large packed data archive (~55 MB) + index. Contains many in-game assets. |
 | **`MAR00.DAT`** – **`MAR22.DAT`** | "Marionation" data — likely animation/skeleton definitions per-character. In `disc/` data dirs. |
 | **`M000.DAT`** – **`M306.DAT`** | Character/model data. Embedded path: `DATA0\`. |
-| **`CHANBARA0.DAT`** / **`CHANBARA1.DAT`** | Core combat data. Embedded path: `DATA0\`. |
+| **`CHANBARA0.DAT`** / **`CHANBARA1.DAT`** | The two DATA0 pack blocks, NDATA ids `0x25`/`0x26`, read by `ndata_LoadPack` (`docs/formats/NDATA.md`). Embedded path: `DATA0\`. |
 | **`OPENING.STR`** | The opening FMV. Sony STR format (MDEC video + XA audio). |
 | **`MOVOVL.EXE`** | FMV playback overlay. PS-X EXE format, loads at `0x801D8800`. Contains MDEC decode functions. |
 | **`TITLE.TIM`** | Title screen image. Sony TIM format. |

@@ -132,10 +132,10 @@ have none. Evidence (read from NDATA.INF, NDATA.DAT and the EXE pool):
   on `TINYM00`, `0x83` and `0x10C` on the two `WEP0000`s, `0x131`
   (`src/main/43500.c:780`) on `MAR00_00`.
 
-`tools/extract_ndata_names.py` and the committed [`ndata_filemap.csv`](ndata_filemap.csv)
-still use an earlier rule (pool order forwards, `DATA8\*` and sentinels skipped) and so
-misname almost every id (id 0 is `M000`, not `HAND`). Don't cite a name from the CSV until
-it is regenerated under the rule above (backlog row `ndata-filemap-reverse`).
+[`ndata_filemap.csv`](ndata_filemap.csv) (from `tools/extract_ndata_names.py`) applies this
+rule: one row per slot 0..900, sentinels flagged. The tool refuses to write unless the
+pool holds 899 strings, the id bases above land on their names, and the EXE's pointer
+table `D_800955E0` agrees with every slot's name.
 
 ### File-ID layout (by ID range)
 
@@ -290,16 +290,17 @@ at init.
 
 ```
 python tools/extract_ndata_names.py            # write docs/formats/ndata_filemap.csv
-python tools/extract_ndata_names.py --summary  # per-group counts and size
+python tools/extract_ndata_names.py --summary  # slot / group / class counts, checks
 python tools/extract_ndata_names.py --stdout   # write CSV to stdout
 ```
 
 The tool re-derives the file-ID -> name mapping every time by parsing the
 rodata string pool out of the live `disc/SLUS_006.63`. The CSV under
 `docs/formats/ndata_filemap.csv` is committed for human review and to make
-the mapping greppable, but it is reproducibly regenerable. Both still apply the
-superseded forward rule (see the pool-to-INF rule above), so their names are wrong
-until row `ndata-filemap-reverse` lands.
+the mapping greppable, but it is reproducibly regenerable. Columns: `file_id` (INF slot),
+`name_vaddr`, `group`, `filename`, `content_guess`, `sentinel` (1 = `0xFFFF,0xFFFF`, a
+named file the build left out; no byte range), `start_sector`, `len_sectors`,
+`byte_offset`, `byte_length`. Slots 899 and 900 have no name.
 
 ## Verified by
 
