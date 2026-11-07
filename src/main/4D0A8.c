@@ -1276,14 +1276,16 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
 /* gpu_DrawSelectedStretchedSheetPair's sheets: three headers at 0x8009B610
  * (the second draw, header sheet_index, its one cell at 0x8009B634) and
  * three at 0x8009B63C (counts 2 / 1 / 4) with one cell table each:
- * D_8009B660[2], D_8009B670, D_8009B678[4].
+ * g_gpu_captioned_picture_first_choice_caption_cells[2],
+ * g_gpu_captioned_picture_ippon_caption_cell,
+ * g_gpu_captioned_picture_out_of_bounds_caption_cells[4].
  */
-extern Unk8009B0E0Record D_8009B610[3];
-extern Unk8009B400Record D_8009B634;
-extern Unk8009B0E0Record D_8009B63C[3];
-extern Unk8009B400Record D_8009B660[2];
-extern Unk8009B400Record D_8009B670;
-extern Unk8009B400Record D_8009B678[4];
+extern Unk8009B0E0Record g_gpu_captioned_picture_sheet_headers[3];
+extern Unk8009B400Record g_gpu_captioned_picture_cell;
+extern Unk8009B0E0Record g_gpu_captioned_picture_caption_sheet_headers[3];
+extern Unk8009B400Record g_gpu_captioned_picture_first_choice_caption_cells[2];
+extern Unk8009B400Record g_gpu_captioned_picture_ippon_caption_cell;
+extern Unk8009B400Record g_gpu_captioned_picture_out_of_bounds_caption_cells[4];
 
 s32 gpu_DrawSelectedStretchedSheetPair(
     s32 sheet_index, s32 draw_chunk_addr, s32 ot_index) {
@@ -1296,7 +1298,7 @@ s32 gpu_DrawSelectedStretchedSheetPair(
 
     s.scale_x = 0x200;
     s.scale_y = 0x100;
-    s.header = &D_8009B63C[sheet_index];
+    s.header = &g_gpu_captioned_picture_caption_sheet_headers[sheet_index];
     s.has_color = 0;
     s.y = 0;
     s.x = 0;
@@ -1304,19 +1306,19 @@ s32 gpu_DrawSelectedStretchedSheetPair(
     s.ot_idx = ot_index;
     switch (sheet_index) {
     case 0:
-        s.table = D_8009B660;
+        s.table = g_gpu_captioned_picture_first_choice_caption_cells;
         break;
     case 1:
-        s.table = &D_8009B670;
+        s.table = &g_gpu_captioned_picture_ippon_caption_cell;
         break;
     case 2:
-        s.table = D_8009B678;
+        s.table = g_gpu_captioned_picture_out_of_bounds_caption_cells;
         break;
     }
     s.ft4_out = ft4_out_addr;
     ft4_out_addr = gpu_AddScaledSpriteQuads(&s, 0);
-    s.header = &D_8009B610[sheet_index];
-    s.table = &D_8009B634;
+    s.header = &g_gpu_captioned_picture_sheet_headers[sheet_index];
+    s.table = &g_gpu_captioned_picture_cell;
     s.ft4_out = ft4_out_addr;
     gpu_AddScaledSpriteQuads(&s, 0);
     return end - draw_chunk_addr;

@@ -10,8 +10,8 @@
  * gpu_DrawTimeFieldsAndDecimalCounter), the single cells
  * g_gpu_single_side_counter_label_cell, g_gpu_comparison_higher_score_cell
  * .. g_gpu_comparison_score_mark_cell, g_gpu_seconds_hundredths_separator_cell,
- * D_8009B634, D_8009B670, g_gpu_stage_card_map_cell (4D0A8.c), the one-record
- * TexRec tables
+ * g_gpu_captioned_picture_cell, g_gpu_captioned_picture_ippon_caption_cell,
+ * g_gpu_stage_card_map_cell (4D0A8.c), the one-record TexRec tables
  * g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec
  * .. g_eff_two_animated_quads_early_tex_rec and the SVECTORs D_8009BBE4
  * .. D_8009BBFC (eff.c). Under -G8 the original compiler puts them in .sdata,
@@ -86,19 +86,21 @@ Unk8009B400Record g_gpu_seconds_hundredths_separator_cell = {
 Unk8009B400Record g_gpu_paired_mark_line_segment_cells[2][2] = {
     {{568, 0, 0xC0, 0xDB, 0x23, 0x01}, {603, 0, 0xE3, 0xDB, 0x1D, 0x01}},
     {{38, 0, 0xDE, 0xDA, 0x22, 0x01}, {8, 0, 0xC0, 0xDA, 0x1E, 0x01}}};
-Unk8009B0E0Record D_8009B610[3] = {
+Unk8009B0E0Record g_gpu_captioned_picture_sheet_headers[3] = {
     {0x1F, 0x00, 1, 0x00, 0x3C0, 0x1FC, 0x0, 0x0},
     {0x1E, 0x00, 1, 0x00, 0x390, 0x1FE, 0x0, 0x0},
     {0x1E, 0x00, 1, 0x00, 0x390, 0x1FF, 0x0, 0x50}};
-Unk8009B400Record D_8009B634 = {160, 75, 0x00, 0x00, 0x9F, 0x50};
-Unk8009B0E0Record D_8009B63C[3] = {
+Unk8009B400Record g_gpu_captioned_picture_cell = {
+    160, 75, 0x00, 0x00, 0x9F, 0x50};
+Unk8009B0E0Record g_gpu_captioned_picture_caption_sheet_headers[3] = {
     {0x1F, 0x00, 2, 0x00, 0x3E0, 0x1FE, 0xA0, 0x38},
     {0x1E, 0x00, 1, 0x00, 0x3A0, 0x1FF, 0x0, 0x0},
     {0x1E, 0x00, 4, 0x00, 0x3A0, 0x1FF, 0x0, 0x0}};
-Unk8009B400Record D_8009B660[2] = {
+Unk8009B400Record g_gpu_captioned_picture_first_choice_caption_cells[2] = {
     {230, 155, 0x00, 0x00, 0x40, 0x0A}, {294, 155, 0x40, 0x00, 0x1A, 0x0A}};
-Unk8009B400Record D_8009B670 = {263, 155, 0x86, 0xBE, 0x38, 0x0A};
-Unk8009B400Record D_8009B678[4] = {
+Unk8009B400Record g_gpu_captioned_picture_ippon_caption_cell = {
+    263, 155, 0x86, 0xBE, 0x38, 0x0A};
+Unk8009B400Record g_gpu_captioned_picture_out_of_bounds_caption_cells[4] = {
     {165, 155, 0x86, 0xC8, 0x40, 0x0A},
     {229, 155, 0xC6, 0xC8, 0x34, 0x0A},
     {281, 155, 0xB2, 0xBE, 0x0C, 0x0A},
