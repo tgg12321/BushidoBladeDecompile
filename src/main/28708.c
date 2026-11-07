@@ -8,6 +8,24 @@
 #include "bb2.h"
 #include "bb2_const.h"
 
+enum MemcardRequestStatus {
+    MEMCARD_STATUS_SAVE_BUSY = 1,
+    MEMCARD_STATUS_SAVE_DONE = 2,
+    MEMCARD_STATUS_SAVE_FAILED = 3,
+    MEMCARD_STATUS_LOAD_BUSY = 4,
+    MEMCARD_STATUS_LOAD_DONE = 5,
+    MEMCARD_STATUS_LOAD_FAILED = 6,
+    MEMCARD_STATUS_CARD_FULL = 7,
+    MEMCARD_STATUS_NO_CARD = 8,
+    MEMCARD_STATUS_FORMAT_BUSY = 9,
+    MEMCARD_STATUS_UNFORMATTED = 0xA,
+    MEMCARD_STATUS_FORMAT_DONE = 0xB,
+    MEMCARD_STATUS_FORMAT_FAILED = 0xC,
+    MEMCARD_STATUS_SAVE_FILE_EXISTS = 0xD,
+    MEMCARD_STATUS_NO_SAVE_FILE = 0xE,
+    MEMCARD_STATUS_LOAD_BAD_DATA = 0xF,
+};
+
 enum MemcardRequestOperation {
     MEMCARD_OP_LOAD = 0,
     MEMCARD_OP_SAVE = 1,
@@ -340,7 +358,7 @@ set_state_7:
     return;
 neg2_else:
     g_memcard_request_state = MEMCARD_REQUEST_IDLE;
-    g_memcard_request_status = 0xA;
+    g_memcard_request_status = MEMCARD_STATUS_UNFORMATTED;
     return;
 
 sub_inc:
@@ -348,7 +366,7 @@ sub_inc:
     g_memcard_request_retry_count = retry_count;
     if ((s16)retry_count < 4)
         return;
-    var_v0 = 8;
+    var_v0 = MEMCARD_STATUS_NO_CARD;
     goto finish;
 
 state_other:
@@ -367,20 +385,20 @@ state_other:
     return;
 
 state_3:
-    g_memcard_request_status = 1;
+    g_memcard_request_status = MEMCARD_STATUS_SAVE_BUSY;
     memcard_CountFiles(0, 0);
     free_blocks = memcard_CountFreeBlocks();
     if (memcard_HasFile((u8 *)g_memcard_save_file_name) != 0) {
         create_first = 0;
         if (g_memcard_request_operation == MEMCARD_OP_SAVE) {
-            var_v0 = 0xD;
+            var_v0 = MEMCARD_STATUS_SAVE_FILE_EXISTS;
             goto finish;
         }
         goto setup_load;
     }
     create_first = 1;
     if (free_blocks == 0) {
-        var_v0 = 7;
+        var_v0 = MEMCARD_STATUS_CARD_FULL;
         goto finish;
     }
 setup_load:
@@ -391,7 +409,7 @@ setup_load:
     if (memcard_WriteFile(0, 0, g_memcard_save_file_name, g_shared_buffer, 1,
                           0x200, create_first) != 0) {
         close(g_memcard_fd);
-        var_v0 = 3;
+        var_v0 = MEMCARD_STATUS_SAVE_FAILED;
         goto finish;
     }
     g_memcard_request_state = MEMCARD_REQUEST_WRITE_WAIT;
@@ -401,15 +419,15 @@ state_5:
     memcard_CountFiles(0, 0);
     memcard_CountFreeBlocks();
     if (memcard_HasFile((u8 *)g_memcard_save_file_name) == 0) {
-        var_v0 = 0xE;
+        var_v0 = MEMCARD_STATUS_NO_SAVE_FILE;
         goto finish;
     }
-    g_memcard_request_status = 4;
+    g_memcard_request_status = MEMCARD_STATUS_LOAD_BUSY;
     memcard_ClearBuffer();
     if (memcard_ReadFile(
             0, 0, g_memcard_save_file_name, g_shared_buffer, 0x200) != 0) {
         close(g_memcard_fd);
-        var_v0 = 6;
+        var_v0 = MEMCARD_STATUS_LOAD_FAILED;
         goto finish;
     }
     g_memcard_request_state = MEMCARD_REQUEST_READ_WAIT;
@@ -418,10 +436,10 @@ state_5:
 state_7:
     var_v0 = memcard_Format(0, 0);
     if (var_v0 != 0) {
-        var_v0 = 0xB;
+        var_v0 = MEMCARD_STATUS_FORMAT_DONE;
         goto finish;
     }
-    var_v0 = 0xC;
+    var_v0 = MEMCARD_STATUS_FORMAT_FAILED;
 finish:
     g_memcard_request_status = var_v0;
     g_memcard_request_state = MEMCARD_REQUEST_IDLE;
@@ -442,31 +460,31 @@ void memcard_PollFileCompletion(void) {
     case MEMCARD_REQUEST_WRITE_WAIT:
         sw_event_code = memcard_PollSwEvents();
         if (sw_event_code == 0) {
-            in_progress_status = 1;
+            in_progress_status = MEMCARD_STATUS_SAVE_BUSY;
             goto fail_store;
         }
         close(g_memcard_fd);
         if (sw_event_code == 1) {
-            g_memcard_request_status = 2;
+            g_memcard_request_status = MEMCARD_STATUS_SAVE_DONE;
         } else {
-            g_memcard_request_status = 3;
+            g_memcard_request_status = MEMCARD_STATUS_SAVE_FAILED;
         }
         g_memcard_request_state = MEMCARD_REQUEST_IDLE;
         return;
     case MEMCARD_REQUEST_READ_WAIT:
         sw_event_code = memcard_PollSwEvents();
         if (sw_event_code == 0) {
-            in_progress_status = 4;
+            in_progress_status = MEMCARD_STATUS_LOAD_BUSY;
             goto fail_store;
         }
         close(g_memcard_fd);
         if (sw_event_code == 1) {
-            g_memcard_request_status = 5;
+            g_memcard_request_status = MEMCARD_STATUS_LOAD_DONE;
             if (memcard_RestoreSaveBlock(&D_800F34D8) == 0) {
-                g_memcard_request_status = 0xF;
+                g_memcard_request_status = MEMCARD_STATUS_LOAD_BAD_DATA;
             }
         } else {
-            g_memcard_request_status = 6;
+            g_memcard_request_status = MEMCARD_STATUS_LOAD_FAILED;
         }
         g_memcard_request_state = MEMCARD_REQUEST_IDLE;
         return;
@@ -487,14 +505,14 @@ s32 memcard_Update(void) {
 }
 
 void memcard_RequestLoad(void) {
-    g_memcard_request_status = 4;
+    g_memcard_request_status = MEMCARD_STATUS_LOAD_BUSY;
     g_memcard_request_retry_count = 0;
     g_memcard_request_operation = MEMCARD_OP_LOAD;
     g_memcard_request_state = MEMCARD_REQUEST_PROBE_CARD;
 }
 
 void memcard_RequestSave(void) {
-    g_memcard_request_status = 1;
+    g_memcard_request_status = MEMCARD_STATUS_SAVE_BUSY;
     g_memcard_request_operation = MEMCARD_OP_SAVE;
     g_memcard_request_write_started = 0;
     g_memcard_request_retry_count = 0;
@@ -502,7 +520,7 @@ void memcard_RequestSave(void) {
 }
 
 void memcard_RequestOverwrite(void) {
-    g_memcard_request_status = 1;
+    g_memcard_request_status = MEMCARD_STATUS_SAVE_BUSY;
     g_memcard_request_operation = MEMCARD_OP_OVERWRITE;
     g_memcard_request_write_started = 0;
     g_memcard_request_retry_count = 0;
@@ -510,7 +528,7 @@ void memcard_RequestOverwrite(void) {
 }
 
 void memcard_RequestFormat(void) {
-    g_memcard_request_status = 9;
+    g_memcard_request_status = MEMCARD_STATUS_FORMAT_BUSY;
     g_memcard_request_operation = MEMCARD_OP_FORMAT;
     g_memcard_request_retry_count = 0;
     g_memcard_request_state = MEMCARD_REQUEST_PROBE_CARD;
