@@ -27,7 +27,7 @@ fault. A mode of 5 or more jumps through the next data into other code, so it
 is a fault too.
 
 Which NDATA sections are relocated into a drawn block varies by caller
-(309CC.c:234-235, 35000.c:741-745, 368E4.c:151-355), so this walks every reloc
+(309CC.c:234-235, 35000.c:741-745, 368E4.c:153-361), so this walks every reloc
 table (u32 count, bit 15 the relocated flag, then count block-relative u32
 entry offsets) that any of the first 64 header words of an NDATA file or of a
 sub-file (a section that itself starts with an offset table) points at. A

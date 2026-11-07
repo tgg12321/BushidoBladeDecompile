@@ -181,20 +181,20 @@ DATA7 by character (19 characters 00..22; 05, 10, 11, 16 absent). Each block lis
 | Reader | NDATA ids | Group | Arena block | Evidence |
 |--------|-----------|-------|-------------|----------|
 | `func_80044F30(selector, dst)` = `ndata_Read(selector + 0x27)` | `0x27..0x4C` for selector 0..37 | DATA2 stage `S<selector>` | 7 (stage) | `src/main/35000.c:238`; `resource_LoadOrReuseSelectedBlock` opens block 7 and reads into it or into the staging buffer (`src/main/368E4.c:84-89`); selector = `g_fight_stage_index` (`src/main/9F9C.c:1752-1753`) or `(control_word & 0x3F) - 1` of a motion block (`src/main/43500.c:833-842`) |
-| `func_80044F80(id, dst)` = `ndata_Read(id + 0x4D)` | `0x4D..0x67`, or `0x68..0x82` in grayscale mode | DATA5 `T<id>` / DATA6 `TINYM<id>` (tiny models) | 8 (node asset) | `src/main/35000.c:248`; caller `src/main/368E4.c:335-366` adds `0x1B` when `gpu_RefreshGrayscaleMode()`; ids from `g_node_retained_draw_asset_ids` (`src/main/d_89C78.c:201`: 0x00..0x1A, 0xFF = none; `src/main/368E4.c:1590-1593`); `motion_StartPlayback` frees block 8 with "Destruction tiny model." when the arena is short (`src/main/43500.c:774-792`) |
-| `motion_LoadPlaybackBlock(file_id)` = `ndata_ReadChecked(file_id)` | `0x131..0x381` (`0x131 + playback_index`) | DATA7 `MARcc_mm` | 0xA (motion playback) | `src/main/368E4.c:394-409`, caller `src/main/43500.c:780-794`; move callback `func_80046A80` -> `motion_RebasePlayback` (`src/main/368E4.c:413-415`) |
+| `func_80044F80(id, dst)` = `ndata_Read(id + 0x4D)` | `0x4D..0x67`, or `0x68..0x82` in grayscale mode | DATA5 `T<id>` / DATA6 `TINYM<id>` (tiny models) | 8 (node asset) | `src/main/35000.c:248`; caller `src/main/368E4.c:341-372` adds `0x1B` when `gpu_RefreshGrayscaleMode()`; ids from `g_node_retained_draw_asset_ids` (`src/main/d_89C78.c:201`: 0x00..0x1A, 0xFF = none; `src/main/368E4.c:1596-1599`); `motion_StartPlayback` frees block 8 with "Destruction tiny model." when the arena is short (`src/main/43500.c:774-792`) |
+| `motion_LoadPlaybackBlock(file_id)` = `ndata_ReadChecked(file_id)` | `0x131..0x381` (`0x131 + playback_index`) | DATA7 `MARcc_mm` | 0xA (motion playback) | `src/main/368E4.c:400-415`, caller `src/main/43500.c:780-794`; move callback `func_80046A80` -> `motion_RebasePlayback` (`src/main/368E4.c:419-421`) |
 
 The selector ranges are data facts, not code bounds: no reader range-checks its argument.
 Stage selectors 0..37 are exactly the 38 files whose header the stage loader parses. Its
 per-selector cases read header words past the common five only for selectors 3, 4, 7, 13,
-18 and 34 (`src/main/368E4.c:140-175`), and those six files (`0x2A`, `0x2B`, `0x2E`,
+18 and 34 (`src/main/368E4.c:141-181`), and those six files (`0x2A`, `0x2B`, `0x2E`,
 `0x34`, `0x39`, `0x49`) are the only stage files whose header count word exceeds 6 (8, 8,
 8, 9, 8, 21). Selector 38 or more would read `T00` and the later tiny models, whose 1-word
 header the stage loader does not fit.
 
 **Arena block 9 has no reader and no caller.** Its three accessors, `func_80046934`
 (`arena_OpenBlock(9)`), `func_8004695C` (peak, end, no-op move callback `func_80046954`) and
-`func_800469A0` (`arena_Resize(9, n)`) (`src/main/368E4.c:380-390`), are referenced by no
+`func_800469A0` (`arena_Resize(9, n)`) (`src/main/368E4.c:386-396`), are referenced by no
 `jal`, `j`, data word or `%hi/%lo` pair in `SLUS_006.63` or `MOVOVL.EXE` (word scan of
 both images for the call encodings and the addresses; `%hi/%lo` and
 named references searched in `asm/funcs/` and `src/`). No
@@ -208,9 +208,9 @@ Arena blocks in use: 0..2 slot objects, 3..5 their asset blocks (slot + 3;
 
 **Stage header section 3 (word 3 up to word 4) is a counted list of 20-byte records that
 nothing in the shipped game reads.** `resource_LoadOrReuseSelectedBlock` stores its address in
-`D_800A33B0` (`src/main/368E4.c:111`, `:181`); the retained-subblock path stores block 7's
-base plus the third offset word of that subblock's record instead (`:246`, `:253`) and the
-move callback rebases it (`:272`). Layout, in
+`D_800A33B0` (`src/main/368E4.c:111`, `:187`); the retained-subblock path stores block 7's
+base plus the third offset word of that subblock's record instead (`:252`, `:259`) and the
+move callback rebases it (`:278`). Layout, in
 all 38 files and in `S34`'s four retained subblocks (third words `0x4FD8`, `0x9A14`,
 `0xD6EC`, `0x110E4`): one u32 count, then count records of five s32, and the section is
 exactly `4 + 20 * count` bytes. 25 files (and all four `S34` subblocks) hold count 0; 13 hold
@@ -221,7 +221,7 @@ coordinate pairs (shape only, no reader; values within ±24000; records share en
 and 1999; `S15` repeats its last record. Example `S06`: `(-1999, -5000) (-1999, 4999) 0`.
 No reader exists: in `SLUS_006.63` and `MOVOVL.EXE` the only accesses to
 `%gp_rel(D_800A33B0)` (`0x2E4($gp)`) are the two stores, the move callback's rebase (load,
-add, store) and the getter `func_80046780` (`src/main/368E4.c:325`), which no `jal`/`j`,
+add, store) and the getter `func_80046780` (`src/main/368E4.c:331`), which no `jal`/`j`,
 data word or `%hi/%lo` pair references; neither image holds the word
 `0x800A33B0` (word scan of both images). The records' use is therefore not shown by this
 executable.

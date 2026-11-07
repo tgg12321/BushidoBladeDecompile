@@ -91,9 +91,9 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
 
     if (staging_addr != 0) {
         /* tim_offset_index is the header word count of the buffer being read
-         * (s0's in the case blocks and below, staging_addr's here), the way
-         * SOTN's white-dragon segment update reuses var_s2 for posX then posY
-         * (Q51; a separate local or the inline read: score 2) */
+         * (block_base's in the case blocks and below, staging_addr's here),
+         * as SOTN's white-dragon segment update reuses var_s2 for posX then
+         * posY (Q51; a separate local or the inline read: score 2) */
         /* SOTN: src/st/rare/e_white_dragon.c:78 @db41b28 */
         tim_offset_index = *(s32 *)staging_addr;
         arena_Copy(staging_addr, (s32)block_base,
@@ -140,8 +140,8 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
     s1 = (s32 *)((s32)s1 + (s32)block_base);
     switch (selector) {
     case 3: {
-        /* FAKE: once-written pointer to s0[tim_offset_index - 1]; it fixes the
-         * sched1 load/store order; s0[tim_offset_index - 1] inline: score 9 */
+        /* FAKE: once-written pointer to block_base[tim_offset_index - 1];
+         * it fixes the sched1 load/store order; the read inline: score 9 */
         s32 *hp = (s32 *)((tim_offset_index << 2) + (s32)block_base) - 1;
         s1 = tim_section;
         reloc_section = (s32 *)((u8 *)block_base +
