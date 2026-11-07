@@ -10,7 +10,8 @@
  * gpu_DrawTimeFieldsAndDecimalCounter), the single cells
  * g_gpu_single_side_counter_label_cell, g_gpu_comparison_higher_score_cell
  * .. g_gpu_comparison_score_mark_cell, g_gpu_seconds_hundredths_separator_cell,
- * D_8009B634, g_gpu_stage_card_map_cell (4D0A8.c), the one-record TexRec tables
+ * D_8009B634, D_8009B670, g_gpu_stage_card_map_cell (4D0A8.c), the one-record
+ * TexRec tables
  * g_eff_cosine_scaled_quad_and_fixed_texture_spinning_quad_and_two_animated_quads_late_tex_rec
  * .. g_eff_two_animated_quads_early_tex_rec and the SVECTORs D_8009BBE4
  * .. D_8009BBFC (eff.c). Under -G8 the original compiler puts them in .sdata,
@@ -94,10 +95,13 @@ Unk8009B0E0Record D_8009B63C[3] = {
     {0x1F, 0x00, 2, 0x00, 0x3E0, 0x1FE, 0xA0, 0x38},
     {0x1E, 0x00, 1, 0x00, 0x3A0, 0x1FF, 0x0, 0x0},
     {0x1E, 0x00, 4, 0x00, 0x3A0, 0x1FF, 0x0, 0x0}};
-Unk8009B400Record D_8009B660[7] = {
-    {230, 155, 0x00, 0x00, 0x40, 0x0A}, {294, 155, 0x40, 0x00, 0x1A, 0x0A},
-    {263, 155, 0x86, 0xBE, 0x38, 0x0A}, {165, 155, 0x86, 0xC8, 0x40, 0x0A},
-    {229, 155, 0xC6, 0xC8, 0x34, 0x0A}, {281, 155, 0xB2, 0xBE, 0x0C, 0x0A},
+Unk8009B400Record D_8009B660[2] = {
+    {230, 155, 0x00, 0x00, 0x40, 0x0A}, {294, 155, 0x40, 0x00, 0x1A, 0x0A}};
+Unk8009B400Record D_8009B670 = {263, 155, 0x86, 0xBE, 0x38, 0x0A};
+Unk8009B400Record D_8009B678[4] = {
+    {165, 155, 0x86, 0xC8, 0x40, 0x0A},
+    {229, 155, 0xC6, 0xC8, 0x34, 0x0A},
+    {281, 155, 0xB2, 0xBE, 0x0C, 0x0A},
     {293, 155, 0xC7, 0xBE, 0x1B, 0x0A}};
 Unk8009B0E0Record g_gpu_split_wipe_image_sheet_headers[2] = {
     {0x0E, 0x00, 8, 0x00, 0x3E0, 0x1FF, 0x0, 0x0},

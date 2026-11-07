@@ -1275,13 +1275,15 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
 
 /* gpu_DrawSelectedStretchedSheetPair's sheets: three headers at 0x8009B610
  * (the second draw, header sheet_index, its one cell at 0x8009B634) and
- * three at 0x8009B63C (counts 2 / 1 / 4) whose cells follow at 0x8009B660
- * (0-1, 2, 3-6).
+ * three at 0x8009B63C (counts 2 / 1 / 4) with one cell table each:
+ * D_8009B660[2], D_8009B670, D_8009B678[4].
  */
 extern Unk8009B0E0Record D_8009B610[3];
 extern Unk8009B400Record D_8009B634;
 extern Unk8009B0E0Record D_8009B63C[3];
-extern Unk8009B400Record D_8009B660[7];
+extern Unk8009B400Record D_8009B660[2];
+extern Unk8009B400Record D_8009B670;
+extern Unk8009B400Record D_8009B678[4];
 
 s32 gpu_DrawSelectedStretchedSheetPair(
     s32 sheet_index, s32 draw_chunk_addr, s32 ot_index) {
@@ -1302,13 +1304,13 @@ s32 gpu_DrawSelectedStretchedSheetPair(
     s.ot_idx = ot_index;
     switch (sheet_index) {
     case 0:
-        s.table = &D_8009B660[0];
+        s.table = D_8009B660;
         break;
     case 1:
-        s.table = &D_8009B660[2];
+        s.table = &D_8009B670;
         break;
     case 2:
-        s.table = &D_8009B660[3];
+        s.table = D_8009B678;
         break;
     }
     s.ft4_out = ft4_out_addr;
