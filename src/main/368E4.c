@@ -1046,10 +1046,10 @@ void wave_Draw(void) {
     }
 }
 
-s32 wave_SampleRow8BaseCachingIndexAndRemainderParity(s32 a0) {
-    s32 column_index = (a0 + 0x7D00) / 3200;
-    s32 a0_div = a0 / 3200;
-    s32 remainder = a0 - a0_div * 3200;
+s32 wave_SampleRow8BaseCachingIndexAndRemainderParity(s32 sample_position) {
+    s32 column_index = (sample_position + 0x7D00) / 3200;
+    s32 a0_div = sample_position / 3200;
+    s32 remainder = sample_position - a0_div * 3200;
     s32 remainder_parity = remainder & 1;
     g_wave_cached_column_index = column_index;
     g_wave_cached_remainder_parity = remainder_parity;
