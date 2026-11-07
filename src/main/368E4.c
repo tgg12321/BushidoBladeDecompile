@@ -2212,8 +2212,9 @@ s32 snd_CopySelectedPackSectionsAndLoadVabPacks(
     }
 
     /* the entry count's header slot is reserved before the entries are
-     * written; the count is (var_s0 >= 0) + (var_s2 >= 0), its first term
-     * built as ~var_s0 >> 31 (Ruling 4 split; one expression: score 2) */
+     * written; the count is (slot0_selection >= 0) + (slot1_selection >= 0),
+     * its first term built as ~slot0_selection >> 31 (Ruling 4 split; one
+     * expression: score 2) */
     header_entry_count = ~slot0_selection;
     count_slot = (s32 *)header_cursor_addr;
     header_cursor_addr += 4;
