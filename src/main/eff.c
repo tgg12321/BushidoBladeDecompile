@@ -2797,7 +2797,6 @@ u8 eff_DrawAndAdvanceAdditiveSingleQuadParticlesSecondSlot(void) {
     return eff_LinkParticleQuads(7, 2);
 }
 
-extern s16 D_800EFC8A[];
 /* The label is 0xC bytes (modes 0-5); modes 6 and 7 store past it, into the
  * next label D_800F0BA4. */
 extern s16 g_eff_particle_mode_position_counts[];
@@ -2837,7 +2836,8 @@ u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
         *g_eff_base_height = 0x10;
         g_eff_particle_mode_position_counts[particle_mode] = 3;
     } else if (particle_mode < 6) {
-        s16 tex_rec_index = D_800EFC8A[particle_row_index * 0x1E0] >> 3;
+        s16 tex_rec_index =
+            g_eff_particles[particle_row_index][0].frame_age >> 3;
         var_0->unk70 = tex_rec_index;
         if (tex_rec_index >= 4) {
             var_0->unk70 = 3;

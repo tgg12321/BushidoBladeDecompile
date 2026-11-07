@@ -983,13 +983,8 @@ enddlabel g_vab_rec_ptr
 
 /* 800EFC78 */
 dlabel g_eff_particles
-    .space 0x12
+    .space 0xF00
 enddlabel g_eff_particles
-
-/* 800EFC8A */
-dlabel D_800EFC8A
-    .space 0xEEE
-enddlabel D_800EFC8A
 
 /* 800F0B78 */
 dlabel g_eff_particle_emitter_vectors
