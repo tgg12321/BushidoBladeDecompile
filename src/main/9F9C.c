@@ -2989,7 +2989,7 @@ s32 fight_UpdateSeparationAndPairedMoves(void) {
     s32 separation = fighter_CalcHorizontalSeparation();
     s32 fight_mode = g_fight_mode_selector;
     g_fighter_horizontal_separation = separation;
-    D_800A38F0 = separation - previous_separation;
+    g_fighter_horizontal_separation_change = separation - previous_separation;
     if (fight_mode != FIGHT_MODE_TEAM && fight_mode != FIGHT_MODE_PRACTICE) {
         fight_UpdatePairedMoves();
     }

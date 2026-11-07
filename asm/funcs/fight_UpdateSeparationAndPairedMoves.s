@@ -11,8 +11,8 @@ glabel fight_UpdateSeparationAndPairedMoves
     /* 10890 80020090 0A80013C */  lui        $at, %hi(g_fighter_horizontal_separation)
     /* 10894 80020094 7C3822AC */  sw         $v0, %lo(g_fighter_horizontal_separation)($at)
     /* 10898 80020098 23105000 */  subu       $v0, $v0, $s0
-    /* 1089C 8002009C 0A80013C */  lui        $at, %hi(D_800A38F0)
-    /* 108A0 800200A0 F03822AC */  sw         $v0, %lo(D_800A38F0)($at)
+    /* 1089C 8002009C 0A80013C */  lui        $at, %hi(g_fighter_horizontal_separation_change)
+    /* 108A0 800200A0 F03822AC */  sw         $v0, %lo(g_fighter_horizontal_separation_change)($at)
     /* 108A4 800200A4 05000224 */  addiu      $v0, $zero, 0x5
     /* 108A8 800200A8 05006210 */  beq        $v1, $v0, .L800200C0
     /* 108AC 800200AC 02000224 */   addiu     $v0, $zero, 0x2

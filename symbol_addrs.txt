@@ -1549,7 +1549,7 @@ g_fight_best_time_rank = 0x800A38E9;  // data-wave 2026-10-28: was D_800A38E9
 g_fight_step_row_tint_red = 0x800A38EC;  // data-wave 2026-10-28: was D_800A38EC
 g_fight_step_row_tint_green = 0x800A38ED;  // data-wave 2026-10-28: was D_800A38ED
 g_fight_step_row_tint_blue = 0x800A38EE;  // data-wave 2026-10-28: was D_800A38EE
-D_800A38F0 = 0x800A38F0;
+g_fighter_horizontal_separation_change = 0x800A38F0;  // data-wave 2026-11-06: was D_800A38F0
 g_fight_time_limit_elapsed_frames = 0x800A38F4;  // data-wave 2026-10-28: was D_800A38F4
 g_fight_stage_list_draw_cursor = 0x800A38F8;  // data-wave 2026-10-28: was D_800A38F8
 g_comb_received_button_bit_count = 0x800A38FC;  // data-wave 2026-11-06: was D_800A38FC
@@ -2132,7 +2132,7 @@ g_fight_start_position_pair_index = 0x800A38E0; /* 0..3, set by fight_UpdateDefe
 D_800A38E1 = 0x800A38E1; /* = p->unk14_15 (ApplyWorkingRecordToPendingConfigAndInitializeMode); bit 0 picks g_fight_stage_index = 0x21 / 0x20 */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_3 */
 g_comb_received_unlock_mask_bits = 0x800A38E4; /* bits_DepositMask3F83F8(D_800A36C6) (comb_Connect); OR-ed into StoreCompactedBits's argument */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_2 */
 g_fight_paired_move_event_min_frame = 0x800A38E8; /* 0xFF or data[3] & 0x7F (fight_UpdatePairedMoves); lower bound on unk_40 in fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_6 */
-D_800A38F0 = 0x800A38F0; /* store-only: fight_UpdateSeparationAndPairedMoves stores the change of g_fighter_horizontal_separation */  /* data-wave 2026-10-08: was g_practice_lesson_param3_plus_2 */
+g_fighter_horizontal_separation_change = 0x800A38F0; /* store-only: fight_UpdateSeparationAndPairedMoves stores the change of g_fighter_horizontal_separation */  /* data-wave 2026-10-08: was g_practice_lesson_param3_plus_2 */
 g_fight_time_limit_elapsed_frames = 0x800A38F4; /* frame clock of fight_UpdateModeDisplaysAndMatchProgress's mode-5 branch (vs g_fight_time_limit_seconds * 30) */  /* data-wave 2026-10-08: was g_practice_lesson_param3_plus_6 */
 g_fight_rng_seed = 0x800A3904; /* +8 from g_comb_received_button_bit_count */  /* data-wave 2026-10-08: was g_pad_rec_bit_count_b_plus_8 */
 g_fight_stage_start_count = 0x800A3907; /* counter: 0 / ++ in fight_RunCommandStream, ++ in fight_HandleDescriptorPlaybackCompletion; < 2 tested by fighter_Init */  /* data-wave 2026-10-08: was g_intro_render_busy_plus_1 */

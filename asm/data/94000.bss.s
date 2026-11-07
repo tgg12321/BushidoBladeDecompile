@@ -402,9 +402,9 @@ dlabel g_fight_step_row_tint_blue
 enddlabel g_fight_step_row_tint_blue
 
 /* 800A38F0 */
-dlabel D_800A38F0
+dlabel g_fighter_horizontal_separation_change
     .space 0x4
-enddlabel D_800A38F0
+enddlabel g_fighter_horizontal_separation_change
 
 /* 800A38F4 */
 dlabel g_fight_time_limit_elapsed_frames

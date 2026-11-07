@@ -478,7 +478,7 @@ extern u8 g_fight_best_time_rank;
 extern u8 g_fight_step_row_tint_red;
 extern u8 g_fight_step_row_tint_green;
 extern u8 g_fight_step_row_tint_blue;
-extern s32 D_800A38F0;
+extern s32 g_fighter_horizontal_separation_change;
 extern s32 g_fight_time_limit_elapsed_frames;
 extern u8 g_fight_stage_list_draw_cursor;
 extern u16 g_fight_rng_seed;
