@@ -3507,23 +3507,77 @@ void motion_AdvanceVariantIfAtNibble4Or5Position(
                              ->variant_count);
 }
 
-/* The 66-name animation/asset table (12-byte stride: 8 chars + null + pad).
- * No code reads it; a data word at 0x8008D9E8 points at its first name.
- * Defined here, between the switch tables of the functions above and
- * motion_ResolveMoveData's own, as in the original rodata order. */
-const char D_800100FC[66][12] = {
-    "WIN     ",    "KARAMI_ED", "RUN_ED  ", "RUN_ST  ", "CHAKUTI ", "APPEAR  ",
-    "KAISHAKU_ST", "HAJIKARE",  "SERIEXIT", "SYAGAMI ", "HOM_ED  ", "HOM_AT  ",
-    "HOM_ST  ",    "ANOBORI ",  "KAMAE_KA", "MOVE    ", "NOBORI_E", "NOBORI_S",
-    "FURI2   ",    "FURI1   ",  "YURI2   ", "YURI1   ", "GOKAKU  ", "START   ",
-    "ARUN    ",    "STEP    ",  "WALK    ", "LJUMP   ", "MJUMP   ", "SJUMP   ",
-    "KAMAE   ",    "DTH     ",  "RUN     ", "SUNA    ", "KARAMI  ", "RELOAD  ",
-    "SERI    ",    "HAJI    ",  "UKE     ", "SYASTEP ", "SUBWEP  ", "ORI     ",
-    "OKIAGARI",    "NOBORI  ",  "KZRE    ", "KOROGARI", "KAISYAKU", "END_GAME",
-    "DAM     ",    "ATTACK  ",  "NORMAL  ", "NULL    ", "Y123.BBM", "N123.BBM",
-    "K123.BBM",    "T123.BBM",  "S234.BBM", "S125.BBM", "S124.BBM", "S123.BBM",
-    "U235.BBM",    "U135.BBM",  "U134.BBM", "U125.BBM", "U124.BBM", "U123.BBM",
-};
+/* 66 string literals, 12 bytes apart (word-aligned char arrays). No code
+ * reads them; g_fighter_move_kind_names (d_7D920.c) points at the first 52
+ * and g_motion_fighter_data_files at the BBM file names, each pointer at one
+ * literal. Defined here, between the switch tables of the functions above
+ * and motion_ResolveMoveData's own, as in the original rodata order. */
+const char D_800100FC[] = "WIN     ";
+const char D_80010108[] = "KARAMI_ED";
+const char D_80010114[] = "RUN_ED  ";
+const char D_80010120[] = "RUN_ST  ";
+const char D_8001012C[] = "CHAKUTI ";
+const char D_80010138[] = "APPEAR  ";
+const char D_80010144[] = "KAISHAKU_ST";
+const char D_80010150[] = "HAJIKARE";
+const char D_8001015C[] = "SERIEXIT";
+const char D_80010168[] = "SYAGAMI ";
+const char D_80010174[] = "HOM_ED  ";
+const char D_80010180[] = "HOM_AT  ";
+const char D_8001018C[] = "HOM_ST  ";
+const char D_80010198[] = "ANOBORI ";
+const char D_800101A4[] = "KAMAE_KA";
+const char D_800101B0[] = "MOVE    ";
+const char D_800101BC[] = "NOBORI_E";
+const char D_800101C8[] = "NOBORI_S";
+const char D_800101D4[] = "FURI2   ";
+const char D_800101E0[] = "FURI1   ";
+const char D_800101EC[] = "YURI2   ";
+const char D_800101F8[] = "YURI1   ";
+const char D_80010204[] = "GOKAKU  ";
+const char D_80010210[] = "START   ";
+const char D_8001021C[] = "ARUN    ";
+const char D_80010228[] = "STEP    ";
+const char D_80010234[] = "WALK    ";
+const char D_80010240[] = "LJUMP   ";
+const char D_8001024C[] = "MJUMP   ";
+const char D_80010258[] = "SJUMP   ";
+const char D_80010264[] = "KAMAE   ";
+const char D_80010270[] = "DTH     ";
+const char D_8001027C[] = "RUN     ";
+const char D_80010288[] = "SUNA    ";
+const char D_80010294[] = "KARAMI  ";
+const char D_800102A0[] = "RELOAD  ";
+const char D_800102AC[] = "SERI    ";
+const char D_800102B8[] = "HAJI    ";
+const char D_800102C4[] = "UKE     ";
+const char D_800102D0[] = "SYASTEP ";
+const char D_800102DC[] = "SUBWEP  ";
+const char D_800102E8[] = "ORI     ";
+const char D_800102F4[] = "OKIAGARI";
+const char D_80010300[] = "NOBORI  ";
+const char D_8001030C[] = "KZRE    ";
+const char D_80010318[] = "KOROGARI";
+const char D_80010324[] = "KAISYAKU";
+const char D_80010330[] = "END_GAME";
+const char D_8001033C[] = "DAM     ";
+const char D_80010348[] = "ATTACK  ";
+const char D_80010354[] = "NORMAL  ";
+const char D_80010360[] = "NULL    ";
+const char D_8001036C[] = "Y123.BBM";
+const char D_80010378[] = "N123.BBM";
+const char D_80010384[] = "K123.BBM";
+const char D_80010390[] = "T123.BBM";
+const char D_8001039C[] = "S234.BBM";
+const char D_800103A8[] = "S125.BBM";
+const char D_800103B4[] = "S124.BBM";
+const char D_800103C0[] = "S123.BBM";
+const char D_800103CC[] = "U235.BBM";
+const char D_800103D8[] = "U135.BBM";
+const char D_800103E4[] = "U134.BBM";
+const char D_800103F0[] = "U125.BBM";
+const char D_800103FC[] = "U124.BBM";
+const char D_80010408[] = "U123.BBM";
 
 void *motion_ResolveMoveData(
     Unk80101EC8Record *rec, s32 id, s16 *is_common_out) {
