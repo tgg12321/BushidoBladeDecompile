@@ -873,10 +873,10 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
     }
 
     if (D_800A3207 == 3) {
-        if (v0 == 8) {
+        if (v0 == MEMCARD_STATUS_NO_CARD) {
             goto case8_sel;
         }
-        if (v0 == 10) {
+        if (v0 == MEMCARD_STATUS_UNFORMATTED) {
             goto case12_sel;
         }
         goto case9_11_sel;
@@ -891,28 +891,28 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
            one shared store reached by goto: score 13) */
         highlighted_cell_index = g_memcard_prompt_choice;
         goto sel_dispatch;
-    case 13:
+    case MEMCARD_STATUS_SAVE_FILE_EXISTS:
     case 17:
         sheet_pair_index = 6;
         highlighted_cell_index = g_memcard_prompt_choice;
         goto sel_dispatch;
-    case 1:
+    case MEMCARD_STATUS_SAVE_BUSY:
         sheet_pair_index = (-(g_memcard_request_write_started != 0)) & 7;
         goto sel_dispatch;
-    case 2:
+    case MEMCARD_STATUS_SAVE_DONE:
         sheet_pair_index = 8;
         goto sel_dispatch;
-    case 3:
+    case MEMCARD_STATUS_SAVE_FAILED:
         sheet_pair_index = 9;
         goto sel_dispatch;
-    case 8:
+    case MEMCARD_STATUS_NO_CARD:
     case8_sel:
         sheet_pair_index = -1;
         goto sel_dispatch;
-    case 7:
+    case MEMCARD_STATUS_CARD_FULL:
         sheet_pair_index = 5;
         goto sel_dispatch;
-    case 10:
+    case MEMCARD_STATUS_UNFORMATTED:
         if (D_800A3206 == 0) {
             g_memcard_prompt_choice = 1;
         }
@@ -937,12 +937,12 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
         }
         highlighted_cell_index = g_memcard_prompt_choice;
         goto sel_dispatch;
-    case 9:
-    case 11:
+    case MEMCARD_STATUS_FORMAT_BUSY:
+    case MEMCARD_STATUS_FORMAT_DONE:
     case9_11_sel:
         sheet_pair_index = 0xD;
         goto sel_dispatch;
-    case 12:
+    case MEMCARD_STATUS_FORMAT_FAILED:
     case12_sel:
         sheet_pair_index = 0xF;
         goto sel_dispatch;
@@ -1030,19 +1030,19 @@ sel_dispatch:
         }
     } else {
         switch (v0) {
-        case 8:
+        case MEMCARD_STATUS_NO_CARD:
             D_800A3354 = 1;
             g_memcard_message_countdown = 0x5A;
             break;
-        case 2:
-        case 3:
-        case 7:
-        case 12:
+        case MEMCARD_STATUS_SAVE_DONE:
+        case MEMCARD_STATUS_SAVE_FAILED:
+        case MEMCARD_STATUS_CARD_FULL:
+        case MEMCARD_STATUS_FORMAT_FAILED:
             g_memcard_message_countdown--;
             if (((u8)g_memcard_message_countdown) == 0 ||
                 (g_pad_state.pressed & 0x100010)) {
                 snd_QueueSound(2, 0x7F, 0x7F);
-                if (v0 != 7) {
+                if (v0 != MEMCARD_STATUS_CARD_FULL) {
                     result = 1;
                     break;
                 }
@@ -1053,13 +1053,13 @@ sel_dispatch:
                 g_memcard_validation_load_active = 0;
             }
             break;
-        case 11:
+        case MEMCARD_STATUS_FORMAT_DONE:
             g_memcard_validation_load_active = 1;
             memcard_RequestLoad();
             D_800A3207 = 3;
             g_memcard_message_countdown = 0x5A;
             break;
-        case 13:
+        case MEMCARD_STATUS_SAVE_FILE_EXISTS:
             D_800A3207 = 4;
             g_memcard_message_countdown = 0x5A;
             g_memcard_prompt_choice = 0;
@@ -1100,7 +1100,7 @@ sel_dispatch:
                 break;
             }
             goto sw4_buttons;
-        case 10:
+        case MEMCARD_STATUS_UNFORMATTED:
         sw4_buttons:
             if (g_pad_state.pressed & 0x80008000U) {
                 snd_QueueSound(0, 0x7F, 0x7F);
@@ -1121,7 +1121,7 @@ sel_dispatch:
         if (v0 >= 9) {
             goto d_check;
         }
-        if (v0 == 1) {
+        if (v0 == MEMCARD_STATUS_SAVE_BUSY) {
             goto d_check;
         }
         goto end;
