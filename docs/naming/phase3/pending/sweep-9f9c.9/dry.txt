@@ -1,0 +1,27 @@
+rc=0
+==============================================================================
+NAMING WAVE — 1 operations (0 RESET, 1 RENAME)
+  1 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — src/main/9F9C.c is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (3) --
+  asm: 2 files, 3 substitutions
+      asm/funcs/fighter_Update.s  (1)
+      asm/funcs/func_80023D08.s  (2)
+  src: 1 files, 4 substitutions
+      src/main/9F9C.c  (4)
+
+-- .s file renames (1) --
+  asm/funcs/func_80023D08.s -> asm/funcs/fighter_RequestPoseBlendStep512.s
+
+-- ledger directory renames (1) --
+  memory/grind/_completed/func_80023D08 -> memory/grind/_completed/fighter_RequestPoseBlendStep512
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (1) --
+  memory/grind/_completed/func_80023D08/layer2.jsonl: 1 changes
+      line 1: func func_80023D08 -> fighter_RequestPoseBlendStep512
+
+DRY RUN — nothing written. Re-run with --apply.

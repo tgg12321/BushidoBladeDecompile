@@ -1,0 +1,15 @@
+sweep-9f9c.9 (unit sweep-9f9c.9, kind function; lane ln-naming-b). 1 RENAME kept; 0 dropped; 0 NO_NAME. Verdict is PENDING: the session sets CONFIRM after the naming-reviewer pass.
+Drafted 2026-11-07 at HEAD 5fc6558b8 in the lane worktree. Research input tmp/codex/sweep-9f9c.9-research.md (untrusted). Every claim in rows.py re-derived at HEAD from src/main/9F9C.c:4726-4744, :5261-5285, :5773-5784, :5401-5406, asm/funcs/func_80023D08.s, asm/funcs/fighter_Update.s:995, no_name.tsv:5.
+The row is a NO_NAME ledger row (no_name.tsv:5, w62,w81, reason "Q132 explicitly permits retaining pure forwarders") revived on rule-text ground recorded in pending/sweep-9f9c/notes.txt:133: the forwarder class needs arguments passed through unchanged (naming-final-classes.md:25-26) and 0x200 is a literal; Q132 names a body from what it does. Precedent sweep-368e4.7 (974c0c619).
+Kept row:
+ 0x80023D08 func_80023D08 -> fighter_RequestPoseBlendStep512 (suggested; the drafted fighter_RequestPoseBlendStep200 FAILed pre-apply: a decimal reading of 200 is false of 0x200 = 512; alternatives fighter_RequestHalfSpeedPoseBlend, fighter_RequestPoseBlend200 rejected by the same reviewer)
+Freshness: all three names 0 hits (git grep -w over src include asm symbol_addrs.txt named_syms.txt docs/naming/function-names.csv).
+Line drift vs the research file: def is 9F9C.c:4743 (research :4742), call sites :5263/:5273/:5284.
+
+REVIVE check (run in the worktree, printed 1 free; copy of its output):
+# 1 free, 0 skipped as NO_NAME (no new evidence), 0 final
+# revive func_80023D08: NO_NAME in w62,w81 (Q132 explicitly permits retaining pure forwarders whose name would restate the callee. FRESH no new name. TRACE G bouts;34/38; no role knockout.); new evidence: revive: forwarder ground fails on rule text (naming-final-classes.md:25-26 needs arguments passed unchanged; 0x200 is a literal); Q132 names a body from what it does; precedent sweep-368e4.7 (974c0c619)
+Command (re-run at land to record the revive in the ledger):
+python tools/naming_noname.py free src/main/9F9C.c,src/main/87A0.c --revive "0x80023D08=revive: forwarder ground fails on rule text (naming-final-classes.md:25-26 needs arguments passed unchanged; 0x200 is a literal); Q132 names a body from what it does; precedent sweep-368e4.7 (974c0c619)"
+
+Manifests: build.py writes func_manifest.csv and data_manifest.csv INTO this draft dir; dry.sh stages a CONFIRM copy under phase3/zz-sweep-9f9c-9-dry (removed) and restores function-names.csv; tmp/psw9f9c9 is scratch.
