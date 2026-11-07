@@ -824,11 +824,11 @@ s32 wave_Init(void) {
     u16 t1val;
     s32 row;
     s32 column_index;
-    s32 a2;
-    s32 a1;
-    s32 t0;
-    s32 v1;
-    s32 t2;
+    s32 odd_next_vertex_index;
+    s32 even_vertex_index_hi;
+    s32 odd_vertex_index_hi;
+    s32 even_next_vertex_index;
+    s32 flags_and_gp0_code;
     s32 cell_halfword;
     s32 *ptr;
     s32 *p;
@@ -841,18 +841,18 @@ s32 wave_Init(void) {
     s1val = GetClut(0x10, 0x1E0);
     t1val = GetClut(0x10, 0x1E0);
     row = 0;
-    t2 = 0x2C00;
+    flags_and_gp0_code = 0x2C00;
     column_index = 0;
     do {
-        t0 = 0x1200;
-        a2 = 0x13;
-        a1 = 0;
-        v1 = 1;
+        odd_vertex_index_hi = 0x1200;
+        odd_next_vertex_index = 0x13;
+        even_vertex_index_hi = 0;
+        even_next_vertex_index = 1;
         do {
             if (row >= 5) {
                 *cell_cursor = s3val;
                 cell_cursor += 1;
-                *cell_cursor = t2;
+                *cell_cursor = flags_and_gp0_code;
                 cell_cursor += 1;
                 *cell_cursor = s1val;
                 cell_cursor += 1;
@@ -869,7 +869,7 @@ s32 wave_Init(void) {
             } else {
                 *cell_cursor = s2val;
                 cell_cursor += 1;
-                *cell_cursor = t2;
+                *cell_cursor = flags_and_gp0_code;
                 cell_cursor += 1;
                 *cell_cursor = t1val;
                 cell_cursor += 1;
@@ -887,15 +887,15 @@ s32 wave_Init(void) {
             *cell_cursor = cell_halfword;
             cell_cursor += 1;
             if (row & 1) {
-                cell_halfword = a2 | t0;
+                cell_halfword = odd_next_vertex_index | odd_vertex_index_hi;
                 *cell_cursor = cell_halfword;
                 cell_cursor += 1;
-                cell_halfword = v1 | a1;
+                cell_halfword = even_next_vertex_index | even_vertex_index_hi;
             } else {
-                cell_halfword = v1 | a1;
+                cell_halfword = even_next_vertex_index | even_vertex_index_hi;
                 *cell_cursor = cell_halfword;
                 cell_cursor += 1;
-                cell_halfword = a2 | t0;
+                cell_halfword = odd_next_vertex_index | odd_vertex_index_hi;
             }
             *cell_cursor = cell_halfword;
             cell_cursor += 1;
@@ -906,11 +906,11 @@ s32 wave_Init(void) {
             cell_halfword = -0x1000;
             *cell_cursor = cell_halfword;
             cell_cursor += 1;
-            t0 += 0x100;
-            a2 += 1;
-            a1 += 0x100;
+            odd_vertex_index_hi += 0x100;
+            odd_next_vertex_index += 1;
+            even_vertex_index_hi += 0x100;
             column_index += 1;
-            v1 += 1;
+            even_next_vertex_index += 1;
         } while (column_index < 0x10);
         row += 1;
         column_index = 0;
