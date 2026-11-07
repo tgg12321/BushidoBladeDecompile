@@ -13,3 +13,6 @@
 
 ## Unit sweep-2b344.2 (members; research: Opus, tmp/codex/sweep-2b344.2-research.md, 2026-11-06): 9 renames landed
 - The unit's 4 NO_NAME members (Unk8003F62CRec.unk4, Unk80045878Obj.unk_18F4, Unk80094B94Table.unk_00, Unk800A6690Rec.unk59), each with its missing evidence: pending/sweep-2b344.2/notes.txt.
+
+## Unit sweep-2b344.3 (locals; research: Opus, tmp/codex/sweep-2b344.3-research.md, 2026-11-06): 5 renames landed
+- The unit's 24 NO_NAME locals and the FINAL candidate gpu_ReplaceCellAttributesInNearest2x2Block:s1 (two-role), each with its missing evidence or class test: pending/sweep-2b344.3/notes.txt. The FINAL candidate goes to the sweep's finality unit.
