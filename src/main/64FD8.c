@@ -7,6 +7,14 @@
 #include "include_asm.h"
 #include "bb2.h"
 
+enum SelPanelSlideState {
+    SEL_PANEL_SLIDE_IDLE = 0,
+    SEL_PANEL_SLIDE_CLOSE_CARRY = 1,
+    SEL_PANEL_SLIDE_OPEN = 2,
+    SEL_PANEL_SLIDE_CLOSE = 3,
+    SEL_PANEL_SLIDE_OPEN_CARRY = 4,
+};
+
 enum SelPhase {
     SEL_PHASE_MATCH_SETTINGS = 0,
     SEL_PHASE_OPPOSED_CHOICE = 1,
@@ -155,7 +163,7 @@ s32 menu_HandleSelPhase0CursorInput(u32 pressed_buttons) {
             if (pressed_buttons & 0x400040) {
                 snd_QueueSound(1, 0x7F, 0x7F);
                 for (i = 0; i < 2; i++) {
-                    SELWORK->panel_slide_state.half[i] = 3;
+                    SELWORK->panel_slide_state.half[i] = SEL_PANEL_SLIDE_CLOSE;
                     SELWORK->pending_selection_phase[i] =
                         SEL_PHASE_OPPOSED_CHOICE;
                     SELWORK->pending_selection_cursor[i] = 0;
@@ -377,7 +385,7 @@ void menu_StepSelPanelSlides(void) {
     i = 0;
     do {
         switch ((u8)base->panel_slide_state.half[i]) {
-        case 1:
+        case SEL_PANEL_SLIDE_CLOSE_CARRY:
             base->panel_draw_offset_y[i] += 0xA;
             base->panel_slide_amount[i] += 0xA;
             if (base->panel_slide_amount[i] >= 0xC8) {
@@ -391,7 +399,7 @@ void menu_StepSelPanelSlides(void) {
                 base->f3C[i] = base->pending_selection_cursor[i];
             }
             break;
-        case 3:
+        case SEL_PANEL_SLIDE_CLOSE:
             base->panel_slide_amount[i] += 0xA;
             if (base->panel_slide_amount[i] >= 0xC8) {
                 base->panel_draw_offset_y[i] = 0xC8;
@@ -404,21 +412,21 @@ void menu_StepSelPanelSlides(void) {
                 }
             }
             break;
-        case 2:
+        case SEL_PANEL_SLIDE_OPEN:
             base->panel_slide_amount[i] -= 0xA;
             if (base->panel_slide_amount[i] <= 0) {
                 base->panel_draw_offset_y[i] = 0;
                 base->panel_slide_amount[i] = 0;
-                base->panel_slide_state.half[i] = 0;
+                base->panel_slide_state.half[i] = SEL_PANEL_SLIDE_IDLE;
             }
             break;
-        case 4:
+        case SEL_PANEL_SLIDE_OPEN_CARRY:
             base->panel_draw_offset_y[i] -= 0xA;
             base->panel_slide_amount[i] -= 0xA;
             if (base->panel_slide_amount[i] <= 0) {
                 base->panel_draw_offset_y[i] = 0;
                 base->panel_slide_amount[i] = 0;
-                base->panel_slide_state.half[i] = 0;
+                base->panel_slide_state.half[i] = SEL_PANEL_SLIDE_IDLE;
             }
             break;
         }
@@ -532,7 +540,7 @@ void menu_HandleSelOpposedChoice(s32 pressed_buttons, s32 player_index) {
     if (pressed_buttons & (PADRdown << (player_index * 16))) {
         for (i = 0; i < 2; i++) {
             work->pending_selection_cursor[i] = 0;
-            work->panel_slide_state.half[i] = 1;
+            work->panel_slide_state.half[i] = SEL_PANEL_SLIDE_CLOSE_CARRY;
             work->pending_selection_phase[i] = SEL_PHASE_GRID_PICKS;
         }
         SELWORK->selected_grid_page[(player_index + 1) & 1] =
@@ -544,7 +552,7 @@ void menu_HandleSelOpposedChoice(s32 pressed_buttons, s32 player_index) {
         if (work->selection_phase.half[(player_index != 0) ? 0 : 1] == 1) {
             for (i = 0; i < 2; i++) {
                 work->pending_selection_cursor[i] = 0;
-                work->panel_slide_state.half[i] = 3;
+                work->panel_slide_state.half[i] = SEL_PANEL_SLIDE_CLOSE;
                 work->pending_selection_phase[i] = SEL_PHASE_MATCH_SETTINGS;
             }
             snd_QueueSound(2, 0x7F, 0x7F);
@@ -771,7 +779,7 @@ void menu_UpdateSelGridPicks(
     s32 bit;
     s32 i;
 
-    if (SELWORK->panel_slide_state.half[player_index] != 0) {
+    if (SELWORK->panel_slide_state.half[player_index] != SEL_PANEL_SLIDE_IDLE) {
         return;
     }
 
@@ -791,8 +799,8 @@ void menu_UpdateSelGridPicks(
         }
         if (SELWORK->selection_phase.half[(player_index != 0) ? 0 : 1] ==
             SEL_PHASE_GRID_PICKS) {
-            SELWORK->panel_slide_state.half[1] = 3;
-            SELWORK->panel_slide_state.half[0] = 3;
+            SELWORK->panel_slide_state.half[1] = SEL_PANEL_SLIDE_CLOSE;
+            SELWORK->panel_slide_state.half[0] = SEL_PANEL_SLIDE_CLOSE;
             SELWORK->pending_selection_phase[1] = 1;
             SELWORK->pending_selection_phase[0] = SEL_PHASE_OPPOSED_CHOICE;
         }
@@ -861,7 +869,8 @@ void menu_UpdateSelGridPicks(
                     SELWORK->f3C[player_index] = count + 1;
                     if (SELWORK->f3C[player_index] ==
                         SELWORK->selected_match_count_index + 3) {
-                        SELWORK->panel_slide_state.half[player_index] = 1;
+                        SELWORK->panel_slide_state.half[player_index] =
+                            SEL_PANEL_SLIDE_CLOSE_CARRY;
                         SELWORK->f3C[player_index] = count;
                         SELWORK->pending_selection_cursor[player_index] = 0;
                         SELWORK->pending_selection_phase[player_index] =
@@ -1013,7 +1022,7 @@ void menu_UpdateSelListPicks(
     s16 i;
     s16 j;
 
-    if (SELWORK->panel_slide_state.half[player_index] != 0) {
+    if (SELWORK->panel_slide_state.half[player_index] != SEL_PANEL_SLIDE_IDLE) {
         return;
     }
     if (pressed_buttons & (0xA000 << (player_index * 16))) {
@@ -1067,7 +1076,8 @@ void menu_UpdateSelListPicks(
     } else if (pressed_buttons & (PADRup << (player_index * 16))) {
         snd_QueueSound(2, 0x7F, 0x7F);
         if (SELWORK->f3C[player_index] == 0) {
-            SELWORK->panel_slide_state.half[player_index] = 3;
+            SELWORK->panel_slide_state.half[player_index] =
+                SEL_PANEL_SLIDE_CLOSE;
             SELWORK->pending_selection_phase[player_index] =
                 SEL_PHASE_GRID_PICKS;
             SELWORK->pending_selection_cursor[player_index] =
@@ -1232,7 +1242,7 @@ s32 menu_InitSelScreen(
            g_sel_offset_steps with no re-set: score 19 */
         s16(*row)[2];
         a2 = 0;
-        base->panel_slide_state.half[t0] = 0;
+        base->panel_slide_state.half[t0] = SEL_PANEL_SLIDE_IDLE;
         base->panel_draw_offset_y[t0] = 0;
         base->panel_slide_amount[t0] = 0;
         base->selection_phase.half[t0] = SEL_PHASE_MATCH_SETTINGS;
