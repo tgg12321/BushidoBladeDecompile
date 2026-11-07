@@ -1,0 +1,1 @@
+wave_SampleRow8BaseCachingIndexAndRemainderParity:a0=sample_position

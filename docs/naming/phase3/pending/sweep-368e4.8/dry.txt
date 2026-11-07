@@ -1,0 +1,6 @@
+sweep-368e4.8 (naming-a 2026-11-07): 1 local binding in 1 function of 368E4.c; research tmp/codex/sweep-368e4.8-research.md (Opus; 1 RENAME, 0 NO_NAME).
+Tree: ln-naming-a = 974c0c619. Drafting aid (not the gate): naming_keycheck.scoped_plan(read_working_tree(), pairs, {}), run in WSL from a tmp script.
+ALL: scoped_plan ACCEPT, 4 substitutions, only src/main/368E4.c
+  wave_SampleRow8BaseCachingIndexAndRemainderParity:a0=sample_position 4 (1025,1026,1027,1028)
+Alone line list equals the research USES (decl 1025, reads 1026-1028). New name: 0 whole-word hits in src/ include/ symbol_addrs.txt.
+Required comment edits: none.
