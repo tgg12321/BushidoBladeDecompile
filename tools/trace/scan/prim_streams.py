@@ -17,11 +17,11 @@ block-relative u32 entry offsets, 32D04.c:898-915):
         ndata_ReadRemappedIndexPackFirstElseRead maps ids >= 0x1F to id - 0x1B
         (35000.c:227-234), so NDATA 0-36, and ids 0x1E-0x22 and 0x24 may
         instead be served from a sub-block of pack 0x25 + n, n 0 or 1
-        (g_ndata_pack_index, 35000.c:293-301, 9F9C.c:1847), i.e. NDATA 37 / 38
+        (g_ndata_pack_index, 35000.c:297-305, 9F9C.c:1847), i.e. NDATA 37 / 38
         sub-blocks 0-4.
   block6  gpu_OffsetBlockTexPrimStream over the selected entries of block 6
-        (35000.c:733-769), loaded from NDATA 0x83 + i or 0x10C + i
-        (35000.c:240-246), i the math_UnorderedPairIndex selection
+        (35000.c:737-773), loaded from NDATA 0x83 + i or 0x10C + i
+        (35000.c:242-248), i the math_UnorderedPairIndex selection
         (368E4.c:1848-1937): NDATA 131-267 and 268-304.
 
 This walks every entry of every NDATA file and pack sub-block whose word 1 is

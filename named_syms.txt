@@ -391,7 +391,7 @@
 /* RESET 0x80069120: retired name 'sync_flag_check_advance_80069120' — preserved note: 44-byte record table accessor with dirty-bit sync side-effect */
 /* Misc (2) */
 /* RESET 0x80044498: retired name 'clear_array_8010367E_80044498' — preserved note: clears g_reloc_block_slot_counts[0..19] (20-halfword zero loop down from D_8010367E, 32D04.c:1153-1159) */
-/* RESET 0x80046048: retired name 'audio_chain_fade_load_80046048' — preserved note: reloc_RebaseBlock(6, byte_offset), then snd_VabFakeOpen(byte_offset, ...) per entry of the arena_GetBlockAddr(6) list (35000.c:788-811) */
+/* RESET 0x80046048: retired name 'audio_chain_fade_load_80046048' — preserved note: reloc_RebaseBlock(6, byte_offset), then snd_VabFakeOpen(byte_offset, ...) per entry of the arena_GetBlockAddr(6) list (35000.c:792-815) */
 
 /* === rodata constant-table pass (2026-05-17) -- 19 entries, 2 retired === */
 /* D_* labels in rodata + .data sections, first classified by pattern; each */

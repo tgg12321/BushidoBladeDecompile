@@ -72,7 +72,7 @@ start-up code, in order:
 - `sys_Panic` (src/main/6CF8.c:237) prints `g_str_overflow` and stops in
   `sys_PollHost10000Times`. The other callers of that function are `main`
   (src/main/6CF8.c:497-499, primitive buffer overflow) and `ndata_ReadChecked`
-  (src/main/35000.c:268).
+  (src/main/35000.c:272).
 
 ## The pause menu: `menu_RunPauseMenu`
 
