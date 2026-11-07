@@ -1224,11 +1224,11 @@ void node_InitFrameEntriesFromWorldTranslations(void) {
     }
 }
 
-/* .data 0x800951D8..0x800955E0 (35000.c's NDATA path pointers D_800955E0
- * follow), in address order: five
- * primitive-type handler tables (gpu_FailCheckOnUnhandledPrimitiveType, which
- * calls sys_StoreZeroPastScratchpadOnFailedCheck, is the default entry; the
- * others are 3AB48.c's draw routines) that
+/* .data 0x800951D8..0x800955E0 (35000.c's NDATA path pointers
+ * g_dat_file_path_ptrs follow), in address order: five primitive-type handler
+ * tables (gpu_FailCheckOnUnhandledPrimitiveType, which calls
+ * sys_StoreZeroPastScratchpadOnFailedCheck, is the default entry; the others
+ * are 3AB48.c's draw routines) that
  * gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift installs at
  * scratchpad word 0x1F80001C and 3AB48.c's gpu_DrawQueuedEntries selects from,
  * then gpu_OffsetTexPrimStream's per-type halfword sizes

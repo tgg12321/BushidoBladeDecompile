@@ -15,7 +15,7 @@ glabel ndata_ReadChecked
     /* 357D4 80044FD4 2A100202 */  slt        $v0, $s0, $v0
     /* 357D8 80044FD8 19004010 */  beqz       $v0, .L80045040
     /* 357DC 80044FDC 80101100 */   sll       $v0, $s1, 2
-    /* 357E0 80044FE0 7401828F */  lw         $v0, %gp_rel(D_800A3240)($gp)
+    /* 357E0 80044FE0 7401828F */  lw         $v0, %gp_rel(g_ndata_arena_read_size_enabled)($gp)
     /* 357E4 80044FE4 00000000 */  nop
     /* 357E8 80044FE8 06004010 */  beqz       $v0, .L80045004
     /* 357EC 80044FEC 80101100 */   sll       $v0, $s1, 2

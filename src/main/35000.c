@@ -247,7 +247,7 @@ void ndata_ReadIndexInRangeSelectedByFlag(s32 a0, s32 a1, s32 dest_addr) {
 
 void func_80044F80(s32 a0, s32 dest_addr) { ndata_Read(a0 + 0x4D, dest_addr); }
 
-extern s32 D_800A3240;
+extern s32 g_ndata_arena_read_size_enabled;
 extern char g_str_marionation_overflow_fmt[];
 
 s32 ndata_ReadChecked(s32 ndata_index, s32 dest_addr) {
@@ -256,7 +256,7 @@ s32 ndata_ReadChecked(s32 ndata_index, s32 dest_addr) {
 
     var_0 = dest_addr - (s32)arena_GetBase();
     if (var_0 >= 0 && var_0 < arena_GetSize()) {
-        if (D_800A3240 != 0) {
+        if (g_ndata_arena_read_size_enabled != 0) {
             var_0 = g_ndata_inf[ndata_index].length_sectors << 11;
         } else {
             var_0 = 0;
@@ -815,20 +815,20 @@ void resource_RebaseSelectedEntryBlockAndFakeOpenListedVabs(
 
 /* .data 0x800955E0..0x80099478 (32D04.c's g_gpu_prim_type_halfword_sizes
  * precedes, d_89C78.c's g_loaded_resource_selector follows), in address order:
- * D_800955E0, the 899 NDATA asset path pointers into d_15EC.c's pool
+ * g_dat_file_path_ptrs, the 899 NDATA asset path pointers into d_15EC.c's pool
  * (D_80010DEC, its strings in reverse address order; no code reads them,
  * docs/formats/NDATA.md); the NDATA.INF sector table g_ndata_inf ({start,
  * length} per file, read over from disc by ndata_StartReadInf; trailing zero
  * entries implicit), ndata_ReadFromPack's pack index, the 0x1000-step sine
  * table Judge (bb2.h), and resource_LoadSelectedEntriesTexturesAndSound's index
- * list g_resource_entry_texture_groups. D_800955E0 sits between 32D04.c's .data
- * and this file's with no reorder either way; it is this file's by subsystem
- * (the NDATA file names, next to the NDATA file table; 899 is also
+ * list g_resource_entry_texture_groups. g_dat_file_path_ptrs sits between
+ * 32D04.c's .data and this file's with no reorder either way; it is this file's
+ * by subsystem (the NDATA file names, next to the NDATA file table; 899 is also
  * g_ndata_inf's explicit entry count, 760 packed
  * + 139 {-1, -1}). Defined after every function, so no body sees a definition
  * where it saw an extern. */
 extern const char D_80010DEC[];
-const char *D_800955E0[899] = {
+const char *g_dat_file_path_ptrs[899] = {
     D_80010DEC + 0x4490, D_80010DEC + 0x4480, D_80010DEC + 0x4470,
     D_80010DEC + 0x4460, D_80010DEC + 0x4450, D_80010DEC + 0x4440,
     D_80010DEC + 0x4430, D_80010DEC + 0x4420, D_80010DEC + 0x4410,
@@ -1693,5 +1693,5 @@ s16 g_resource_entry_texture_groups[62] = {
     29, 30, 31, 0,  1,  2,  3,  4,  5,  6,  0,  0,  0,  0};
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
-s32 D_800A3240 = 1;
+s32 g_ndata_arena_read_size_enabled = 1;
 s32 g_ndata_pack_loaded = 0;

@@ -644,14 +644,14 @@ extern void mem_MoveBlockRoundedUpToWords(s32, s32, s32);
 extern u8 g_fight_stage_list_entries[];
 extern u16 g_comb_send_payload;
 extern POLY_FT4 *g_eff_quad_cursor;
-extern u32 *D_800A3808;
+extern u32 *g_gpu_ot_offset_base_ptr;
 extern s16 g_cd_fade_step;
 extern u8 g_fight_step_row_column;
 extern s16 g_cd_fade_len;
 extern u8 *g_fight_first_fighter_substitution_command_operands;
 extern u32 *g_prim_buf_cursor; /* the draw-chunk builders' word cursor */
 extern s32 g_comb_received_check_mismatch_count;
-extern u16 D_800A38D6;
+extern u16 g_gpu_ot_offset_update_count;
 extern s32 g_comb_received_button_bit_count;
 extern s32 g_comb_sent_button_bit_count;
 extern u8 g_comb_initial_pad_exchange_pending;

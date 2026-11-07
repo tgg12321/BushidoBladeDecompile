@@ -459,8 +459,8 @@ void gpu_ResetDrawQueueAndPrepareViewAndLighting(
     MATRIX matrix_buf;
 
     g_draw_queue_cursor = g_draw_queue;
-    D_800A3808 = g_gpu_ot_ptr;
-    D_800A38D6++;
+    g_gpu_ot_offset_base_ptr = g_gpu_ot_ptr;
+    g_gpu_ot_offset_update_count++;
     g_gpu_ot_offset_ptr = g_gpu_ot_ptr + 4;
 
     if (focus_point != 0) {

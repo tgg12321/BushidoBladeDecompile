@@ -17,9 +17,9 @@ dlabel g_fight_choice_menu_first_cursor
 enddlabel g_fight_choice_menu_first_cursor
 
 /* 800A3808 */
-dlabel D_800A3808
+dlabel g_gpu_ot_offset_base_ptr
     .space 0x4
-enddlabel D_800A3808
+enddlabel g_gpu_ot_offset_base_ptr
 
 /* 800A380C */
 dlabel g_fight_menu_restart_count
@@ -332,9 +332,9 @@ dlabel D_800A38D4
 enddlabel D_800A38D4
 
 /* 800A38D6 */
-dlabel D_800A38D6
+dlabel g_gpu_ot_offset_update_count
     .space 0x2
-enddlabel D_800A38D6
+enddlabel g_gpu_ot_offset_update_count
 
 /* 800A38D8 */
 dlabel g_gpu_ot256_ptr

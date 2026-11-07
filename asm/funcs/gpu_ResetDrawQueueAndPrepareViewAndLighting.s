@@ -6,8 +6,8 @@ glabel gpu_ResetDrawQueueAndPrepareViewAndLighting
     /* 37404 80046C04 002C4224 */  addiu      $v0, $v0, %lo(g_draw_queue)
     /* 37408 80046C08 0A80013C */  lui        $at, %hi(g_draw_queue_cursor)
     /* 3740C 80046C0C 203822AC */  sw         $v0, %lo(g_draw_queue_cursor)($at)
-    /* 37410 80046C10 0A80023C */  lui        $v0, %hi(D_800A38D6)
-    /* 37414 80046C14 D6384294 */  lhu        $v0, %lo(D_800A38D6)($v0)
+    /* 37410 80046C10 0A80023C */  lui        $v0, %hi(g_gpu_ot_offset_update_count)
+    /* 37414 80046C14 D6384294 */  lhu        $v0, %lo(g_gpu_ot_offset_update_count)($v0)
     /* 37418 80046C18 0A80033C */  lui        $v1, %hi(g_gpu_ot_ptr)
     /* 3741C 80046C1C 4C37638C */  lw         $v1, %lo(g_gpu_ot_ptr)($v1)
     /* 37420 80046C20 2138A000 */  addu       $a3, $a1, $zero
@@ -16,11 +16,11 @@ glabel gpu_ResetDrawQueueAndPrepareViewAndLighting
     /* 3742C 80046C2C 5C00B1AF */  sw         $s1, 0x5C($sp)
     /* 37430 80046C30 5800B0AF */  sw         $s0, 0x58($sp)
     /* 37434 80046C34 01004224 */  addiu      $v0, $v0, 0x1
-    /* 37438 80046C38 0A80013C */  lui        $at, %hi(D_800A3808)
-    /* 3743C 80046C3C 083823AC */  sw         $v1, %lo(D_800A3808)($at)
+    /* 37438 80046C38 0A80013C */  lui        $at, %hi(g_gpu_ot_offset_base_ptr)
+    /* 3743C 80046C3C 083823AC */  sw         $v1, %lo(g_gpu_ot_offset_base_ptr)($at)
     /* 37440 80046C40 10006324 */  addiu      $v1, $v1, 0x10
-    /* 37444 80046C44 0A80013C */  lui        $at, %hi(D_800A38D6)
-    /* 37448 80046C48 D63822A4 */  sh         $v0, %lo(D_800A38D6)($at)
+    /* 37444 80046C44 0A80013C */  lui        $at, %hi(g_gpu_ot_offset_update_count)
+    /* 37448 80046C48 D63822A4 */  sh         $v0, %lo(g_gpu_ot_offset_update_count)($at)
     /* 3744C 80046C4C 0A80013C */  lui        $at, %hi(g_gpu_ot_offset_ptr)
     /* 37450 80046C50 8C3723AC */  sw         $v1, %lo(g_gpu_ot_offset_ptr)($at)
     /* 37454 80046C54 3E004012 */  beqz       $s2, .L80046D50
