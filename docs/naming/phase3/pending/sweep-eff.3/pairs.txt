@@ -1,0 +1,7 @@
+Unk8005C8A8Rec.unk_F0=chunk_sprites
+Unk8005D814Rec.unk_A0=chunk_sprites
+Unk8005E54CRec.unk_A0=chunk_sprites
+Unk8005FC9CRec.unk_00=chunk_sprites
+Unk800600C8Rec.unk_00=chunk_sprites
+Unk80060544Rec.unk_00=chunk_sprites
+Unk1F8000B8_800678A8.unk6E=loop_index

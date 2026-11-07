@@ -1,0 +1,45 @@
+PASS Unk8005C8A8Rec.unk_F0=chunk_sprites, Unk8005D814Rec.unk_A0=chunk_sprites, Unk8005E54CRec.unk_A0=chunk_sprites, Unk8005FC9CRec.unk_00=chunk_sprites, Unk800600C8Rec.unk_00=chunk_sprites, Unk80060544Rec.unk_00=chunk_sprites, Unk1F8000B8_800678A8.unk6E=loop_index
+decl Unk8005C8A8Rec.unk_F0 -> chunk_sprites  include/game.h:427
+decl Unk8005D814Rec.unk_A0 -> chunk_sprites  include/game.h:442
+decl Unk8005E54CRec.unk_A0 -> chunk_sprites  include/game.h:454
+decl Unk8005FC9CRec.unk_00 -> chunk_sprites  include/game.h:469
+decl Unk800600C8Rec.unk_00 -> chunk_sprites  include/game.h:484
+decl Unk80060544Rec.unk_00 -> chunk_sprites  include/game.h:512
+decl Unk1F8000B8_800678A8.unk6E -> loop_index  include/game.h:1154
+  round 0: 2 member error line(s)
+    src/main/eff.c:2973 unk6E x1
+    src/main/eff.c:3197 unk6E x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -427 +427 @@
+-    SPRT unk_F0[50];
++    SPRT chunk_sprites[50];
+@@ -442 +442 @@
+-    SPRT unk_A0[30];
++    SPRT chunk_sprites[30];
+@@ -454 +454 @@
+-    SPRT unk_A0[102];
++    SPRT chunk_sprites[102];
+@@ -469 +469 @@
+-    SPRT unk_00[32];
++    SPRT chunk_sprites[32];
+@@ -484 +484 @@
+-    SPRT unk_00[9];
++    SPRT chunk_sprites[9];
+@@ -512 +512 @@
+-    SPRT unk_00[63];
++    SPRT chunk_sprites[63];
+@@ -1154 +1154 @@
+-    s16 unk6E;
++    s16 loop_index;
+--- a/src/main/eff.c
++++ b/src/main/eff.c
+@@ -2973 +2973 @@
+-    p_idx = &var_0->unk6E;
++    p_idx = &var_0->loop_index;
+@@ -3197 +3197 @@
+-    s16 *quad_index = &work_area->unk6E;
++    s16 *quad_index = &work_area->loop_index;
+DRY RUN: 2 file(s) would change; nothing written
+OK: every member access renamed
