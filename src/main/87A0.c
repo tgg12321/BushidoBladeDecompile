@@ -131,7 +131,8 @@ static inline s32 softbody_Sqrt(s32 x) {
  * 0x400; 0x100 when the squared length exceeds 250000, 0 when it is negative
  * (overflowed)), copies the MATRIX to softbody->matrix and runs
  * softbody_SolveSprings. */
-void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *softbody) {
+void softbody_PrepareStep(
+    Unk80017FA0Rec *step_desc, Func80017A44Output *softbody) {
     s32 dx, dy, dz;
     /* the squared length, then its square root in place, as SOTN's cloaked
      * knight takes `distance = SquareRoot0(distance)` (Q51); a fresh root
@@ -140,16 +141,16 @@ void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *softbody) {
     s32 var_3;
     s32 scale;
 
-    gte_SetRotMatrix(arg0->object_matrix);
-    gte_SetTransMatrix(arg0->object_matrix);
+    gte_SetRotMatrix(step_desc->object_matrix);
+    gte_SetTransMatrix(step_desc->object_matrix);
 
-    softbody_LoadColliders(arg0);
+    softbody_LoadColliders(step_desc);
 
-    dx = arg0->object_matrix->t[0] - softbody->matrix.t[0];
+    dx = step_desc->object_matrix->t[0] - softbody->matrix.t[0];
     SCR->dpos[0] = dx;
-    dy = arg0->object_matrix->t[1] - softbody->matrix.t[1];
+    dy = step_desc->object_matrix->t[1] - softbody->matrix.t[1];
     SCR->dpos[1] = dy;
-    dz = arg0->object_matrix->t[2] - softbody->matrix.t[2];
+    dz = step_desc->object_matrix->t[2] - softbody->matrix.t[2];
     SCR->dpos[2] = dz;
 
     var_3 = (dx * dx) + (dy * dy) + (dz * dz);
@@ -166,7 +167,7 @@ void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *softbody) {
     SCR->dpos[1] = (SCR->dpos[1] * scale) >> 1;
     SCR->dpos[2] = (SCR->dpos[2] * scale) >> 1;
 
-    softbody->matrix = *arg0->object_matrix;
+    softbody->matrix = *step_desc->object_matrix;
     softbody_SolveSprings(softbody);
 }
 
@@ -303,8 +304,9 @@ void softbody_SolveSprings(Func80017A44Output *softbody) {
     gte_stlvl(out);
 }
 
-void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
-void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
+void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *softbody);
+void softbody_SnapToPoints(
+    Unk80017FA0Rec *step_desc, Func80017A44Output *softbody);
 
 /* softbody_Step -- one integration step of the body's nodes, called by
  * softbody_UpdateList for each Unk80017FA0Rec whose snap bit 0 is clear. A node
@@ -312,7 +314,7 @@ void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
  * otherwise the indexed scratchpad forces are applied, the node is pushed out
  * of the ground and out of each collision ellipsoid, and the velocity is damped
  * by 7/8 with 0x190 added to Y. */
-void softbody_Step(Unk80017FA0Rec *step_desc, Func80017A44Output *arg1) {
+void softbody_Step(Unk80017FA0Rec *step_desc, Func80017A44Output *softbody) {
     Func80017A44Record *node;
     s32 i;
     s32 count;
@@ -327,9 +329,9 @@ void softbody_Step(Unk80017FA0Rec *step_desc, Func80017A44Output *arg1) {
      * oversized-locals) */
     s32 lz[6];
 
-    softbody_PrepareStep(step_desc, arg1);
-    count = arg1->count;
-    node = arg1->nodes;
+    softbody_PrepareStep(step_desc, softbody);
+    count = softbody->count;
+    node = softbody->nodes;
 
     for (i = 0; i < count; i++, node++) {
         /* Ruling 11 (reused local): loop index of the add-force,
@@ -337,13 +339,13 @@ void softbody_Step(Unk80017FA0Rec *step_desc, Func80017A44Output *arg1) {
         s32 idx;
         /* Ruling 11 (reused local): force count, a_edge_count (added) then
          * b_edge_count (subtracted) */
-        s32 var_14;
+        s32 node_edge_count;
 
         SCR->pos[0] = node->pos[0];
         SCR->pos[1] = node->pos[1];
         SCR->pos[2] = node->pos[2];
         if (node->field_18 >= 0) {
-            gte_ldv0(&arg1->points[i]);
+            gte_ldv0(&softbody->points[i]);
             gte_rtv0tr();
             gte_stlvnl(SCR->scr18);
             if (node->field_18 > 0) {
@@ -374,7 +376,7 @@ void softbody_Step(Unk80017FA0Rec *step_desc, Func80017A44Output *arg1) {
             continue;
         }
         if (node->field_18 >= -0xFF) {
-            gte_ldv0(&arg1->points[i]);
+            gte_ldv0(&softbody->points[i]);
             gte_rtv0tr();
             gte_stlvnl(SCR->scr18);
             SCR->pos[0] -=
@@ -387,9 +389,9 @@ void softbody_Step(Unk80017FA0Rec *step_desc, Func80017A44Output *arg1) {
         vx = node->vel_x;
         vy = node->vel_y;
         vz = node->vel_z;
-        var_14 = node->a_edge_count;
+        node_edge_count = node->a_edge_count;
         bits = *(s32 *)&node->a_edges[0];
-        for (idx = 0; idx < var_14; idx++) {
+        for (idx = 0; idx < node_edge_count; idx++) {
             s32 *f_add;
 
             f_add = SCR->force[bits & 0xFF];
@@ -402,9 +404,9 @@ void softbody_Step(Unk80017FA0Rec *step_desc, Func80017A44Output *arg1) {
                 bits >>= 8;
             }
         }
-        var_14 = node->b_edge_count;
+        node_edge_count = node->b_edge_count;
         bits2 = *(s32 *)&node->b_edges[0];
-        for (idx = 0; idx < var_14; idx++) {
+        for (idx = 0; idx < node_edge_count; idx++) {
             s32 *f_sub;
 
             f_sub = SCR->force[bits2 & 0xFF];
@@ -564,17 +566,18 @@ void softbody_UpdateList(Unk80017FA0Rec *step_descs, s32 step_desc_count) {
 /* softbody_SnapToPoints - GTE rotate-translate of the body's SVECTOR points (by
  * arg0's MATRIX) into its 0x40-stride node table, scaled << 7, with each node's
  * velocity zeroed; then copies that MATRIX (32 bytes) into arg1->matrix. */
-void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
+void softbody_SnapToPoints(
+    Unk80017FA0Rec *step_desc, Func80017A44Output *softbody) {
     s32 out[3];
     s32 i;
     Func80017A44Record *dst;
 
-    gte_SetRotMatrix(arg0->object_matrix);
-    gte_SetTransMatrix(arg0->object_matrix);
+    gte_SetRotMatrix(step_desc->object_matrix);
+    gte_SetTransMatrix(step_desc->object_matrix);
 
-    dst = arg1->nodes;
-    for (i = 0; i < arg1->count; i++) {
-        gte_ldv0(&arg1->points[i]);
+    dst = softbody->nodes;
+    for (i = 0; i < softbody->count; i++) {
+        gte_ldv0(&softbody->points[i]);
         gte_rtv0tr();
         gte_stlvnl(out);
         dst->pos[0] = out[0] << 7;
@@ -585,7 +588,7 @@ void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
         dst->vel_z = 0;
         dst++;
     }
-    arg1->matrix = *arg0->object_matrix;
+    softbody->matrix = *step_desc->object_matrix;
 }
 
 void pad_SetDefaultSavedButtonMappings(void) {

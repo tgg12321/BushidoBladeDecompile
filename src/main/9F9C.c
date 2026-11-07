@@ -3109,14 +3109,14 @@ void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *rec) {
     s16 out[3];
     s32 fighter_index;
     s32 mul;
-    MATRIX **var_4;
+    MATRIX **bone_matrices;
 
     fighter_index = rec->index;
     if (rec->bone_event_counter != 0) {
         rec->bone_event_counter += 1;
         if ((rec->bone_event_counter & 7) == 2) {
-            var_4 = node_GetSlotMatrixPointerArray(fighter_index);
-            gte_SetRotMatrix(var_4[rec->bone_event_bone_index]);
+            bone_matrices = node_GetSlotMatrixPointerArray(fighter_index);
+            gte_SetRotMatrix(bone_matrices[rec->bone_event_bone_index]);
             gte_ldlv0(&rec->bone_event_local_vector);
             gte_rtv0();
             mul = ((0x96 - rec->bone_event_counter) << 12) / 150;
@@ -3186,16 +3186,16 @@ void fighter_UpdateBoneWorldData(
     MATRIX *m;
     s32 *pos;
     SVec4i16 *v;
-    BoneHitRec *var_5;
+    BoneHitRec *bone_hit_record;
     Unk80107850Rec *o;
     s32 i;
 
     bone_matrices = node_GetSlotMatrixPointerArray(rec->index);
-    var_5 = g_fighter_bone_hit_records[rec->index];
+    bone_hit_record = g_fighter_bone_hit_records[rec->index];
     o = bone_hit_points;
-    for (i = 0; i < 22; i++, var_5++, o++) {
-        m = bone_matrices[var_5->bone];
-        gte_ApplyMatrix(m, &var_5->ofs, o);
+    for (i = 0; i < 22; i++, bone_hit_record++, o++) {
+        m = bone_matrices[bone_hit_record->bone];
+        gte_ApplyMatrix(m, &bone_hit_record->ofs, o);
         o->x += m->t[0];
         o->y += m->t[1];
         o->z += m->t[2];
@@ -3820,7 +3820,7 @@ void fight_GetStartPosition(
 }
 
 void fight_SearchRadialFlatSurfacePointOrUseStartPositionPair(
-    s32 arg0, Vec3i32 *out, s32 *pos) {
+    s32 fighter_index, Vec3i32 *out, s32 *pos) {
     Vec3i32 base;
     Vec3i32 cur;
     Vec3i32 segment_end;
@@ -3921,7 +3921,7 @@ void fight_SearchRadialFlatSurfacePointOrUseStartPositionPair(
 }
 
 void fight_PickRandomStartPositionExcludingNearestAndFarthest(
-    s32 arg0, s32 *position_out, s32 *other_position) {
+    s32 fighter_index, s32 *position_out, s32 *other_position) {
     s32 dist_sq[4];
     s32 picks[2];
     s16 *base;
@@ -4473,12 +4473,13 @@ s32 fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow(
     }
 }
 
-void fighter_UpdateInputSteeredForwardMotion(Unk80101EC8Record *arg0) {
-    u16 kind = arg0->move_kind;
+void fighter_UpdateInputSteeredForwardMotion(
+    Unk80101EC8Record *fighter_record) {
+    u16 kind = fighter_record->move_kind;
 
     if (kind == 0x13 || kind == 0x1B || kind == 0x30) {
         s32 a2;
-        u32 bits = arg0->pad_input.held;
+        u32 bits = fighter_record->pad_input.held;
         if (bits & 0xF000) {
             s32 a1 = (bits >> 14) & 1;
             s32 a0;
@@ -4494,15 +4495,17 @@ void fighter_UpdateInputSteeredForwardMotion(Unk80101EC8Record *arg0) {
             a2 = g_fighter_dpad_angle_offsets[a0][a1];
 
             if (g_fight_tracked_view_setting != 0 &&
-                arg0->cpu_controlled == 0) {
-                fighter_SetTurnDelta(arg0, arg0->orientation.vy + a2 / 4);
+                fighter_record->cpu_controlled == 0) {
+                fighter_SetTurnDelta(
+                    fighter_record, fighter_record->orientation.vy + a2 / 4);
             } else {
-                fighter_SetTurnDelta(arg0, arg0->opponent_bearing + a2);
+                fighter_SetTurnDelta(
+                    fighter_record, fighter_record->opponent_bearing + a2);
             }
         } else {
             if (g_fight_tracked_view_setting != 0 &&
-                arg0->cpu_controlled == 0) {
-                arg0->remaining_turn = 0;
+                fighter_record->cpu_controlled == 0) {
+                fighter_record->remaining_turn = 0;
             }
         }
 
@@ -4512,7 +4515,7 @@ void fighter_UpdateInputSteeredForwardMotion(Unk80101EC8Record *arg0) {
              * one multiply-set pseudo keeps every staged value in $a2, as in
              * the target; separate locals land in $a2/$a0/$a1 (a fresh local
              * here: score 15). */
-            a2 = arg0->forward_move_rate_reduction;
+            a2 = fighter_record->forward_move_rate_reduction;
             if (a2 < 0) {
                 a2 = -a2;
             }
@@ -4521,62 +4524,63 @@ void fighter_UpdateInputSteeredForwardMotion(Unk80101EC8Record *arg0) {
             }
 
             {
-                s32 var_5 = (u16)arg0->forward_move_rate - a2;
-                s32 div16 = arg0->size_scale;
+                s32 var_5 = (u16)fighter_record->forward_move_rate - a2;
+                s32 div16 = fighter_record->size_scale;
                 s16 new_14e;
                 s32 tbl_val;
                 s32 mult_res;
                 s32 limit;
 
-                arg0->forward_move_rate = var_5;
+                fighter_record->forward_move_rate = var_5;
                 if (div16 < 0) {
                     div16 += 15;
                 }
                 div16 >>= 4;
                 new_14e = var_5 + div16;
-                arg0->forward_move_rate = new_14e;
+                fighter_record->forward_move_rate = new_14e;
 
                 tbl_val = g_fighter_forward_move_rate_limits
                     [g_fighter_forward_move_rate_limit_indices
-                         [arg0->character_data_index]];
+                         [fighter_record->character_data_index]];
                 /* FAKE: the second read of arg0->size_scale is staged through
                  * the dead `var_5`, as above; reading in place: score
                  * 11. */
-                var_5 = arg0->size_scale;
+                var_5 = fighter_record->size_scale;
                 mult_res = var_5 * tbl_val;
                 limit = (mult_res << 4) >> 12;
 
                 if (limit < (s16)new_14e) {
-                    arg0->forward_move_rate = limit;
+                    fighter_record->forward_move_rate = limit;
                 } else if ((s16)new_14e < 0) {
-                    arg0->forward_move_rate = 0;
+                    fighter_record->forward_move_rate = 0;
                 }
 
                 {
-                    s32 var_13 =
-                        arg0->forward_move_rate * arg0->move_frame_step;
-                    s16 sin_val = Judge[(arg0->orientation.vy & 0xFFF)];
+                    s32 var_13 = fighter_record->forward_move_rate *
+                                 fighter_record->move_frame_step;
+                    s16 sin_val =
+                        Judge[(fighter_record->orientation.vy & 0xFFF)];
 
                     /* FAKE: the >>12 speed is staged through the dead `a2`, as
                      * above; a fresh local or the shift inline: score 30. */
                     a2 = var_13 >> 12;
 
-                    arg0->base_pos.x += (sin_val * a2) >> 16;
+                    fighter_record->base_pos.x += (sin_val * a2) >> 16;
 
                     {
-                        s16 cos_val =
-                            Judge[((arg0->orientation.vy + 0x400) & 0xFFF)];
-                        arg0->base_pos.z += (cos_val * a2) >> 16;
+                        s16 cos_val = Judge[(
+                            (fighter_record->orientation.vy + 0x400) & 0xFFF)];
+                        fighter_record->base_pos.z += (cos_val * a2) >> 16;
                     }
                 }
             }
         }
     } else {
-        if (arg0->forward_move_rate > 0) {
+        if (fighter_record->forward_move_rate > 0) {
             if (kind != 0x22) {
-                arg0->remaining_turn = 0;
+                fighter_record->remaining_turn = 0;
             }
-            arg0->forward_move_rate = 0;
+            fighter_record->forward_move_rate = 0;
         }
     }
 }
