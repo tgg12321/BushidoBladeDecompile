@@ -1,4 +1,4 @@
-glabel func_8004A940
+glabel gpu_DispatchPrimitiveGroupsThroughHandlerTable
     /* 3B140 8004A940 04003FAE */  sw         $ra, 0x4($s1)
     /* 3B144 8004A944 00000496 */  lhu        $a0, 0x0($s0)
     /* 3B148 8004A948 02001026 */  addiu      $s0, $s0, 0x2
@@ -21,12 +21,12 @@ glabel func_8004A940
     /* 3B184 8004A984 00000000 */  nop
     /* 3B188 8004A988 0800E003 */  jr         $ra
     /* 3B18C 8004A98C 00000000 */   nop
-endlabel func_8004A940
+endlabel gpu_DispatchPrimitiveGroupsThroughHandlerTable
 # 0x8004A990-0x8004B6E3: jtbl_8001541C case bodies of gpu_DrawQueuedEntries
 # (asm/funcs/gpu_DrawQueuedEntries.s). They are reached only through that
 # table and leave by j .L8004A560 / j .L8004A5D0 back into it, so they belong
 # to no function symbol here: the hand-written source placed them after
-# func_8004A940.
+# gpu_DispatchPrimitiveGroupsThroughHandlerTable.
   jlabel .L8004A990
     /* 3B190 8004A990 0A80023C */  lui        $v0, %hi(g_view_camera_root_ptr)
     /* 3B194 8004A994 0837428C */  lw         $v0, %lo(g_view_camera_root_ptr)($v0)

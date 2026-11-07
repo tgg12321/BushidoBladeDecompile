@@ -42,7 +42,7 @@ extern u8 L800514FC[] __asm__(".L800514FC");
 extern u8 L800516FC[] __asm__(".L800516FC");
 extern u8 L80051894[] __asm__(".L80051894");
 
-s16 *func_8004B6E4();
+s16 *gpu_EmitOtCutoffFlatLitTexturedTrianglesWithOptionalSubdivision();
 void gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision();
 void sys_StoreZeroPastScratchpadOnFailedCheck();
 void gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedTriangles();
@@ -68,7 +68,7 @@ void * const jtbl_8001545C[5] = {
 
 /* D_80015470: 4 words (16B) @ 0x80015470 */
 void * const D_80015470[4] = {
-    func_8004B6E4,
+    gpu_EmitOtCutoffFlatLitTexturedTrianglesWithOptionalSubdivision,
     gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision,
     sys_StoreZeroPastScratchpadOnFailedCheck,
     sys_StoreZeroPastScratchpadOnFailedCheck,

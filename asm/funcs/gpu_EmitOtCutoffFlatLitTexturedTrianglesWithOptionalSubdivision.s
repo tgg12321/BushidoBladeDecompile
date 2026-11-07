@@ -1,4 +1,4 @@
-glabel func_8004B6E4
+glabel gpu_EmitOtCutoffFlatLitTexturedTrianglesWithOptionalSubdivision
     /* 3BEE4 8004B6E4 801F083C */  lui        $t0, (0x1F8001D4 >> 16)
     /* 3BEE8 8004B6E8 E8011FAD */  sw         $ra, (0x1F8001E8 & 0xFFFF)($t0)
     /* 3BEEC 8004B6EC EC011EAD */  sw         $fp, (0x1F8001EC & 0xFFFF)($t0)
@@ -300,4 +300,4 @@ glabel func_8004B6E4
     /* 3C35C 8004BB5C 0C02108D */  lw         $s0, (0x1F80020C & 0xFFFF)($t0)
     /* 3C360 8004BB60 0800E003 */  jr         $ra
     /* 3C364 8004BB64 00000000 */   nop
-endlabel func_8004B6E4
+endlabel gpu_EmitOtCutoffFlatLitTexturedTrianglesWithOptionalSubdivision

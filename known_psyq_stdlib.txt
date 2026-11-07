@@ -27,8 +27,8 @@ slot_ClearObjectPointersAndTextureRequests                         psyq_memset  
 func_8004A348                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 gpu_DrawQueuedEntries                         handwritten_asm           uses GCC-unfriendly mnemonics: 2 trapping addi (0x8004A5A0, 0x8004A67C) and 4 ctc2; no add/sub/syscall (corrected 2026-09-29, owner Q40)
 gte_ProjectPackedVertices                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
-func_8004A940                         handwritten_asm           custom callee-saved ABI: $s0/$s1/$s4 live-in, $ra parked at 4($s1) (no add/addi/sub since the 2026-11-06 extent split)
-func_8004B6E4                         handwritten_asm           uses GCC-unfriendly mnemonics: 38 trapping add/addi/sub/neg; callee-saves to absolute scratchpad
+gpu_DispatchPrimitiveGroupsThroughHandlerTable                         handwritten_asm           custom callee-saved ABI: $s0/$s1/$s4 live-in, $ra parked at 4($s1) (no add/addi/sub since the 2026-11-06 extent split)
+gpu_EmitOtCutoffFlatLitTexturedTrianglesWithOptionalSubdivision                         handwritten_asm           uses GCC-unfriendly mnemonics: 38 trapping add/addi/sub/neg; callee-saves to absolute scratchpad
 gpu_SubdivideAndEmitTexturedTriangle                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 gpu_SubdivideAndEmitTexturedQuad                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
