@@ -33,6 +33,7 @@ Group assets-stage-section3 (format decode) -- 3 targets
 Group types-wave-cell-record (layout of the consumer's input) -- 5 targets
 - wave_Init:a1 (:798), :a2 (:797), :t0 (:799), :v1 (:800): column << 8, 0x13 + column, 0x1200 + (column << 8), column + 1 (:817-:820, :879-:883), read only in a2 | t0 / v1 | a1 (:860-:868), two vertex-index bytes per halfword for the INCLUDE_ASM consumer. A name must say which corner (the byte position is fixed by the ORs). Missing: the typed cell record.
 - wave_Init:t2 (:801): = 0x2C00 (:814), stored as cell halfword 1 (:825 / :842), read by the consumer as GTE RGBC word and a depth flag byte. Not FAKE, so not const-holder. Missing: the cell record layout.
+- Resolved (sweep-368e4-r4.1, naming-a 2026-11-07): all 5 renamed after types-wave-cell-record landed: a2 -> odd_next_vertex_index, t0 -> odd_vertex_index_hi, v1 -> even_next_vertex_index, a1 -> even_vertex_index_hi, t2 -> flags_and_gp0_code.
 
 Group trace-sweep-368e4.6 (Q124 role captures) -- 5 targets
 - math_Grayscale3:arg0 / :arg2 (:1501): red / blue weights, but 31D3C.c:118-120 passes patch_color.byte[2] / byte[0] where its else branch (:123-125) reads byte[0] as r. Missing: the patched colour's channel order (Q1).
