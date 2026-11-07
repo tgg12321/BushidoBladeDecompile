@@ -1,0 +1,24 @@
+==============================================================================
+DATA WAVE — 7 addresses, 7 identifiers remapped
+  0x8009a8c8: D_8009A8C8 -> g_cpu_limits_and_entry_masks_by_stage_command_count
+  0x8009a928: D_8009A928 -> g_cpu_chanbara_script_entry_masks
+  0x8009a9b4: D_8009A9B4 -> g_cpu_chanbara_tally_threshold_wait_limits
+  0x8009a9dc: D_8009A9DC -> g_cpu_practice_entry_class_list_rows
+  0x8009a9f0: D_8009A9F0 -> g_cpu_practice_script_entry_class_lists
+  0x800a325c: D_800A325C -> g_cpu_dpad_press_action_by_opponent_nibble
+  0x800a3260: D_800A3260 -> g_cpu_dpad_double_tap_action_by_opponent_nibble
+
+-- file edits (6) --
+  asm/funcs/fighter_InitCpuControl.s  (2)
+  asm/funcs/fighter_UpdateCpuNavigationChooseScriptsAndHeldInput.s  (10)
+  include/bb2.h  (2)
+  src/main/4510C.c  (15)
+  src/main/d_8A588.c  (5)
+  symbol_addrs.txt  (3)
+
+-- registry lines --
+  symbol_addrs.txt:1183 D_800A325C -> g_cpu_dpad_press_action_by_opponent_nibble
+  symbol_addrs.txt:1184 D_800A3260 -> g_cpu_dpad_double_tap_action_by_opponent_nibble
+  symbol_addrs.txt:1200 D_8009A8C8 -> g_cpu_limits_and_entry_masks_by_stage_command_count
+
+DRY RUN — nothing written. Re-run with --apply.
