@@ -2818,8 +2818,8 @@ multpath_start:
     frame_step = (frame_step * factor) >> 12;
 defaultpath: {
     s32 group_14_21_tally = fighter_record->hit_record_group_14_21_hit_tally;
-    s32 var_9 = fighter_record->power_scale_tally;
-    s32 sum = group_14_21_tally + var_9;
+    s32 power_scale_tally = fighter_record->power_scale_tally;
+    s32 sum = group_14_21_tally + power_scale_tally;
     s32 sum_or_3 = (sum < 4) ? sum : 3;
     idx = sum_or_3;
 }
@@ -3505,15 +3505,16 @@ void fighter_AssignMotionSlotAndScanDataIdNibbles(s32 fighter_index) {
 
 void motion_AdvanceVariantIfAtNibble4Or5Position(
     Unk80101EC8Record *fighter_record) {
-    s16 a1 = fighter_record->variant_index;
-    if (a1 != fighter_record->object_variant_index) {
-        if (a1 != fighter_record->nibble5_variant_index) {
+    s16 variant_index = fighter_record->variant_index;
+    if (variant_index != fighter_record->object_variant_index) {
+        if (variant_index != fighter_record->nibble5_variant_index) {
             return;
         }
     }
     fighter_record->variant_index =
-        (s16)((a1 + 1) % g_motion_fighter_buffers[fighter_record->motion_slot]
-                             ->variant_count);
+        (s16)((variant_index + 1) %
+              g_motion_fighter_buffers[fighter_record->motion_slot]
+                  ->variant_count);
 }
 
 /* 66 string literals, 12 bytes apart (word-aligned char arrays). No code
