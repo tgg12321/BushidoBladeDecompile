@@ -2267,7 +2267,7 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *stream_cursor, s32 block_id) {
         c = &g_gpu_grid_node_records[n++];
         c->node.primitive_table_select = 0;
         c->node.parent_node = 0;
-        c->node.rotation_order = 0;
+        c->node.rotation_order = ROTATION_ORDER_ZYX;
         c->node.light_setup_index = 4;
         c->node.reloc_entry_index = w;
         c->node.reloc_block_id = block_id;

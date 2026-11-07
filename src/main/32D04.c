@@ -397,11 +397,14 @@ void math_RotMatrixXYZ(u16 *angles, MATRIX *matrix) {
 extern void math_RotMatrixXYZ();
 
 void math_InitRotMatrixFuncs(void) {
-    g_math_rot_matrix_funcs[0] = math_RotMatrixZYX;
+    g_math_rot_matrix_funcs[ROTATION_ORDER_ZYX] = math_RotMatrixZYX;
     /* the three below take their angles as u16 *, not SVECTOR * */
-    g_math_rot_matrix_funcs[2] = (RotMatrixFunc)math_RotMatrixZXY;
-    g_math_rot_matrix_funcs[4] = (RotMatrixFunc)math_RotMatrixYXZ;
-    g_math_rot_matrix_funcs[5] = (RotMatrixFunc)math_RotMatrixXYZ;
+    g_math_rot_matrix_funcs[ROTATION_ORDER_ZXY] =
+        (RotMatrixFunc)math_RotMatrixZXY;
+    g_math_rot_matrix_funcs[ROTATION_ORDER_YXZ] =
+        (RotMatrixFunc)math_RotMatrixYXZ;
+    g_math_rot_matrix_funcs[ROTATION_ORDER_XYZ] =
+        (RotMatrixFunc)math_RotMatrixXYZ;
 }
 
 void math_TransposeMatrixInPlace(MATRIX *matrix) {
@@ -1211,7 +1214,7 @@ void node_InitFrameEntriesFromWorldTranslations(void) {
         dst->node.reloc_entry_index = 0;
         dst->node.reloc_block_id =
             g_node_frame_animation_context.reloc_block_id;
-        dst->node.rotation_order = 0;
+        dst->node.rotation_order = ROTATION_ORDER_ZYX;
         dst->node.parent_node = 0;
         dst->node.light_setup_index = 4;
         dst->node.xf.rot.vx = 0;

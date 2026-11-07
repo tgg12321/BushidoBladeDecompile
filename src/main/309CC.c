@@ -104,7 +104,7 @@ void node_AppendProjectedNodeToList(
     node_cursor->node.primitive_table_select = 0;
     node_cursor->node.parent_node = &a0[6].node;
     node_cursor->node.matrix_state = NODE_MATRIX_DONE;
-    node_cursor->node.rotation_order = 0;
+    node_cursor->node.rotation_order = ROTATION_ORDER_ZYX;
     node_cursor->node.light_setup_index = 0;
     node_cursor->node.reloc_block_id = block_id;
     node_cursor->unk58 = 0;
@@ -327,7 +327,7 @@ void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *slot_object) {
             s16 parent_node_index;
             node_cursor->node.node_kind = 0;
             node_cursor->node.primitive_table_select = 0;
-            node_cursor->node.rotation_order = 0;
+            node_cursor->node.rotation_order = ROTATION_ORDER_ZYX;
             node_cursor->node.reloc_entry_index = -1;
             parent_node_index = g_node_hierarchy_templates.recs[i].parent_index;
             if (parent_node_index != -1) {
@@ -460,7 +460,7 @@ void node_BuildProjectedNodeList(Unk80045878Obj *slot_object) {
             node_cursor->node.reloc_entry_index = *id;
             node_cursor->node.node_kind = 3;
             node_cursor->node.primitive_table_select = 0;
-            node_cursor->node.rotation_order = 0;
+            node_cursor->node.rotation_order = ROTATION_ORDER_ZYX;
             node_cursor->node.parent_node = &parents[i].node;
             node_cursor->node.matrix_state = NODE_MATRIX_DONE;
             node_cursor->node.light_setup_index = 0;

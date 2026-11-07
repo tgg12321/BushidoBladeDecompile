@@ -141,9 +141,9 @@ s32 motion_UpdatePlayback(void) {
         playback_rotation.vx = 0;
         playback_rotation.vz = 0;
         playback_rotation.vy = s->rotation_y;
-        g_math_rot_matrix_funcs[0](
+        g_math_rot_matrix_funcs[ROTATION_ORDER_ZYX](
             &playback_rotation, &playback_rotation_matrix);
-        g_math_rot_matrix_funcs[0](
+        g_math_rot_matrix_funcs[ROTATION_ORDER_ZYX](
             &g_view_camera_root_node.xf.rot, &g_view_camera_root_node.work);
         MulMatrix2(&playback_rotation_matrix, &g_view_camera_root_node.work);
         math_MatrixToAnglesYXZ(

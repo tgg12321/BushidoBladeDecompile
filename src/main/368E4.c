@@ -485,7 +485,7 @@ void gpu_ResetDrawQueueAndPrepareViewAndLighting(
         rot.vy = -camera_angles->vy;
         rot.vz = -camera_angles->vz;
 
-        g_math_rot_matrix_funcs[0](&rot, &matrix_buf);
+        g_math_rot_matrix_funcs[ROTATION_ORDER_ZYX](&rot, &matrix_buf);
 
         ApplyMatrixLV(&matrix_buf, view_offset, result);
 
@@ -653,7 +653,7 @@ MATRIX *camera_GetViewMatrixWithHalvedMiddleRow(void) {
 
 void node_InitIdentity(Unk80101DF0Record *node) {
     node->reloc_block_id = 8;
-    node->rotation_order = 0;
+    node->rotation_order = ROTATION_ORDER_ZYX;
     node->reloc_entry_index = 0;
     node->node_kind = 0;
     node->primitive_table_select = 0;
@@ -715,7 +715,7 @@ void wave_UpdateCallback(void) { wave_Update(); }
 
 void node_InitViewOffsetNodeWithYXZRotation(void) {
     node_InitIdentity(&g_view_offset_node);
-    g_view_offset_node.rotation_order = 4;
+    g_view_offset_node.rotation_order = ROTATION_ORDER_YXZ;
 }
 
 void node_OrientAndQueueViewOffsetNode(void) {
@@ -755,8 +755,9 @@ void node_OrientAndQueueViewOffsetNode(void) {
     base->xf.mat.t[0] = g_view_camera_root_node.xf.mat.t[0];
     base->xf.mat.t[1] = g_view_camera_root_node.xf.mat.t[1];
     base->xf.mat.t[2] = g_view_camera_root_node.xf.mat.t[2] + 0x6590;
-    g_math_rot_matrix_funcs[4](&base->xf.rot, &buf1);
-    g_math_rot_matrix_funcs[0](&g_view_camera_root_node.xf.rot, &buf2);
+    g_math_rot_matrix_funcs[ROTATION_ORDER_YXZ](&base->xf.rot, &buf1);
+    g_math_rot_matrix_funcs[ROTATION_ORDER_ZYX](
+        &g_view_camera_root_node.xf.rot, &buf2);
     MulMatrix0(&buf2, &buf1, &base->xf.mat);
 
     {
@@ -930,7 +931,7 @@ s32 wave_Init(void) {
         node->xf.rot.vx = 0;
         node->xf.rot.vy = 0;
         node->xf.rot.vz = 0;
-        node->rotation_order = 0;
+        node->rotation_order = ROTATION_ORDER_ZYX;
         node->parent_node = 0;
         node->matrix_state = NODE_MATRIX_REBUILD;
         node_UpdateWorldMatrix(node);
@@ -2010,7 +2011,7 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
     obj->node.reloc_entry_index =
         g_resource_entry_request_state[entry_index] * 2;
     obj->node.reloc_block_id = 6;
-    obj->node.rotation_order = 0;
+    obj->node.rotation_order = ROTATION_ORDER_ZYX;
     obj->node.parent_node = 0;
     obj->node.light_setup_index = 4;
     if (flags != 0) {
@@ -2018,7 +2019,8 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
             obj->node.xf.rot.vx = rot_in[0];
             obj->node.xf.rot.vy = rot_in[1];
             obj->node.xf.rot.vz = rot_in[2];
-            g_math_rot_matrix_funcs[0](&obj->node.xf.rot, &obj->node.xf.mat);
+            g_math_rot_matrix_funcs[ROTATION_ORDER_ZYX](
+                &obj->node.xf.rot, &obj->node.xf.mat);
             obj->node.xf.mat.t[0] = pos[0];
             obj->node.xf.mat.t[1] = pos[1];
             obj->node.xf.mat.t[2] = pos[2];
@@ -2084,7 +2086,7 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
             list = g_draw_queue_cursor;
             obj->node.parent_node = &obj[-1].node;
             obj->node.matrix_state = NODE_MATRIX_DONE;
-            obj->node.rotation_order = 0;
+            obj->node.rotation_order = ROTATION_ORDER_ZYX;
             obj->node.light_setup_index = 0;
             obj->node.reloc_block_id = 6;
             obj->node.reloc_entry_index = entry * 2 + 1;
@@ -2133,7 +2135,7 @@ void node_QueueTableEntryNodePairUnderSlotNode(
     obj->node.reloc_entry_index =
         g_resource_entry_request_state[linked_entry_index] * 2;
     obj->node.reloc_block_id = 6;
-    obj->node.rotation_order = 0;
+    obj->node.rotation_order = ROTATION_ORDER_ZYX;
     obj->node.light_setup_index = 4;
     src = &g_node_entry_pair_local_transforms[(arg1 & 1) * 6];
     obj->node.work.t[0] = ((*src) * slot_obj->position_scale) >> 12;
@@ -2161,7 +2163,7 @@ void node_QueueTableEntryNodePairUnderSlotNode(
     obj->node.node_kind = 3;
     obj->node.parent_node = &obj[-1].node;
     obj->node.primitive_table_select = 0;
-    obj->node.rotation_order = 0;
+    obj->node.rotation_order = ROTATION_ORDER_ZYX;
     obj->node.matrix_state = NODE_MATRIX_DONE;
     obj->node.light_setup_index = 0;
     obj->node.reloc_block_id = 6;
@@ -2316,7 +2318,7 @@ void node_InitViewRootNodePair(void) {
     g_view_camera_root_node.work.t[1] = 0;
     g_view_camera_root_node.work.t[2] = 0;
     g_view_camera_root_node.parent_node = 0;
-    g_view_camera_root_node.rotation_order = 5;
+    g_view_camera_root_node.rotation_order = ROTATION_ORDER_XYZ;
     node_SetMatrixFromNegatedRot(camera_root);
     identity_root->node_kind = 0x65;
     g_view_identity_root_node.primitive_table_select = 0;
@@ -2327,7 +2329,7 @@ void node_InitViewRootNodePair(void) {
     g_view_identity_root_node.work.t[1] = 0;
     g_view_identity_root_node.work.t[2] = 0;
     g_view_identity_root_node.parent_node = 0;
-    g_view_identity_root_node.rotation_order = 2;
+    g_view_identity_root_node.rotation_order = ROTATION_ORDER_ZXY;
     node_SetMatrixFromNegatedRot(identity_root);
     g_view_camera_root_ptr = camera_root;
     g_view_identity_root_ptr = identity_root;

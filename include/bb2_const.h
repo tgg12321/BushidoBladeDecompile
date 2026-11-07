@@ -103,4 +103,11 @@ enum FightChoiceMenuItem {
     FIGHT_CHOICE_TOP_MENU = 2,
 };
 
+enum RotationOrder {
+    ROTATION_ORDER_ZYX = 0,
+    ROTATION_ORDER_ZXY = 2,
+    ROTATION_ORDER_YXZ = 4,
+    ROTATION_ORDER_XYZ = 5,
+};
+
 #endif /* BB2_CONST_H */

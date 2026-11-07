@@ -83,7 +83,8 @@ void slot_UpdateObjectFrame(
         s2->node.xf.rot.vy = -s1[0x3A];
         s2->node.xf.rot.vz = -s1[0x3B];
 
-        g_math_rot_matrix_funcs[0](&s2->node.xf.rot, &s2->node.work);
+        g_math_rot_matrix_funcs[ROTATION_ORDER_ZYX](
+            &s2->node.xf.rot, &s2->node.work);
 
         s2[1].node.work.t[0] = s1[0x3C];
         s2[1].node.work.t[1] = -s1[0x3D];
@@ -92,7 +93,8 @@ void slot_UpdateObjectFrame(
         s2[1].node.xf.rot.vy = -s1[0x40];
         s2[1].node.xf.rot.vz = -s1[0x41];
 
-        g_math_rot_matrix_funcs[0](&s2[1].node.xf.rot, &s2[1].node.work);
+        g_math_rot_matrix_funcs[ROTATION_ORDER_ZYX](
+            &s2[1].node.xf.rot, &s2[1].node.work);
         break;
     }
     case 1:
