@@ -7279,6 +7279,69 @@ def test_naming_keycheck_scoped_pairs() -> None:
                 why = str(e)
             check("keycheck: typedef words refuse a missed type's " + label + " shadow",
                   ("inside a type name" if label == "type-name" else "unrecognised type") in why)
+    # A pointer-to-array declarator `T (*l)[n]` binds l (row
+    # scoped-plan-paren-declarators): parameter and local, plain or qualified.
+    for label, text in [
+            ("parameter", "typedef struct { int w; } M;\nvoid g(M (*)[2]);\n"
+             "void g(M (*l)[2]) { (*l)[1] = (*l)[0]; l++; }\n"),
+            ("parameter among others", "typedef struct { int w; } M;\n"
+             "int g(int a, M (*l)[2], int b) { M *p = *l; return a + b + p->w + (*l)[1].w; }\n"),
+            ("const parameter", "int g(int (*const l)[3]) { return (*l)[2]; }\n"),
+            ("local", "int g(int (*q)[2]) { int (*l)[2] = q; l++; return (*l)[0]; }\n"),
+            ("block local", "int g(int (*q)[2]) { int x = 0; { int (*l)[2]; l = q; x = (*l)[1]; } return x; }\n"),
+            ("two bounds", "int g(int (*l)[2][3]) { return (*l)[1][2]; }\n")]:
+        ok, why = proof("g:l=fresh", {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "fresh", text)})
+        check("keycheck: pointer-to-array " + label + " plans (" + why + ")", ok)
+    for label, text, why_part in [
+            ("pointer to function", "int g(int (*l)(int)) { return l(1); }\n", "parenthesized declarator"),
+            ("no bound", "int g(int x) { int (*l) = &x; return *l; }\n", "parenthesized declarator"),
+            ("bound naming the name", "int g(int x) { int (*l)[sizeof l]; return x; }\n", "parenthesized declarator"),
+            ("struct tag element", "struct S;\nint g(struct S (*l)[2]) { return l != 0; }\n",
+             "parenthesized declarator"),
+            ("later comma declarator", "int g(int x) { int a = x, (*l)[2]; return a; }\n", "comma declarator"),
+            ("prototype inside a parameter", "int g(int (*cb)(int (*l)[2])) { return cb(0); }\n", ""),
+            ("shadow by a pointer-to-array block local",
+             "int g(int l) { { int (*l)[2] = 0; l++; } return l; }\n", "found 2"),
+            # A typedef name f declares as a value makes `M (*l)[2]` a call.
+            ("typedef shadowed by a parameter, global l",
+             "typedef int M;\nint (*l)[2];\nint *h(int *);\nint g(int *M(int *)) { { M (*l)[2]; } return 0; }\n",
+             "parenthesized declarator"),
+            ("typedef shadowed by a local",
+             "typedef int M;\nint (*l)[2];\nint *h(int *);\n"
+             "int g(void) { int *(*M)(int *) = h; { M (*l)[2]; } return 0; }\n", "parenthesized declarator"),
+            ("typedef shadowed by a parameter, function level",
+             "typedef int M;\nint (*l)[2];\nint g(int *M(int *)) { M (*l)[2]; return 0; }\n", "parenthesized declarator"),
+            ("typedef shadowed by a comma local",
+             "typedef int M;\nint (*l)[2];\nint g(int x) { int a, M; { M (*l)[2]; } return x; }\n",
+             "parenthesized declarator"),
+            ("typedef in a file the TU does not include",
+             {"src/a.c": "int *M(int *);\nint (*l)[2];\nint g(int x) { M (*l)[2]; return x; }\n",
+              "src/b.c": "typedef int M;\n"}, "parenthesized declarator"),
+            ("typedef element type behind a qualifier-only prefix",
+             "typedef int T;\nint g(int x) { int l = x; { const (*l)[2]; } return l; }\n", "")]:
+        try:
+            nk.scoped_plan(text if isinstance(text, dict) else {"src/a.c": text}, {"g:l": "fresh"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e) or "refused"
+        check("keycheck: pointer-to-array refuses " + label + " (" + why + ")", bool(why) and why_part in why)
+    # The raw plan is preflight (a dead-branch typedef or an over-matched header
+    # still counts); the cpp-stage rerun on the preprocessed TU refuses both.
+    for label, cpp_text, why_part in [
+            # Both preprocess to the same text: the typedef is gone, l is a use.
+            ("dead-branch typedef or a header cpp never opens",
+             "int *M(int *);\nint *l;\nint g(void) { { M (*l)[2]; } return 0; }\n", "found 0"),
+            # A typedef after f is not in scope there: M is an implicit function.
+            ("typedef after f", "int *l;\nint *q;\nint g(void) { { M (*l)[q]; } return 0; }\ntypedef int M;\n",
+             "parenthesized declarator"),
+            ("typedef shadowed in the TU","typedef int M;\nint *l;\nint g(int *M(int *)) { { M (*l)[2]; } return 0; }\n",
+             "parenthesized declarator")]:
+        try:
+            nk._scoped_plan({"src/cpp.c": cpp_text}, {"g:l": "__kc_binding_check__"})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: cpp-stage pointer-to-array refuses " + label + " (" + why + ")", bool(why) and why_part in why)
     text = "int f(int l) { int a = l, b = l + 1; return a + b + l; }"
     check("keycheck: local use in comma initializers", proof("f:l=fresh", {"src/a.c": text},
           {"src/a.c": re.sub(r"\bl\b", "fresh", text)})[0])

@@ -3890,6 +3890,88 @@ def local_freshness(base, name, all_macros=frozenset(), known_types=None, bodies
             raise ValueError(f'{path}: destination {name} is not fresh at file scope or in an enum body')
 
 
+def paren_array_declarator(ts, k, boundary, follow, types):
+    """The one parenthesized declarator a local pair admits: a pointer to array,
+    `T ( * [const|volatile] old ) [n]...`. Every token before the `(` back to the
+    boundary is a known type word (the statement start in a body; `(` / `,` in
+    the parameter list), at least one `[...]` bound (not naming old) follows the
+    `)`, and a token of `follow` ends it. Return the `(`'s index, else None
+    (the caller keeps its fail-closed refusal: `(*l)(...)`, `(l)`, a tag type,
+    a later comma declarator)."""
+    j = k - 1
+    while j >= 0 and ts[j] in ("*", "const", "volatile"):
+        j -= 1
+    if j < 1 or ts[j] != "(" or ts[j + 1] != "*" or ts[k + 1:k + 3] != [")", "["]:
+        return None
+    end = k + 2
+    while end < len(ts) and ts[end] == "[":
+        try:
+            close = balanced(ts, end, "[", "]")
+        except ValueError:
+            return None
+        if ts[k] in ts[end + 1:close]:
+            return None
+        end = close + 1
+    if end >= len(ts) or ts[end] not in follow:
+        return None
+    x = j - 1
+    while x >= 0 and ts[x] in types:
+        x -= 1
+    if x == j - 1 or not boundary(x):
+        return None
+    return j
+
+
+PAREN_PREFIX_QUALS = ("const", "volatile", "static", "register", "auto")
+
+
+def paren_array_type_proven(ts, lo, hi, words, tu_texts, own_text):
+    """`T (*l)[n]` is an expression statement (a call of T, subscripted) when T
+    names a value where it is spelled; the type census is file-wide and
+    scope-blind. Prove each non-keyword prefix word a type throughout f: a
+    file-scope typedef of f's TU (tu_texts: its exact include closure; then no
+    file-scope value of that name can coexist with it), and every spelling in
+    f (tokens lo..hi) is in a type position (after a statement / parameter
+    boundary or a qualifier, before a name, `*`, a qualifier or `(*`), so no
+    parameter or local of f declares it as a value (every declarator name
+    follows a type word, `*`, a `,`/`(` it is not followed by such a token
+    after, or is a label / member, all refused here).
+    On raw sources this is preflight only: a typedef in a dead #if branch or in
+    a header the over-approximate include closure matches but cpp never opens
+    still counts. The rerun on each TU's preprocessed text (cpp_scope_checks),
+    where tu_texts is that one file and only a typedef before f counts, sees
+    compiled file-scope typedefs only; the cc1 differential stays the backstop."""
+    for word in words:
+        if word in C_KEYWORDS or word in DECL_WORDS:
+            continue
+        if tu_texts is None:
+            return False
+        typedef = False
+        for text in tu_texts:
+            ts_file = [m[0] for m in code_spans(text)]
+            for i, row in typedef_rows(text):
+                depth = sum((t == "{") - (t == "}") for t in ts_file[:i])
+                if depth or text is own_text and i >= lo:   # in f's file, only one before f
+                    continue
+                try:
+                    named = declaration_types({"src/cpp.c": " ".join(row)}) - set(DECL_WORDS)
+                except ValueError:
+                    continue
+                typedef |= word in named
+        if not typedef:
+            return False
+        for i in range(lo, hi + 1):
+            if ts[i] != word:
+                continue
+            after = ts[i + 1] if i + 1 < len(ts) else ""
+            if ts[i - 1] not in (";", "{", "}", "(", ",") + PAREN_PREFIX_QUALS:
+                return False
+            if not (IDENT.fullmatch(after) and after not in C_KEYWORDS
+                    or after == "*" or after in PAREN_PREFIX_QUALS or ts[i + 1:i + 3] == ["(", "*"]):
+                return False
+    return True
+
+
 @contextmanager
 def analysis_cache():
     """Bound memoization to one proof; do not retain entire revision texts."""
@@ -4244,9 +4326,22 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                 while before >= indices[0] and ts[before] in ("(", "*", "const", "volatile"):
                     parens |= ts[before] == "("
                     before -= 1
-                # A struct/union/enum tag is a type too (`struct S (*l)`).
-                if parens and before >= 0 and (ts[before] in types or before >= 1
-                                               and ts[before - 1] in ("struct", "union", "enum")):
+                # A struct/union/enum tag is a type too (`struct S (*l)`). The
+                # one admitted shape is a pointer to array, `T (*l)[n]`, led by
+                # known type words alone (paren_array_declarator).
+                if k > body_open:
+                    pa = paren_array_declarator(ts, k, lambda x: x == start, (";", "=", ","), types)
+                else:
+                    pa = paren_array_declarator(ts, k, lambda x: x > start and ts[x] in ("(", ","), (",", ")"), types)
+                if pa is not None:
+                    x = pa - 1
+                    while ts[x] in types:
+                        x -= 1
+                    tu_texts = None if closure is None else [cfiles[q] for q in sorted(closure | {path}) if q in cfiles]
+                    if not paren_array_type_proven(ts, indices[0], indices[-1], set(ts[x + 1:pa]), tu_texts, text):
+                        pa = None
+                if parens and pa is None and before >= 0 and (ts[before] in types or before >= 1
+                                                              and ts[before - 1] in ("struct", "union", "enum")):
                     raise ValueError(f"{spec}: parenthesized declarator is unsupported")
                 # A declaration beginning with a known type may hide a second
                 # binding behind parentheses or a comma. Calls and expressions
@@ -4261,7 +4356,7 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                     for token in statement:
                         nesting += (token in ("(", "[", "{")) - (token in (")", "]", "}"))
                         assigned |= token == "=" and nesting == 0
-                    if "(" in statement and not assigned:
+                    if "(" in statement and not assigned and pa is None:
                         raise ValueError(f"{spec}: parenthesized declarator is unsupported")
                     nesting, last_comma, first_comma = 0, None, None
                     for j, token in enumerate(statement):
@@ -4293,13 +4388,18 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                                 assigned |= token == "=" and nesting == 0
                             if not assigned:
                                 raise ValueError(f"{spec}: comma declarator is unsupported")
-                a = k - 1
+                a = (k if pa is None else pa) - 1
                 while a >= indices[0] and ts[a] not in ("(", ",", ";", "{", "}"):
                     a -= 1
-                prefix = " ".join(ts[a + 1:k])
-                if comma_type is not None:
+                if pa is not None:
+                    # `T (*l)[n]` declares l with the prefix `T *`: the type
+                    # words, then the declarator's own `*` / qualifiers.
+                    declared = ts[a + 1:pa] + ts[pa + 1:k]
+                    prefix = " ".join(declared)
+                elif comma_type is not None:
                     prefix, declared = " ".join(comma_type), comma_type
                 else:
+                    prefix = " ".join(ts[a + 1:k])
                     declared = ts[a + 1:k]
                 if (comma_type is None and re.fullmatch(r"[A-Za-z_]\w* (?:\* )+", prefix + " ")
                         and ts[a + 1] not in C_KEYWORDS and ts[a + 1] not in types and ts[a + 1] not in values):
@@ -4311,7 +4411,7 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                     nest = 0
                     for token in ts[indices[0]:k]:
                         nest += (token == "(") - (token == ")")
-                    if nest != (1 if k < body_open else 0):
+                    if nest - (pa is not None) != (1 if k < body_open else 0):
                         raise ValueError(f"{spec}: prototype/cast binding inside nested parentheses")
                     declarator = k + 1
                     while ts[declarator:declarator + 1] == [")"]:
