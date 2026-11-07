@@ -4,6 +4,7 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
 #include "bb2.h"
+#include "bb2_const.h"
 
 /* Unprototyped: slot_FinalizeObjectLoadSoundTexturesAndArena passes arena_id *
  * 3 + 1 as an int; the s16 prototype snd.c defines it with narrows that
@@ -102,7 +103,7 @@ void node_AppendProjectedNodeToList(
     node_cursor->node.node_kind = 3;
     node_cursor->node.primitive_table_select = 0;
     node_cursor->node.parent_node = &a0[6].node;
-    node_cursor->node.matrix_state = 1;
+    node_cursor->node.matrix_state = NODE_MATRIX_DONE;
     node_cursor->node.rotation_order = 0;
     node_cursor->node.light_setup_index = 0;
     node_cursor->node.reloc_block_id = block_id;
@@ -349,7 +350,7 @@ void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *slot_object) {
             node_cursor->node.xf.rot.vx = 0;
             node_cursor->node.xf.rot.vy = 0;
             node_cursor->node.xf.rot.vz = 0;
-            node_cursor->node.matrix_state = 0;
+            node_cursor->node.matrix_state = NODE_MATRIX_REBUILD;
             node_cursor->node.light_setup_index =
                 slot_object->node_light_setup_index;
             node_cursor->node.reloc_block_id = slot_object->transform_block_id;
@@ -461,7 +462,7 @@ void node_BuildProjectedNodeList(Unk80045878Obj *slot_object) {
             node_cursor->node.primitive_table_select = 0;
             node_cursor->node.rotation_order = 0;
             node_cursor->node.parent_node = &parents[i].node;
-            node_cursor->node.matrix_state = 1;
+            node_cursor->node.matrix_state = NODE_MATRIX_DONE;
             node_cursor->node.light_setup_index = 0;
             node_cursor->node.reloc_block_id = slot_object->projected_block_id;
             node_cursor->unk58 = 0;

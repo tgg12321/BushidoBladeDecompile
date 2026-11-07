@@ -1,0 +1,24 @@
+kind	where	literal	name	role	evidence
+enum	include/bb2_const.h	0	NodeMatrixState.NODE_MATRIX_REBUILD	Unk80101DF0Record.matrix_state 0: node_UpdateWorldMatrix (31D3C.c) rebuilds work from xf.rot through g_math_rot_matrix_funcs[rotation_order], then composes xf.mat with the parent's (recursing first into a parent still in 0) or copies work; stored after a writer changes xf.rot / work.t (template init, pose frames, wave_Init, frame-animated entries, table entry nodes) and right before an UpdateWorldMatrix call at several stores	include/game.h:2144 s16 matrix_state of Unk80101DF0Record (the node record), read only by node_UpdateWorldMatrix (31D3C.c:134-152: == 1 return; != 2 rebuild; parent == 0 recurse; = 1 at the end); stored in 309CC.c, 31548.c, 32D04.c, 35000.c, 368E4.c; git grep -w matrix_state: no other C use; 6 TUs -> include/bb2_const.h (K4), #include added to the 5 TUs lacking it; not retyped
+enum	include/bb2_const.h	1	NodeMatrixState.NODE_MATRIX_DONE	Unk80101DF0Record.matrix_state 1: node_UpdateWorldMatrix returns at once; it stores 1 itself at the end of an update; writers store 1 for nodes it must leave alone: projected / paired nodes (node_kind 3) appended under a parent, a frame-animated entry whose xf.mat is written directly (35000.c:150), the last blended node (31548.c:258)	include/game.h:2144 s16 matrix_state of Unk80101DF0Record (the node record), read only by node_UpdateWorldMatrix (31D3C.c:134-152: == 1 return; != 2 rebuild; parent == 0 recurse; = 1 at the end); stored in 309CC.c, 31548.c, 32D04.c, 35000.c, 368E4.c; git grep -w matrix_state: no other C use; 6 TUs -> include/bb2_const.h (K4), #include added to the 5 TUs lacking it; not retyped
+enum	include/bb2_const.h	2	NodeMatrixState.NODE_MATRIX_WORK_SET	Unk80101DF0Record.matrix_state 2: work was supplied by the writer (slot_BlendTwoPosesIntoNodeMatrices lerps two poses into work, 31548.c:227); node_UpdateWorldMatrix skips the rotation rebuild (!= 2) and only composes with the parent	include/game.h:2144 s16 matrix_state of Unk80101DF0Record (the node record), read only by node_UpdateWorldMatrix (31D3C.c:134-152: == 1 return; != 2 rebuild; parent == 0 recurse; = 1 at the end); stored in 309CC.c, 31548.c, 32D04.c, 35000.c, 368E4.c; git grep -w matrix_state: no other C use; 6 TUs -> include/bb2_const.h (K4), #include added to the 5 TUs lacking it; not retyped
+site	src/main/309CC.c:105	1	NODE_MATRIX_DONE	matrix_state store	see the enum row
+site	src/main/309CC.c:352	0	NODE_MATRIX_REBUILD	matrix_state store	see the enum row
+site	src/main/309CC.c:464	1	NODE_MATRIX_DONE	matrix_state store	see the enum row
+site	src/main/31548.c:73	0	NODE_MATRIX_REBUILD	matrix_state store	see the enum row
+site	src/main/31548.c:101	0	NODE_MATRIX_REBUILD	matrix_state store	see the enum row
+site	src/main/31548.c:123	0	NODE_MATRIX_REBUILD	matrix_state store	see the enum row
+site	src/main/31548.c:227	2	NODE_MATRIX_WORK_SET	matrix_state store	see the enum row
+site	src/main/31548.c:258	1	NODE_MATRIX_DONE	matrix_state store	see the enum row
+site	src/main/31D3C.c:134	1	NODE_MATRIX_DONE	matrix_state test in node_UpdateWorldMatrix	see the enum row
+site	src/main/31D3C.c:137	2	NODE_MATRIX_WORK_SET	matrix_state test in node_UpdateWorldMatrix	see the enum row
+site	src/main/31D3C.c:142	0	NODE_MATRIX_REBUILD	matrix_state parent test in node_UpdateWorldMatrix	see the enum row
+site	src/main/31D3C.c:152	1	NODE_MATRIX_DONE	matrix_state store	see the enum row
+site	src/main/32D04.c:1222	0	NODE_MATRIX_REBUILD	matrix_state store	see the enum row
+site	src/main/35000.c:50	0	NODE_MATRIX_REBUILD	matrix_state store	see the enum row
+site	src/main/35000.c:87	0	NODE_MATRIX_REBUILD	matrix_state store	see the enum row
+site	src/main/35000.c:150	1	NODE_MATRIX_DONE	matrix_state store	see the enum row
+site	src/main/368E4.c:902	0	NODE_MATRIX_REBUILD	matrix_state store	see the enum row
+site	src/main/368E4.c:2052	1	NODE_MATRIX_DONE	matrix_state store	see the enum row
+site	src/main/368E4.c:2118	0	NODE_MATRIX_REBUILD	matrix_state store	see the enum row
+site	src/main/368E4.c:2131	1	NODE_MATRIX_DONE	matrix_state store	see the enum row

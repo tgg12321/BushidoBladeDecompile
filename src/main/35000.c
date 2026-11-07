@@ -5,6 +5,7 @@
 #include "include_asm.h"
 #include "bb2.h"
 #include <psxsdk/libgte.h>
+#include "bb2_const.h"
 
 void gpu_OffsetBlockTexPrimStream();
 
@@ -47,7 +48,7 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
             rec->node.xf.rot.vx = *frame_cursor++;
             rec->node.xf.rot.vy = *frame_cursor++;
             rec->node.xf.rot.vz = *frame_cursor++;
-            rec->node.matrix_state = 0;
+            rec->node.matrix_state = NODE_MATRIX_REBUILD;
             node_UpdateWorldMatrix(&rec->node);
             MulMatrix2(&mat, &rec->node.xf.mat);
             cos_val = Judge[(angle + 0x400) & 0xFFF];
@@ -84,7 +85,7 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
                 rec->node.xf.rot.vx = *frame_cursor++;
                 rec->node.xf.rot.vy = *frame_cursor++;
                 rec->node.xf.rot.vz = *frame_cursor++;
-                rec->node.matrix_state = 0;
+                rec->node.matrix_state = NODE_MATRIX_REBUILD;
                 node_UpdateWorldMatrix(&rec->node);
                 rec->node.xf.mat.t[0] += var_0.vx;
                 rec->node.xf.mat.t[1] += var_0.vy;
@@ -147,7 +148,7 @@ void node_StartFrameAnimatedEntryAndInitPairedNode(s32 entry_index, s32 yaw) {
     p->node.parent_node = 0;
     p->node.xf.rot.vx = 0;
     p->node.xf.rot.vz = 0;
-    p->node.matrix_state = 1;
+    p->node.matrix_state = NODE_MATRIX_DONE;
     g_math_rot_matrix_funcs[p->node.rotation_order](
         &p->node.xf.rot, &p->node.xf.mat);
     if (g_node_frame_animation_context.resource_selector == 0x12) {

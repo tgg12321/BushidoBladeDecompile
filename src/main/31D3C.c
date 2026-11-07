@@ -4,6 +4,7 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
 #include "bb2.h"
+#include "bb2_const.h"
 
 extern u8 g_gpu_asset_tim_group_load_masks[];
 
@@ -131,15 +132,15 @@ extern void gte_SetMatrixRotTransIRVec(void *, void *, void *);
 void node_UpdateWorldMatrix(Unk80101DF0Record *node) {
     RotMatrixFunc func;
 
-    if (node->matrix_state == 1) {
+    if (node->matrix_state == NODE_MATRIX_DONE) {
         return;
     }
-    if (node->matrix_state != 2) {
+    if (node->matrix_state != NODE_MATRIX_WORK_SET) {
         func = g_math_rot_matrix_funcs[node->rotation_order];
         func(&node->xf.rot, &node->work);
     }
     if (node->parent_node != 0) {
-        if (node->parent_node->matrix_state == 0) {
+        if (node->parent_node->matrix_state == NODE_MATRIX_REBUILD) {
             node_UpdateWorldMatrix(node->parent_node);
         }
         gte_MulMatrix0ClearTrans(
@@ -149,7 +150,7 @@ void node_UpdateWorldMatrix(Unk80101DF0Record *node) {
     } else {
         node->xf.mat = node->work;
     }
-    node->matrix_state = 1;
+    node->matrix_state = NODE_MATRIX_DONE;
 }
 
 void node_SetMatrixFromNegatedRot(Unk80101DF0Record *node) {

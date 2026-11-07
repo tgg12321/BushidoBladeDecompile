@@ -85,4 +85,10 @@ enum CdromIoState {
     CDROM_IO_AUDIO_STOP_DELAY = 0x1e,
 };
 
+enum NodeMatrixState {
+    NODE_MATRIX_REBUILD = 0,
+    NODE_MATRIX_DONE = 1,
+    NODE_MATRIX_WORK_SET = 2,
+};
+
 #endif /* BB2_CONST_H */

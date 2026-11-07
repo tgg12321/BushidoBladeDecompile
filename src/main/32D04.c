@@ -7,6 +7,7 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
 #include <psxsdk/libgte.h>
+#include "bb2_const.h"
 
 void math_HsvToRgb(s32 *hsv_input, s32 *rgb_output) {
     s32 h = hsv_input[0];
@@ -1219,7 +1220,7 @@ void node_InitFrameEntriesFromWorldTranslations(void) {
         dst->node.work.t[0] = src->node.xf.mat.t[0];
         dst->node.work.t[1] = src->node.xf.mat.t[1];
         dst->node.work.t[2] = src->node.xf.mat.t[2];
-        dst->node.matrix_state = 0;
+        dst->node.matrix_state = NODE_MATRIX_REBUILD;
         dst->anim_progress = -1;
     }
 }

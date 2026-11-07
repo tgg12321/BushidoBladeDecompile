@@ -899,7 +899,7 @@ s32 wave_Init(void) {
         node->xf.rot.vz = 0;
         node->rotation_order = 0;
         node->parent_node = 0;
-        node->matrix_state = 0;
+        node->matrix_state = NODE_MATRIX_REBUILD;
         node_UpdateWorldMatrix(node);
     }
 
@@ -2049,7 +2049,7 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
             }
             list = g_draw_queue_cursor;
             obj->node.parent_node = &obj[-1].node;
-            obj->node.matrix_state = 1;
+            obj->node.matrix_state = NODE_MATRIX_DONE;
             obj->node.rotation_order = 0;
             obj->node.light_setup_index = 0;
             obj->node.reloc_block_id = 6;
@@ -2115,7 +2115,7 @@ void node_QueueTableEntryNodePairUnderSlotNode(
      * its own store it scores 8 (Q129). */
     rot_z = src[1];
     obj->node.parent_node = &slot_obj->transform_nodes[12].node;
-    obj->node.matrix_state = 0;
+    obj->node.matrix_state = NODE_MATRIX_REBUILD;
     obj->node.xf.rot.vz = rot_z;
     node_UpdateWorldMatrix(&obj->node);
     list = g_draw_queue_cursor;
@@ -2128,7 +2128,7 @@ void node_QueueTableEntryNodePairUnderSlotNode(
     obj->node.parent_node = &obj[-1].node;
     obj->node.primitive_table_select = 0;
     obj->node.rotation_order = 0;
-    obj->node.matrix_state = 1;
+    obj->node.matrix_state = NODE_MATRIX_DONE;
     obj->node.light_setup_index = 0;
     obj->node.reloc_block_id = 6;
     /* FAKE: unk58 stored through a pointer; the member store lets sched lift
