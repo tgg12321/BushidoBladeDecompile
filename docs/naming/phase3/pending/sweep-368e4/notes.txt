@@ -42,7 +42,7 @@ Group trace-sweep-368e4.6 (Q124 role captures) -- 5 targets
 - Twins: moved to group owner (OQ-5).
 
 ### Still the sweep's own (the rule text admits a name; the sweep is not closed) -- 4 targets
-- 0x80046934 / 0x8004695C / 0x800469A0 (:380, :384-388, :390): uncalled, but each calls named arena functions on block 9. naming-final-classes.md:22-24 makes such a body nameable from that effect, and Q132 (naming-bar.md:54-56) rules out 'identity unknown'. Next: functions unit sweep-368e4.7 (researcher alternatives at pending/func-second-pass-33/notes.txt:35-37; fresh pre-apply naming-reviewer).
+- 0x80046934 / 0x8004695C / 0x800469A0 (:380, :384-388, :390): uncalled, but each calls named arena functions on block 9. naming-final-classes.md:22-24 makes such a body nameable from that effect, and Q132 (naming-bar.md:54-56) rules out 'identity unknown'. Next: functions unit sweep-368e4.7 (researcher alternatives at pending/func-second-pass-33/notes.txt:35-37; fresh pre-apply naming-reviewer). Landed: sweep-368e4.7 (wave128) renamed them arena_OpenBlock9 / arena_CloseBlock9 / arena_ResizeBlock9 (pre-apply 3 PASS, R6 OK).
 - wave_SampleRow8BaseCachingIndexAndRemainderParity:a0 (:1025): the function writes g_wave_cached_column_index / g_wave_cached_remainder_parity (:1030-1031) and returns a sample (:1042), so it is not dead code; a0 is a coordinate split into 3200-unit columns offset by 0x7D00 (:1026-1028). An axis-free name claims no x / z. Next: locals unit sweep-368e4.8 (fresh pre-apply naming-reviewer).
 
 Group owner (no foundation row decides; sweep-368e4-r6, blocked) -- 9 targets
