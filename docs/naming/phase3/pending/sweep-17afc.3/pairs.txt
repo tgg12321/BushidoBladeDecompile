@@ -1,0 +1,9 @@
+fighter_ProcessWeaponBodyHits:var_32=test_inner_spheres
+fighter_TestTriangleBoneHits:a1=frame_from_normal
+math_InvertMatrix3x3:arg0=matrix
+math_InvertMatrix3x3:arg1=inverse
+fighter_ResolveBoneHitTail:var_0=object_kind_params
+fighter_ResolveWeaponContact:var_v0=move_event
+fight_CreateBallisticRecordAndDispatchEvent:v1=scale
+snd_QueuePositionalSound:var_7=pan_offset
+object_DeflectFromFighterHit:var_8=rot_vel_y

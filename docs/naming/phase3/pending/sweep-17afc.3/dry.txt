@@ -1,0 +1,31 @@
+sweep-17afc.3 (naming-c 2026-11-06): 10 local / parameter bindings in 9 functions, all in src/main/17AFC.c (44 token substitutions); no include/ file touched. Research rows 10 of 10 kept, 0 dropped; 0 names changed by the drafter.
+Tree: ln-naming-c = lanes/naming-c 6d5210ff5 (clean). Run in WSL via a script file (tmp/naming-c_draft3.sh in the main checkout, running tmp/naming-c/dry3.py in the lane worktree; NAMING_KEYCHECK_ROOT = the worktree, venv active).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (same tool result as var-locals-43 .. -55). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree (base = naming_keycheck.read_working_tree()); lines are mapped from the token index through naming_keycheck.code_spans.
+The 10 pairs of pairs.txt together were accepted (44 token substitutions, all 17AFC.c). Each pair was also run alone: all accepted (alone counts sum to 44) and every alone line list equals the drafter's own use scan from reading the code at 6d5210ff5 (grep of each old token inside its function range) and the research's lists.
+Required comment edits: 17AFC.c:1896-1898 (var_32), see notes.txt. A comment scan of every function range (tmp/naming-c_com3.py: whole-word old token in comment text, `$` register spellings not matched) finds no other comment spelling an old name; 17AFC.c:2629 spells the MIPS register `$a1`, which is not the parameter and is NOT substituted.
+Per-pair substitutions (function:old=new count (lines)):
+  fighter_ProcessWeaponBodyHits:var_32=test_inner_spheres 5 (1899,1905,1910,1916,2028)
+  fighter_TestTriangleBoneHits:a1=frame_from_normal 3 (1753,2605,2649)
+  math_InvertMatrix3x3:arg0=matrix 2 (3631,3632)
+  math_InvertMatrix3x3:arg1=inverse 2 (3631,3633)
+  fighter_ResolveBoneHitTail:var_0=object_kind_params 2 (360,362)
+  fighter_ResolveWeaponContact:var_v0=move_event 4 (648,703,706,709)
+  fighter_ResolveBodyOverlap:var_13=distance 12 (921,959,960,964,964,965,969,970,976,980,984,988)
+  fight_CreateBallisticRecordAndDispatchEvent:v1=scale 4 (4784,4785,4786,4787)
+  snd_QueuePositionalSound:var_7=pan_offset 8 (4961,5001,5004,5006,5007,5007,5010,5011)
+  object_DeflectFromFighterHit:var_8=rot_vel_y 2 (4576,4583)
+
+Raw driver output (HEAD 6d5210ff5, scoped_plan together then alone per pair; line numbers are working-tree lines):
+Tree: ln-naming-c HEAD 6d5210ff5; scoped_plan(read_working_tree(), pairs, {})
+SET 10 pairs ACCEPT {'17AFC.c': 44} total 44
+ALONE fighter_ProcessWeaponBodyHits:var_32=test_inner_spheres ACCEPT 5 17AFC.c [1899, 1905, 1910, 1916, 2028]
+ALONE fighter_TestTriangleBoneHits:a1=frame_from_normal ACCEPT 3 17AFC.c [1753, 2605, 2649]
+ALONE math_InvertMatrix3x3:arg0=matrix ACCEPT 2 17AFC.c [3631, 3632]
+ALONE math_InvertMatrix3x3:arg1=inverse ACCEPT 2 17AFC.c [3631, 3633]
+ALONE fighter_ResolveBoneHitTail:var_0=object_kind_params ACCEPT 2 17AFC.c [360, 362]
+ALONE fighter_ResolveWeaponContact:var_v0=move_event ACCEPT 4 17AFC.c [648, 703, 706, 709]
+ALONE fighter_ResolveBodyOverlap:var_13=distance ACCEPT 12 17AFC.c [921, 959, 960, 964, 964, 965, 969, 970, 976, 980, 984, 988]
+ALONE fight_CreateBallisticRecordAndDispatchEvent:v1=scale ACCEPT 4 17AFC.c [4784, 4785, 4786, 4787]
+ALONE snd_QueuePositionalSound:var_7=pan_offset ACCEPT 8 17AFC.c [4961, 5001, 5004, 5006, 5007, 5007, 5010, 5011]
+ALONE object_DeflectFromFighterHit:var_8=rot_vel_y ACCEPT 2 17AFC.c [4576, 4583]
+ALONE SUM 44

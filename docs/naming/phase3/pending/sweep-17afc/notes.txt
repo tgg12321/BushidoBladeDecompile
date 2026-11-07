@@ -4,3 +4,7 @@
 - D_800A376B: write-only FINAL candidate (three stores of 0 at 24BF0.c:29 and two in 17AFC.c fight setup, its initial value; no read in C or asm; the only indexed path, the a0-indexed OR in fighter_AccumulateBoneGroupFlagWhenGameModeZero, is called with a0 = 0). Goes to the sweep's finality unit, not a rename.
 - D_800A3899: NO_NAME. The [1] byte of the per-side match-point pair whose base D_800A3898 is neutral; 17AFC.c declares two u8 scalars (FAKE per-file split, comment at the top of 17AFC.c) while 9F9C.c declares D_800A3898[2]. Missing evidence: a name for the pair, which needs one declaration serving both files (layout fix) or a row naming both bytes together.
 - D_800A38AB: NO_NAME. Same as D_800A3899 for the per-side mark pair based at D_800A38AA (9F9C.c D_800A38AA[2]).
+
+## Unit sweep-17afc.3 (locals; research tmp/codex/sweep-17afc.3-research.md, 2026-11-06)
+- fighter_ResolveBodyOverlap:var_13: pre-apply naming-reviewer FAIL for 'distance' (N1 / R2: the slot holds the squared length at 17AFC.c:959-960, compared with radius_sum^2, and the root only from 964). One slot, two quantities (squared then root); a name comes back only with a spelling true of both or a code split of the slot.
+- The unit's NO_NAME (23) and FINAL-candidate (11) locals, each with its missing evidence or class test: pending/sweep-17afc.3/notes.txt. The FINAL candidates go to the sweep's finality unit.
