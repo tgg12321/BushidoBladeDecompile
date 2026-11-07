@@ -1,0 +1,24 @@
+==============================================================================
+DATA WAVE — 6 addresses, 6 identifiers remapped
+  0x8009b610: D_8009B610 -> g_gpu_captioned_picture_sheet_headers
+  0x8009b634: D_8009B634 -> g_gpu_captioned_picture_cell
+  0x8009b63c: D_8009B63C -> g_gpu_captioned_picture_caption_sheet_headers
+  0x8009b660: D_8009B660 -> g_gpu_captioned_picture_first_choice_caption_cells
+  0x8009b670: D_8009B670 -> g_gpu_captioned_picture_ippon_caption_cell
+  0x8009b678: D_8009B678 -> g_gpu_captioned_picture_out_of_bounds_caption_cells
+
+-- file edits (4) --
+  asm/funcs/gpu_DrawSelectedStretchedSheetPair.s  (12)
+  src/main/4D0A8.c  (12)
+  src/main/d_8BC50.c  (6)
+  symbol_addrs.txt  (6)
+
+-- registry lines --
+  symbol_addrs.txt:1072 D_8009B610 -> g_gpu_captioned_picture_sheet_headers
+  symbol_addrs.txt:1073 D_8009B634 -> g_gpu_captioned_picture_cell
+  symbol_addrs.txt:1074 D_8009B63C -> g_gpu_captioned_picture_caption_sheet_headers
+  symbol_addrs.txt:1075 D_8009B660 -> g_gpu_captioned_picture_first_choice_caption_cells
+  symbol_addrs.txt:1076 D_8009B670 -> g_gpu_captioned_picture_ippon_caption_cell
+  symbol_addrs.txt:1077 D_8009B678 -> g_gpu_captioned_picture_out_of_bounds_caption_cells
+
+DRY RUN — nothing written. Re-run with --apply.

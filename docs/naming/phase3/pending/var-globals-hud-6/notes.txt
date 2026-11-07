@@ -1,0 +1,20 @@
+# var-globals-hud-6 notes (redraft 2 at WT HEAD a41666dc9, lane ln-naming-b; research tmp/codex/var-globals-hud-6-research.md (62a580374, pre-split); every access re-derived by git grep -w and direct reads of 4D0A8.c, d_8BC50.c, 9F9C.c, 2B344.c, the asm listing and symbol_addrs.txt; verdicts left empty for the reviewer)
+Result: 6 rows (D_8009B610, D_8009B634, D_8009B63C kept from draft 1; D_8009B660 re-scoped to sheet 0's two cells; D_8009B670 and D_8009B678 new since a41666dc9 split D_8009B660[7]). 0 dropped. All six names have 0 hits in the worktree (outside this folder and tmp/). Dry run (tools/data_wave.py --manifest-csv data_manifest.csv --manifest tmp/hud6/edits.json): rc=0, 6 addresses, no refusals.
+Names: 0x8009B610 g_gpu_captioned_picture_sheet_headers; 0x8009B634 g_gpu_captioned_picture_cell; 0x8009B63C g_gpu_captioned_picture_caption_sheet_headers; 0x8009B660 g_gpu_captioned_picture_first_choice_caption_cells; 0x8009B670 g_gpu_captioned_picture_ippon_caption_cell; 0x8009B678 g_gpu_captioned_picture_out_of_bounds_caption_cells.
+Fallbacks: 610/634/63C -> g_gpu_stretched_pair_{picture_sheet_headers,picture_cell,caption_sheet_headers}; 660 -> g_gpu_captioned_picture_sheet_0_caption_cells, else NO_NAME; 670 -> g_gpu_captioned_picture_point_award_caption_cell; 678 -> g_gpu_captioned_picture_out_of_bounds_phase_caption_cells.
+
+Lines at a41666dc9: externs 4D0A8.c:1281-1286; gpu_DrawSelectedStretchedSheetPair 4D0A8.c:1288-1323 (scale_x :1297, header B63C :1299, cases :1305-1315 with tables :1307/:1310/:1313, first draw :1317, header B610 :1318, cell B634 :1319, second draw :1321); defs d_8BC50.c:89-105 (B610 89-92, B634 93, B63C 94-97, B660 98-99, B670 100, B678 101-105); asm .s:14-15/43-44/48-49/53-54/67-68/71-72; symbol_addrs.txt:1072-1077. Callers: 9F9C.c:1592, :1619, :2365; 2B344.c:1023.
+
+Evidence for the per-sheet names: sheet 1 = point-award branch (9F9C.c:1618-1619), Q124 screenshot capture.bout1.14950.png shows 'IPPON' (5 letters, one cell 0x38 wide, 2x = 112 px); sheet 2 = out-of-bounds branch (9F9C.c:1591-1592), capture.banner_11740.png shows 'OUT OF BOUNDS' (4 cells); sheet 0 = choice-menu callers only, while g_fight_choice_menu_cursor == 0, content never photographed, so 'first_choice' claims only that caller condition (not 'rematch', not any word).
+
+Weakest rows for the reviewer
+1. 0x8009B660 first_choice: the claim is the cursor==0 condition at both callers (9F9C.c:2364-2366, 2B344.c:1021-1024); every sheet-0 draw is under that test, so it should hold, but the on-screen words are unseen.
+2. 0x8009B670 / 0x8009B678: content names rest on N3 tier 3 runtime (Q124 screenshots), not on an in-binary string.
+3. 0x8009B610 / 0x8009B63C: 'captioned_picture' is a layout claim, content-confirmed for sheets 1 and 2 only.
+
+Comment pass (data_wave rewrites code, asm operands and registry lines, not comments):
+- src/main/d_8BC50.c:13-14: top comment's list of single-cell .data objects names D_8009B634 and D_8009B670; rewrite to g_gpu_captioned_picture_cell and g_gpu_captioned_picture_ippon_caption_cell.
+- src/main/4D0A8.c:1276-1280: comment above the externs names D_8009B660[2], D_8009B670, D_8009B678[4] and addresses 0x8009B610/0x8009B634/0x8009B63C; reword to the new names.
+- symbol_addrs.txt:1072-1077: rewritten by data_wave (the "was g_text1b_..." notes stay).
+- History, leave: tools/trace/scenarios/noname-lead-D_8009B634-*.json; docs/naming/runtime/noname-lead-D_8009B634-*/ and runtime/evidence/{events,screens}.tsv; docs/foundation/backlog.tsv; docs/naming/phase3/backlog.tsv; earlier pending/wave manifests that cite the old spellings; memory/grind/phase2-2026-10-03/casts.tsv, lt/fdesc/fdesc2.py.
+- Formatting: longer names may re-wrap 4D0A8.c:1281-1321 and d_8BC50.c:89-105; run tools/format.py on both.
