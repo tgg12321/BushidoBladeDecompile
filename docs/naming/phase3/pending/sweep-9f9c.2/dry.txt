@@ -1,0 +1,27 @@
+PASS Tbl800A3860Entry.unk_03=move_id_row_count, Unk80017FA0Rec.unk8=node_buffer
+decl Tbl800A3860Entry.unk_03 -> move_id_row_count  include/game.h:840
+decl Unk80017FA0Rec.unk8 -> node_buffer  include/game.h:2481
+  round 0: 2 member error line(s)
+    src/main/2B344.c:2788 unk8 x1
+    src/main/9F9C.c:3422 unk_03 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -840 +840 @@
+-    u8 unk_03;
++    u8 move_id_row_count;
+@@ -2481 +2481 @@
+-    /* 0x08 */ u8 *unk8;
++    /* 0x08 */ u8 *node_buffer;
+--- a/src/main/2B344.c
++++ b/src/main/2B344.c
+@@ -2788 +2788 @@
+-    rec->step_desc.unk8 = obj->softbody_nodes;
++    rec->step_desc.node_buffer = obj->softbody_nodes;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -3422 +3422 @@
+-                        (g_motion_fighter_buffers[i]->unk_03 - 1) * 6);
++                        (g_motion_fighter_buffers[i]->move_id_row_count - 1) * 6);
+DRY RUN: 3 file(s) would change; nothing written
+OK: every member access renamed

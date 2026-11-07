@@ -1,0 +1,2 @@
+Tbl800A3860Entry.unk_03=move_id_row_count
+Unk80017FA0Rec.unk8=node_buffer

@@ -9,3 +9,9 @@
 - D_800A3898: NO_NAME. Per-side match points, declared scalar in 17AFC.c:22 and u8[2] in 9F9C.c:1534; no pair or per-byte name is true for both (c FAIL). Missing evidence: one declaration shape for both TUs (fake lane), then pair / per-byte rows with D_800A3899.
 - D_800A389A: NO_NAME. Copy of g_working_record unk14_17, read under PRACTICE in many places. Missing evidence: a worded name for the g_working_record unk14_17 bit (include/game.h:565; member lane; its readers include 5ED34.c:1587 / :1660).
 - D_800A38AA: NO_NAME. Per-side mark count, same split declarations as D_800A3898 (17AFC.c:24 vs 9F9C.c:1535). Missing evidence: the same declaration unification, then a row with D_800A38AB.
+
+## Unit sweep-9f9c.2 (members; research tmp/codex/sweep-9f9c.2-research.md, 2026-11-06; pre-apply naming-reviewer PASS on these lines)
+- MotionFrame.unk_06 / unk_08 / unk_0A: NO_NAME. Rotation triple (work[3..5]) applied to transform_nodes[12] and fed to math_RotMatrixZYXAngles in fighter_Update's move kind 6 / 0x14 heading block (9F9C.c:5252-5256). Missing evidence: a code-borne role for transform_nodes[12] (node-hierarchy naming or trace / render poke) or names for move kinds 6 / 0x14; all three or none.
+- Unk80017FA0Rec.unk3: NO_NAME. One constant 0 store (2B344.c:2791), read only by the block copy into step_descs (2B344.c:2598), which counts as a read so it is not write-only FINAL. Missing evidence: a reader of step_desc +3, none in this binary.
+- CamScratch.unk0: FINAL candidate (never-accessed, scratchpad view at 0x1F800000). Goes to the sweep's finality unit for a fresh naming-reviewer to re-derive the class; alias caveat (ScrPad / SPAD51268 overlay) per no_name.tsv:93-110 precedent.
+- CamScratch.unk6: FINAL candidate (never-accessed, same test and caveat as unk0). Goes to the sweep's finality unit.
