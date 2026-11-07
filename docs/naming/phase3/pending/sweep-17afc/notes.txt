@@ -1,0 +1,6 @@
+# sweep-17afc: recorded NO_NAME targets (naming-session §Sweeps). Each comes back only with evidence newer than its record.
+
+## Unit sweep-17afc.1 (data; research tmp/codex/sweep-17afc.1-research.md, pre-apply naming-reviewer PASS on these notes, 2026-11-06)
+- D_800A376B: write-only FINAL candidate (three stores of 0 at 24BF0.c:29 and two in 17AFC.c fight setup, its initial value; no read in C or asm; the only indexed path, the a0-indexed OR in fighter_AccumulateBoneGroupFlagWhenGameModeZero, is called with a0 = 0). Goes to the sweep's finality unit, not a rename.
+- D_800A3899: NO_NAME. The [1] byte of the per-side match-point pair whose base D_800A3898 is neutral; 17AFC.c declares two u8 scalars (FAKE per-file split, comment at the top of 17AFC.c) while 9F9C.c declares D_800A3898[2]. Missing evidence: a name for the pair, which needs one declaration serving both files (layout fix) or a row naming both bytes together.
+- D_800A38AB: NO_NAME. Same as D_800A3899 for the per-side mark pair based at D_800A38AA (9F9C.c D_800A38AA[2]).
