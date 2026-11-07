@@ -1,0 +1,12 @@
+# sweep-2b344: recorded NO_NAME targets (naming-session §Sweeps). Each comes back only with evidence newer than its record.
+
+## Unit sweep-2b344.1 (data; research: Opus at df15e20c9, tmp/codex/sweep-2b344.1-research.md, 2026-11-06): 0 renames
+- D_8008EB04 / D_8008EB06: NO_NAME. Only a sound-offset number separates the two; missing a code-shown role word for each.
+- D_8008F220 D_8008F2EC D_8008F3B8 D_8008F484 D_8008F540 D_8008F60C D_8008F6C8 D_8008F794 D_8008F860 D_8008F92C D_8008FA0C D_8008FAEC D_8008FBCC D_8008FCAC D_8008FD8C D_8008FE5C D_8008FF2C D_8009000C: NO_NAME. Eighteen distinct command streams (each its own g_fight_command_streams entry, 2B344.c:3298-3305, each ending in its own op 0; not one splat-split table), picked by player 1's character data row (24BF0.c:54-55, 2B344.c:259). Same role for all; only the data-row index separates them, and src/include have no word for a data row (no character-name table or enum). Missing evidence: a character identity per data row (trace capture or in-binary name table); rows share streams, so a name must cover every row using it.
+- D_800A36C6: NO_NAME. Lead: the peer's received g_comb_send_payload (2B344.c:103 / :111 / :124 mirror the stores at :99 / :104 / :112); held by the interior-label policy (pending/var-globals-k/notes.txt:6); no newer evidence.
+- D_800A37B0: FINAL candidate, two-role (substitution descriptor index written 2B344.c:344, read :615; also the ninth g_fight_stage_list_entries slot written by 9-stage streams, 2B344.c:412 / :167, read 6CF8.c:594). Goes to the sweep's finality unit.
+- D_800A38D4: NO_NAME. Only 2 is stored; the read's 0 arm has no shown occasion.
+- D_800A38E1: NO_NAME. Packs the two selected_grid_page bits (64FD8.c:1131-1132), read 24BF0.c:80; waits on its source member unk14_15 (game.h:564) being named.
+- D_800A390C: NO_NAME. Waits on D_800A385C.
+- D_800A93B0 / D_800A93BC: NO_NAME. Always 0 at runtime; the only non-zero setter (func_8003F5A8) has no caller; read only to pass to the empty func_80017F98 (so not write-only final). func-second-pass-32's functions 0x8003F5A8 / 0x8003F5CC therefore stay unrevived.
+- D_800F665C: NO_NAME. Write-only mirror storing non-initial values; the value's meaning is not shown by its writer.

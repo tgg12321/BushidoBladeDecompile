@@ -1,0 +1,9 @@
+FaceTri.unk0=prim_attrs
+FaceQuad.unk0=prim_attrs
+FaceTriLong.unk0=prim_attrs
+FaceQuadLong.unk0=prim_attrs
+FaceTri.unk8=face_normal
+FaceQuad.unk9=face_normal
+FaceTriLong.unk8=vertex_normals
+FaceQuadLong.unk10=vertex_normals
+Unk800A4750Rec.unk6=detail_level

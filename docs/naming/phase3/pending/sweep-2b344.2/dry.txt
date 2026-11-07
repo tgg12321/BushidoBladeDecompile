@@ -1,0 +1,59 @@
+PASS FaceTri.unk0=prim_attrs, FaceQuad.unk0=prim_attrs, FaceTriLong.unk0=prim_attrs, FaceQuadLong.unk0=prim_attrs, FaceTri.unk8=face_normal, FaceQuad.unk9=face_normal, FaceQuadLong.unk10=vertex_normals, Unk800A4750Rec.unk6=detail_level
+decl FaceTri.unk0 -> prim_attrs  src/main/2B344.c:2633
+decl FaceQuad.unk0 -> prim_attrs  src/main/2B344.c:2639
+decl FaceTriLong.unk0 -> prim_attrs  src/main/2B344.c:2645
+decl FaceQuadLong.unk0 -> prim_attrs  src/main/2B344.c:2651
+decl FaceTri.unk8 -> face_normal  src/main/2B344.c:2635
+decl FaceQuad.unk9 -> face_normal  src/main/2B344.c:2641
+decl FaceQuadLong.unk10 -> vertex_normals  src/main/2B344.c:2653
+decl Unk800A4750Rec.unk6 -> detail_level  include/game.h:2342
+  round 0: 3 member error line(s)
+    src/main/2B344.c:2087 unk6 x1
+    src/main/2B344.c:2192 unk6 x1
+    src/main/2B344.c:2256 unk6 x1
+  round 1: 0 member error line(s)
+PASS FaceTriLong.unk8=vertex_normals
+decl FaceTriLong.unk8 -> vertex_normals  src/main/2B344.c:2647
+  round 0: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -2342 +2342 @@
+-    u8 unk6;                    /* +0x06 */
++    u8 detail_level;                    /* +0x06 */
+--- a/src/main/2B344.c
++++ b/src/main/2B344.c
+@@ -2087 +2087 @@
+-                            e->unk6 = cell_attributes & 3;
++                            e->detail_level = cell_attributes & 3;
+@@ -2192 +2192 @@
+-                                e->unk6 = cell_attributes & 3;
++                                e->detail_level = cell_attributes & 3;
+@@ -2256 +2256 @@
+-        r->unk6 = 0;
++        r->detail_level = 0;
+@@ -2633 +2633 @@
+-    u16 unk0[6];
++    u16 prim_attrs[6];
+@@ -2635 +2635 @@
+-    u16 unk8[4];
++    u16 face_normal[4];
+@@ -2639 +2639 @@
+-    u16 unk0[7];
++    u16 prim_attrs[7];
+@@ -2641 +2641 @@
+-    u16 unk9[3];
++    u16 face_normal[3];
+@@ -2645 +2645 @@
+-    u16 unk0[6];
++    u16 prim_attrs[6];
+@@ -2647 +2647 @@
+-    u16 unk8[10];
++    u16 vertex_normals[10];
+@@ -2651 +2651 @@
+-    u16 unk0[8];
++    u16 prim_attrs[8];
+@@ -2653 +2653 @@
+-    u16 unk10[12];
++    u16 vertex_normals[12];
+DRY RUN: 2 file(s) would change; nothing written
+OK: every member access renamed
