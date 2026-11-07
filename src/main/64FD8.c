@@ -7,6 +7,15 @@
 #include "include_asm.h"
 #include "bb2.h"
 
+enum SelPhase {
+    SEL_PHASE_MATCH_SETTINGS = 0,
+    SEL_PHASE_OPPOSED_CHOICE = 1,
+    SEL_PHASE_GRID_PICKS = 2,
+    SEL_PHASE_LIST_PICKS = 3,
+    SEL_PHASE_LIST_DONE = 4,
+    SEL_PHASE_FADE_OUT = 5,
+};
+
 enum OptionModeFlowState {
     OPTION_FLOW_OPTION_MENU = 0,
     OPTION_FLOW_MEMCARD_MENU = 1,
@@ -147,7 +156,8 @@ s32 menu_HandleSelPhase0CursorInput(u32 pressed_buttons) {
                 snd_QueueSound(1, 0x7F, 0x7F);
                 for (i = 0; i < 2; i++) {
                     SELWORK->panel_slide_state.half[i] = 3;
-                    SELWORK->pending_selection_phase[i] = 1;
+                    SELWORK->pending_selection_phase[i] =
+                        SEL_PHASE_OPPOSED_CHOICE;
                     SELWORK->pending_selection_cursor[i] = 0;
                 }
             }
@@ -523,7 +533,7 @@ void menu_HandleSelOpposedChoice(s32 pressed_buttons, s32 player_index) {
         for (i = 0; i < 2; i++) {
             work->pending_selection_cursor[i] = 0;
             work->panel_slide_state.half[i] = 1;
-            work->pending_selection_phase[i] = 2;
+            work->pending_selection_phase[i] = SEL_PHASE_GRID_PICKS;
         }
         SELWORK->selected_grid_page[(player_index + 1) & 1] =
             (SELWORK->selected_grid_page[player_index] + 1) & 1;
@@ -535,7 +545,7 @@ void menu_HandleSelOpposedChoice(s32 pressed_buttons, s32 player_index) {
             for (i = 0; i < 2; i++) {
                 work->pending_selection_cursor[i] = 0;
                 work->panel_slide_state.half[i] = 3;
-                work->pending_selection_phase[i] = 0;
+                work->pending_selection_phase[i] = SEL_PHASE_MATCH_SETTINGS;
             }
             snd_QueueSound(2, 0x7F, 0x7F);
         } else {
@@ -779,11 +789,12 @@ void menu_UpdateSelGridPicks(
         if (SELWORK->f3C[0] != 0 || SELWORK->f3C[1] != 0) {
             return;
         }
-        if (SELWORK->selection_phase.half[(player_index != 0) ? 0 : 1] == 2) {
+        if (SELWORK->selection_phase.half[(player_index != 0) ? 0 : 1] ==
+            SEL_PHASE_GRID_PICKS) {
             SELWORK->panel_slide_state.half[1] = 3;
             SELWORK->panel_slide_state.half[0] = 3;
             SELWORK->pending_selection_phase[1] = 1;
-            SELWORK->pending_selection_phase[0] = 1;
+            SELWORK->pending_selection_phase[0] = SEL_PHASE_OPPOSED_CHOICE;
         }
         return;
     }
@@ -853,7 +864,8 @@ void menu_UpdateSelGridPicks(
                         SELWORK->panel_slide_state.half[player_index] = 1;
                         SELWORK->f3C[player_index] = count;
                         SELWORK->pending_selection_cursor[player_index] = 0;
-                        SELWORK->pending_selection_phase[player_index] = 3;
+                        SELWORK->pending_selection_phase[player_index] =
+                            SEL_PHASE_LIST_PICKS;
                         for (i = 0;
                              i < SELWORK->remaining_list_count[player_index];
                              i++) {
@@ -1039,7 +1051,8 @@ void menu_UpdateSelListPicks(
                     [SELWORK->remaining_list_cursor[player_index]];
             if (SELWORK->f3C[player_index] ==
                 SELWORK->selected_match_count_index + 2) {
-                SELWORK->selection_phase.half[player_index] = 4;
+                SELWORK->selection_phase.half[player_index] =
+                    SEL_PHASE_LIST_DONE;
                 return;
             }
             SELWORK->remaining_list_count[player_index]--;
@@ -1055,7 +1068,8 @@ void menu_UpdateSelListPicks(
         snd_QueueSound(2, 0x7F, 0x7F);
         if (SELWORK->f3C[player_index] == 0) {
             SELWORK->panel_slide_state.half[player_index] = 3;
-            SELWORK->pending_selection_phase[player_index] = 2;
+            SELWORK->pending_selection_phase[player_index] =
+                SEL_PHASE_GRID_PICKS;
             SELWORK->pending_selection_cursor[player_index] =
                 SELWORK->selected_match_count_index + 2;
             g_sel_entry_availability_and_claims
@@ -1221,7 +1235,7 @@ s32 menu_InitSelScreen(
         base->panel_slide_state.half[t0] = 0;
         base->panel_draw_offset_y[t0] = 0;
         base->panel_slide_amount[t0] = 0;
-        base->selection_phase.half[t0] = 0;
+        base->selection_phase.half[t0] = SEL_PHASE_MATCH_SETTINGS;
         base->f3C[t0] = 0;
         row = g_sel_offset_steps;
         row[t0][1] = 0;
@@ -1287,33 +1301,33 @@ s32 menu_RunSelPhases(s32 pressed_buttons, Unk8006EACCRec *draw_context) {
 
     ret = 0;
     if (SELWORK->selection_phase.word == 0x40004) {
-        SELWORK->selection_phase.half[1] = 5;
-        SELWORK->selection_phase.half[0] = 5;
+        SELWORK->selection_phase.half[1] = SEL_PHASE_FADE_OUT;
+        SELWORK->selection_phase.half[0] = SEL_PHASE_FADE_OUT;
         SELWORK->selection_fade_shade = 0;
     }
     gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads(
         draw_context, SELWORK->selection_phase.half[0]);
-    if (SELWORK->selection_phase.half[0] != 5) {
+    if (SELWORK->selection_phase.half[0] != SEL_PHASE_FADE_OUT) {
         menu_StepSelPanelSlides();
     }
 
     for (i = 0; i < 2; i++) {
         switch (SELWORK->selection_phase.half[i]) {
-        case 0:
+        case SEL_PHASE_MATCH_SETTINGS:
             if (i == 0) {
                 ret = menu_HandleSelPhase0CursorInput(pressed_buttons);
                 menu_DrawOptionSheetsWithSelectionEffectsAndGreyTiles(
                     draw_context);
             }
             break;
-        case 1:
+        case SEL_PHASE_OPPOSED_CHOICE:
             menu_HandleSelOpposedChoice(pressed_buttons, i);
             menu_DrawSelPhaseSheet(
                 draw_context, i, (s16)(SELWORK->selection_phase.half[i] - 1));
             menu_DrawSelOpposedChoice(draw_context, i);
             menu_DrawSelPanel(draw_context, i);
             break;
-        case 2:
+        case SEL_PHASE_GRID_PICKS:
             menu_UpdateSelGridPicks(
                 pressed_buttons, SELWORK->selected_grid_page[i],
                 SELWORK->grid_pick_slots[i], i);
@@ -1324,7 +1338,7 @@ s32 menu_RunSelPhases(s32 pressed_buttons, Unk8006EACCRec *draw_context) {
                              SELWORK->grid_pick_slots[i], i);
             menu_DrawSelPanel(draw_context, i);
             break;
-        case 3:
+        case SEL_PHASE_LIST_PICKS:
             menu_UpdateSelListPicks(
                 pressed_buttons, SELWORK->selected_grid_page[i],
                 SELWORK->grid_pick_slots[i], i);
@@ -1335,7 +1349,7 @@ s32 menu_RunSelPhases(s32 pressed_buttons, Unk8006EACCRec *draw_context) {
                                   SELWORK->grid_pick_slots[i], i);
             menu_DrawSelPanel(draw_context, i);
             break;
-        case 4:
+        case SEL_PHASE_LIST_DONE:
             menu_DrawSelPhaseSheet(draw_context, i, 2);
             menu_DrawSelRowTiles(draw_context, i, 1);
             menu_DrawSelListPicks(draw_context, SELWORK->selected_grid_page[i],
@@ -1343,10 +1357,10 @@ s32 menu_RunSelPhases(s32 pressed_buttons, Unk8006EACCRec *draw_context) {
             menu_DrawSelPanel(draw_context, i);
             if (pressed_buttons & (PADRup << (i * 16))) {
                 snd_QueueSound(2, 0x7F, 0x7F);
-                SELWORK->selection_phase.half[i] = 3;
+                SELWORK->selection_phase.half[i] = SEL_PHASE_LIST_PICKS;
             }
             break;
-        case 5:
+        case SEL_PHASE_FADE_OUT:
             menu_DrawSelPhaseSheet(draw_context, i, 2);
             menu_DrawSelRowTiles(draw_context, i, 1);
             menu_DrawSelListPicks(draw_context, SELWORK->selected_grid_page[i],
