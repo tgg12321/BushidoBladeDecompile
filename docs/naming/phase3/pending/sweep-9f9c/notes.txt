@@ -67,3 +67,6 @@
 - motion_LoadFighterData:var_0 (9F9C.c:3344): the u16[130] FAKE frame-layout array (FAKE 3341-3343); FAKE-covered.
 - motion_UpdateFrameStep:var_0 (9F9C.c:2754): the u32 move_kind word beside `kind = var_0 & 0xFFFF`, the pair named by the codegen note; both hold the kind, no word tells them apart without restating the member.
 - motion_UpdateFrameStep:var_9 (9F9C.c:2817): a copy of fighter_record->power_scale_tally; the reviewer's name power_scale_tally is refused by scoped_plan ('already occurs in f'), power_tally FAILed pre-apply (drops scale).
+
+## Unit sweep-9f9c.5 (finality, 2026-11-07)
+- CamScratch.unk0 / CamScratch.unk6: FINAL never-accessed (one fresh naming-reviewer PASS each; no_name.tsv). Other scratchpad views (Scr1F800000, the 2B344.c:2049 fill) belong to other functions, per the Scr1F800000.unk54 precedent.
