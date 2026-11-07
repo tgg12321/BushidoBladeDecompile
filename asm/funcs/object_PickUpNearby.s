@@ -61,7 +61,7 @@ glabel object_PickUpNearby
     /* 21490 80030C90 000013A6 */   sh        $s3, 0x0($s0)
     /* 21494 80030C94 2F000524 */  addiu      $a1, $zero, 0x2F
     /* 21498 80030C98 F4002626 */  addiu      $a2, $s1, 0xF4
-    /* 2149C 80030C9C 26068493 */  lbu        $a0, %gp_rel(D_800A36F2)($gp)
+    /* 2149C 80030C9C 26068493 */  lbu        $a0, %gp_rel(g_fighter_initial_first_carried_object_kinds)($gp)
     /* 214A0 80030CA0 21380000 */  addu       $a3, $zero, $zero
     /* 214A4 80030CA4 0E008438 */  xori       $a0, $a0, 0xE
     /* 214A8 80030CA8 30C30008 */  j          .L80030CC0

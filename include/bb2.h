@@ -355,7 +355,7 @@ extern u8 g_fight_match_result_timer;
 extern u8 g_fight_timer_unlock_bit_newly_set;
 extern u8 g_main_frame_period;
 /* per-player byte, [unk_04] (object_InitKindQueue) */
-extern u8 D_800A36F2[2];
+extern u8 g_fighter_initial_first_carried_object_kinds[2];
 extern u8 g_fight_displaced_bone_group_tim_requests;
 extern s16 g_fight_tracked_fighter_index;
 extern u8 g_config_menu_m_option;

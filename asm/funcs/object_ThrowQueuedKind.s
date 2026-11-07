@@ -61,13 +61,13 @@ glabel object_ThrowQueuedKind
     /* 210A8 800308A8 2A000524 */   addiu     $a1, $zero, 0x2A
     /* 210AC 800308AC 2F000524 */  addiu      $a1, $zero, 0x2F
     /* 210B0 800308B0 2C00C624 */  addiu      $a2, $a2, 0x2C
-    /* 210B4 800308B4 26068493 */  lbu        $a0, %gp_rel(D_800A36F2)($gp)
+    /* 210B4 800308B4 26068493 */  lbu        $a0, %gp_rel(g_fighter_initial_first_carried_object_kinds)($gp)
     /* 210B8 800308B8 21380000 */  addu       $a3, $zero, $zero
     /* 210BC 800308BC 35C20008 */  j          .L800308D4
     /* 210C0 800308C0 0E008438 */   xori      $a0, $a0, 0xE
   .L800308C4:
     /* 210C4 800308C4 2C00C624 */  addiu      $a2, $a2, 0x2C
-    /* 210C8 800308C8 26068493 */  lbu        $a0, %gp_rel(D_800A36F2)($gp)
+    /* 210C8 800308C8 26068493 */  lbu        $a0, %gp_rel(g_fighter_initial_first_carried_object_kinds)($gp)
     /* 210CC 800308CC 21380000 */  addu       $a3, $zero, $zero
     /* 210D0 800308D0 26206400 */  xor        $a0, $v1, $a0
   .L800308D4:

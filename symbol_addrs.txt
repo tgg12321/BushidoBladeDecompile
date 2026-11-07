@@ -274,7 +274,7 @@ D_800A36C6 = 0x800A36C6;
 g_fight_paired_move_flags = 0x800A36CA;  // data-wave 2026-10-28: was D_800A36CA
 D_800A36D2 = 0x800A36D2;
 g_main_frame_period = 0x800A36F1;  // data-wave 2026-10-28: was D_800A36F1
-D_800A36F2 = 0x800A36F2;
+g_fighter_initial_first_carried_object_kinds = 0x800A36F2;  // data-wave 2026-11-06: was D_800A36F2
 g_fight_tracked_fighter_index = 0x800A36F6;  // data-wave 2026-10-27: was D_800A36F6
 g_config_menu_m_option = 0x800A36F9;  // data-wave 2026-11-06: was D_800A36F9
 D_800A3712 = 0x800A3712;
@@ -873,7 +873,7 @@ g_fight_toggle_option_bits = 0x800A3788; /* 3-bit set toggled per menu line (var
 _spu_rev_reserve_wa = 0x800A2880; /* current allocator a0 (0 = none); compared against incoming alloc requests */  /* data-wave 2026-09-07: was g_spu_voice_alloc_current_a0 */
 _spu_rev_offsetaddr = 0x800A2884; /* offset for voice-address calc; (0x10000 - D) << g_spu_addr_shift */  /* data-wave 2026-09-07: was g_spu_voice_alloc_offset */
 g_fight_loaded_first_fighter_vab_and_ground_quad_class = 0x800A30FC; /* caches g_fight_character_vab_and_ground_quad_classes[(s8)g_fight_config.fighter_setup[0]]; fight_ResetGraphAndReloadResourcesOnCachedKeyChange reloads the 0x80190800 block through snd_ReloadListedVabsFromFileAndInstallBillboards when it changes */  /* data-wave 2026-10-08: was g_char_pose_id_p1 */
-D_800A36F2 = 0x800A36F2; /* u8[2]: object_InitKindQueue stores the first entry of row g_fighter_initial_carried_object_kinds[character_data_index] (5-byte stride) in [fighter_record->index]; [0] is XORed with object kinds (or 0xE) as fight_RecordReplayEventAndDispatchSoundOrEffect's first argument */  /* data-wave 2026-10-08: was g_char_class_state_array */
+g_fighter_initial_first_carried_object_kinds = 0x800A36F2; /* u8[2]: object_InitKindQueue stores the first entry of row g_fighter_initial_carried_object_kinds[character_data_index] (5-byte stride) in [fighter_record->index]; [0] is XORed with object kinds (or 0xE) as fight_RecordReplayEventAndDispatchSoundOrEffect's first argument */  /* data-wave 2026-10-08: was g_char_class_state_array */
 g_comb_handshake_retry_count = 0x800A37D8; /* retry counter of comb_HandshakeStep's link-cable (COMB) handshake: zeroed in state 1, ++ per nonzero _comb_control(3, 1, 0), gives up at 4 */  /* data-wave 2026-10-08: was g_overlay_load_counter */
 g_memcard_fd = 0x800A3794; /* current open file handle from bios_FileOpen_B (saved across read/write) */  /* data-wave 2026-09-24: was g_memcard_file_handle_current */
 D_8009BF24 = 0x8009BF24; /* move_image[2]: the source rect's x / y (sys.c:324) */  /* data-wave 2026-10-09: was g_gpu_prim_packet_header_0 */

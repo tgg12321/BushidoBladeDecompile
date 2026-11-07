@@ -38,9 +38,9 @@ glabel object_InitKindQueue
     /* 20D04 80030504 0980013C */  lui        $at, %hi(g_fighter_initial_carried_object_kinds)
     /* 20D08 80030508 21082200 */  addu       $at, $at, $v0
     /* 20D0C 8003050C 38E32290 */  lbu        $v0, %lo(g_fighter_initial_carried_object_kinds)($at)
-    /* 20D10 80030510 0A80013C */  lui        $at, %hi(D_800A36F2)
+    /* 20D10 80030510 0A80013C */  lui        $at, %hi(g_fighter_initial_first_carried_object_kinds)
     /* 20D14 80030514 21082300 */  addu       $at, $at, $v1
-    /* 20D18 80030518 F23622A0 */  sb         $v0, %lo(D_800A36F2)($at)
+    /* 20D18 80030518 F23622A0 */  sb         $v0, %lo(g_fighter_initial_first_carried_object_kinds)($at)
     /* 20D1C 8003051C 0800E003 */  jr         $ra
     /* 20D20 80030520 00000000 */   nop
 endlabel object_InitKindQueue

@@ -4072,7 +4072,7 @@ void object_InitKindQueue(Unk80101EC8Record *fighter_record) {
         }
         i++;
     } while (i < 5);
-    D_800A36F2[fighter_record->index] =
+    g_fighter_initial_first_carried_object_kinds[fighter_record->index] =
         g_fighter_initial_carried_object_kinds[fighter_record
                                                    ->character_data_index][0];
 }
@@ -4184,10 +4184,12 @@ s32 object_ThrowQueuedKind(Unk80101EC8Record *fighter_record) {
     kind = obj->kind;
     if (kind == 0xE) {
         fight_RecordReplayEventAndDispatchSoundOrEffect(
-            (D_800A36F2[0] ^ 0xE) != 0, 0x2F, &obj->pos.x, 0);
+            (g_fighter_initial_first_carried_object_kinds[0] ^ 0xE) != 0, 0x2F,
+            &obj->pos.x, 0);
     } else {
         fight_RecordReplayEventAndDispatchSoundOrEffect(
-            (kind ^ D_800A36F2[0]) != 0, 0x2A, &obj->pos.x, 0);
+            (kind ^ g_fighter_initial_first_carried_object_kinds[0]) != 0, 0x2A,
+            &obj->pos.x, 0);
     }
     return thrown_kind;
 }
@@ -4308,8 +4310,8 @@ s32 object_PickUpNearby(Unk80101EC8Record *fighter_record) {
         pool_cursor->kind = -1;
         if (picked_kind == 0xE) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                (D_800A36F2[0] ^ 0xE) != 0, 0x2F, &fighter_record->world_pos.x,
-                0);
+                (g_fighter_initial_first_carried_object_kinds[0] ^ 0xE) != 0,
+                0x2F, &fighter_record->world_pos.x, 0);
         } else {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 fighter_record->index, 0x11, &fighter_record->world_pos.x, 0);
@@ -4468,14 +4470,18 @@ void object_UpdatePool(void) {
                 if (obj->kind == 0xE) {
                     if (obj->can_hit_fighter != 0) {
                         fight_RecordReplayEventAndDispatchSoundOrEffect(
-                            (obj->kind ^ D_800A36F2[0]) != 0, 0x2F, &obj->pos.x,
-                            0);
+                            (obj->kind ^
+                             g_fighter_initial_first_carried_object_kinds[0]) !=
+                                0,
+                            0x2F, &obj->pos.x, 0);
                     }
                 } else if (obj->kind < 0x12) {
                     if (horizontal_speed_sq > 0x10) {
                         fight_RecordReplayEventAndDispatchSoundOrEffect(
-                            (obj->kind ^ D_800A36F2[0]) != 0, 0x2C, &obj->pos.x,
-                            0);
+                            (obj->kind ^
+                             g_fighter_initial_first_carried_object_kinds[0]) !=
+                                0,
+                            0x2C, &obj->pos.x, 0);
                     }
                 } else if (obj->kind >= 0x12 && obj->kind < 0x1E) {
                     if (horizontal_speed_sq > 0x10) {
@@ -4492,7 +4498,9 @@ void object_UpdatePool(void) {
                     obj->vel.z = Judge[(obj->rot[1] + 0x400) & 0xFFF] / 64;
                     obj->unk_05 = 2;
                     fight_RecordReplayEventAndDispatchSoundOrEffect(
-                        (obj->kind ^ D_800A36F2[0]) != 0, 0x2F, &obj->pos.x, 0);
+                        (obj->kind ^
+                         g_fighter_initial_first_carried_object_kinds[0]) != 0,
+                        0x2F, &obj->pos.x, 0);
                 }
             }
             obj->can_hit_fighter = 0;
@@ -4530,7 +4538,9 @@ void object_UpdatePool(void) {
                 obj->vel.z = Judge[(obj->rot[1] + 0x400) & 0xFFF] / 64;
                 obj->unk_05 = 2;
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    (obj->kind ^ D_800A36F2[0]) != 0, 0x2F, &obj->pos.x, 0);
+                    (obj->kind ^
+                     g_fighter_initial_first_carried_object_kinds[0]) != 0,
+                    0x2F, &obj->pos.x, 0);
             }
         }
         if (obj->drop_state == 2) {
@@ -4699,8 +4709,9 @@ void object_ResolveFighterHits(void) {
             continue;
         if (r != 0) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                (obj->kind ^ D_800A36F2[0]) != 0, 0x2B,
-                &SPAD->spadA8[target_fighter_index][j].x, 0);
+                (obj->kind ^ g_fighter_initial_first_carried_object_kinds[0]) !=
+                    0,
+                0x2B, &SPAD->spadA8[target_fighter_index][j].x, 0);
             object_AttachToOpponentBone(obj, rec->bone);
             obj->can_hit_fighter = 0;
             target_move_kind = target_fighter->move_kind;
@@ -4724,11 +4735,12 @@ void object_ResolveFighterHits(void) {
         }
         if (kind == 0xE) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                (D_800A36F2[0] ^ 0xE) != 0, 0x2F, &obj->pos.x, 0);
+                (g_fighter_initial_first_carried_object_kinds[0] ^ 0xE) != 0,
+                0x2F, &obj->pos.x, 0);
         } else if (flag == 0) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                (kind ^ D_800A36F2[0]) != 0, 0x2B,
-                &SPAD->spadA8[target_fighter_index][j].x, 0);
+                (kind ^ g_fighter_initial_first_carried_object_kinds[0]) != 0,
+                0x2B, &SPAD->spadA8[target_fighter_index][j].x, 0);
         }
         object_DeflectFromFighterHit(scr, obj, j);
         obj->can_hit_fighter = 0;
@@ -6184,4 +6196,4 @@ s32 g_fighter_body_overlap_radii[2] = {0x15e, 0x172};
 s32 g_fighter_weapon_contact_zero_z_span_count = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
-u8 D_800A36F2[2];
+u8 g_fighter_initial_first_carried_object_kinds[2];

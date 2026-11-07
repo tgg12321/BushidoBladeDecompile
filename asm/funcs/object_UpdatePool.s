@@ -484,7 +484,7 @@ glabel object_UpdatePool
     /* 21C90 80031490 45004014 */  bnez       $v0, .L800315A8
     /* 21C94 80031494 2C000524 */   addiu     $a1, $zero, 0x2C
     /* 21C98 80031498 2130A002 */  addu       $a2, $s5, $zero
-    /* 21C9C 8003149C 26068493 */  lbu        $a0, %gp_rel(D_800A36F2)($gp)
+    /* 21C9C 8003149C 26068493 */  lbu        $a0, %gp_rel(g_fighter_initial_first_carried_object_kinds)($gp)
     /* 21CA0 800314A0 21380000 */  addu       $a3, $zero, $zero
     /* 21CA4 800314A4 67C50008 */  j          .L8003159C
     /* 21CA8 800314A8 26200401 */   xor       $a0, $t0, $a0
@@ -550,7 +550,7 @@ glabel object_UpdatePool
     /* 21D88 80031588 4A0002AE */  sw         $v0, 0x4A($s0)
     /* 21D8C 8003158C 030009A2 */  sb         $t1, 0x3($s0)
   .L80031590:
-    /* 21D90 80031590 26068293 */  lbu        $v0, %gp_rel(D_800A36F2)($gp)
+    /* 21D90 80031590 26068293 */  lbu        $v0, %gp_rel(g_fighter_initial_first_carried_object_kinds)($gp)
     /* 21D94 80031594 21380000 */  addu       $a3, $zero, $zero
     /* 21D98 80031598 26208200 */  xor        $a0, $a0, $v0
   .L8003159C:
@@ -671,7 +671,7 @@ glabel object_UpdatePool
     /* 21F38 80031738 4A0002AE */  sw         $v0, 0x4A($s0)
     /* 21F3C 8003173C 02000224 */  addiu      $v0, $zero, 0x2
     /* 21F40 80031740 030002A2 */  sb         $v0, 0x3($s0)
-    /* 21F44 80031744 26068293 */  lbu        $v0, %gp_rel(D_800A36F2)($gp)
+    /* 21F44 80031744 26068293 */  lbu        $v0, %gp_rel(g_fighter_initial_first_carried_object_kinds)($gp)
     /* 21F48 80031748 21380000 */  addu       $a3, $zero, $zero
     /* 21F4C 8003174C 26208200 */  xor        $a0, $a0, $v0
     /* 21F50 80031750 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect

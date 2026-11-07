@@ -313,12 +313,12 @@ dlabel g_main_frame_period
     /* 93EF1 800A36F1 */ .byte 0x00
 enddlabel g_main_frame_period
 
-nonmatching D_800A36F2
+nonmatching g_fighter_initial_first_carried_object_kinds
 
-dlabel D_800A36F2
+dlabel g_fighter_initial_first_carried_object_kinds
     /* 93EF2 800A36F2 */ .byte 0x00
     /* 93EF3 800A36F3 */ .byte 0x00
-enddlabel D_800A36F2
+enddlabel g_fighter_initial_first_carried_object_kinds
 
 nonmatching g_fight_displaced_bone_group_tim_requests
 
