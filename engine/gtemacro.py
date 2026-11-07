@@ -51,7 +51,7 @@ Conservative choices (each strips as before when in doubt):
 
 PINNED holds only the macros needed today (the LZC family of fighter_ResolveBodyOverlap,
 fighter_CastWeaponSegment, math_PrepareTriangleCollisionFrame and func_80018300; gte_ldv0 / gte_rtv0 /
-gte_stlvnl / gte_ApplyRotMatrix of func_8002DE20; gte_ldlvl / gte_lddp /
+gte_stlvnl / gte_ApplyRotMatrix of fighter_TestWeaponSweepTriangleContact; gte_ldlvl / gte_lddp /
 gte_rtv0tr / gte_sqr0 / gte_gpf0 / gte_gpl12 / gte_stlvl of func_800187F4,
 owner ruling 2026-09-28, Q29; gte_ldlv0 / gte_SetRotMatrix of the
 math_ScaleVectorInDirectionFrame / func_8002F2D0 / math_ComposeAxisRotationsAndRewriteAngles cluster, pinned as the 2026-09-26

@@ -3201,11 +3201,16 @@ s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj) {
 
 extern s32 g_fighter_weapon_contact_zero_z_span_count;
 
-/* Rotates the three points p0/p1/p2 (relative to the origin) by the current GTE
- * rotation matrix, cuts the rotated triangle with the plane z = 0, and returns
- * 1 if the resulting segment (x1,y1)-(x2,y2) touches the triangle (0,0) / A / B
- * in the x-y plane: either endpoint inside it (same side of every edge as the
- * centroid), or the segment crossing one of its edges. */
+/* Rotates the three points p0/p1/p2, relative to *obj->shape_points[0], by
+ * the current GTE rotation matrix into obj->unk118[0..2]; returns 0 when all
+ * three rotated z are > 0 or all are < 0, else cuts the rotated triangle with
+ * the plane z = 0 into the segment (x1,y1)-(x2,y2). Returns 1 if either
+ * endpoint is inside the triangle (0,0) / A / B (A = obj->unkA8, B =
+ * obj->unkB8) in the x-y plane (same side of every edge as the centroid), or
+ * if, for any edge of it, both endpoints lie on the same side of the edge's
+ * line and both ends of the edge on the same side of the segment's line (the
+ * (a ^ b) >= 0 tests accept equal signs, so this is not an edge-crossing
+ * test); else 0. */
 s32 fighter_TestWeaponSweepTriangleContact(
     Unk1F8002B8Rec *obj, Unk80107850Rec *p0, Unk80107850Rec *p1,
     Unk80107850Rec *p2) {

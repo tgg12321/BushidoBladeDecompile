@@ -127,7 +127,7 @@ Both walk the byte stream at `rec->motion_metadata + 4`; 0 ends it.
 - `math_TestSegmentCircle2D` (src/main/17AFC.c:2877): segment against circle in x/z.
 - `math_TryPrepareTriangleNormalFrame` (src/main/17AFC.c:3099) / `math_PrepareTriangleCollisionFrame`: a triangle's
   local frame from its edge vectors and normal.
-- `func_8002DE20` (src/main/17AFC.c:3182): cuts a triangle rotated by the GTE
+- `fighter_TestWeaponSweepTriangleContact` (src/main/17AFC.c:3214): cuts a triangle rotated by the GTE
   matrix with the plane z = 0 and tests the cut segment against a second
   triangle.
 - `math_PointInTriangleXZ` (src/main/17AFC.c:3375): point in triangle.
