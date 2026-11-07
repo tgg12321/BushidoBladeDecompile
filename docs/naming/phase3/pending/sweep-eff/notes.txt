@@ -23,3 +23,30 @@ NO_NAME, agreed by the pre-apply naming-reviewer (pending/sweep-eff.1/data_manif
 
 Pre-apply FAIL: D_8009ADC0 g_gpu_character_8_extra_cells (R4/N2, reads as a count);
 landed as the reviewer-suggested g_gpu_character_cell_row_8_tail_cells (R6 OK).
+
+## sweep-eff.2 (members unit, researched by naming-e 2026-11-07; research: Opus, tmp/codex/sweep-eff.2-research.md)
+
+No member renames: no new evidence carries a name. NO_NAME (13), with the missing evidence
+(not yet pre-apply reviewed; the next unit's reviewer confirms each):
+- Unk8005C8A8Rec.unk_F0, Unk8005D814Rec.unk_A0, Unk8005E54CRec.unk_A0,
+  Unk8005FC9CRec.unk_00, Unk800600C8Rec.unk_00, Unk80060544Rec.unk_00 (one family, chunk
+  SPRT arrays): reached only through the integer sprt_out cursor (4D0A8.c:53 and the five
+  like it). Missing: the cursors respelled as member accesses at oracle SHA1 (a layout/fake
+  foundation item); then one shared name can land.
+- Unk8006D808Rec.unk_00: the same stub-and-observe question as sweep-eff.1's D_8009AFE0 /
+  B024 / B048 (what each of the three sheets draws, 596CC.c:2410-2416).
+- Unk1F800000Rec.unk50 / unkB0 (one family): nothing writes the storage; the only read is
+  eff_DrawBillboardList's kind-4..7 path. Missing: whether that path is reachable (asset
+  scan of the billboard lists, or a coverage trace).
+- Unk1F8000B8_800620B8.unk00: missing a layout split (SVECTOR + 8-byte tail) or a ruling on
+  in-lifetime aliases (eff.c:854).
+- Unk1F8000B8_80063084.unk38: missing a named constant for the billboard pair's last age
+  (15) / lifetime (16) (eff.c:1299-1303).
+- Unk1F8000B8_800678A8.unk70: one role, but no single name fits both widths; missing a
+  union split (eff.c:2848-2859).
+- Unk8009B0E0Record.unk3: no reader (0xFF in four time-record headers, 0x00 in the other
+  43). Missing: an asset scan of resource headers and a padding ruling before FINAL.
+FINAL candidates (9) for the finality unit (class test, fresh naming-reviewer per row,
+ledger): never-accessed Unk800A9CF8Rec.unk14, Unk1F800000Rec.unkA0 / unkA4; two-role
+Unk1F8000B8_80065800.unk14 / unk64, Unk1F8000B8_800678A8.unk10 / unk34 / unk44 / unk6E
+(unk44 / unk6E carry a single-role caveat).
