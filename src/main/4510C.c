@@ -1154,7 +1154,7 @@ extern s32 g_cpu_route_sector_dpad_masks[];
 
 s32 fighter_BuildCpuRoutePadWithSurfaceProbe(
     Unk80101EC8Record *fighter_record, s32 route_target_x, s32 route_target_z,
-    s32 arg3) {
+    s32 route_exceeds_limit) {
     s32 sp10;
     s32 focus_bearing;
     s32 angle_sector;
@@ -1172,7 +1172,7 @@ s32 fighter_BuildCpuRoutePadWithSurfaceProbe(
     angle_sector = (s32)var_v0 >> 9;
     sector_index = angle_sector & 7;
     sp10 = sector_index;
-    if ((arg3 == 0) && !(angle_sector & 1)) {
+    if ((route_exceeds_limit == 0) && !(angle_sector & 1)) {
         if (fighter_record->cpu_pad_build_count & 0x10) {
             sp10 = sector_index + 1;
             if (sp10 >= 8) {
@@ -1186,7 +1186,7 @@ s32 fighter_BuildCpuRoutePadWithSurfaceProbe(
         }
     }
     var_v0 = g_cpu_route_sector_dpad_masks[sp10 & 7];
-    if (arg3 == 1) {
+    if (route_exceeds_limit == 1) {
         var_v0 |= 4;
     }
     if (fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow(
@@ -1205,7 +1205,7 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *fighter_record) {
     Vec4_571C0 top;
     Vec4_571C0 plus_side_point;
     Vec4_571C0 minus_side_point;
-    s32 var_4[4];
+    s32 hit_point[4];
     s16 work[4];
     s32 route_node_count;
     s8 var_7;
@@ -1255,10 +1255,11 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *fighter_record) {
             top.y = fighter_record->collision_pos.vy + 5;
             top.z = probe_z;
             if (collision_TestSegmentWithWork(
-                    &candidate_point.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
+                    &candidate_point.x, &top.x, hit_point, work, 0x1F8002B8) !=
+                0) {
                 plus_side_active = collision_TestSegmentWithWork(
                                        &plus_side_point.x, &candidate_point.x,
-                                       var_4, work, 0x1F8002B8) == 0;
+                                       hit_point, work, 0x1F8002B8) == 0;
             }
             if (plus_side_active) {
                 plus_side_point = candidate_point;
@@ -1280,10 +1281,11 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *fighter_record) {
             top.y = fighter_record->collision_pos.vy + 5;
             top.z = probe_z;
             if (collision_TestSegmentWithWork(
-                    &candidate_point.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
+                    &candidate_point.x, &top.x, hit_point, work, 0x1F8002B8) !=
+                0) {
                 minus_side_active = collision_TestSegmentWithWork(
                                         &minus_side_point.x, &candidate_point.x,
-                                        var_4, work, 0x1F8002B8) == 0;
+                                        hit_point, work, 0x1F8002B8) == 0;
             }
             if (minus_side_active) {
                 minus_side_point = candidate_point;
@@ -1543,8 +1545,8 @@ void fighter_AppendNavDetour(
     s16 start_corner_z;
     s16 end_corner_x;
     s16 end_corner_z;
-    s32 var_5;
-    s32 var_6;
+    s32 intersection_x;
+    s32 intersection_z;
     s16 backward_point_x;
     s16 backward_point_z;
     s16 forward_point_x;
@@ -1554,8 +1556,8 @@ void fighter_AppendNavDetour(
     s8 forward_vertex_index;
     s16 iter;
     s16 chain_edge_count;
-    s32 var_16;
-    s32 var_17;
+    s32 backward_length;
+    s32 forward_length;
     u8 forward_active;
     u8 backward_crosses_edge;
     u8 forward_crosses_edge;
@@ -1581,8 +1583,8 @@ void fighter_AppendNavDetour(
     backward_point_z = forward_point_z = fighter_record->world_pos.z;
     detour_routes[1].count = 0;
     detour_routes[0].count = 0;
-    var_17 = 0;
-    var_16 = 0;
+    forward_length = 0;
+    backward_length = 0;
     backward_vertex_index = fighter_record->cpu_route.vtx;
     forward_vertex_index = backward_vertex_index + 1;
     if (!(forward_vertex_index < nav_chain->nvtx)) {
@@ -1601,7 +1603,7 @@ void fighter_AppendNavDetour(
          * edge's start (i) and end (next) in the edge scan, then the corners
          * at backward_vertex_index and forward_vertex_index (Ruling 11,
          * reused-local-necessity). */
-        s16 *var_29;
+        s16 *chain_vertex;
         /* node holds two values: the waypoint appended to &detour_routes[0],
          * then the one appended to &detour_routes[1] (Ruling 11,
          * reused-local-necessity).
@@ -1615,14 +1617,14 @@ void fighter_AppendNavDetour(
             if (!(next < nav_chain->nvtx)) {
                 next = 0;
             }
-            var_29 = nav_chain->vtx[i];
-            ax = var_29[0];
-            az = var_29[1];
+            chain_vertex = nav_chain->vtx[i];
+            ax = chain_vertex[0];
+            az = chain_vertex[1];
             fighter_GetNavCornerPoint(
                 nav_chain, i, &start_corner_x, &start_corner_z);
-            var_29 = nav_chain->vtx[next];
-            bx = var_29[0];
-            bz = var_29[1];
+            chain_vertex = nav_chain->vtx[next];
+            bx = chain_vertex[0];
+            bz = chain_vertex[1];
             fighter_GetNavCornerPoint(
                 nav_chain, next, &end_corner_x, &end_corner_z);
             if (backward_active && !backward_crosses_edge) {
@@ -1632,7 +1634,8 @@ void fighter_AppendNavDetour(
                      backward_point_z != end_corner_z)) {
                     if (math_IntersectSegments(
                             backward_point_x, backward_point_z, target_x,
-                            target_z, ax, az, bx, bz, &var_5, &var_6)) {
+                            target_z, ax, az, bx, bz, &intersection_x,
+                            &intersection_z)) {
                         backward_crosses_edge = 1;
                     }
                 }
@@ -1644,7 +1647,8 @@ void fighter_AppendNavDetour(
                      forward_point_z != end_corner_z)) {
                     if (math_IntersectSegments(
                             forward_point_x, forward_point_z, target_x,
-                            target_z, ax, az, bx, bz, &var_5, &var_6)) {
+                            target_z, ax, az, bx, bz, &intersection_x,
+                            &intersection_z)) {
                         forward_crosses_edge = 1;
                     }
                 }
@@ -1657,11 +1661,12 @@ void fighter_AppendNavDetour(
             if (backward_crosses_edge) {
                 s32 c;
 
-                var_29 = nav_chain->vtx[backward_vertex_index];
-                var_16 += SquareRoot0((var_29[0] - backward_point_x) *
-                                          (var_29[0] - backward_point_x) +
-                                      (var_29[1] - backward_point_z) *
-                                          (var_29[1] - backward_point_z));
+                chain_vertex = nav_chain->vtx[backward_vertex_index];
+                backward_length += SquareRoot0(
+                    (chain_vertex[0] - backward_point_x) *
+                        (chain_vertex[0] - backward_point_x) +
+                    (chain_vertex[1] - backward_point_z) *
+                        (chain_vertex[1] - backward_point_z));
                 fighter_GetNavCornerPoint(nav_chain, backward_vertex_index,
                                           &backward_point_x, &backward_point_z);
                 route = &detour_routes[0];
@@ -1677,16 +1682,17 @@ void fighter_AppendNavDetour(
                 if (--backward_vertex_index < 0) {
                     if (nav_chain->flags & 0x80) {
                         backward_active = 0;
-                        var_16 = 100000;
+                        backward_length = 100000;
                     } else {
                         backward_vertex_index = nav_chain->nvtx - 1;
                     }
                 }
             } else {
-                var_16 += SquareRoot0((target_x - backward_point_x) *
-                                          (target_x - backward_point_x) +
-                                      (target_z - backward_point_z) *
-                                          (target_z - backward_point_z));
+                backward_length += SquareRoot0(
+                    (target_x - backward_point_x) *
+                        (target_x - backward_point_x) +
+                    (target_z - backward_point_z) *
+                        (target_z - backward_point_z));
                 backward_active = 0;
             }
         }
@@ -1694,11 +1700,12 @@ void fighter_AppendNavDetour(
             if (forward_crosses_edge) {
                 s32 c;
 
-                var_29 = nav_chain->vtx[forward_vertex_index];
-                var_17 += SquareRoot0((var_29[0] - forward_point_x) *
-                                          (var_29[0] - forward_point_x) +
-                                      (var_29[1] - forward_point_z) *
-                                          (var_29[1] - forward_point_z));
+                chain_vertex = nav_chain->vtx[forward_vertex_index];
+                forward_length += SquareRoot0(
+                    (chain_vertex[0] - forward_point_x) *
+                        (chain_vertex[0] - forward_point_x) +
+                    (chain_vertex[1] - forward_point_z) *
+                        (chain_vertex[1] - forward_point_z));
                 fighter_GetNavCornerPoint(nav_chain, forward_vertex_index,
                                           &forward_point_x, &forward_point_z);
                 route = &detour_routes[1];
@@ -1714,16 +1721,17 @@ void fighter_AppendNavDetour(
                 if (!(++forward_vertex_index < nav_chain->nvtx)) {
                     if (nav_chain->flags & 0x80) {
                         forward_active = 0;
-                        var_17 = 100000;
+                        forward_length = 100000;
                     } else {
                         forward_vertex_index = 0;
                     }
                 }
             } else {
-                var_17 += SquareRoot0((target_x - forward_point_x) *
-                                          (target_x - forward_point_x) +
-                                      (target_z - forward_point_z) *
-                                          (target_z - forward_point_z));
+                forward_length += SquareRoot0(
+                    (target_x - forward_point_x) *
+                        (target_x - forward_point_x) +
+                    (target_z - forward_point_z) *
+                        (target_z - forward_point_z));
                 forward_active = 0;
             }
         }
@@ -1731,7 +1739,7 @@ void fighter_AppendNavDetour(
             break;
         }
     }
-    if (var_16 < var_17) {
+    if (backward_length < forward_length) {
         route = &detour_routes[0];
     } else {
         route = &detour_routes[1];
@@ -1850,7 +1858,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     s32 goal_kind;
     s32 cnt;
     s32 use_stock;
-    s32 var_41;
+    s32 range_flag4_waived;
     s32 lim;
     s8 best_pick_weight_index;
     s32 pick_score;
@@ -2061,9 +2069,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     (p->cpu_state_flags & 8)) {
                     work3 = 1;
                 }
-                var_41 = 0;
+                range_flag4_waived = 0;
                 if ((rand() & 0xFFF) < (p->cpu_level >> 3)) {
-                    var_41 = p->cpu_pad_build_count > 0x3C;
+                    range_flag4_waived = p->cpu_pad_build_count > 0x3C;
                 }
                 if (p->weapon_id >= 6) {
                     work1 = 100000;
@@ -2081,7 +2089,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         if ((g_fighter_horizontal_separation < work2 &&
                              (!(g_cpu_move_range_rules[work4][3] & 8) ||
                               p->opponent_angle_from_orientation_abs < 0x100) &&
-                             (var_41 ||
+                             (range_flag4_waived ||
                               (g_cpu_move_range_rules[work4][3] & 4))) ||
                             work3) {
                             if (g_cpu_move_range_rules[work4][0] ==
@@ -2445,15 +2453,19 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
             if (p->cpu_action_from_opponent != 1) {
                 work3 = p->cpu_action_index;
             } else if (p->other->move_kind == 0x19) {
-                u8 var_54[4];
-                __builtin_memcpy(
-                    var_54, g_cpu_dpad_press_action_by_opponent_nibble, 4);
-                work3 = var_54[p->other->motion_metadata_nibble];
+                u8 press_action_by_nibble[4];
+                __builtin_memcpy(press_action_by_nibble,
+                                 g_cpu_dpad_press_action_by_opponent_nibble, 4);
+                work3 =
+                    press_action_by_nibble[p->other->motion_metadata_nibble];
             } else if (p->other->move_kind == 0x1A) {
-                u8 var_55[4];
+                u8 double_tap_action_by_nibble[4];
                 __builtin_memcpy(
-                    var_55, g_cpu_dpad_double_tap_action_by_opponent_nibble, 4);
-                work3 = var_55[p->other->motion_metadata_nibble];
+                    double_tap_action_by_nibble,
+                    g_cpu_dpad_double_tap_action_by_opponent_nibble, 4);
+                work3 =
+                    double_tap_action_by_nibble[p->other
+                                                    ->motion_metadata_nibble];
             }
             switch (work3) {
             case 0:

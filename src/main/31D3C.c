@@ -202,7 +202,8 @@ extern u8 g_gpu_vram_row_list_map[];
 extern s16 g_gpu_vram_row_backup_asset_index;
 extern u16 g_gpu_store_buf[][16];
 
-void gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(Unk80045878Obj *arg0) {
+void gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(
+    Unk80045878Obj *slot_object) {
     RECT rect;
     s16 *tbl;
     s32 i;
@@ -210,10 +211,10 @@ void gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(Unk80045878Obj *arg0) {
     s32 yoff;
     s16 *id_ptr;
 
-    if (arg0->arena_id != 1) {
+    if (slot_object->arena_id != 1) {
         return;
     }
-    if (g_gpu_vram_row_list_map[arg0->asset_index] == 0xFF) {
+    if (g_gpu_vram_row_list_map[slot_object->asset_index] == 0xFF) {
         return;
     }
     /* FAKE: id_ptr spelling: the reload of arg0->asset_index for the table
@@ -221,8 +222,8 @@ void gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(Unk80045878Obj *arg0) {
      * it is not plain struct indexing;
      * g_gpu_vram_row_list_map[arg0->asset_index]: score 2
      * (proven-spelling-class-reconstruction) */
-    id_ptr = &arg0->asset_index;
-    g_gpu_vram_row_backup_asset_index = arg0->asset_index;
+    id_ptr = &slot_object->asset_index;
+    g_gpu_vram_row_backup_asset_index = slot_object->asset_index;
     tbl = g_gpu_vram_row_lists[g_gpu_vram_row_list_map[*id_ptr]];
     if (gpu_GetFogClutObject() == 1) {
         xoff = -0x140;
@@ -307,7 +308,7 @@ void light_SetPointLight(VECTOR *position, s32 color) {
 
 void light_ApplyPointLight(s32 target0_addr, s32 target1_addr) {
     Unk800F62E0Rec *var_0;
-    s32 var_1;
+    s32 target_index;
     Unk800F62E0Rec *tbl;
     s32 dx;
     s32 dy;
@@ -319,9 +320,9 @@ void light_ApplyPointLight(s32 target0_addr, s32 target1_addr) {
      * calc_LightMatrix call; naming g_light_setups directly re-forms the
      * address and the registers rotate (score 45). */
     var_0 = g_light_setups;
-    for (var_1 = 0; var_1 < 2; var_1++) {
+    for (target_index = 0; target_index < 2; target_index++) {
         tbl = var_0;
-        if (var_1 == 0) {
+        if (target_index == 0) {
             target_position = (s32 *)target0_addr;
         } else {
             target_position = (s32 *)target1_addr;
@@ -438,8 +439,8 @@ extern s32 g_light_preset_rows[][6];
 
 void ApplyLightPresetRowBackgroundClearAndFarColor(s32 preset_index) {
     s32 *row_cursor = g_light_preset_rows[preset_index];
-    s32 var_1;
-    s32 var_2;
+    s32 angle_word;
+    s32 angle_word_high;
     light_SetLightOrBackColorOfSelectedSetups(
         preset_index, *row_cursor++, 0, 0);
     light_SetLightOrBackColorOfSelectedSetups(
@@ -448,19 +449,19 @@ void ApplyLightPresetRowBackgroundClearAndFarColor(s32 preset_index) {
         preset_index, *row_cursor++, 1, 0);
     light_SetLightOrBackColorOfSelectedSetups(
         preset_index, *row_cursor++, 1, 1);
-    var_1 = *row_cursor;
-    g_light_setups[4].light[0].yaw = var_1 & 0xFFF;
-    g_light_setups[1].light[0].yaw = var_1 & 0xFFF;
-    g_light_setups[0].light[0].yaw = var_1 & 0xFFF;
-    var_2 = *row_cursor >> 16;
-    g_light_setups[4].light[0].pitch = var_2 & 0xFFF;
-    g_light_setups[1].light[0].pitch = var_2 & 0xFFF;
-    g_light_setups[0].light[0].pitch = var_2 & 0xFFF;
+    angle_word = *row_cursor;
+    g_light_setups[4].light[0].yaw = angle_word & 0xFFF;
+    g_light_setups[1].light[0].yaw = angle_word & 0xFFF;
+    g_light_setups[0].light[0].yaw = angle_word & 0xFFF;
+    angle_word_high = *row_cursor >> 16;
+    g_light_setups[4].light[0].pitch = angle_word_high & 0xFFF;
+    g_light_setups[1].light[0].pitch = angle_word_high & 0xFFF;
+    g_light_setups[0].light[0].pitch = angle_word_high & 0xFFF;
     gpu_SetBackgroundClearColorAndFarColor(row_cursor[1]);
 }
 
 void light_SetLightOrBackColorOfSelectedSetups(
-    s32 a0, s32 color, s32 a2, s32 set_back_color) {
+    s32 preset_index, s32 color, s32 use_setup_4, s32 set_back_color) {
     s32 r = (color >> 16) & 0xFF;
     s32 g = (color >> 8) & 0xFF;
     s32 b = color & 0xFF;
@@ -475,7 +476,7 @@ void light_SetLightOrBackColorOfSelectedSetups(
         r2 = (r << 12) / 255;
         g2 = (g << 12) / 255;
         b2 = (b << 12) / 255;
-        if (a2 == 0) {
+        if (use_setup_4 == 0) {
             g_light_setups[0].cmat.m[0][0] = r2;
             g_light_setups[0].cmat.m[1][0] = g2;
             g_light_setups[0].cmat.m[2][0] = b2;
@@ -490,7 +491,7 @@ void light_SetLightOrBackColorOfSelectedSetups(
             g_light_setups[4].cmat.m[2][0] = b2;
             calc_LightMatrix(&g_light_setups[4]);
         }
-    } else if (a2 == 0) {
+    } else if (use_setup_4 == 0) {
         g_light_setups[0].back[0] = r;
         g_light_setups[0].back[1] = g;
         g_light_setups[0].back[2] = b;

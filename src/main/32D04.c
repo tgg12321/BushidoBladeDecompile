@@ -408,17 +408,17 @@ void math_InitRotMatrixFuncs(void) {
 }
 
 void math_TransposeMatrixInPlace(MATRIX *matrix) {
-    s16 temp;
+    s16 lower_element;
 
-    temp = matrix->m[2][0];
+    lower_element = matrix->m[2][0];
     matrix->m[2][0] = matrix->m[0][2];
-    matrix->m[0][2] = temp;
-    temp = matrix->m[1][0];
+    matrix->m[0][2] = lower_element;
+    lower_element = matrix->m[1][0];
     matrix->m[1][0] = matrix->m[0][1];
-    matrix->m[0][1] = temp;
-    temp = matrix->m[2][1];
+    matrix->m[0][1] = lower_element;
+    lower_element = matrix->m[2][1];
     matrix->m[2][1] = matrix->m[1][2];
-    matrix->m[1][2] = temp;
+    matrix->m[1][2] = lower_element;
 }
 
 void math_Rotate2D(s32 *x_ptr, s32 *y_ptr, s32 angle) {
@@ -490,12 +490,12 @@ extern void (*g_gpu_default_primitive_handlers[])();
 extern Unk800F62E0Rec *g_light_selected_setup;
 
 void gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift(
-    s32 arg0, s32 arg1, s16 light_setup_index, u8 *arg3) {
+    s32 matrix_ptrs, s32 arg1, s16 light_setup_index, u8 *queued_entry) {
     MATRIX *dst = (MATRIX *)0x1F8003A0;
-    s32 t0;
+    s32 distance_shift;
 
-    t0 = *(s32 *)0x1F800008;
-    *(s32 *)0x1F800008 = 3 - t0;
+    distance_shift = *(s32 *)0x1F800008;
+    *(s32 *)0x1F800008 = 3 - distance_shift;
 
     *dst = g_gpu_flush_view_matrix;
 
@@ -506,7 +506,7 @@ void gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift(
     dst->m[1][2] >>= 1;
     dst->t[1] >>= 1;
 
-    if (arg3[1] & 1) {
+    if (queued_entry[1] & 1) {
         *(s32 *)0x1F80001C = (s32)&g_gpu_outline_primitive_handlers;
     } else {
         *(s32 *)0x1F80001C =
@@ -514,7 +514,7 @@ void gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift(
     }
 
     gpu_ColorNormalsAndProjectPerMatrixSectionVerticesAndDispatchPackets(
-        arg0, arg1, (s32)dst, t0);
+        matrix_ptrs, arg1, (s32)dst, distance_shift);
 
     *(s32 *)0x1F80001C = (s32)&g_gpu_default_primitive_handlers;
 }
@@ -532,9 +532,9 @@ s32 math_ClassifyThresholdBand(s32 a0) {
 }
 
 s32 gpu_RemapDepthToOtIndex(s32 depth) {
-    s32 v0 = depth >> *(s32 *)0x1F800008;
-    s32 shift = v0 >> 11;
-    s32 mant = (v0 & 0x7FF) | -0x1000;
+    s32 shifted_depth = depth >> *(s32 *)0x1F800008;
+    s32 shift = shifted_depth >> 11;
+    s32 mant = (shifted_depth & 0x7FF) | -0x1000;
     return (mant >> shift) & 0xFFF;
 }
 
@@ -595,18 +595,18 @@ void gpu_OffsetTexPrimStream(s16 du, s16 dv, s16 dcx, s16 dcy) {
     s32 mode;
     s32 type;
     s32 kind;
-    s32 var_4;
-    s32 var_5;
+    s32 header_bit15_set;
+    s32 trailing_list_count;
     u16 *p;
     u8 *b;
 
-    var_5 = 0;
+    trailing_list_count = 0;
     do {
         p = SCRATCH_PTR;
         SCRATCH_PTR = p + 1;
         count = *p;
         if (count & 0x8000) {
-            var_4 = 1;
+            header_bit15_set = 1;
             mode = 2;
             SCRATCH_PTR = SCRATCH_PTR + (count & 0x7FFF) + 1;
             if ((u32)SCRATCH_PTR & 3) {
@@ -616,7 +616,7 @@ void gpu_OffsetTexPrimStream(s16 du, s16 dv, s16 dcx, s16 dcy) {
         } else {
             SCRATCH_PTR = p + 2;
             mode = p[1];
-            var_4 = 0;
+            header_bit15_set = 0;
             if (mode == 0) {
                 SCRATCH_PTR += count * 12;
             } else {
@@ -745,7 +745,7 @@ void gpu_OffsetTexPrimStream(s16 du, s16 dv, s16 dcx, s16 dcy) {
                     }
                     break;
                 }
-            } else if (!var_4) {
+            } else if (!header_bit15_set) {
                 SCRATCH_PTR +=
                     (s16)(count * g_gpu_prim_type_halfword_sizes[type]);
             } else {
@@ -763,11 +763,11 @@ void gpu_OffsetTexPrimStream(s16 du, s16 dv, s16 dcx, s16 dcy) {
                 }
             }
         }
-        if (var_4) {
-            if (var_5 == 12) {
+        if (header_bit15_set) {
+            if (trailing_list_count == 12) {
                 return;
             }
-            var_5++;
+            trailing_list_count++;
             while (*SCRATCH_PTR != 0xFFFF) {
                 SCRATCH_PTR += 3;
             }
@@ -920,26 +920,26 @@ void reloc_RelocateBlock(s32 *p, s16 block_id) {
 }
 
 void reloc_UnrelocateBlock(s16 block_id) {
-    s32 *v1;
+    s32 *slot_cursor;
     s32 a4;
     s32 *block_base;
 
-    v1 = g_reloc_block_entry_tables[block_id];
-    a4 = *(v1 - 1);
-    block_base = v1 - 1;
+    slot_cursor = g_reloc_block_entry_tables[block_id];
+    a4 = *(slot_cursor - 1);
+    block_base = slot_cursor - 1;
     if (a4 & 0x8000) {
         a4 = a4 & 0x7FFF;
-        *(v1 - 1) = a4;
+        *(slot_cursor - 1) = a4;
         a4 = a4 - 1;
         if (a4 != -1) {
             do {
-                *v1 -= (s32)block_base;
+                *slot_cursor -= (s32)block_base;
                 /* FAKE: `v1++; v1--;` cancellation pair adds loop-weighted refs
                    so the pointer gets $v1 and the counter $a0 (F6 cancellation
                    pair, no-new-park-categories); without it: score 13 */
-                v1++;
-                v1--;
-                v1++;
+                slot_cursor++;
+                slot_cursor--;
+                slot_cursor++;
                 a4--;
             } while (a4 != -1);
         }
@@ -1062,7 +1062,7 @@ s32 reloc_CopySelectedEntries(s32 src_base, s32 *dest_arr, s16 *select_flags) {
     s32 val;
     s32 data_ptr;
     s32 src_orig;
-    s32 var_6;
+    s32 select_end_marker;
     s32 count;
     s32 *src_ptr;
     s32 start;
@@ -1093,7 +1093,7 @@ s32 reloc_CopySelectedEntries(s32 src_base, s32 *dest_arr, s16 *select_flags) {
     val = *select_cursor;
     select_cursor++;
     if (val != -2) {
-        var_6 = -2;
+        select_end_marker = -2;
         src_ptr = (s32 *)src_base;
         do {
             if (val >= 0) {
@@ -1111,7 +1111,7 @@ s32 reloc_CopySelectedEntries(s32 src_base, s32 *dest_arr, s16 *select_flags) {
             src_ptr++;
             val = *select_cursor;
             select_cursor++;
-        } while (val != var_6);
+        } while (val != select_end_marker);
     }
 
     *dest_arr = data_ptr - (s32)orig_dest;
@@ -1176,11 +1176,11 @@ void gpu_FailCheckOnUnhandledPrimitiveType(void) {
 }
 
 s32 node_BindFrameDataAndReserveEntryBuffer(
-    s16 *a0, s16 block_id, s32 entry_cursor) {
+    s16 *frame_section, s16 block_id, s32 entry_cursor) {
     s32 selector;
     g_node_frame_animation_context.reloc_block_id = block_id;
-    g_node_frame_animation_context.anim_frame_count = *a0++;
-    g_node_frame_animation_context.frame_data = (s32)a0;
+    g_node_frame_animation_context.anim_frame_count = *frame_section++;
+    g_node_frame_animation_context.frame_data = (s32)frame_section;
     g_node_frame_animation_context.frame_entries = entry_cursor;
     selector = resource_GetLoadedSelector();
     g_node_frame_animation_context.resource_selector = selector;
