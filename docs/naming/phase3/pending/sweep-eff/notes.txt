@@ -1,0 +1,25 @@
+# sweep-eff notes (sweep scope main/eff, main/4D0A8)
+
+Record of targets left NO_NAME by a unit (with the missing evidence) and of
+pre-apply FAILs. A target listed here comes back only with evidence newer than
+its record (as naming_noname.py free --revive).
+
+## sweep-eff.1 (globals unit, landed by naming-e 2026-11-07)
+
+NO_NAME, agreed by the pre-apply naming-reviewer (pending/sweep-eff.1/data_manifest.csv):
+- D_8009AFE0, D_8009B024, D_8009B048: the three Unk8006D808Rec.unk_00[0..2] frame
+  sheets of g_gpu_time_record_presentation_cell_digit_set, drawn alike by one loop
+  (596CC.c:2407-2413; only [0] also feeds the tpage). Missing: what each sheet draws
+  on the time-record screen (stub-and-observe screenshot pair per sheet), plus a name
+  for Unk8006D808Rec.unk_00.
+- D_8009B524, D_8009B530, D_8009B53C, D_8009B548, D_8009B554, D_8009B56C,
+  D_8009B57C: the comparison-screen element headers and cells, page 0 / page 1 by
+  selected_grid_page_bits (4D0A8.c:840-851). Missing: what the 3-cell element
+  (B524/B53C with B554) and the 2-cell element (B530/B548 with B56C/B57C) each show
+  (stub-and-observe pair per header; one question covers the run).
+- D_8009B8E0: its one pick (eff.c:2203-2204) needs g_eff_animated_quad_counters[4] >
+  0x800. Missing: whether any writer can reach that range (coverage trace or a static
+  bound on every writer). Not FINAL (it has a read).
+
+Pre-apply FAIL: D_8009ADC0 g_gpu_character_8_extra_cells (R4/N2, reads as a count);
+landed as the reviewer-suggested g_gpu_character_cell_row_8_tail_cells (R6 OK).
