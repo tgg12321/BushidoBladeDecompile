@@ -1,0 +1,23 @@
+rc=0
+==============================================================================
+NAMING WAVE — 1 operations (0 RESET, 1 RENAME)
+  1 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — src/main/368E4.c is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (2) --
+  asm: 1 files, 2 substitutions
+      asm/funcs/func_80046780.s  (2)
+  src: 1 files, 1 substitutions
+      src/main/368E4.c  (1)
+
+-- .s file renames (1) --
+  asm/funcs/func_80046780.s -> asm/funcs/resource_GetStageCountedRecordList.s
+
+-- ledger directory renames (0) --
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (0) --
+
+DRY RUN — nothing written. Re-run with --apply.
