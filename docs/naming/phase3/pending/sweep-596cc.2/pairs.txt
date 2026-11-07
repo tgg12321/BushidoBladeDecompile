@@ -1,0 +1,5 @@
+Unk8006ECF4Rec.unk_08=offset_list_terminator
+Unk8009BD24Block.unk14_15=selected_grid_page_bits
+Unk8009BD24Block.unk14_18=toggle_option_bits
+Unk8009BD24Block.unk20_1=cpu_behavior_adjust
+Unk8009BD24Record.unk1=round_weapon_id
