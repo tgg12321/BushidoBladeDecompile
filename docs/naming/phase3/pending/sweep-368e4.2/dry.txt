@@ -1,0 +1,38 @@
+==============================================================================
+NAMING WAVE — 2 operations (0 RESET, 2 RENAME)
+  2 identifiers remapped
+  link map: OK   — build/bb2.map is present and newer than every build input
+==============================================================================
+
+-- file edits (8) --
+  (root): 3 files, 6 substitutions
+      inline_asm_canonical.txt  (2)
+      known_psyq_stdlib.txt  (2)
+      symbol_addrs.txt  (2)
+  asm: 3 files, 10 substitutions
+      asm/funcs/func_8004A940.s  (3)
+      asm/funcs/func_8004B6E4.s  (2)
+      asm/funcs/gpu_DrawQueuedEntries.s  (5)
+  src: 2 files, 4 substitutions
+      src/main/3AB48.c  (2)
+      src/main/d_5BF0.c  (2)
+
+-- .s file renames (2) --
+  asm/funcs/func_8004A940.s -> asm/funcs/gpu_DispatchPrimitiveGroupsThroughHandlerTable.s
+  asm/funcs/func_8004B6E4.s -> asm/funcs/gpu_EmitOtCutoffFlatLitTexturedTrianglesWithOptionalSubdivision.s
+
+-- ledger directory renames (1) --
+  memory/grind/func_8004A940 -> memory/grind/gpu_DispatchPrimitiveGroupsThroughHandlerTable
+
+-- symbol-registry line deletions (2) --
+  symbol_addrs.txt:993  func_8004A940 = 0x8004A940; /* MISNAMED: not local matrix calc; u16 stream decoder dispatching to gte_ProjectS
+  symbol_addrs.txt:994  func_8004B6E4 = 0x8004B6E4; /* hand-written routine entered through D_80015470[0]; split out of func_8004A940'
+
+-- JSON key/field edits (1) --
+  memory/grind/func_8004A940/layer2.jsonl: 1 changes
+      line 1: func func_8004A940 -> gpu_DispatchPrimitiveGroupsThroughHandlerTable
+
+-- OUT OF SCOPE / manual follow-up (1) --
+  ~ tools/trace/scan/draw_streams.py:L2: ['func_8004A940'] in prose/docstring — NOT rewritten
+
+DRY RUN — nothing written. Re-run with --apply.

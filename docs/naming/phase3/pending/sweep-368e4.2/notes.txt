@@ -1,0 +1,43 @@
+sweep-368e4.2 (unit sweep-368e4.2, kind function; lane ln-naming-e). 2 RENAME kept; 0 dropped; 13 NO_NAME (notes only, not in FUNCS). Verdicts are PENDING: the naming-reviewer sets them.
+Drafted 2026-11-06 at HEAD 06770719a in the lane worktree. Research input tmp/codex/sweep-368e4.2-research.md (untrusted; Opus subagent). Every claim in rows.py re-derived at HEAD from asm/funcs/func_8004B6E4.s, func_8004A940.s, gpu_DrawQueuedEntries.s, gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets.s, the sibling Quads body and the D_80015470 table (src/main/d_5BF0.c:71).
+Kept rows:
+ 0x8004B6E4 func_8004B6E4 -> gpu_EmitOtCutoffFlatLitTexturedTrianglesWithOptionalSubdivision (free symbol)
+ 0x8004A940 func_8004A940 -> gpu_DispatchPrimitiveGroupsThroughHandlerTable (REVIVED from the NO_NAME ledger)
+Both new names are whole-word new across src, include, symbol_addrs.txt, named_syms.txt, docs/naming/function-names.csv (checked: 0 files each).
+
+REVIVE (run at land, before the rename applies; from the research file):
+python tools/naming_noname.py free src/main/3AB48.c --revive "0x8004A940=df15e20c9 split the symbol to its 20-insn loop (asm/funcs/func_8004A940.s:1-23), removing the blocker in the ledger reason (jtbl_8001541C case bodies in the extent; pending/func-second-pass-24/notes.txt:11 'stays neutral until a split'); callers gpu_DrawQueuedEntries.s:93/:114/:138/:155/:171 with named handler tables in \$s4 (32D04.c:506/:515/:1151, gpu_DrawQueuedEntries.s:107-108/:136-137/:152-153/:169-170)"
+(The research's own line passes the file list src/main/368E4.c,src/main/3AB48.c,src/main/snd.c to `free`; 0x8004A940 lives in 3AB48.c:20, so the single-file form above is the minimal one. Use whichever the tool accepts.)
+
+Re-derivation corrections to the research file
+ - Research cites the quad sibling jal at :316 and the cutoff test; confirmed (Quads .s:316 jal gpu_SubdivideAndEmitTexturedQuad; B6E4 .s:270 jal gpu_SubdivideAndEmitTexturedTriangle).
+ - symbol_addrs.txt D_80015470 comment is line 753 (research said 753 in one place, fine); the old-name lines are :993 (A940 MISNAMED note) and :994 (B6E4 note); the dry run deletes both.
+ - func_8004A940.s has jalr only (no jal inside); the five jal to it are in gpu_DrawQueuedEntries.s (:93 :114 :138 :155 :171, verified).
+ - Census docs/naming/function-names.csv:654/:655 still show size 873/289 and splat-auto; that is the census, refreshed by build_census.py in dry.sh/apply.sh.
+
+DRY RUN: dry.txt (rc=0, link map OK). Side effects the lander should know:
+ - ledger directory rename memory/grind/func_8004A940 -> memory/grind/gpu_DispatchPrimitiveGroupsThroughHandlerTable, plus its layer2.jsonl func field edit (1 line).
+ - inline_asm_canonical.txt (2 subs) and known_psyq_stdlib.txt (2 subs) carry the old names and are rewritten by the tool.
+ - OUT OF SCOPE (manual follow-up): tools/trace/scan/draw_streams.py:L2 mentions func_8004A940 in a docstring, not rewritten; comment pass for include/bb2.h:69 and include/game.h:2162 ("asm/funcs/func_8004A940.s, after its endlabel" is a file path that becomes the renamed .s file; fix the path text).
+ - HAZARD (old names in recorded data, must stay): docs/naming/runtime/**, docs/naming/function-names.csv evidence text, older wave manifests, docs/naming/phase3/no_name.tsv, pending/func-second-pass-24/notes.txt.
+ - The .s trailing comment inside the renamed gpu_DispatchPrimitiveGroupsThroughHandlerTable.s ("placed after func_8004A940") should be checked by the comment pass.
+
+Manifests: build.py writes func_manifest.csv and data_manifest.csv INTO this draft dir (not a tracked wave dir, since no wave number is assigned yet); dry.sh and apply.sh read them from here. The lander may move them to the assigned wave dir and edit W in apply.sh / dry.sh / the P3WT env. dry.sh stages a CONFIRM copy under phase3/zz-sweep-368e4-2-dry (removed) and restores function-names.csv; tmp/psw3682 was scratch (removed).
+
+### 0x8004B6E4 -> gpu_EmitOtCutoffFlatLitTexturedTrianglesWithOptionalSubdivision (RENAME)
+- BODY: hand-written; per 0x18-byte record: nclip reject (:53), OT index vs 0x1F800018/0x1F800010 cutoff (:94-96), ncs flat colour (:115), POLY_FT3 emit (len 0x07000000, +0x20) or jal gpu_SubdivideAndEmitTexturedTriangle (:270) by the 0x1F8001E0 level. Only use: D_80015470[0] via the type >> 3 jalr in gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets.s:323-327.
+- Sibling: D_80015470[1] Quads...WithOptionalSubdivision, same scratch layout and cutoff. gpu_EmitOtCutoffFlatLitTexturedTriangles has 0 jal (no subdivision), hence the suffix.
+- Weak spots: colour-level shift and 0x1F8001E1 OR not in the name (sibling omits too); long name.
+
+### 0x8004A940 -> gpu_DispatchPrimitiveGroupsThroughHandlerTable (RENAME, revived)
+- BODY: 20 insns; read count, loop { read type, jalr table[type] with a0 = count }, until count 0; five jal callers in gpu_DrawQueuedEntries, each with a named primitive handler table in s4.
+- Prior blocker (no_name.tsv:32) was the jtbl_8001541C case bodies sharing the symbol; df15e20c9 split them out.
+- Weak spots: loop never advances over records (each handler does); table family naming mixes "packet" and "primitive"; hand-written register convention (no prototype). Alternatives: ...PrimitiveRunsThroughHandlerTable, ...DrawPrimitiveGroups... (rejected, nothing is drawn here).
+
+### The 13 NO_NAME rows (recorded from the research file; none in FUNCS, none revived)
+- 0x80046780 func_80046780: getter returning D_800A33B0, which is still a placeholder (stage-file header section 3 / retained subblock third pointer); role of that section unknown.
+- 0x80046934, 0x8004695C, 0x800469A0 (func_80046934 / func_8004695C / func_800469A0): the uncalled arena block 9 trio (arena_OpenBlock(9); arena_UpdatePeak + arena_SetBlockEnd(9) + empty move callback; arena_Resize(9)); the identity of block 9 is still unknown (NDATA.md:195-207), same blocker as wave125.
+- 0x80046B44 func_80046B44: boot/movie-return init sequence; the single shared occasion (Q134) still missing, wave124 rejected sys_InitSceneState; its four D_ globals still placeholders.
+- 0x8004D634 / 0x80050334 and 0x8004D838 / 0x80050538: byte-identical twins (129 and 143 words), one in g_gpu_packed_vertex_textured_primitive_handlers and one in g_gpu_default_primitive_handlers; a table name tells the table, not the body (Q132); no new evidence.
+- 0x80050AB8 / 0x80050E60 and 0x80050C68 / 0x80051010: byte-identical twin pairs (108 and 126 words) inside the same g_gpu_outline_primitive_handlers table, so even the table name cannot separate them; no new evidence.
+Record at land with the NO_NAME tool using the research file, tag sweep-368e4.2, excluding 0x8004A940 and 0x8004B6E4 (the revive line above handles the former).
