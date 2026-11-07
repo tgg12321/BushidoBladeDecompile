@@ -356,11 +356,11 @@ void fight_QueueFixedFighterCommandDescriptorPlayback(s32 descriptor_index) {
 }
 
 void fight_RunCommandStream(void) {
-    s32 var_0;
+    s32 handler_selected;
     u8 *fighter1_setup;
 
     snd_ResetVoicesAndQueue();
-    var_0 = 0;
+    handler_selected = 0;
     fighter1_setup = &g_fight_config.fighter_setup[1];
 
     do {
@@ -411,7 +411,7 @@ void fight_RunCommandStream(void) {
             g_fight_stage_index = byte;
             g_fight_stage_list_entries[counter] = byte;
             g_main_loop_handler_index = MAIN_LOOP_COMMAND_STREAM_IMAGE_INIT;
-            var_0 = 1;
+            handler_selected = 1;
             fighter_ResetBoneGroupHitState(g_fighter_records);
             g_fight_stage_start_count = 0;
             break;
@@ -426,14 +426,14 @@ void fight_RunCommandStream(void) {
             } else {
                 g_main_loop_handler_index = MAIN_LOOP_SCROLLING_SPRITE_INIT;
             }
-            var_0 = 1;
+            handler_selected = 1;
             break;
 
         case 19:
             g_main_loop_handler_index = MAIN_LOOP_DESCRIPTOR_PLAYBACK_INIT;
             g_fight_active_playback_descriptor = g_fight_command_stream_cursor;
             g_fight_command_stream_cursor += 4;
-            var_0 = 1;
+            handler_selected = 1;
             break;
 
         case 2:
@@ -447,19 +447,19 @@ void fight_RunCommandStream(void) {
         case 18:
             g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
             g_fight_stage_start_count++;
-            var_0 = 1;
+            handler_selected = 1;
             break;
 
         case 20:
             D_800A385C = g_fight_command_stream_cursor;
             g_fight_command_stream_cursor += 12;
-            var_0 = 1;
+            handler_selected = 1;
             fight_SetFixedFighterBytesAndLoadBothFighters();
             fight_QueueFixedFighterCommandDescriptorPlayback(1);
             g_fight_tracked_view_setting = 0;
             break;
         }
-    } while (!var_0);
+    } while (!handler_selected);
 }
 
 void fight_InitCommandStreamImageLoad(void) {
@@ -1701,8 +1701,8 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
                             s32 red = (pixel & 0x1F) << 3;
                             s32 green_work = ((u32)px >> 2) & 0xF8;
                             s32 sum;
-                            s32 var_22;
-                            s32 var_23;
+                            s32 weighted_source_red;
+                            s32 weighted_source_green;
                             s32 green;
                             /* the source blue, weighted, then blended in
                              * place */
@@ -1712,14 +1712,15 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
                              * term (r * factor, g * factor) between the
                              * weighted source and the blend; fresh r_far /
                              * g_far locals: score 33 */
-                            var_22 = red * (0x1000 - factor);
+                            weighted_source_red = red * (0x1000 - factor);
                             red = r * factor;
-                            sum = var_22 + red;
+                            sum = weighted_source_red + red;
                             red = sum >> 15;
                             red = red & 0x1F;
-                            var_23 = green_work * (0x1000 - factor);
+                            weighted_source_green =
+                                green_work * (0x1000 - factor);
                             green_work = g * factor;
-                            sum = var_23 + green_work;
+                            sum = weighted_source_green + green_work;
                             green_work = sum >> 10;
                             blue = ((u32)px >> 7) & 0xF8;
                             blue = blue * (0x1000 - factor);
@@ -1995,7 +1996,7 @@ gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes(
  * window centred on g_view_camera_root_ptr's cell emits its records, as in
  * gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes. */
 void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
-    s32 arg0) {
+    s32 eye_distance) {
     s32 mat[8];
     s16 vec[4];
     s32 res[3];

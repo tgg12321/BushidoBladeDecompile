@@ -115,12 +115,12 @@ Unk80045878Node *node_GetSlotNodeById(s32 slot_index, s32 node_id) {
     return slot_object->node_by_id[node_id];
 }
 
-void node_SetWordOnAllListedNodes(Unk80045878Node *node_cursor, s32 a1) {
+void node_SetWordOnAllListedNodes(Unk80045878Node *node_cursor, s32 ground_y) {
     if (node_cursor->node.reloc_entry_index == -1) {
         return;
     }
     do {
-        node_cursor->unk58 = a1;
+        node_cursor->unk58 = ground_y;
         node_cursor++;
     } while (node_cursor->node.reloc_entry_index != -1);
 }
