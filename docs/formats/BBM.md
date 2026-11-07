@@ -76,21 +76,21 @@ Two outliers:
 The 17 character-specific bundles encode (character_id, secondary_set) in the
 basename. The hundreds-digit identifies the character and the trailing digits
 list per-character variants. Character mapping (matched against the source-side
-string pool at `D_8001036C..D_80010410`, now string literals in
-`src/code6cac_tu2.c`; each string has its own `g_str_bbm_*` label in
-`symbol_addrs.txt`):
+string pool at `g_str_motion_file_y123..g_str_motion_file_u123`
+(0x8001036C..0x80010414), string literals in `src/main/9F9C.c`; each string is
+its own `g_str_motion_file_*` literal):
 
 ```
-prefix   referenced as          character / role            file set
--------  ---------------------  --------------------------  --------
-Y        g_str_bbm_y123          Yugiri (ninja-spear girl)   Y123.BBM
-N        g_str_bbm_n123          Nightstalker / ninja        N123.BBM
-K        g_str_bbm_k123          Kannuki / katana            K123.BBM
-T        g_str_bbm_t123          Tatsumi                     T123.BBM
-S        g_str_bbm_s123/4/5/234  Sara                        S123, S124, S125, S234
-U        g_str_bbm_u123/4/5...   Utsusemi                    U123, U124, U125, U134, U135, U235
-G                                Gunner / Black Lotus        GN.BBM, GS.BBM
-O                                Other / generic stub        ON.BBM (3.4 KB stub)
+prefix   referenced as                  character / role            file set
+-------  -----------------------------  --------------------------  --------
+Y        g_str_motion_file_y123         Yugiri (ninja-spear girl)   Y123.BBM
+N        g_str_motion_file_n123         Nightstalker / ninja        N123.BBM
+K        g_str_motion_file_k123         Kannuki / katana            K123.BBM
+T        g_str_motion_file_t123         Tatsumi                     T123.BBM
+S        g_str_motion_file_s123/4/5/234 Sara                        S123, S124, S125, S234
+U        g_str_motion_file_u123/4/5...  Utsusemi                    U123, U124, U125, U134, U135, U235
+G                                       Gunner / Black Lotus        GN.BBM, GS.BBM
+O                                       Other / generic stub        ON.BBM (3.4 KB stub)
 ```
 
 The trailing digit cluster (`123`, `124`, `234`) appears to encode which weapon
@@ -305,7 +305,7 @@ python tools/inspect_windat.py disc/MOTION/WIN.DAT --csv      # all values as CS
   vector of init thunks from `D_8008D070`).
 
 The strings `Y123.BBM`, `K123.BBM`, etc. live as string literals in
-`src/code6cac_tu2.c` (one `g_str_bbm_*` label per string in `symbol_addrs.txt`).
+`src/main/9F9C.c` (one `g_str_motion_file_*` literal per string).
 
 ## Inspector tool
 
@@ -326,8 +326,9 @@ python tools/inspect_bbm.py <dir>/                       # iterate every BBM in 
   files.
 * Section end-offsets validate: `0x14 < end1 < end2 < end3 ≤ end4 < EOF`
   for every file.
-* Filename cross-reference: every `*.BBM` on disc has a matching
-  `g_str_bbm_*` label (`symbol_addrs.txt`; strings in `src/code6cac_tu2.c`).
+* Filename cross-reference: every character `*.BBM` on disc (all but
+  `COMMON.BBM`) has a matching `g_str_motion_file_*` string (14 in
+  `src/main/9F9C.c`; `GN`/`GS`/`ON` in `asm/data/938FE.data.s`).
 * Related motion-runtime functions cross-referenced (`motion_Open`,
   `motion_SetMotion`, `motion_LoadPreCalcData_*`) — these all read packed
   records that match the section 5 layout.
