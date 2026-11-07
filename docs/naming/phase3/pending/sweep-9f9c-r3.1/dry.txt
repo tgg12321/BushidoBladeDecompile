@@ -1,0 +1,5 @@
+sweep-9f9c-r3.1 (naming-e 2026-11-07): 1 local binding (8 token substitutions, src/main/9F9C.c); no include/ file touched.
+Tree: ln-naming-e = main e37f741f1 (clean). Windows Python (python -I over main tmp/sweep-9f9c-r3-naming-e/dry.py; NAMING_KEYCHECK_ROOT = the worktree).
+Drafting aid only (not the gate): naming_keycheck.scoped_plan(read_working_tree(), pairs, {}).
+ACCEPT fighter_UpdateGroundYByMoveKind:s1=scratch 8 (src/main/9F9C.c 8)
+Required comment edits: none (no comment spells s1 in or about the function).

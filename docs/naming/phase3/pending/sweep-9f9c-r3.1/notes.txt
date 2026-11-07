@@ -1,0 +1,4 @@
+sweep-9f9c-r3.1 (naming-e 2026-11-07): the 1 target sweep-9f9c-r3 owns (pending/sweep-9f9c/notes.txt:92-93, group types-scratch-1f8001b0), released by that foundation row (landed, e37f741f1: s1 is now SegmentTestScratch *). 1 RENAME row drafted, 0 dropped, 0 NO_NAME, 0 FINAL candidates.
+Research: the r-row's own lead (name s1 from the typed block's members); the block's own sibling user fighter_ResolveMovement already spells the same pointer scratch.
+
+# Pre-apply review (naming-reviewer, fresh, 2026-11-07): 1 PASS, 0 FAIL. VERDICT CONFIRM.
