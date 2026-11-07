@@ -5,6 +5,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
+#include "bb2_const.h"
 
 void snd_SerialMixOn(void) {
     SsSetSerialAttr(0, 0, 1);
@@ -17,7 +18,7 @@ void cdrom_Init(void) {
     CdInit();
     CdSetDebug(0);
     cdrom_SetMix(0, 0, 0, 0);
-    g_cdrom_state.rec.io_state = 0;
+    g_cdrom_state.rec.io_state = CDROM_IO_IDLE;
     if (g_cdrom_init_done == 0) {
         g_cdrom_init_done = 1;
     }

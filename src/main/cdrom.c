@@ -7,13 +7,14 @@
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
+#include "bb2_const.h"
 
-s32 cdrom_IsIdle(void) { return g_cdrom_state.rec.io_state == 0; }
+s32 cdrom_IsIdle(void) { return g_cdrom_state.rec.io_state == CDROM_IO_IDLE; }
 
 s32 cdrom_StartRead(s32 file_index, s32 dest_addr) {
     s32 file_size;
 
-    if (g_cdrom_state.rec.io_state != 0) {
+    if (g_cdrom_state.rec.io_state != CDROM_IO_IDLE) {
         return 0;
     }
 
@@ -21,7 +22,7 @@ s32 cdrom_StartRead(s32 file_index, s32 dest_addr) {
     g_cdrom_state.rec.pair = g_cd_file_table[(s16)file_index];
     g_cdrom_state.rec.read_dest_addr = dest_addr;
     g_cdrom_state.rec.stop_request = 0;
-    g_cdrom_state.rec.io_state = 2;
+    g_cdrom_state.rec.io_state = CDROM_IO_READ_SETMODE;
     file_size = g_cdrom_state.rec.pair.size;
     g_cdrom_state.rec.unk3E = 0;
     g_cdrom_state.rec.read_sector_count = (u32)(file_size + 0x7FF) >> 11;
@@ -49,7 +50,7 @@ void cdrom_Pause(void) {
     CdFlush();
     CdControlF(CdlPause, 0);
     g_cdrom_state.rec.stop_request = 1;
-    g_cdrom_state.rec.io_state = 0xB;
+    g_cdrom_state.rec.io_state = CDROM_IO_CMD_SYNC;
     g_cdrom_state.sync_wait_count = 0;
 }
 
@@ -78,7 +79,7 @@ void cdrom_WaitIdle(void) {
 }
 
 s32 cdrom_StartAudio(s32 file_index, s32 audio_channel) {
-    if (g_cdrom_state.rec.io_state != 0) {
+    if (g_cdrom_state.rec.io_state != CDROM_IO_IDLE) {
         return 0;
     }
 
@@ -102,7 +103,7 @@ s32 cdrom_StartAudio(s32 file_index, s32 audio_channel) {
     g_cdrom_state.rec.audio_hold = 0;
     g_cdrom_state.rec.stop_request = 0;
     g_cdrom_state.rec.audio_repeat = 0;
-    g_cdrom_state.rec.io_state = 0x10;
+    g_cdrom_state.rec.io_state = CDROM_IO_AUDIO_SETMODE;
 
     return 1;
 }
@@ -151,7 +152,7 @@ void cdrom_RequestStop(void) {
 void cdrom_ReleaseAudio(void) { g_cdrom_state.rec.audio_hold = 0; }
 
 void cdrom_WaitAudioStarted(void) {
-    while (g_cdrom_state.rec.io_state != 0x16) {
+    while (g_cdrom_state.rec.io_state != CDROM_IO_AUDIO_POLL_SYNC) {
         comb_ExchangeEmptyPad();
         cdrom_Update();
         VSync(2);
@@ -159,7 +160,7 @@ void cdrom_WaitAudioStarted(void) {
 }
 
 void cdrom_PauseAndWait(void) {
-    if (g_cdrom_state.rec.io_state != 0) {
+    if (g_cdrom_state.rec.io_state != CDROM_IO_IDLE) {
         cdrom_Pause();
     }
     cdrom_WaitIdle();
