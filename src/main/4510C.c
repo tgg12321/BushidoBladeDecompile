@@ -1599,7 +1599,7 @@ void fighter_AppendNavDetour(
         chain_edge_count--;
     }
     for (iter = 0; iter < chain_edge_count; iter++) {
-        /* var_29 holds four values, each the address of an x/z pair: the
+        /* chain_vertex holds four values, each the address of an x/z pair: the
          * edge's start (i) and end (next) in the edge scan, then the corners
          * at backward_vertex_index and forward_vertex_index (Ruling 11,
          * reused-local-necessity). */

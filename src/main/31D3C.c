@@ -217,10 +217,10 @@ void gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(
     if (g_gpu_vram_row_list_map[slot_object->asset_index] == 0xFF) {
         return;
     }
-    /* FAKE: id_ptr spelling: the reload of arg0->asset_index for the table
-     * index stays after the g_gpu_vram_row_backup_asset_index store only when
-     * it is not plain struct indexing;
-     * g_gpu_vram_row_list_map[arg0->asset_index]: score 2
+    /* FAKE: id_ptr spelling: the reload of slot_object->asset_index for the
+     * table index stays after the g_gpu_vram_row_backup_asset_index store only
+     * when it is not plain struct indexing;
+     * g_gpu_vram_row_list_map[slot_object->asset_index]: score 2
      * (proven-spelling-class-reconstruction) */
     id_ptr = &slot_object->asset_index;
     g_gpu_vram_row_backup_asset_index = slot_object->asset_index;

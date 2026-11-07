@@ -934,9 +934,10 @@ void reloc_UnrelocateBlock(s16 block_id) {
         if (a4 != -1) {
             do {
                 *slot_cursor -= (s32)block_base;
-                /* FAKE: `v1++; v1--;` cancellation pair adds loop-weighted refs
-                   so the pointer gets $v1 and the counter $a0 (F6 cancellation
-                   pair, no-new-park-categories); without it: score 13 */
+                /* FAKE: `slot_cursor++; slot_cursor--;` cancellation pair adds
+                   loop-weighted refs so the pointer gets $v1 and the counter
+                   $a0 (F6 cancellation pair, no-new-park-categories); without
+                   it: score 13 */
                 slot_cursor++;
                 slot_cursor--;
                 slot_cursor++;
