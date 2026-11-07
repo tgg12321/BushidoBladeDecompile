@@ -786,6 +786,30 @@ void wave_SetCellBuffer(s32 cell_buffer_addr) {
 extern s32 g_wave_column_phases[17];
 extern s32 g_wave_vertex_grid[9][17];
 
+/* wave_Init writes 8 rows x 16 columns of 0x18-byte wave cells, one halfword
+ * per store, which gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision
+ * draws as one POLY_FT4 each (cell + 0x18 per quad). The halfwords of a cell:
+ *  0 +0x00  tpage (s3val rows 5-7 / s2val rows 0-4): the packet's tpage.
+ *  1 +0x02  t2 = 0x2C00: low byte the flag byte (bit 0: +0x3E8 depth bias,
+ *           bits 1-2: subdivision control), high byte the GP0 code 0x2C
+ *           (POLY_FT4); the renderer loads the word at +0x00 into GTE RGBC.
+ *  2 +0x04  clut (s1val / t1val): the packet's clut.
+ *  3-6 +0x06..+0x0C  uv0..uv3 (u low byte, v high byte).
+ *  7-8 +0x0E / +0x10  the four corner vertex indices, one byte each, corner 0
+ *           / 2 in the low byte; each indexes the projected-vertex table at
+ *           0x1F800020 (0..16: the even grid row's columns, 0x12..0x22: the
+ *           odd row's, at 0x1F800068), and corner n's screen XY goes to the
+ *           packet's xy<n>. Corners 0 / 1 are grid row `row`, columns
+ *           column + 1 / column; corners 2 / 3 are row + 1, column + 1 /
+ *           column. So for an odd row a2 (0x13 + column) and t0 (0x1200 +
+ *           column << 8) are corners 0 / 1 and v1 (column + 1) and a1
+ *           (column << 8) corners 2 / 3; for an even row the pairs swap.
+ *  9-11 +0x12..+0x16  the lighting normal, stored z first: +0x12 loads into
+ *           GTE VZ0, the word at +0x14 (x, y) into VXY0, for NCS; wave_Init
+ *           stores (vx, vy, vz) = (0, -0x1000, 0), the up normal of the
+ *           flat grid wave_Draw projects.
+ * The cell is not spelled as a struct: field stores compile to fixed offsets
+ * from one pointer, and the original steps the cursor once per halfword. */
 s32 wave_Init(void) {
     s16 *cell_cursor;
     s32 s3val;
