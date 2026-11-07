@@ -35,72 +35,72 @@
 #include "common.h"
 #include "game.h"
 
-extern const char D_800100FC[];
-extern const char D_80010108[];
-extern const char D_80010114[];
-extern const char D_80010120[];
-extern const char D_8001012C[];
-extern const char D_80010138[];
-extern const char D_80010144[];
-extern const char D_80010150[];
-extern const char D_8001015C[];
-extern const char D_80010168[];
-extern const char D_80010174[];
-extern const char D_80010180[];
-extern const char D_8001018C[];
-extern const char D_80010198[];
-extern const char D_800101A4[];
-extern const char D_800101B0[];
-extern const char D_800101BC[];
-extern const char D_800101C8[];
-extern const char D_800101D4[];
-extern const char D_800101E0[];
-extern const char D_800101EC[];
-extern const char D_800101F8[];
-extern const char D_80010204[];
-extern const char D_80010210[];
-extern const char D_8001021C[];
-extern const char D_80010228[];
-extern const char D_80010234[];
-extern const char D_80010240[];
-extern const char D_8001024C[];
-extern const char D_80010258[];
-extern const char D_80010264[];
-extern const char D_80010270[];
-extern const char D_8001027C[];
-extern const char D_80010288[];
-extern const char D_80010294[];
-extern const char D_800102A0[];
-extern const char D_800102AC[];
-extern const char D_800102B8[];
-extern const char D_800102C4[];
-extern const char D_800102D0[];
-extern const char D_800102DC[];
-extern const char D_800102E8[];
-extern const char D_800102F4[];
-extern const char D_80010300[];
-extern const char D_8001030C[];
-extern const char D_80010318[];
-extern const char D_80010324[];
-extern const char D_80010330[];
-extern const char D_8001033C[];
-extern const char D_80010348[];
-extern const char D_80010354[];
-extern const char D_80010360[];
-extern const char D_8001036C[];
-extern const char D_80010378[];
-extern const char D_80010384[];
-extern const char D_80010390[];
-extern const char D_8001039C[];
-extern const char D_800103A8[];
-extern const char D_800103B4[];
-extern const char D_800103C0[];
-extern const char D_800103CC[];
-extern const char D_800103D8[];
-extern const char D_800103E4[];
-extern const char D_800103F0[];
-extern const char D_800103FC[];
-extern const char D_80010408[];
+extern const char g_str_move_kind_win[];
+extern const char g_str_move_kind_karami_ed[];
+extern const char g_str_move_kind_run_ed[];
+extern const char g_str_move_kind_run_st[];
+extern const char g_str_move_kind_chakuti[];
+extern const char g_str_move_kind_appear[];
+extern const char g_str_move_kind_kaishaku_st[];
+extern const char g_str_move_kind_hajikare[];
+extern const char g_str_move_kind_seriexit[];
+extern const char g_str_move_kind_syagami[];
+extern const char g_str_move_kind_hom_ed[];
+extern const char g_str_move_kind_hom_at[];
+extern const char g_str_move_kind_hom_st[];
+extern const char g_str_move_kind_anobori[];
+extern const char g_str_move_kind_kamae_ka[];
+extern const char g_str_move_kind_move[];
+extern const char g_str_move_kind_nobori_e[];
+extern const char g_str_move_kind_nobori_s[];
+extern const char g_str_move_kind_furi2[];
+extern const char g_str_move_kind_furi1[];
+extern const char g_str_move_kind_yuri2[];
+extern const char g_str_move_kind_yuri1[];
+extern const char g_str_move_kind_gokaku[];
+extern const char g_str_move_kind_start[];
+extern const char g_str_move_kind_arun[];
+extern const char g_str_move_kind_step[];
+extern const char g_str_move_kind_walk[];
+extern const char g_str_move_kind_ljump[];
+extern const char g_str_move_kind_mjump[];
+extern const char g_str_move_kind_sjump[];
+extern const char g_str_move_kind_kamae[];
+extern const char g_str_move_kind_dth[];
+extern const char g_str_move_kind_run[];
+extern const char g_str_move_kind_suna[];
+extern const char g_str_move_kind_karami[];
+extern const char g_str_move_kind_reload[];
+extern const char g_str_move_kind_seri[];
+extern const char g_str_move_kind_haji[];
+extern const char g_str_move_kind_uke[];
+extern const char g_str_move_kind_syastep[];
+extern const char g_str_move_kind_subwep[];
+extern const char g_str_move_kind_ori[];
+extern const char g_str_move_kind_okiagari[];
+extern const char g_str_move_kind_nobori[];
+extern const char g_str_move_kind_kzre[];
+extern const char g_str_move_kind_korogari[];
+extern const char g_str_move_kind_kaisyaku[];
+extern const char g_str_move_kind_end_game[];
+extern const char g_str_move_kind_dam[];
+extern const char g_str_move_kind_attack[];
+extern const char g_str_move_kind_normal[];
+extern const char g_str_move_kind_null[];
+extern const char g_str_motion_file_y123[];
+extern const char g_str_motion_file_n123[];
+extern const char g_str_motion_file_k123[];
+extern const char g_str_motion_file_t123[];
+extern const char g_str_motion_file_s234[];
+extern const char g_str_motion_file_s125[];
+extern const char g_str_motion_file_s124[];
+extern const char g_str_motion_file_s123[];
+extern const char g_str_motion_file_u235[];
+extern const char g_str_motion_file_u135[];
+extern const char g_str_motion_file_u134[];
+extern const char g_str_motion_file_u125[];
+extern const char g_str_motion_file_u124[];
+extern const char g_str_motion_file_u123[];
 extern const char g_str_chanbara[];
 extern const char g_str_practice[];
 extern char g_str_motion_file_on[];
@@ -307,18 +307,36 @@ u8 g_fighter_weapon_object_kinds_by_group_flag[2][8] = {
     {0x12, 0x14, 0x16, 0x18, 0x1A, 0x1A, 0x1C, 0x1C},
     {0x13, 0x15, 0x17, 0x19, 0x1B, 0x1B, 0x1D, 0x1D}};
 
-/* No reader: the 52 move-kind name strings D_800100FC..D_80010360, last
- * to first (the word at 0x8008D9E8 points at D_800100FC). */
+/* No reader: the 52 move-kind name strings
+ * g_str_move_kind_win..g_str_move_kind_null, last to first (the word at
+ * 0x8008D9E8 points at g_str_move_kind_win). */
 const char *g_fighter_move_kind_names[52] = {
-    D_80010360, D_80010354, D_80010348, D_8001033C, D_80010330, D_80010324,
-    D_80010318, D_8001030C, D_80010300, D_800102F4, D_800102E8, D_800102DC,
-    D_800102D0, D_800102C4, D_800102B8, D_800102AC, D_800102A0, D_80010294,
-    D_80010288, D_8001027C, D_80010270, D_80010264, D_80010258, D_8001024C,
-    D_80010240, D_80010234, D_80010228, D_8001021C, D_80010210, D_80010204,
-    D_800101F8, D_800101EC, D_800101E0, D_800101D4, D_800101C8, D_800101BC,
-    D_800101B0, D_800101A4, D_80010198, D_8001018C, D_80010180, D_80010174,
-    D_80010168, D_8001015C, D_80010150, D_80010144, D_80010138, D_8001012C,
-    D_80010120, D_80010114, D_80010108, D_800100FC};
+    g_str_move_kind_null,      g_str_move_kind_normal,
+    g_str_move_kind_attack,    g_str_move_kind_dam,
+    g_str_move_kind_end_game,  g_str_move_kind_kaisyaku,
+    g_str_move_kind_korogari,  g_str_move_kind_kzre,
+    g_str_move_kind_nobori,    g_str_move_kind_okiagari,
+    g_str_move_kind_ori,       g_str_move_kind_subwep,
+    g_str_move_kind_syastep,   g_str_move_kind_uke,
+    g_str_move_kind_haji,      g_str_move_kind_seri,
+    g_str_move_kind_reload,    g_str_move_kind_karami,
+    g_str_move_kind_suna,      g_str_move_kind_run,
+    g_str_move_kind_dth,       g_str_move_kind_kamae,
+    g_str_move_kind_sjump,     g_str_move_kind_mjump,
+    g_str_move_kind_ljump,     g_str_move_kind_walk,
+    g_str_move_kind_step,      g_str_move_kind_arun,
+    g_str_move_kind_start,     g_str_move_kind_gokaku,
+    g_str_move_kind_yuri1,     g_str_move_kind_yuri2,
+    g_str_move_kind_furi1,     g_str_move_kind_furi2,
+    g_str_move_kind_nobori_s,  g_str_move_kind_nobori_e,
+    g_str_move_kind_move,      g_str_move_kind_kamae_ka,
+    g_str_move_kind_anobori,   g_str_move_kind_hom_st,
+    g_str_move_kind_hom_at,    g_str_move_kind_hom_ed,
+    g_str_move_kind_syagami,   g_str_move_kind_seriexit,
+    g_str_move_kind_hajikare,  g_str_move_kind_kaishaku_st,
+    g_str_move_kind_appear,    g_str_move_kind_chakuti,
+    g_str_move_kind_run_st,    g_str_move_kind_run_ed,
+    g_str_move_kind_karami_ed, g_str_move_kind_win};
 
 /* Unk80101EC8Record.character_data_index -> row of
  * g_fighter_weapon_object_kinds_by_group_flag (0 / 1). */
@@ -383,24 +401,15 @@ u16 g_fighter_motion_data_ids[27][8] = {
 /* Motion data id + BBM file-name string, ended by a zero id (the names are
  * never read: motion_LoadFighterData uses the entry index). */
 Unk8008DCCCEntry g_motion_fighter_data_files[18] = {
-    {0x321, D_80010408},
-    {0x421, D_800103FC},
-    {0x521, D_800103F0},
-    {0x431, D_800103E4},
-    {0x531, D_800103D8},
-    {0x532, D_800103CC},
-    {0x1321, D_800103C0},
-    {0x1421, D_800103B4},
-    {0x1521, D_800103A8},
-    {0x1432, D_8001039C},
-    {0x2321, D_80010390},
-    {0x3321, D_80010384},
-    {0x4321, D_80010378},
-    {0x5321, D_8001036C},
-    {0x6321, g_str_motion_file_gn},
-    {0x7321, g_str_motion_file_gs},
-    {0x666, g_str_motion_file_on},
-    {0x0, NULL}};
+    {0x321, g_str_motion_file_u123},  {0x421, g_str_motion_file_u124},
+    {0x521, g_str_motion_file_u125},  {0x431, g_str_motion_file_u134},
+    {0x531, g_str_motion_file_u135},  {0x532, g_str_motion_file_u235},
+    {0x1321, g_str_motion_file_s123}, {0x1421, g_str_motion_file_s124},
+    {0x1521, g_str_motion_file_s125}, {0x1432, g_str_motion_file_s234},
+    {0x2321, g_str_motion_file_t123}, {0x3321, g_str_motion_file_k123},
+    {0x4321, g_str_motion_file_n123}, {0x5321, g_str_motion_file_y123},
+    {0x6321, g_str_motion_file_gn},   {0x7321, g_str_motion_file_gs},
+    {0x666, g_str_motion_file_on},    {0x0, NULL}};
 
 /* [character_data_index][weapon_id] -> Unk80101EC8Record.default_variant_index
  */

@@ -11,7 +11,7 @@ g_str_limit = 0x80010028; // "LIMIT:%08x"
 g_str_prim_overflow = 0x80010034; // "common prim over flow"
 g_str_date_time_stamp = 0x8001004C; // "Fri Aug  7 22:26:32 1998"  // data-wave 2026-10-09: was g_str_build_date
 g_str_sound_id = 0x800100B4; // "SOUND ID:%d"  // data-wave 2026-10-09: was g_str_sound_id_fmt
-g_str_win = 0x800100FC; // animation name: WIN
+g_str_move_kind_win = 0x800100FC; // animation name: WIN  // data-wave 2026-11-07: was g_str_win
 g_str_chanbara = 0x8001081C; // game mode: CHANBARA
 g_str_practice = 0x80010828; // game mode: PRACTICE
 g_str_memcard_fmt = 0x800109B0; // memory card path format
@@ -207,11 +207,11 @@ g_main_loop_handlers = 0x8008D090; // 34 handler pointers; main calls entry g_ma
 // data-wave 2026-09-29: g_module_type_tbl = 0x8008D118 retired; g_sqrt_table_u8 is now object-defined
 
 // === BBM File Names (animation bundles) ===
-g_str_bbm_y123 = 0x8001036C; // Y123.BBM
-g_str_bbm_n123 = 0x80010378; // N123.BBM
-g_str_bbm_k123 = 0x80010384; // K123.BBM
-g_str_bbm_t123 = 0x80010390; // T123.BBM
-g_str_bbm_s123 = 0x800103C0; // S123.BBM
+g_str_motion_file_y123 = 0x8001036C; // Y123.BBM  // data-wave 2026-11-07: was g_str_bbm_y123
+g_str_motion_file_n123 = 0x80010378; // N123.BBM  // data-wave 2026-11-07: was g_str_bbm_n123
+g_str_motion_file_k123 = 0x80010384; // K123.BBM  // data-wave 2026-11-07: was g_str_bbm_k123
+g_str_motion_file_t123 = 0x80010390; // T123.BBM  // data-wave 2026-11-07: was g_str_bbm_t123
+g_str_motion_file_s123 = 0x800103C0; // S123.BBM  // data-wave 2026-11-07: was g_str_bbm_s123
 
 // === Data symbols once named from Kengo (none keeps its Kengo name) ===
 g_motion_fighter_data_files = 0x8008DCCC;  // data-wave 2026-10-08: was menuDat
