@@ -377,17 +377,17 @@ void resource_RebaseNodeAssetBlock(s32 block_id, s32 byte_offset) {
 
 void resource_FreeNodeAssetBlock(void) { arena_Free(8); }
 
-void func_80046934(void) { arena_OpenBlock(9); }
+void arena_OpenBlock9(void) { arena_OpenBlock(9); }
 
 void func_80046954(void) {}
 
-void func_8004695C(s32 end_addr) {
+void arena_CloseBlock9(s32 end_addr) {
     arena_UpdatePeak(end_addr);
     arena_SetBlockEnd(9, end_addr);
     arena_SetMoveCallback(9, (s32)func_80046954);
 }
 
-void func_800469A0(s32 new_size) { arena_Resize(9, new_size); }
+void arena_ResizeBlock9(s32 new_size) { arena_Resize(9, new_size); }
 
 void motion_RebasePlaybackBlock(s32, s32);
 

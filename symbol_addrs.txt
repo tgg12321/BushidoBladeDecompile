@@ -647,7 +647,7 @@ g_local_ot_draw_mode = 0x800A3768; /* data-wave 2026-10-08: was g_disp_enable */
 g_gpu_jitter_burst_enabled = 0x800A36A8; /* data-wave 2026-10-08: was g_disp_fade */
 gpu_ResetGraphMode1 = 0x80016868; /* body = ResetGraph(1) only; retired names katinuki_* (Kengo) and gpu_EnableDisplay (false: never enables the display) - naming sweep 2026-09-24 */
 gpu_SetDispMaskOn = 0x800168D0; /* body = SetDispMask(1) only (display ON); retired names katinuki_* (Kengo) and gpu_DisableDisplay (inverted) - naming sweep 2026-09-24 */
-func_80046934 = 0x80046934; /* body = arena_OpenBlock(9) only */
+// RENAME 0x80046934: retired name 'func_80046934' — preserved note: body = arena_OpenBlock(9) only
 g_cdrom_audio_entries = 0x8008F13C; /* data-wave 2026-10-08: was g_special_cam_command_table */
 g_working_record = 0x8009BD24; /* data-wave 2026-10-08: was g_disp_config */
 // RENAME 0x80046798: retired name 'func_80046798' — preserved note: 4-insn lh-based signed getter for D_80099478 */  /* naming wave07 2026-10-08: was stage_GetId

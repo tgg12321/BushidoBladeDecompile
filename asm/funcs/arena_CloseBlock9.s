@@ -1,4 +1,4 @@
-glabel func_8004695C
+glabel arena_CloseBlock9
     /* 3715C 8004695C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 37160 80046960 1000B0AF */  sw         $s0, 0x10($sp)
     /* 37164 80046964 1400BFAF */  sw         $ra, 0x14($sp)
@@ -16,4 +16,4 @@ glabel func_8004695C
     /* 37194 80046994 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 37198 80046998 0800E003 */  jr         $ra
     /* 3719C 8004699C 00000000 */   nop
-endlabel func_8004695C
+endlabel arena_CloseBlock9
