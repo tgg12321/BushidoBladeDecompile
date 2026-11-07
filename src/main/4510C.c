@@ -17,6 +17,18 @@
 #include <psxsdk/libgte.h>
 #include "bb2_const.h"
 
+enum CpuIncomingAttackState {
+    CPU_INCOMING_ATTACK_NONE = 0,
+    CPU_INCOMING_ATTACK_MID = 2,
+    CPU_INCOMING_ATTACK_FAR = 3,
+    CPU_INCOMING_ATTACK_RESOLVED = 4,
+};
+
+enum CpuIncomingProjectileState {
+    CPU_INCOMING_PROJECTILE_NONE = 0,
+    CPU_INCOMING_PROJECTILE_RESOLVED = 4,
+};
+
 /* 43500.c's collision API */
 extern s32 collision_TestSegmentWithWork(
     s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4);
@@ -448,8 +460,8 @@ void fighter_InitCpuControl(
     p->last_chosen_script_list_index = -1;
     p->last_chosen_script_index = -1;
     p->cpu_tracked_move_key = -1;
-    p->incoming_projectile_state = 0;
-    p->incoming_attack_state = 0;
+    p->incoming_projectile_state = CPU_INCOMING_PROJECTILE_NONE;
+    p->incoming_attack_state = CPU_INCOMING_ATTACK_NONE;
     p->cpu_pad_script_cursor = 0;
     p->last_cpu_pad.released = 0;
     p->last_cpu_pad.pressed = 0;
@@ -817,7 +829,7 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
                 }
             }
             rec->cpu_tracked_move_key = -1;
-            rec->incoming_attack_state = 0;
+            rec->incoming_attack_state = CPU_INCOMING_ATTACK_NONE;
             rec->cpu_state_flags &= ~0x60;
         }
     } else {
@@ -840,17 +852,17 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
                     if (temp2 / 2 >= g_fighter_horizontal_separation) {
                         rec->incoming_attack_state = 1;
                     } else if (temp2 >= g_fighter_horizontal_separation) {
-                        rec->incoming_attack_state = 2;
+                        rec->incoming_attack_state = CPU_INCOMING_ATTACK_MID;
                     } else {
-                        rec->incoming_attack_state = 3;
+                        rec->incoming_attack_state = CPU_INCOMING_ATTACK_FAR;
                     }
                 } else {
                     if (temp2 >= g_fighter_horizontal_separation) {
                         rec->incoming_attack_state = 1;
                     } else if (temp3 >= g_fighter_horizontal_separation) {
-                        rec->incoming_attack_state = 2;
+                        rec->incoming_attack_state = CPU_INCOMING_ATTACK_MID;
                     } else {
-                        rec->incoming_attack_state = 3;
+                        rec->incoming_attack_state = CPU_INCOMING_ATTACK_FAR;
                     }
                 }
                 rec->opponent_snapshot_x = rec->other->world_pos.x;
@@ -883,7 +895,7 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
         g_fighter_horizontal_separation < 0x1194) {
         rec->incoming_projectile_state = 1;
     } else {
-        rec->incoming_projectile_state = 0;
+        rec->incoming_projectile_state = CPU_INCOMING_PROJECTILE_NONE;
         for (i = 0; i < 12; i++) {
             Obj80106A78 *pool_object = &g_object_pool[i];
 
@@ -916,7 +928,8 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
 
     if ((rec->cpu_state_flags & 1) &&
         !(g_cpu_profiles[rec->cpu_profile].flags & 0xFF00) &&
-        rec->incoming_attack_state != 1 && rec->incoming_attack_state != 2 &&
+        rec->incoming_attack_state != 1 &&
+        rec->incoming_attack_state != CPU_INCOMING_ATTACK_MID &&
         rec->incoming_projectile_state != 1 &&
         rec->incoming_projectile_state != 2 &&
         (((rec->cpu_state_flags & 0x80) &&
@@ -926,7 +939,8 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
          rec->other->move_kind == 7 || rec->other->move_kind == 0x2C ||
          rec->other->move_kind == 0x24 ||
          (!(g_cpu_profiles[rec->cpu_profile].flags & 0x20) &&
-          (((rec->cpu_state_flags & 0x80) && rec->incoming_attack_state == 3) ||
+          (((rec->cpu_state_flags & 0x80) &&
+            rec->incoming_attack_state == CPU_INCOMING_ATTACK_FAR) ||
            (rec->other->move_kind == 0x2A &&
             rec->other->hit_record_group_6_9_intact == 0) ||
            (rec->other->move_kind == 0x12 &&
@@ -1837,8 +1851,10 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     }
     if (p->cpu_profile != 0x16 &&
         ((p->cpu_state_flags & 0x15100) ||
-         (p->move_kind == 0xD && (p->incoming_attack_state == 4 ||
-                                  p->incoming_projectile_state == 4)))) {
+         (p->move_kind == 0xD &&
+          (p->incoming_attack_state == CPU_INCOMING_ATTACK_RESOLVED ||
+           p->incoming_projectile_state ==
+               CPU_INCOMING_PROJECTILE_RESOLVED)))) {
         threat_response_script = 0;
         if ((p->incoming_attack_state == 1 &&
              p->other->move_frame + 1 >=
@@ -1867,8 +1883,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
             if (p->move_kind == 0xD) {
                 threat_response_script = 0;
                 p->cpu_pad_decision_result = 0;
-                p->incoming_attack_state = 4;
-                p->incoming_projectile_state = 4;
+                p->incoming_attack_state = CPU_INCOMING_ATTACK_RESOLVED;
+                p->incoming_projectile_state = CPU_INCOMING_PROJECTILE_RESOLVED;
                 p->cpu_threat_resolved_count++;
             }
         } else if (p->move_kind == 0x15) {
@@ -1876,13 +1892,14 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
             work3 = p->cpu_probes[3] == 0;
             work1 = p->cpu_probes[5] == 0;
             work2 = p->cpu_probes[1] == 0;
-            if (p->incoming_attack_state == 2) {
+            if (p->incoming_attack_state == CPU_INCOMING_ATTACK_MID) {
                 if (p->opponent_snapshot_radius * p->opponent_snapshot_radius <
                     CPU_SQ(p->opponent_snapshot_x - p->world_pos.x) +
                         CPU_SQ(p->opponent_snapshot_z - p->world_pos.z)) {
                     p->cpu_pad_decision_result = 0;
-                    p->incoming_attack_state = 4;
-                    p->incoming_projectile_state = 4;
+                    p->incoming_attack_state = CPU_INCOMING_ATTACK_RESOLVED;
+                    p->incoming_projectile_state =
+                        CPU_INCOMING_PROJECTILE_RESOLVED;
                     p->cpu_threat_resolved_count++;
                 } else if (work3 && (p->cpu_state_flags & 8) &&
                            (!(g_cpu_profiles[p->cpu_profile].flags & 0x8F00) ||
@@ -1896,7 +1913,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                  p->other->motion_metadata_nibble == 2 &&
                  p->opponent_snapshot_hit_start_frame - p->other->move_frame >=
                      6) ||
-                (p->incoming_attack_state == 2 &&
+                (p->incoming_attack_state == CPU_INCOMING_ATTACK_MID &&
                  threat_response_script == 0)) {
                 if ((p->cpu_state_flags & 8) &&
                     (!(g_cpu_profiles[p->cpu_profile].flags & 0xBF00) ||
@@ -1920,8 +1937,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         p->incoming_projectile_state = 2;
                         return -1;
                     }
-                    p->incoming_attack_state = 4;
-                    p->incoming_projectile_state = 4;
+                    p->incoming_attack_state = CPU_INCOMING_ATTACK_RESOLVED;
+                    p->incoming_projectile_state =
+                        CPU_INCOMING_PROJECTILE_RESOLVED;
                     p->cpu_threat_resolved_count++;
                 }
             }
@@ -1956,7 +1974,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
             }
             if (!(p->incoming_projectile_state == 1 ||
                   p->incoming_projectile_state == 2) &&
-                p->incoming_attack_state != 2 &&
+                p->incoming_attack_state != CPU_INCOMING_ATTACK_MID &&
                 (p->cpu_pad_decision_result == 0 ||
                  p->opponent_ground_y_band != 0 || p->other->move_kind == 2 ||
                  p->other->move_kind == 0x29 || p->other->move_kind == 0x13 ||
@@ -2096,7 +2114,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
 
         state = p->move_kind;
         if (state == 3 || state == 0x2C || state == 7 ||
-            (p->incoming_attack_state == 1 || p->incoming_attack_state == 2) ||
+            (p->incoming_attack_state == 1 ||
+             p->incoming_attack_state == CPU_INCOMING_ATTACK_MID) ||
             (p->incoming_projectile_state == 1 ||
              p->incoming_projectile_state == 2)) {
             p->cpu_orbit_route_active = 0;
@@ -2483,7 +2502,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 break;
             }
             if ((p->incoming_attack_state == 1 ||
-                 p->incoming_attack_state == 2) ||
+                 p->incoming_attack_state == CPU_INCOMING_ATTACK_MID) ||
                 (p->incoming_projectile_state == 1 ||
                  p->incoming_projectile_state == 2)) {
                 if (p->cpu_pad_decision_result != 0) {

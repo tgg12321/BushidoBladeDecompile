@@ -1,0 +1,30 @@
+kind	where	literal	name	role	evidence
+enum	src/main/4510C.c	0	CpuIncomingAttackState.CPU_INCOMING_ATTACK_NONE	incoming_attack_state 0: no opponent attack tracked; the reset in fighter_InitCpuControl and the clear when the tracked attack motion ends (fighter_BuildCpuPad, with cpu_tracked_move_key = -1)	4510C.c: Unk80101EC8Record.incoming_attack_state / incoming_projectile_state (u8, include/game.h:1860-1861; member names landed var-members-rest-8) are read and stored only in 4510C.c (fighter_InitCpuControl reset, fighter_BuildCpuPad producer, fighter_StepCpuPadScript, fighter_UpdateCpuNavigationChooseScriptsAndHeldInput); git grep: no other C TU; not retyped
+enum	src/main/4510C.c	2	CpuIncomingAttackState.CPU_INCOMING_ATTACK_MID	incoming_attack_state 2: separation beyond the class-1 distance (left a literal) but within the threshold + 800 (the threshold in the off-band branch); the chooser resolves it once the fighter has left the opponent_snapshot radius	4510C.c: Unk80101EC8Record.incoming_attack_state / incoming_projectile_state (u8, include/game.h:1860-1861; member names landed var-members-rest-8) are read and stored only in 4510C.c (fighter_InitCpuControl reset, fighter_BuildCpuPad producer, fighter_StepCpuPadScript, fighter_UpdateCpuNavigationChooseScriptsAndHeldInput); git grep: no other C TU; not retyped
+enum	src/main/4510C.c	3	CpuIncomingAttackState.CPU_INCOMING_ATTACK_FAR	incoming_attack_state 3: separation beyond both classes; read only by the counter-attack test with cpu_state_flags & 0x80	4510C.c: Unk80101EC8Record.incoming_attack_state / incoming_projectile_state (u8, include/game.h:1860-1861; member names landed var-members-rest-8) are read and stored only in 4510C.c (fighter_InitCpuControl reset, fighter_BuildCpuPad producer, fighter_StepCpuPadScript, fighter_UpdateCpuNavigationChooseScriptsAndHeldInput); git grep: no other C TU; not retyped
+enum	src/main/4510C.c	4	CpuIncomingAttackState.CPU_INCOMING_ATTACK_RESOLVED	incoming_attack_state 4: stored with incoming_projectile_state 4 and cpu_threat_resolved_count++ when the chooser has answered the threat; tested (move_kind 0xD) to re-enter the threat block	4510C.c: Unk80101EC8Record.incoming_attack_state / incoming_projectile_state (u8, include/game.h:1860-1861; member names landed var-members-rest-8) are read and stored only in 4510C.c (fighter_InitCpuControl reset, fighter_BuildCpuPad producer, fighter_StepCpuPadScript, fighter_UpdateCpuNavigationChooseScriptsAndHeldInput); git grep: no other C TU; not retyped
+enum	src/main/4510C.c	0	CpuIncomingProjectileState.CPU_INCOMING_PROJECTILE_NONE	incoming_projectile_state 0: rebuilt each fighter_BuildCpuPad; no projectile threat	4510C.c: Unk80101EC8Record.incoming_attack_state / incoming_projectile_state (u8, include/game.h:1860-1861; member names landed var-members-rest-8) are read and stored only in 4510C.c (fighter_InitCpuControl reset, fighter_BuildCpuPad producer, fighter_StepCpuPadScript, fighter_UpdateCpuNavigationChooseScriptsAndHeldInput); git grep: no other C TU; not retyped
+enum	src/main/4510C.c	4	CpuIncomingProjectileState.CPU_INCOMING_PROJECTILE_RESOLVED	incoming_projectile_state 4: stored with incoming_attack_state 4 and cpu_threat_resolved_count++ when the chooser has answered the threat	4510C.c: Unk80101EC8Record.incoming_attack_state / incoming_projectile_state (u8, include/game.h:1860-1861; member names landed var-members-rest-8) are read and stored only in 4510C.c (fighter_InitCpuControl reset, fighter_BuildCpuPad producer, fighter_StepCpuPadScript, fighter_UpdateCpuNavigationChooseScriptsAndHeldInput); git grep: no other C TU; not retyped
+site	src/main/4510C.c:451	0	CPU_INCOMING_PROJECTILE_NONE	incoming_projectile_state store	see the enum row
+site	src/main/4510C.c:452	0	CPU_INCOMING_ATTACK_NONE	incoming_attack_state store	see the enum row
+site	src/main/4510C.c:820	0	CPU_INCOMING_ATTACK_NONE	incoming_attack_state store	see the enum row
+site	src/main/4510C.c:843	2	CPU_INCOMING_ATTACK_MID	incoming_attack_state store	see the enum row
+site	src/main/4510C.c:845	3	CPU_INCOMING_ATTACK_FAR	incoming_attack_state store	see the enum row
+site	src/main/4510C.c:851	2	CPU_INCOMING_ATTACK_MID	incoming_attack_state store	see the enum row
+site	src/main/4510C.c:853	3	CPU_INCOMING_ATTACK_FAR	incoming_attack_state store	see the enum row
+site	src/main/4510C.c:886	0	CPU_INCOMING_PROJECTILE_NONE	incoming_projectile_state store	see the enum row
+site	src/main/4510C.c:919	2	CPU_INCOMING_ATTACK_MID	incoming_attack_state test	see the enum row
+site	src/main/4510C.c:929	3	CPU_INCOMING_ATTACK_FAR	incoming_attack_state test	see the enum row
+site	src/main/4510C.c:1840	4	CPU_INCOMING_ATTACK_RESOLVED	incoming_attack_state test	see the enum row
+site	src/main/4510C.c:1841	4	CPU_INCOMING_PROJECTILE_RESOLVED	incoming_projectile_state test	see the enum row
+site	src/main/4510C.c:1870	4	CPU_INCOMING_ATTACK_RESOLVED	incoming_attack_state store	see the enum row
+site	src/main/4510C.c:1871	4	CPU_INCOMING_PROJECTILE_RESOLVED	incoming_projectile_state store	see the enum row
+site	src/main/4510C.c:1879	2	CPU_INCOMING_ATTACK_MID	incoming_attack_state test	see the enum row
+site	src/main/4510C.c:1884	4	CPU_INCOMING_ATTACK_RESOLVED	incoming_attack_state store	see the enum row
+site	src/main/4510C.c:1885	4	CPU_INCOMING_PROJECTILE_RESOLVED	incoming_projectile_state store	see the enum row
+site	src/main/4510C.c:1899	2	CPU_INCOMING_ATTACK_MID	incoming_attack_state test	see the enum row
+site	src/main/4510C.c:1923	4	CPU_INCOMING_ATTACK_RESOLVED	incoming_attack_state store	see the enum row
+site	src/main/4510C.c:1924	4	CPU_INCOMING_PROJECTILE_RESOLVED	incoming_projectile_state store	see the enum row
+site	src/main/4510C.c:1959	2	CPU_INCOMING_ATTACK_MID	incoming_attack_state test	see the enum row
+site	src/main/4510C.c:2099	2	CPU_INCOMING_ATTACK_MID	incoming_attack_state test	see the enum row
+site	src/main/4510C.c:2486	2	CPU_INCOMING_ATTACK_MID	incoming_attack_state test	see the enum row
