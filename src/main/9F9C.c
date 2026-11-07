@@ -4507,11 +4507,11 @@ void fighter_UpdateInputSteeredForwardMotion(Unk80101EC8Record *arg0) {
         }
 
         {
-            /* FAKE: the clamped |arg0->unk_150| is staged through the existing
-             * `a2` (its table-entry value is dead here): one multiply-set
-             * pseudo keeps every staged value in $a2, as in the target;
-             * separate locals land in $a2/$a0/$a1 (a fresh local here:
-             * score 15). */
+            /* FAKE: the clamped |arg0->forward_move_rate_reduction| is staged
+             * through the existing `a2` (its table-entry value is dead here):
+             * one multiply-set pseudo keeps every staged value in $a2, as in
+             * the target; separate locals land in $a2/$a0/$a1 (a fresh local
+             * here: score 15). */
             a2 = arg0->forward_move_rate_reduction;
             if (a2 < 0) {
                 a2 = -a2;
