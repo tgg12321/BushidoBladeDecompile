@@ -1787,13 +1787,14 @@ void gpu_QueueVramScroll(s32 scroll_index) {
     }
 }
 
-extern s16 D_800EF9F2;
+/* One request state per resource entry (0x3A entries). */
+extern s16 g_resource_entry_request_state[0x3A];
 extern s16 D_800EF9F4;
 
 void ResetEntrySelectionState(void) {
     s16 val = -1;
     s32 i = 0x39;
-    s16 *p = &D_800EF9F2;
+    s16 *p = &g_resource_entry_request_state[0x39];
     do {
         *p = val;
         i--;
@@ -1804,8 +1805,6 @@ void ResetEntrySelectionState(void) {
     g_resource_pair_selection[0] = -1;
     g_resource_entry_category = -1;
 }
-
-extern s16 g_resource_entry_request_state[];
 
 void resource_RequestEntryWithLinkedEntriesAndLatchCategory(s32 entry_index) {
     u8 first_linked_entry_index;

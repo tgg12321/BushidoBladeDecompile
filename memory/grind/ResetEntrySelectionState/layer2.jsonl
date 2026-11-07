@@ -1,0 +1,1 @@
+{"func": "ResetEntrySelectionState", "addr": "8004939C", "verdict": "PASS", "body_hash": "33cfa9addf161859", "body_kind": "c", "file": "main/368E4", "reviewer": "a993b90586e387e4b", "scope": "cheat-cleanup", "date": "2026-11-07T01:06:10Z", "head": "e57d01036", "notes": ""}
