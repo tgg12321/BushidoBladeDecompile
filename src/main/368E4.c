@@ -39,7 +39,7 @@ static s16 g_resource_pair_selection[2];
 static s32 g_resource_entry_category;
 
 void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
-    s32 *s0;
+    s32 *block_base;
     s32 s7;
     s32 *reloc_section, *grid_stream, *tim_section;
     s32 tim_offset_index;
@@ -47,8 +47,8 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
     s32 *tim_group;
     s32 *collision_grid, *sp18, *position_records;
 
-    s0 = (s32 *)arena_GetBlockAddr(7);
-    if (s0 != NULL) {
+    block_base = (s32 *)arena_GetBlockAddr(7);
+    if (block_base != NULL) {
         if (g_loaded_resource_selector == selector) {
             s7 = 1;
             switch (selector) {
@@ -57,11 +57,11 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
             case 4:
             case 7:
             case 18:
-                tim_offset_index = s0[0];
+                tim_offset_index = block_base[0];
                 {
-                    s32 off = ALIGN4(s0[tim_offset_index - 1]);
+                    s32 off = ALIGN4(block_base[tim_offset_index - 1]);
                     gpu_UnpackGridRecordsNodesAndCellRuns(
-                        (u16 *)PTR_OFF(s0, off), 7);
+                        (u16 *)PTR_OFF(block_base, off), 7);
                 }
                 break;
             case 34:
@@ -81,12 +81,12 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
      * local scores 37.
      */
     s7 = 7;
-    s0 = arena_OpenBlock(7);
+    block_base = arena_OpenBlock(7);
 
     if (staging_addr != 0) {
         ndata_ReadStageFile(selector, staging_addr);
     } else {
-        ndata_ReadStageFile(selector, (s32)s0);
+        ndata_ReadStageFile(selector, (s32)block_base);
     }
 
     if (staging_addr != 0) {
@@ -96,24 +96,25 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
          * (Q51; a separate local or the inline read: score 2) */
         /* SOTN: src/st/rare/e_white_dragon.c:78 @db41b28 */
         tim_offset_index = *(s32 *)staging_addr;
-        arena_Copy(
-            staging_addr, (s32)s0, ((s32 *)staging_addr)[tim_offset_index]);
+        arena_Copy(staging_addr, (s32)block_base,
+                   ((s32 *)staging_addr)[tim_offset_index]);
     }
 
     {
-        s32 off1_raw = s0[1];
-        tim_offset_index = s0[0];
-        reloc_section = (s32 *)((u8 *)s0 + ALIGN4(off1_raw));
+        s32 off1_raw = block_base[1];
+        tim_offset_index = block_base[0];
+        reloc_section = (s32 *)((u8 *)block_base + ALIGN4(off1_raw));
         {
-            s32 *a0_ptr = (s32 *)((tim_offset_index << 2) + (s32)s0);
-            grid_stream = (s32 *)((u8 *)s0 + ALIGN4(a0_ptr[-1]));
-            collision_grid = (s32 *)((u8 *)s0 + ALIGN4(s0[2]));
-            sp18 = (s32 *)((u8 *)s0 + ALIGN4(s0[3]));
-            position_records = (s32 *)((u8 *)s0 + ALIGN4(s0[4]));
+            s32 *a0_ptr = (s32 *)((tim_offset_index << 2) + (s32)block_base);
+            grid_stream = (s32 *)((u8 *)block_base + ALIGN4(a0_ptr[-1]));
+            collision_grid = (s32 *)((u8 *)block_base + ALIGN4(block_base[2]));
+            sp18 = (s32 *)((u8 *)block_base + ALIGN4(block_base[3]));
+            position_records =
+                (s32 *)((u8 *)block_base + ALIGN4(block_base[4]));
 
             {
                 s32 off = ALIGN4(a0_ptr[0]);
-                tim_section = (s32 *)((u8 *)s0 + off);
+                tim_section = (s32 *)((u8 *)block_base + off);
             }
 
             if (staging_addr != 0) {
@@ -124,7 +125,7 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
                 tim_group = tim_section;
                 {
                     s32 off3 = ALIGN4(a0_ptr[1]);
-                    arena_UpdatePeak(PTR_OFF(s0, off3));
+                    arena_UpdatePeak(PTR_OFF(block_base, off3));
                 }
             }
         }
@@ -135,16 +136,17 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
        folds back (zero bytes); the extra refs lift s1's allocation priority
        above the tim_section pointer, as in the target; plain s1 = grid_stream:
        score 32 */
-    s1 = (s32 *)((s32)grid_stream - (s32)s0);
-    s1 = (s32 *)((s32)s1 + (s32)s0);
+    s1 = (s32 *)((s32)grid_stream - (s32)block_base);
+    s1 = (s32 *)((s32)s1 + (s32)block_base);
     switch (selector) {
     case 3: {
         /* FAKE: once-written pointer to s0[tim_offset_index - 1]; it fixes the
          * sched1 load/store order; s0[tim_offset_index - 1] inline: score 9 */
-        s32 *hp = (s32 *)((tim_offset_index << 2) + (s32)s0) - 1;
+        s32 *hp = (s32 *)((tim_offset_index << 2) + (s32)block_base) - 1;
         s1 = tim_section;
-        reloc_section = (s32 *)((u8 *)s0 + ALIGN4(s0[tim_offset_index - 2]));
-        grid_stream = (s32 *)((u8 *)s0 + ALIGN4(*hp));
+        reloc_section = (s32 *)((u8 *)block_base +
+                                ALIGN4(block_base[tim_offset_index - 2]));
+        grid_stream = (s32 *)((u8 *)block_base + ALIGN4(*hp));
         g_resource_has_retained_subblocks = 1;
         break;
     }
@@ -152,9 +154,10 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
     case 7:
     case 18:
         s1 = tim_section;
-        reloc_RelocateBlock((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
+        reloc_RelocateBlock(
+            (s32 *)PTR_OFF(block_base, ALIGN4(block_base[5])), 8);
         s1 = (s32 *)node_BindFrameDataAndReserveEntryBuffer(
-            (s16 *)PTR_OFF(s0, ALIGN4(s0[6])), 8, (s32)s1);
+            (s16 *)PTR_OFF(block_base, ALIGN4(block_base[6])), 8, (s32)s1);
         break;
     case 11:
         wave_SetCellBuffer((s32)s1);
@@ -162,15 +165,18 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
         break;
     case 13:
         s1 = tim_section;
-        reloc_section = (s32 *)((u8 *)s0 + ALIGN4(s0[tim_offset_index - 2]));
-        grid_stream = (s32 *)((u8 *)s0 + ALIGN4(s0[tim_offset_index - 1]));
-        reloc_RelocateBlock((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
+        reloc_section = (s32 *)((u8 *)block_base +
+                                ALIGN4(block_base[tim_offset_index - 2]));
+        grid_stream = (s32 *)((u8 *)block_base +
+                              ALIGN4(block_base[tim_offset_index - 1]));
+        reloc_RelocateBlock(
+            (s32 *)PTR_OFF(block_base, ALIGN4(block_base[5])), 8);
         g_resource_has_retained_subblocks = 1;
         break;
     case 34:
         s1 = tim_section;
         g_resource_has_retained_subblocks = 1;
-        grid_stream = (s32 *)((u8 *)s0 + ALIGN4(s0[5]));
+        grid_stream = (s32 *)((u8 *)block_base + ALIGN4(block_base[5]));
         break;
     }
 
