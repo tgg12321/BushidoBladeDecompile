@@ -17,6 +17,17 @@
 #include <psxsdk/libgte.h>
 #include "bb2_const.h"
 
+enum CpuAction {
+    CPU_ACTION_HOLD_LEFT = 0,
+    CPU_ACTION_HOLD_RIGHT = 1,
+    CPU_ACTION_HOLD_DOWN = 2,
+    CPU_ACTION_HOLD_UP = 3,
+    CPU_ACTION_DOUBLE_TAP_LEFT = 4,
+    CPU_ACTION_DOUBLE_TAP_RIGHT = 5,
+    CPU_ACTION_DOUBLE_TAP_DOWN = 6,
+    CPU_ACTION_DOUBLE_TAP_UP = 7,
+};
+
 enum OpponentGroundBand {
     OPPONENT_GROUND_LEVEL = 0,
     OPPONENT_GROUND_ABOVE = 1,
@@ -2419,15 +2430,15 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     if (work3 & 1) {
                         if (p->other->opponent_angle_from_orientation < 0) {
                             if (work1) {
-                                action_index = 6;
+                                action_index = CPU_ACTION_DOUBLE_TAP_DOWN;
                             } else if (work2) {
-                                action_index = 7;
+                                action_index = CPU_ACTION_DOUBLE_TAP_UP;
                             }
                         } else {
                             if (work2) {
-                                action_index = 7;
+                                action_index = CPU_ACTION_DOUBLE_TAP_UP;
                             } else if (work1) {
-                                action_index = 6;
+                                action_index = CPU_ACTION_DOUBLE_TAP_DOWN;
                             }
                         }
                         if (action_index != -1) {
@@ -2468,48 +2479,48 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                                     ->motion_metadata_nibble];
             }
             switch (work3) {
-            case 0:
+            case CPU_ACTION_HOLD_LEFT:
                 if (p->cpu_probes[3] == 0) {
                     p->cpu_pad_decision_result = 0x8000;
                 }
                 break;
-            case 1:
+            case CPU_ACTION_HOLD_RIGHT:
                 if (p->cpu_probes[0] == 0) {
                     p->cpu_pad_decision_result = 0x2000;
                 }
                 break;
-            case 2:
+            case CPU_ACTION_HOLD_DOWN:
                 if (p->cpu_probes[1] == 0) {
                     p->cpu_pad_decision_result = 0x4000;
                 }
                 break;
-            case 3:
+            case CPU_ACTION_HOLD_UP:
                 if (p->cpu_probes[5] == 0) {
                     p->cpu_pad_decision_result = 0x1000;
                 }
                 break;
-            case 4:
+            case CPU_ACTION_DOUBLE_TAP_LEFT:
                 if (p->cpu_probes[3] == 0 &&
                     g_fighter_horizontal_separation <
                         p->script_max_distances[p->variant_index]) {
                     action_script = D_8009A890;
                 }
                 break;
-            case 5:
+            case CPU_ACTION_DOUBLE_TAP_RIGHT:
                 if (p->cpu_probes[0] == 0 &&
                     p->script_min_distances[p->variant_index] <
                         g_fighter_horizontal_separation) {
                     action_script = D_8009A888;
                 }
                 break;
-            case 6:
+            case CPU_ACTION_DOUBLE_TAP_DOWN:
                 if (p->cpu_probes[1] == 0 &&
                     g_fighter_horizontal_separation <
                         p->script_max_distances[p->variant_index]) {
                     action_script = D_8009A878;
                 }
                 break;
-            case 7:
+            case CPU_ACTION_DOUBLE_TAP_UP:
                 if (p->cpu_probes[5] == 0 &&
                     g_fighter_horizontal_separation <
                         p->script_max_distances[p->variant_index]) {
@@ -2652,23 +2663,23 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         break;
                     case 1:
                         if (best_pick_variant) {
-                            p->cpu_action_index = 3;
+                            p->cpu_action_index = CPU_ACTION_HOLD_UP;
                         } else {
-                            p->cpu_action_index = 2;
+                            p->cpu_action_index = CPU_ACTION_HOLD_DOWN;
                         }
                         break;
                     case 2:
                         if (best_pick_variant) {
-                            p->cpu_action_index = 5;
+                            p->cpu_action_index = CPU_ACTION_DOUBLE_TAP_RIGHT;
                         } else {
-                            p->cpu_action_index = 4;
+                            p->cpu_action_index = CPU_ACTION_DOUBLE_TAP_LEFT;
                         }
                         break;
                     case 3:
                         if (best_pick_variant) {
-                            p->cpu_action_index = 7;
+                            p->cpu_action_index = CPU_ACTION_DOUBLE_TAP_UP;
                         } else {
-                            p->cpu_action_index = 6;
+                            p->cpu_action_index = CPU_ACTION_DOUBLE_TAP_DOWN;
                         }
                         break;
                     case 4:
@@ -3017,13 +3028,13 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
             p->cpu_action_from_opponent = 0;
             p->cpu_action_countdown = 0x17000 / p->base_move_frame_step;
             if (p->cpu_probes[5] == 0) {
-                p->cpu_action_index = 3;
+                p->cpu_action_index = CPU_ACTION_HOLD_UP;
             } else if (p->cpu_probes[1] == 0) {
-                p->cpu_action_index = 2;
+                p->cpu_action_index = CPU_ACTION_HOLD_DOWN;
             } else if (p->cpu_probes[0] == 0) {
-                p->cpu_action_index = 1;
+                p->cpu_action_index = CPU_ACTION_HOLD_RIGHT;
             } else {
-                p->cpu_action_index = 0;
+                p->cpu_action_index = CPU_ACTION_HOLD_LEFT;
             }
         } else if (p->weapon_id >= 6) {
             if (p->weapon_ammo == 0 && p->weapon_refills_left != 0 &&
@@ -3407,5 +3418,9 @@ Unk80099D88Rec g_cpu_profiles[32] = {
  * (gp-relative): size from the blob label */
 s32 g_motion_null_stream_tag[2] = {0x4c4c554e, 0};
 PadBitTable g_cpu_pad_metadata_nibble_dpad_bits = {{0xd, 0xf, 0xc, 0xe}};
-u8 g_cpu_dpad_press_action_by_opponent_nibble[4] = {1, 0, 2, 3};
-u8 g_cpu_dpad_double_tap_action_by_opponent_nibble[4] = {5, 4, 6, 7};
+u8 g_cpu_dpad_press_action_by_opponent_nibble[4] = {
+    CPU_ACTION_HOLD_RIGHT, CPU_ACTION_HOLD_LEFT, CPU_ACTION_HOLD_DOWN,
+    CPU_ACTION_HOLD_UP};
+u8 g_cpu_dpad_double_tap_action_by_opponent_nibble[4] = {
+    CPU_ACTION_DOUBLE_TAP_RIGHT, 4, CPU_ACTION_DOUBLE_TAP_DOWN,
+    CPU_ACTION_DOUBLE_TAP_UP};
