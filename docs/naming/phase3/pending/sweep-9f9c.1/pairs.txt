@@ -1,0 +1,1 @@
+D_800A38F0=g_fighter_horizontal_separation_change

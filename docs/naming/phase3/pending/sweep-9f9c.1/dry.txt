@@ -1,0 +1,16 @@
+==============================================================================
+DATA WAVE — 1 addresses, 1 identifiers remapped
+  0x800a38f0: D_800A38F0 -> g_fighter_horizontal_separation_change
+
+-- file edits (5) --
+  asm/data/94000.bss.s  (2)
+  asm/funcs/fight_UpdateSeparationAndPairedMoves.s  (2)
+  include/bb2.h  (1)
+  src/main/9F9C.c  (1)
+  symbol_addrs.txt  (2)
+
+-- registry lines --
+  symbol_addrs.txt:1552 D_800A38F0 -> g_fighter_horizontal_separation_change
+  symbol_addrs.txt:2135 D_800A38F0 -> g_fighter_horizontal_separation_change
+
+DRY RUN — nothing written. Re-run with --apply.
