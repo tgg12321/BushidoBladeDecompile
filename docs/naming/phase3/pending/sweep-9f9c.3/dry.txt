@@ -1,0 +1,100 @@
+==============================================================================
+DATA WAVE — 66 addresses, 72 identifiers remapped
+  0x800100fc: D_800100FC, g_str_win -> g_str_move_kind_win
+  0x80010108: D_80010108 -> g_str_move_kind_karami_ed
+  0x80010114: D_80010114 -> g_str_move_kind_run_ed
+  0x80010120: D_80010120 -> g_str_move_kind_run_st
+  0x8001012c: D_8001012C -> g_str_move_kind_chakuti
+  0x80010138: D_80010138 -> g_str_move_kind_appear
+  0x80010144: D_80010144 -> g_str_move_kind_kaishaku_st
+  0x80010150: D_80010150 -> g_str_move_kind_hajikare
+  0x8001015c: D_8001015C -> g_str_move_kind_seriexit
+  0x80010168: D_80010168 -> g_str_move_kind_syagami
+  0x80010174: D_80010174 -> g_str_move_kind_hom_ed
+  0x80010180: D_80010180 -> g_str_move_kind_hom_at
+  0x8001018c: D_8001018C -> g_str_move_kind_hom_st
+  0x80010198: D_80010198 -> g_str_move_kind_anobori
+  0x800101a4: D_800101A4 -> g_str_move_kind_kamae_ka
+  0x800101b0: D_800101B0 -> g_str_move_kind_move
+  0x800101bc: D_800101BC -> g_str_move_kind_nobori_e
+  0x800101c8: D_800101C8 -> g_str_move_kind_nobori_s
+  0x800101d4: D_800101D4 -> g_str_move_kind_furi2
+  0x800101e0: D_800101E0 -> g_str_move_kind_furi1
+  0x800101ec: D_800101EC -> g_str_move_kind_yuri2
+  0x800101f8: D_800101F8 -> g_str_move_kind_yuri1
+  0x80010204: D_80010204 -> g_str_move_kind_gokaku
+  0x80010210: D_80010210 -> g_str_move_kind_start
+  0x8001021c: D_8001021C -> g_str_move_kind_arun
+  0x80010228: D_80010228 -> g_str_move_kind_step
+  0x80010234: D_80010234 -> g_str_move_kind_walk
+  0x80010240: D_80010240 -> g_str_move_kind_ljump
+  0x8001024c: D_8001024C -> g_str_move_kind_mjump
+  0x80010258: D_80010258 -> g_str_move_kind_sjump
+  0x80010264: D_80010264 -> g_str_move_kind_kamae
+  0x80010270: D_80010270 -> g_str_move_kind_dth
+  0x8001027c: D_8001027C -> g_str_move_kind_run
+  0x80010288: D_80010288 -> g_str_move_kind_suna
+  0x80010294: D_80010294 -> g_str_move_kind_karami
+  0x800102a0: D_800102A0 -> g_str_move_kind_reload
+  0x800102ac: D_800102AC -> g_str_move_kind_seri
+  0x800102b8: D_800102B8 -> g_str_move_kind_haji
+  0x800102c4: D_800102C4 -> g_str_move_kind_uke
+  0x800102d0: D_800102D0 -> g_str_move_kind_syastep
+  0x800102dc: D_800102DC -> g_str_move_kind_subwep
+  0x800102e8: D_800102E8 -> g_str_move_kind_ori
+  0x800102f4: D_800102F4 -> g_str_move_kind_okiagari
+  0x80010300: D_80010300 -> g_str_move_kind_nobori
+  0x8001030c: D_8001030C -> g_str_move_kind_kzre
+  0x80010318: D_80010318 -> g_str_move_kind_korogari
+  0x80010324: D_80010324 -> g_str_move_kind_kaisyaku
+  0x80010330: D_80010330 -> g_str_move_kind_end_game
+  0x8001033c: D_8001033C -> g_str_move_kind_dam
+  0x80010348: D_80010348 -> g_str_move_kind_attack
+  0x80010354: D_80010354 -> g_str_move_kind_normal
+  0x80010360: D_80010360 -> g_str_move_kind_null
+  0x8001036c: D_8001036C, g_str_bbm_y123 -> g_str_motion_file_y123
+  0x80010378: D_80010378, g_str_bbm_n123 -> g_str_motion_file_n123
+  0x80010384: D_80010384, g_str_bbm_k123 -> g_str_motion_file_k123
+  0x80010390: D_80010390, g_str_bbm_t123 -> g_str_motion_file_t123
+  0x8001039c: D_8001039C -> g_str_motion_file_s234
+  0x800103a8: D_800103A8 -> g_str_motion_file_s125
+  0x800103b4: D_800103B4 -> g_str_motion_file_s124
+  0x800103c0: D_800103C0, g_str_bbm_s123 -> g_str_motion_file_s123
+  0x800103cc: D_800103CC -> g_str_motion_file_u235
+  0x800103d8: D_800103D8 -> g_str_motion_file_u135
+  0x800103e4: D_800103E4 -> g_str_motion_file_u134
+  0x800103f0: D_800103F0 -> g_str_motion_file_u125
+  0x800103fc: D_800103FC -> g_str_motion_file_u124
+  0x80010408: D_80010408 -> g_str_motion_file_u123
+
+-- file edits (3) --
+  src/main/9F9C.c  (66)
+  src/main/d_7D920.c  (132)
+  symbol_addrs.txt  (6)
+
+-- registry lines --
+  symbol_addrs.txt:14 g_str_win -> g_str_move_kind_win
+  symbol_addrs.txt:210 g_str_bbm_y123 -> g_str_motion_file_y123
+  symbol_addrs.txt:211 g_str_bbm_n123 -> g_str_motion_file_n123
+  symbol_addrs.txt:212 g_str_bbm_k123 -> g_str_motion_file_k123
+  symbol_addrs.txt:213 g_str_bbm_t123 -> g_str_motion_file_t123
+  symbol_addrs.txt:214 g_str_bbm_s123 -> g_str_motion_file_s123
+
+DRY RUN — nothing written. Re-run with --apply.
+exit 0
+
+== Hand edits for the applier, after data_wave --apply (the tool does NOT touch comments or docs) ==
+Dry run on the clean worktree at a0bbd53e3: exit 0, PASS (66 addresses, 72 identifiers, 3 files). The tool itself
+renames the 66 definitions (9F9C.c:3516-3581), the 66 externs and 66 table initializers (d_7D920.c:38-103, 313-321,
+386-399) and the six symbol_addrs.txt aliases (:14 g_str_win, :210-214 g_str_bbm_y123/n123/k123/t123/s123, shown
+above as registry lines), so those need no hand edit.
+1. src/main/d_7D920.c:310-311 comment: "the 52 move-kind name strings D_800100FC..D_80010360 ... points at D_800100FC"
+   -> g_str_move_kind_win..g_str_move_kind_null / g_str_move_kind_win (keycheck: no old name may survive in a
+   build file, comments included).
+2. docs/formats/BBM.md:80 (stale TU name src/code6cac_tu2.c and "g_str_bbm_*"), :86-91 (table column g_str_bbm_y123,
+   _n123, _k123, _t123, _s123/4/5/234, _u123/4/5...), :308, :330 -> g_str_motion_file_* (docs follow; may be a
+   follow commit). Pending/wave docs keep history.
+3. symbol_addrs.txt: the six lines above are already rewritten by the tool; their comments ("// animation name: WIN",
+   "// Y123.BBM") stay accurate. The registry has no entries for the other 60 addresses.
+4. No other comment in src/include uses an old D_800100FC..D_80010408 spelling (git grep checked).
+3. docs/formats/BBM.md:79 (pre-apply reviewer): cites D_8001036C..D_80010410 and the stale TU src/code6cac_tu2.c; the strings now live in src/main/9F9C.c under their new names.
