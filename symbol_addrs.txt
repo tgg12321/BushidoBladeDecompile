@@ -983,7 +983,7 @@ def_cbready = 0x8008003C; /* MISNAMED: not motion-pre-calc; calls bios_DeliverEv
 def_cbread = 0x80080064; /* MISNAMED: not motion-pre-calc; duplicate of 0x8008003C (bios_DeliverEvent(0xF0000003, 0x40)) */
 // RENAME 0x80077B20: retired name 'func_80077B20' — preserved note: MISNAMED: not gauge init; 1-line D_800A35E4 = 1
 // RENAME 0x80077D00: retired name 'func_80077D00' — preserved note: MISNAMED: not gauge init; returns &D_8009BD24 (gauge data struct ptr)
-func_80044F80 = 0x80044F80; /* MISNAMED: not Satan2 info init; 1-line wrapper of ndata_Read(a0+0x4D, dest_addr) */
+// RENAME 0x80044F80: retired name 'func_80044F80' — preserved note: MISNAMED: not Satan2 info init; 1-line wrapper of ndata_Read(a0+0x4D, dest_addr)
 func_8006C1FC = 0x8006C1FC; /* MISNAMED: not Satan2 info init; 1-line wrapper of menu_UpdateMemCardChoices(a0, pressed_buttons) */
 func_80077A60 = 0x80077A60; /* MISNAMED: not Satan2 info init; 1-line wrapper of menu_UpdateConfirmMenu() */
 func_80077AC0 = 0x80077AC0; /* 1-line wrapper of menu_StepSelScreen() */

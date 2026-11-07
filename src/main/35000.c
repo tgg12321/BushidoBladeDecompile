@@ -235,7 +235,9 @@ void ndata_ReadRemappedIndexPackFirstElseRead(s32 a0, s32 dest_addr) {
 
 extern void ndata_Read(s32, s32);
 
-void func_80044F30(s32 a0, s32 dest_addr) { ndata_Read(a0 + 0x27, dest_addr); }
+void ndata_ReadStageFile(s32 a0, s32 dest_addr) {
+    ndata_Read(a0 + 0x27, dest_addr);
+}
 
 void ndata_ReadIndexInRangeSelectedByFlag(s32 a0, s32 a1, s32 dest_addr) {
     if (!a0) {
@@ -245,7 +247,9 @@ void ndata_ReadIndexInRangeSelectedByFlag(s32 a0, s32 a1, s32 dest_addr) {
     }
 }
 
-void func_80044F80(s32 a0, s32 dest_addr) { ndata_Read(a0 + 0x4D, dest_addr); }
+void ndata_ReadNodeAssetFile(s32 a0, s32 dest_addr) {
+    ndata_Read(a0 + 0x4D, dest_addr);
+}
 
 extern s32 g_ndata_arena_read_size_enabled;
 extern char g_str_marionation_overflow_fmt[];

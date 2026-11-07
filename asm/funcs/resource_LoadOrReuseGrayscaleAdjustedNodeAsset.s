@@ -30,7 +30,7 @@ glabel resource_LoadOrReuseGrayscaleAdjustedNodeAsset
     /* 37020 80046820 21208002 */   addu      $a0, $s4, $zero
     /* 37024 80046824 21904000 */  addu       $s2, $v0, $zero
     /* 37028 80046828 21206002 */  addu       $a0, $s3, $zero
-    /* 3702C 8004682C E013010C */  jal        func_80044F80
+    /* 3702C 8004682C E013010C */  jal        ndata_ReadNodeAssetFile
     /* 37030 80046830 21284002 */   addu      $a1, $s2, $zero
     /* 37034 80046834 0800518E */  lw         $s1, 0x8($s2)
     /* 37038 80046838 0400508E */  lw         $s0, 0x4($s2)

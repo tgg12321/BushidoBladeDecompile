@@ -84,9 +84,9 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
     s0 = arena_OpenBlock(7);
 
     if (staging_addr != 0) {
-        func_80044F30(selector, staging_addr);
+        ndata_ReadStageFile(selector, staging_addr);
     } else {
-        func_80044F30(selector, (s32)s0);
+        ndata_ReadStageFile(selector, (s32)s0);
     }
 
     if (staging_addr != 0) {
@@ -348,7 +348,7 @@ s32 *resource_LoadOrReuseGrayscaleAdjustedNodeAsset(s32 node_asset_id) {
             s32 *end_addr;
             s32 *reloc_section;
             block_base = arena_OpenBlock(arena_block_id);
-            func_80044F80(arg, (s32)block_base);
+            ndata_ReadNodeAssetFile(arg, (s32)block_base);
             {
                 s32 off1 = (u32)block_base[2] >> 2 << 2;
                 s32 off0 = (u32)block_base[1] >> 2 << 2;
@@ -389,7 +389,7 @@ void func_8004695C(s32 end_addr) {
 
 void func_800469A0(s32 new_size) { arena_Resize(9, new_size); }
 
-void func_80046A80(s32, s32);
+void motion_RebasePlaybackBlock(s32, s32);
 
 s32 *motion_LoadPlaybackBlock(s32 playback_file_id) {
     s32 *block_base;
@@ -404,13 +404,13 @@ s32 *motion_LoadPlaybackBlock(s32 playback_file_id) {
         arena_SetBlockEnd(0xA, (s32)end_addr);
     }
     g_motion_playback_block_ndata_index = (s16)playback_file_id;
-    arena_SetMoveCallback(0xA, (s32)func_80046A80);
+    arena_SetMoveCallback(0xA, (s32)motion_RebasePlaybackBlock);
     return block_base;
 }
 
 void motion_FreePlaybackBlock(void) { arena_Free(0xA); }
 
-void func_80046A80(s32 a0, s32 byte_offset) {
+void motion_RebasePlaybackBlock(s32 a0, s32 byte_offset) {
     motion_RebasePlayback(byte_offset);
 }
 

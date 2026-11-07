@@ -67,7 +67,7 @@ glabel resource_LoadOrReuseSelectedBlock
     /* 369D4 800461D4 2120A002 */  addu       $a0, $s5, $zero
     /* 369D8 800461D8 21280002 */  addu       $a1, $s0, $zero
   .L800461DC:
-    /* 369DC 800461DC CC13010C */  jal        func_80044F30
+    /* 369DC 800461DC CC13010C */  jal        ndata_ReadStageFile
     /* 369E0 800461E0 00000000 */   nop
     /* 369E4 800461E4 08002012 */  beqz       $s1, .L80046208
     /* 369E8 800461E8 21202002 */   addu      $a0, $s1, $zero
