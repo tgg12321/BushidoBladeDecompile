@@ -1656,6 +1656,13 @@ def compile_cc1(tree, tu):
         raise ValueError(f"local cc1 proof cannot run toolchain: {e}") from e
 
 
+def bound_occurrence(tokens, name, a, b):
+    """True when name occurs in tokens[a:b + 1] other than as a member token
+    right after `.` / `->` (designators included): such a token is in its
+    aggregate's namespace (C89 6.1.2.3), never one a local can capture."""
+    return any(tokens[k] == name and (k == 0 or tokens[k - 1] not in (".", "->")) for k in range(a, b + 1))
+
+
 def verify_local_cc1(base, normal, scoped, global_pairs, base_tree=None):
     """Authoritative local proof, text-mode BASE == FRESH == destination asm.
 
@@ -1708,7 +1715,7 @@ def verify_local_cc1(base, normal, scoped, global_pairs, base_tree=None):
         fresh_names.append(fresh)
         text, spans = base[path], code_spans(base[path])
         tokens = [m[0] for m in spans]
-        if dest in tokens[start:end + 1]:
+        if bound_occurrence(tokens, dest, start, end):
             raise ValueError(f"{spec}: destination occurs in source function span")
         contexts = [tu for tu, output in normal.items() if path in output.sources]
         if not contexts:
@@ -1718,7 +1725,7 @@ def verify_local_cc1(base, normal, scoped, global_pairs, base_tree=None):
             if len(matching) != 1:
                 raise ValueError(f"{spec}: local cc1 proof requires one cpp function span")
             a, b = matching[0]
-            if dest in cpp_tokens[tu][a:b + 1]:
+            if bound_occurrence(cpp_tokens[tu], dest, a, b):
                 raise ValueError(f"{spec}: destination occurs in cpp function span")
             if any(name == dest for name, _, _ in normal[tu].macros):
                 raise ValueError(f"{spec}: destination is a cpp macro name")
@@ -4199,7 +4206,11 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
         ms = code_spans(text)
         ts = [m[0] for m in ms]
         if not member:
-            if new in ts[indices[0]:indices[-1] + 1]:
+            # A member token after `.` / `->` (designators included) is in its
+            # aggregate's namespace, never one f binds or a local can capture
+            # (C89 6.1.2.3); every other occurrence of new in f refuses. Macros,
+            # file scope, tags and labels naming new are refused elsewhere.
+            if bound_occurrence(ts, new, indices[0], indices[-1]):
                 raise ValueError(f"{spec}: destination {new} already occurs in f")
             # Only a macro f's TU can see may capture or produce old: one defined
             # in another .c file that nothing includes never expands in f.

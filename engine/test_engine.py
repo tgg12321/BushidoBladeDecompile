@@ -7074,6 +7074,30 @@ def test_naming_keycheck_scoped_pairs() -> None:
     edits = nk.scoped_plan({"src/a.c": synced}, {"f:l": "fresh"}, {})
     check("keycheck: prototype-only pair plans only the prototype name",
           edits["src/a.c"] == {7: ("fresh", False)})
+    # scoped-plan-member-name-locals: a destination that f spells only as a member
+    # token after `.` / `->` (designators included) is free for f's local; any
+    # other spelling of it in f (a binding, label, tag or bare use) still refuses.
+    rec = "struct R { int n; int k; };\n"
+    for label, body in [
+            ("arrow", "int f(struct R *p) { int l = p->n; return l + p->n; }\n"),
+            ("dot", "int f(struct R s) { int l = s.n; s.n = l; return l; }\n"),
+            ("designator", "int f(int l) { struct R t = { .n = 1 }; return l + t.n; }\n")]:
+        after = body.replace("int l", "int n").replace("return l", "return n").replace("= l;", "= n;").replace("l + ", "n + ")
+        ok, why = proof("f:l=n", {"src/a.c": rec + body}, {"src/a.c": rec + after})
+        check(f"keycheck: local destination spelled in f only as a member ({label}) passes ({why})", ok)
+    for label, body in [
+            ("second binding", "int f(struct R *p) { int l = p->n; { int n = 0; l += n; } return l; }\n"),
+            ("bare use", "int f(struct R *p) { int l = p->n; return l + n; }\n"),
+            ("label", "int f(struct R *p) { int l = p->n; n: return l; }\n"),
+            ("goto", "int f(struct R *p) { int l = p->n; goto n; return l; }\n"),
+            ("tag", "int f(struct R *p) { int l = p->n; struct n *q = 0; return l + !q; }\n")]:
+        try:
+            nk.scoped_plan({"src/a.c": rec + body}, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check(f"keycheck: local destination beside a member token, {label}, refuses ({why})",
+              "destination n already occurs in f" in why)
     for label, text in [
             ("prototype at another position", "int f(int l, int a);\nint f(int a, int l) { return a + l; }\n"),
             ("destination in the prototype", "int f(int fresh, int l);\nint f(int a, int l) { return a + l; }\n"),
