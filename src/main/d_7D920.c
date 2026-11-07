@@ -176,17 +176,21 @@ BoneHitRec g_fighter_bone_hit_record_templates[22] = {
  * g_fighter_weapon_point_sets / g_fighter_wielded_object_point_pairs):
  * g_fighter_weapon_point_counts[i] points for g_fighter_weapon_point_sets[i],
  * two per g_fighter_wielded_object_point_pairs entry. */
-SVec4i16 D_8008D754[2] = {{0, -60, 950, 0}, {0, 0, 100, 0}};
+SVec4i16 g_fighter_katana_weapon_points[2] = {{0, -60, 950, 0}, {0, 0, 100, 0}};
 
-SVec4i16 D_8008D764[2] = {{0, 0, 919, 0}, {0, 0, 103, 0}};
+SVec4i16 g_fighter_long_sword_weapon_points[2] = {
+    {0, 0, 919, 0}, {0, 0, 103, 0}};
 
 SVec4i16 D_8008D774[2] = {{0, -111, 1244, 0}, {0, -13, 102, 0}};
 
-SVec4i16 D_8008D784[2] = {{0, 0, 1200, 0}, {0, 0, 100, 0}};
+SVec4i16 g_fighter_broadsword_weapon_points[2] = {
+    {0, 0, 1200, 0}, {0, 0, 100, 0}};
 
-SVec4i16 D_8008D794[3] = {{0, -46, 1502, 0}, {0, 0, 925, 0}, {0, 0, -840, 0}};
+SVec4i16 g_fighter_naginata_weapon_points[3] = {
+    {0, -46, 1502, 0}, {0, 0, 925, 0}, {0, 0, -840, 0}};
 
-SVec4i16 D_8008D7AC[3] = {{0, 0, 1930, 0}, {0, 0, 1503, 0}, {0, 0, -318, 0}};
+SVec4i16 g_fighter_yari_weapon_points[3] = {
+    {0, 0, 1930, 0}, {0, 0, 1503, 0}, {0, 0, -318, 0}};
 
 SVec4i16 D_8008D7C4[2] = {{0, -96, 864, 0}, {0, -96, 0, 0}};
 
@@ -212,8 +216,14 @@ SVec4i16 D_8008D854[2] = {{0, -111, 289, 0}, {0, -111, 0, 0}};
 u8 g_fighter_weapon_point_counts[8] = {2, 2, 2, 2, 3, 3, 2, 2};
 
 SVec4i16 *g_fighter_weapon_point_sets[8] = {
-    D_8008D754, D_8008D764, D_8008D774, D_8008D784,
-    D_8008D794, D_8008D7AC, D_8008D7C4, D_8008D7D4};
+    g_fighter_katana_weapon_points,
+    g_fighter_long_sword_weapon_points,
+    D_8008D774,
+    g_fighter_broadsword_weapon_points,
+    g_fighter_naginata_weapon_points,
+    g_fighter_yari_weapon_points,
+    D_8008D7C4,
+    D_8008D7D4};
 
 /* Indexed by Unk80101EC8Record.wielded_object_kind when
  * wielded_object_live_state != 0. */
