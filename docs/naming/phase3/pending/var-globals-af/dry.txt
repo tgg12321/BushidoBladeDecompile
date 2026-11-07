@@ -1,0 +1,36 @@
+==============================================================================
+DATA WAVE — 6 addresses, 6 identifiers remapped
+  0x800a3724: D_800A3724 -> g_eff_particle_random_accumulator_ptr
+  0x800a314c: D_800A314C -> g_fighter_weapon_contact_zero_z_span_count
+  0x800a3209: D_800A3209 -> g_replay_model_draw_overflow_count
+  0x800a324a: D_800A324A -> g_motion_playback_block_ndata_index
+  0x800a31e4: D_800A31E4 -> g_cdrom_init_done
+  0x800a32fc: D_800A32FC -> g_gpu_timed_sprite_image_rect
+
+-- file edits (16) --
+  asm/data/93E18.data.s  (3)
+  asm/funcs/cdrom_Init.s  (2)
+  asm/funcs/eff_LinkParticleQuads.s  (1)
+  asm/funcs/eff_PrepareParticles.s  (1)
+  asm/funcs/eff_UpdateParticles.s  (1)
+  asm/funcs/func_8002DE20.s  (6)
+  asm/funcs/gpu_DrawAndAdvanceTimedSpriteSequence.s  (2)
+  asm/funcs/motion_LoadPlaybackBlock.s  (1)
+  asm/funcs/replay_RecordModelDraw.s  (2)
+  src/main/17AFC.c  (5)
+  src/main/267A8.c  (4)
+  src/main/28708.c  (3)
+  src/main/368E4.c  (3)
+  src/main/64FD8.c  (3)
+  src/main/eff.c  (7)
+  symbol_addrs.txt  (6)
+
+-- registry lines --
+  symbol_addrs.txt:169 D_800A324A -> g_motion_playback_block_ndata_index
+  symbol_addrs.txt:324 D_800A32FC -> g_gpu_timed_sprite_image_rect
+  symbol_addrs.txt:617 D_800A3724 -> g_eff_particle_random_accumulator_ptr
+  symbol_addrs.txt:923 D_800A31E4 -> g_cdrom_init_done
+  symbol_addrs.txt:1010 D_800A3209 -> g_replay_model_draw_overflow_count
+  symbol_addrs.txt:1023 D_800A3724 -> g_eff_particle_random_accumulator_ptr
+
+DRY RUN — nothing written. Re-run with --apply.

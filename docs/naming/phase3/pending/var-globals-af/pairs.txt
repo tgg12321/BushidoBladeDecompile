@@ -1,0 +1,6 @@
+D_800A3724=g_eff_particle_random_accumulator_ptr
+D_800A314C=g_fighter_weapon_contact_zero_z_span_count
+D_800A3209=g_replay_model_draw_overflow_count
+D_800A324A=g_motion_playback_block_ndata_index
+D_800A31E4=g_cdrom_init_done
+D_800A32FC=g_gpu_timed_sprite_image_rect
