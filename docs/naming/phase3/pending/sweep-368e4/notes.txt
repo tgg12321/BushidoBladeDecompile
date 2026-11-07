@@ -9,3 +9,43 @@ sweep-368e4 record: pre-apply FAILs and NO_NAME / FINAL placeholders (naming-ses
   - wave_Init:v0 (368E4.c:802): every read is one use, the next halfword stored to *cell_cursor (830, 833, 836, 857, 861, 870, 877); the kind difference lives in the consumer's buffer offsets, not the local. Lead: cell_halfword.
   - snd_CopySelectedPackSectionsAndLoadVabPacks:var_s0 (2186) / :var_s2 (2187): the pair selection, then its rank 0/1 in the lo/hi-ordered pack (resource_RankRequestedEntriesAndReloadOnChange 1912-1934), -1 = none kept through both; one quantity in two index spaces (refinement, not two-role). Lead: a slot-0 / slot-1 selection name.
   - snd_CopySelectedPackSectionsAndLoadVabPacks:var_14 (2162): ~var_s0 is read only by the >>31 that makes the first count term; then +1 and stored as the header entry count (2216-2223); one quantity built up. Lead: header_entry_count.
+
+## Close (unit sweep-368e4.6, naming-b 2026-11-07)
+`python tools/naming_noname.py homes main/368E4,main/3AB48,main/snd` at 25ea84596 lists 34 targets (func 13, data 2, member 0, local 19); 30 are NO_NAME with their missing evidence below, each handed to the r-row that takes it back up (a target comes back only with that row's evidence, newer than this record). D_800EF9F4 has left homes (noname-layout-800ef9f4 landed). FINAL: none (the 4 finality candidates of sweep-368e4.4 FAILed and were renamed in sweep-368e4.5). Function reasons in full: tmp/codex/sweep-368e4.2-research.md (untracked) and no_name.tsv; local detail: pending/sweep-368e4.1/notes.txt (## NO_NAME). The sweep does not close in this unit: 4 targets stay its own (### Still the sweep's own). Lines at 25ea84596.
+fake-368e4-naming-leads -> sweep-368e4-r1 (7); scoped-plan-macro-operands -> sweep-368e4-r2 (1); assets-stage-section3 -> sweep-368e4-r3 (3); types-wave-cell-record -> sweep-368e4-r4 (5); trace-sweep-368e4.6 -> sweep-368e4-r5 (5); owner questions OQ-4 / OQ-5 -> sweep-368e4-r6, blocked (9); still the sweep's own (4).
+
+Group fake-368e4-naming-leads (codegen copies / FAKE spellings keep the target neutral, N1) -- 7 targets
+- gpu_LoadTimGroup:new_var (368E4.c:1078): = image_x (:1104), read once as gpu_LoadTim's x (:1109); a codegen copy, unlabelled, so not final fake-copy. Decides: the copy retired or labelled FAKE (fake row item 1).
+- gpu_LoadTimGroup:new_var2 (:1081) and gpu_LoadTimGroupWithConditionalClutRowAdvance:new_var2 (:1227): = word >> 2 (:1105 / :1237), read once << 2 into tim_addr (:1106 / :1239); half of the split ALIGN4 idiom, unlabelled (var-locals-48 :25 stands). Same decider.
+- gpu_LoadTimGroupClutsOffset:arg1 (:1299): the group index, overwritten with its offset-slot address (:1303) and dereferenced (:1305); pre-apply FAIL of group_index above (sweep-368e4.1). Decides: one parameter plus a separate slot local (fake row item 2); then group_index (and group_slot for the pointer) get a fresh review.
+- resource_LoadOrReuseSelectedBlock:s1 (:46): first set by the FAKE delta-rebase detour (label :134-139); FAKE-covered (var-locals-55). Lead block_end if retired (item 3).
+- snd_CopySelectedPackSectionsAndLoadVabPacks:var_s7 (:2152): FAKE two-step build (label :2171-2172, :2173-2174), read :2241 / :2257 as snd_LoadVabPack's tail address. Lead tail_addr if retired (item 4).
+- snd_SetReverb:var_4 (snd.c:344): = reverb_index << 1 (:348), read once as var_4 + 1, the depth (:355); no name is true of reverb_index * 2 that the depth explains (var-locals-2 :121). Decides: the direct `reverb_index * 2 + 1` spelling (item 5); the local then goes away.
+
+Group scoped-plan-macro-operands (apply tool refuses) -- 1 target
+- resource_LoadOrReuseSelectedBlock:s0 (:42): block_base holds at every use (sweep-368e4.1 research), but scoped_plan refuses it at HEAD: s0 is an argument of the function-like macro PTR_OFF (:20) at :64, :127, :155, :157, :167. Decides: the tool accepting whole macro arguments used as operands (tooling row), then a fresh pre-apply review.
+
+Group assets-stage-section3 (format decode) -- 3 targets
+- D_800A33B0 (:24): stage block header section 3 (:111, :181) or a retained subblock's third pointer (s4p :253), rebased :272; only reader the uncalled getter :325. Missing: the role of that section (sweep-368e4.3 record above).
+- resource_LoadOrReuseSelectedBlock:sp18 (:48): = s0 + ALIGN4(s0[3]) (:111), only consumer D_800A33B0 = sp18 (:181); var-locals-8 :41, var-locals-55 :57 stand.
+- 0x80046780 func_80046780 (:325): returns D_800A33B0, no caller or address use; nameable once D_800A33B0 is (revive with it).
+
+Group types-wave-cell-record (layout of the consumer's input) -- 5 targets
+- wave_Init:a1 (:798), :a2 (:797), :t0 (:799), :v1 (:800): column << 8, 0x13 + column, 0x1200 + (column << 8), column + 1 (:817-:820, :879-:883), read only in a2 | t0 / v1 | a1 (:860-:868), two vertex-index bytes per halfword for the INCLUDE_ASM consumer. A name must say which corner (the byte position is fixed by the ORs). Missing: the typed cell record.
+- wave_Init:t2 (:801): = 0x2C00 (:814), stored as cell halfword 1 (:825 / :842), read by the consumer as GTE RGBC word and a depth flag byte. Not FAKE, so not const-holder. Missing: the cell record layout.
+
+Group trace-sweep-368e4.6 (Q124 role captures) -- 5 targets
+- math_Grayscale3:arg0 / :arg2 (:1501): red / blue weights, but 31D3C.c:118-120 passes patch_color.byte[2] / byte[0] where its else branch (:123-125) reads byte[0] as r. Missing: the patched colour's channel order (Q1).
+- node_QueueTableEntryNodePairUnderSlotNode:arg1 (:2076): packed slot (>> 1, :2096) and local-transform row (& 1, :2105). Missing: what row 0 / 1 places (Q2); a packed two-field code with no word true of both then moves to sweep-2b344-r7 OQ-3.
+- node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable:arg2 (:1631, read :1689): caller passes (frame_flags & 4) > 0 (9F9C.c:2242); frame_flags bit 2 and retained node 0x15 unnamed (var-locals-49 :71-73). Missing: Q3.
+- D_800F665A (:320): only access the store = 1 (:448), no reader (capture 200272e17). Missing: a reader (Q4: static scan, then read watch); none leaves it for OQ-1 (sweep-368e4-r6).
+- Twins: moved to group owner (OQ-5).
+
+### Still the sweep's own (the rule text admits a name; the sweep is not closed) -- 4 targets
+- 0x80046934 / 0x8004695C / 0x800469A0 (:380, :384-388, :390): uncalled, but each calls named arena functions on block 9. naming-final-classes.md:22-24 makes such a body nameable from that effect, and Q132 (naming-bar.md:54-56) rules out 'identity unknown'. Next: functions unit sweep-368e4.7 (researcher alternatives at pending/func-second-pass-33/notes.txt:35-37; fresh pre-apply naming-reviewer).
+- wave_SampleRow8BaseCachingIndexAndRemainderParity:a0 (:1025): the function writes g_wave_cached_column_index / g_wave_cached_remainder_parity (:1030-1031) and returns a sample (:1042), so it is not dead code; a0 is a coordinate split into 3200-unit columns offset by 0x7D00 (:1026-1028). An axis-free name claims no x / z. Next: locals unit sweep-368e4.8 (fresh pre-apply naming-reviewer).
+
+Group owner (no foundation row decides; sweep-368e4-r6, blocked) -- 9 targets
+- 0x80046B44 func_80046B44 (:433-452): called by sys_InitAtBoot (6CF8.c:301) and ExecMovieOverlayAndReinitialize (2B344.c:717); wave124 rejected sys_InitSceneState. OQ-4: is boot plus post-movie reinitialisation one Q134 occasion?
+- Twins 0x8004D634 / 0x80050334, 0x8004D838 / 0x80050538, 0x80050AB8 / 0x80050E60, 0x80050C68 / 0x80051010: byte-identical and never hit. A capture cannot tell them apart (naming-runtime-evidence.md:41-43). The code tells them apart only by table and slot, and the slot is the primitive group code that gpu_DispatchPrimitiveGroupsThroughHandlerTable reads. OQ-5: may a twin be named from its table and slot (32D04.c:1469 / :1379, :1477 / :1387) and, for the same-table pairs, from its slot alone (:1353-1356), or does it stay NO_NAME?
+- D_800F665A joins this group if sweep-368e4-r5's capture finds no reader (OQ-1 write-only datum with changing stores, as at sweep-2b344-r7).
