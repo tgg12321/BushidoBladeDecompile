@@ -9,6 +9,12 @@
 #include <psxsdk/inline_o.h>
 #include <psxsdk/gtemac.h>
 
+enum ObjectDropState {
+    OBJECT_DROP_NONE = 0,
+    OBJECT_DROP_RELEASED = 1,
+    OBJECT_DROP_SETTLING = 2,
+};
+
 /* P1/P2 round scores and tiebreakers, declared here as single u8s (per-file
  * declarations: Q21-Q25, no-new-park-categories aggregate-merge exception):
  * every counting aggregate spelling of fight_RecordMatchResult misses the
@@ -4117,7 +4123,7 @@ Obj80106A78 *object_SpawnFromFighter(
     }
     obj->slot = i;
     obj->kind = object_kind;
-    obj->drop_state = 0;
+    obj->drop_state = OBJECT_DROP_NONE;
     obj->is_attached = 0;
     obj->can_hit_fighter = 1;
     obj->owner = fighter_record->index;
@@ -4228,7 +4234,7 @@ void object_DropQueuedHeadAt(
     }
     pool_object->rot_vel[1] = (rng_Next() & 0x7FF) - 0x400;
     pool_object->rot_vel[2] = 0;
-    pool_object->drop_state = 1;
+    pool_object->drop_state = OBJECT_DROP_RELEASED;
     for (i = 0; i < fighter_record->carried_object_count - 1; i++) {
         fighter_record->carried_object_kinds[i] =
             fighter_record->carried_object_kinds[i + 1];
@@ -4255,7 +4261,7 @@ void object_SpawnScatteredAt(Unk80101EC8Record *fighter_record, s32 object_kind,
     }
     pool_object->rot_vel[1] = (rng_Next() & 0x7FF) - 0x400;
     pool_object->rot_vel[2] = 0;
-    pool_object->drop_state = 1;
+    pool_object->drop_state = OBJECT_DROP_RELEASED;
     pool_object->model_entry_id = fighter_record->weapon_entry_id;
 }
 
@@ -4515,8 +4521,8 @@ void object_UpdatePool(void) {
                 }
             }
             obj->can_hit_fighter = 0;
-            if (obj->drop_state == 1) {
-                obj->drop_state = 2;
+            if (obj->drop_state == OBJECT_DROP_RELEASED) {
+                obj->drop_state = OBJECT_DROP_SETTLING;
             }
             if (obj->unk_05 == 2) {
                 obj->unk_05 = 3;
@@ -4554,7 +4560,7 @@ void object_UpdatePool(void) {
                     0x2F, &obj->pos.x, 0);
             }
         }
-        if (obj->drop_state == 2) {
+        if (obj->drop_state == OBJECT_DROP_SETTLING) {
             obj->rot[1] = math_LerpAngle(obj->rot[1], 0, 0x800);
             obj->rot[2] = math_LerpAngle(obj->rot[2], 0x400, 0xE00);
             obj->rot_vel[1] = obj->rot_vel[1] * 3 / 4;
