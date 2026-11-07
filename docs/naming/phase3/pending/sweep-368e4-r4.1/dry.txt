@@ -1,0 +1,20 @@
+sweep-368e4-r4.1 (naming-a 2026-11-07): 5 local bindings in wave_Init (368E4.c); research tmp/codex/sweep-368e4-r4.1-research.md (Opus; 5 RENAME, 0 NO_NAME); released by types-wave-cell-record (4817e1c80).
+Tree: ln-naming-a = 972c89a79. Drafting aid (not the gate): naming_keycheck.scoped_plan(read_working_tree(), pairs, {}), run in WSL from a tmp script.
+ALL: scoped_plan ACCEPT, 24 substitutions, only src/main/368E4.c
+  wave_Init:a2=odd_next_vertex_index 5 (821,842,884,892,904)
+  wave_Init:t0=odd_vertex_index_hi 5 (823,841,884,892,903)
+  wave_Init:v1=even_next_vertex_index 5 (824,844,887,889,907)
+  wave_Init:a1=even_vertex_index_hi 5 (822,843,887,889,905)
+  wave_Init:t2=flags_and_gp0_code 4 (825,838,849,866)
+Alone line lists equal the research USES. New names: 0 whole-word hits in src/ include/ symbol_addrs.txt. Longest code line after substitution 78 columns.
+Required comment edits (header comment above wave_Init; line count kept; pre-apply reviewer's precedence fix folded in: 0x1200 + (column << 8)):
+  793-795 ->
+ *  1 +0x02  flags_and_gp0_code = 0x2C00: flag byte low (bit 0: +0x3E8 depth
+ *           bias, bits 1-2: subdivision control), GP0 code 0x2C (POLY_FT4)
+ *           high; the renderer loads the word at +0x00 into GTE RGBC.
+  802-806 ->
+ *           packet's xy<n>. Corners 0 / 1 are grid row `row`, columns
+ *           column + 1 / column; 2 / 3 the same in row + 1. On odd rows 0-3
+ *           are odd_next_vertex_index (0x13 + column), odd_vertex_index_hi
+ *           (0x1200 + (column << 8)), even_next_vertex_index (column + 1),
+ *           even_vertex_index_hi (column << 8); even rows swap the pairs.

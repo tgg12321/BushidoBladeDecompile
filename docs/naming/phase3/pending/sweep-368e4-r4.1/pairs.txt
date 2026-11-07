@@ -1,0 +1,5 @@
+wave_Init:a2=odd_next_vertex_index
+wave_Init:t0=odd_vertex_index_hi
+wave_Init:v1=even_next_vertex_index
+wave_Init:a1=even_vertex_index_hi
+wave_Init:t2=flags_and_gp0_code
