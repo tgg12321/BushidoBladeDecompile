@@ -1,0 +1,9 @@
+==============================================================================
+DATA WAVE — 1 addresses, 1 identifiers remapped
+  0x800a35b8: D_800A35B8 -> g_entry_menu_unlock_mask_bits_24_26
+
+-- file edits (2) --
+  asm/funcs/InitDisplayStateLoadPackAndSetEntryFlags.s  (1)
+  src/main/5ED34.c  (2)
+
+DRY RUN — nothing written. Re-run with --apply.
