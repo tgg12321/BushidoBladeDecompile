@@ -1,0 +1,23 @@
+==============================================================================
+DATA WAVE — 2 addresses, 2 identifiers remapped
+  0x80015470: D_80015470 -> g_gpu_queued_node_run_packet_handlers
+  0x800ef9f4: D_800EF9F4 -> g_resource_entry_request_state_terminator
+
+-- file edits (6) --
+  asm/data/94000.bss.s  (2)
+  asm/funcs/ResetEntrySelectionState.s  (2)
+  asm/funcs/gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets.s  (2)
+  src/main/368E4.c  (2)
+  src/main/d_5BF0.c  (1)
+  symbol_addrs.txt  (4)
+
+-- registry lines --
+  symbol_addrs.txt:380 D_80015470 -> g_gpu_queued_node_run_packet_handlers
+  symbol_addrs.txt:753 D_80015470 -> g_gpu_queued_node_run_packet_handlers
+  symbol_addrs.txt:1626 D_800EF9F4 -> g_resource_entry_request_state_terminator
+  symbol_addrs.txt:2192 D_800EF9F4 -> g_resource_entry_request_state_terminator
+
+DRY RUN — nothing written. Re-run with --apply.
+rc=0
+
+NOTE (naming-b 2026-11-07, after pre-apply): the 0x800EF9F4 D_800EF9F4 row FAILed pre-apply and is dropped from data_manifest.csv / pairs.txt; its edits above (asm/data/94000.bss.s, asm/funcs/ResetEntrySelectionState.s, src/main/368E4.c, symbol_addrs.txt:1626 / :2192) no longer apply. The applier re-runs the dry run on the CONFIRMed manifest before --apply.
