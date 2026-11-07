@@ -9,6 +9,12 @@
 #include <psxsdk/inline_o.h>
 #include <psxsdk/gtemac.h>
 
+enum CameraFightViewMode {
+    CAMERA_FIGHT_VIEW_TRACKED = 0,
+    CAMERA_FIGHT_VIEW_TWO_FIGHTER = 1,
+    CAMERA_FIGHT_VIEW_TWO_FIGHTER_HELD = 2,
+};
+
 extern s32 memcpy(s32 *, s32, s32);
 extern s32 collision_GetHitTag(void);
 
@@ -732,7 +738,7 @@ void camera_UpdatePadOffset(s32 *held_bits) {
 
 void camera_InitTwoFighterView(
     Unk80101EC8Record *first_fighter, Unk80101EC8Record *second_fighter) {
-    g_camera_fight_view_mode = 0;
+    g_camera_fight_view_mode = CAMERA_FIGHT_VIEW_TRACKED;
     g_camera_default_view_record.forced_cell_coordinates[0][0] = 0x64;
     g_camera_default_view_record.forced_cell_coordinates[0][1] = 0;
     g_camera_default_view_record.forced_cell_coordinates[0][2] = 0x64;
@@ -758,7 +764,7 @@ void camera_InitTwoFighterView(
 
 void camera_InitTrackedFighterFocus(
     Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
-    g_camera_fight_view_mode = 0;
+    g_camera_fight_view_mode = CAMERA_FIGHT_VIEW_TRACKED;
     g_camera_alternate_view_record.forced_cell_coordinates[0][0] = 0x64;
     g_camera_alternate_view_record.forced_cell_coordinates[0][1] = 0;
     g_camera_alternate_view_record.forced_cell_coordinates[0][2] = 0x64;
@@ -904,7 +910,7 @@ void camera_StartTurnEasingOnLargeHeadingChange(
 void camera_ResetViewsForReplay(void) {
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
-    g_camera_fight_view_mode = 1;
+    g_camera_fight_view_mode = CAMERA_FIGHT_VIEW_TWO_FIGHTER;
     g_camera_default_view_record.replay_view_started = 0;
     g_camera_alternate_view_record.replay_view_started = 0;
     gpu_SetFarViewGridFogControlAndCoordinateShift(0);
@@ -2114,20 +2120,20 @@ void camera_ApplyFightView(void) {
     Rec44 *view_record;
 
     if (g_fight_tracked_view_setting != 0) {
-        if (g_camera_fight_view_mode == 1) {
+        if (g_camera_fight_view_mode == CAMERA_FIGHT_VIEW_TWO_FIGHTER) {
             if (g_fighter_records[0].is_defeated != 0 ||
                 g_fighter_records[1].is_defeated != 0) {
-                g_camera_fight_view_mode = 2;
+                g_camera_fight_view_mode = CAMERA_FIGHT_VIEW_TWO_FIGHTER_HELD;
             }
         }
-        if (g_camera_fight_view_mode != 2) {
+        if (g_camera_fight_view_mode != CAMERA_FIGHT_VIEW_TWO_FIGHTER_HELD) {
             if (g_fighter_records[0].move_kind == 0x11 ||
                 g_fighter_records[1].move_kind == 0x11) {
                 view_record = &g_camera_default_view_record;
-                g_camera_fight_view_mode = 1;
+                g_camera_fight_view_mode = CAMERA_FIGHT_VIEW_TWO_FIGHTER;
             } else {
                 view_record = &g_camera_alternate_view_record;
-                g_camera_fight_view_mode = 0;
+                g_camera_fight_view_mode = CAMERA_FIGHT_VIEW_TRACKED;
             }
         } else {
             view_record = &g_camera_default_view_record;
@@ -2135,10 +2141,11 @@ void camera_ApplyFightView(void) {
         gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear(
             g_camera_fight_view_mode < 1);
 
-        SetGeomScreen(
-            math_FovToScreenDist(g_camera_fight_view_mode == 0 ? 0x50 : 0x2D));
+        SetGeomScreen(math_FovToScreenDist(
+            g_camera_fight_view_mode == CAMERA_FIGHT_VIEW_TRACKED ? 0x50
+                                                                  : 0x2D));
 
-        if (g_camera_fight_view_mode == 0) {
+        if (g_camera_fight_view_mode == CAMERA_FIGHT_VIEW_TRACKED) {
             node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(
                 g_fight_tracked_fighter_index, 1);
             node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(
