@@ -16,7 +16,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 
 - `object_InitKindQueue(rec)` (src/main/17AFC.c:4038) seeds the queue: it copies the five entries of
   `g_fighter_initial_carried_object_kinds[rec->character_data_index]` (`s8 [27][5]`, include/bb2.h:193), counts the ones
-  other than -1, and stores the first in `D_800A36F2[rec->index]`. Called from
+  other than -1, and stores the first in `g_fighter_initial_first_carried_object_kinds[rec->index]`. Called from
   src/main/9F9C.c:4067.
 - `object_QueueKind(fighter_record, object_kind)` (src/main/17AFC.c:4227) appends a kind, or puts it
   first when `fighter_record->object_variant_index != -1` and `object_kind == fighter_record->wielded_object_kind`; it returns 0 when
