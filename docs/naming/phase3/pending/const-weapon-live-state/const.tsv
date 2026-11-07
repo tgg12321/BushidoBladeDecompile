@@ -1,0 +1,36 @@
+kind	where	literal	name	role	evidence
+enum	include/bb2_const.h	0	WeaponLiveState.WEAPON_LIVE_OFF	weapon_live_state / wielded_object_live_state 0: the blade is not live this frame (fighter_Update stores it for the non-live move kinds / frame windows; frame_flags 1 / 4 not set; the hit sweeps in 17AFC.c skip it)	Unk80101EC8Record.weapon_live_state / wielded_object_live_state (s16, include/game.h:1667 / :1670, offsets 0x92 / 0x8C) are stored only by fighter_Update (9F9C.c:5605-5652: 0 when the blade is not live this frame, else 'was live last frame ? 1 : 2'; 9F9C.c:5761-5769: 2 -> 1 after seeding prev_second_weapon_points from SPAD, the first live frame's previous sweep points) and otherwise only tested == 0 / != 0 (9F9C.c, 17AFC.c) or == 2 (9F9C.c:5761 / :5768); no INCLUDE_ASM body reads or writes halfword 0x8C / 0x92; one value-role for both members (identical transition code), used by 2 TUs, so bb2_const.h (K4); not retyped
+enum	include/bb2_const.h	1	WeaponLiveState.WEAPON_LIVE_ON	weapon_live_state / wielded_object_live_state 1: live this frame and live last frame (fighter_Update stores it when the state was already != 0, and drops 2 to it after seeding the previous sweep points)	Unk80101EC8Record.weapon_live_state / wielded_object_live_state (s16, include/game.h:1667 / :1670, offsets 0x92 / 0x8C) are stored only by fighter_Update (9F9C.c:5605-5652: 0 when the blade is not live this frame, else 'was live last frame ? 1 : 2'; 9F9C.c:5761-5769: 2 -> 1 after seeding prev_second_weapon_points from SPAD, the first live frame's previous sweep points) and otherwise only tested == 0 / != 0 (9F9C.c, 17AFC.c) or == 2 (9F9C.c:5761 / :5768); no INCLUDE_ASM body reads or writes halfword 0x8C / 0x92; one value-role for both members (identical transition code), used by 2 TUs, so bb2_const.h (K4); not retyped
+enum	include/bb2_const.h	2	WeaponLiveState.WEAPON_LIVE_FIRST_FRAME	weapon_live_state / wielded_object_live_state 2: live this frame but not last frame (fighter_Update stores it on the 0 -> live edge); the same update seeds prev_second_weapon_points from SPAD and stores 1	Unk80101EC8Record.weapon_live_state / wielded_object_live_state (s16, include/game.h:1667 / :1670, offsets 0x92 / 0x8C) are stored only by fighter_Update (9F9C.c:5605-5652: 0 when the blade is not live this frame, else 'was live last frame ? 1 : 2'; 9F9C.c:5761-5769: 2 -> 1 after seeding prev_second_weapon_points from SPAD, the first live frame's previous sweep points) and otherwise only tested == 0 / != 0 (9F9C.c, 17AFC.c) or == 2 (9F9C.c:5761 / :5768); no INCLUDE_ASM body reads or writes halfword 0x8C / 0x92; one value-role for both members (identical transition code), used by 2 TUs, so bb2_const.h (K4); not retyped
+site	src/main/9F9C.c:2628	0	WEAPON_LIVE_OFF	wielded_object_live_state != test	see the enum rows
+site	src/main/9F9C.c:3219	0	WEAPON_LIVE_OFF	wielded_object_live_state != test	see the enum rows
+site	src/main/9F9C.c:5605	0	WEAPON_LIVE_OFF	weapon_live_state store	see the enum rows
+site	src/main/9F9C.c:5608	0	WEAPON_LIVE_OFF	weapon_live_state != test (last frame's state)	see the enum rows
+site	src/main/9F9C.c:5608	1	WEAPON_LIVE_ON	weapon_live_state store (was live)	see the enum rows
+site	src/main/9F9C.c:5608	2	WEAPON_LIVE_FIRST_FRAME	weapon_live_state store (was not live)	see the enum rows
+site	src/main/9F9C.c:5613	0	WEAPON_LIVE_OFF	weapon_live_state != test	see the enum rows
+site	src/main/9F9C.c:5628	0	WEAPON_LIVE_OFF	wielded_object_live_state != test (last frame's state)	see the enum rows
+site	src/main/9F9C.c:5628	1	WEAPON_LIVE_ON	wielded_object_live_state store (was live)	see the enum rows
+site	src/main/9F9C.c:5628	2	WEAPON_LIVE_FIRST_FRAME	wielded_object_live_state store (was not live)	see the enum rows
+site	src/main/9F9C.c:5631	0	WEAPON_LIVE_OFF	wielded_object_live_state store	see the enum rows
+site	src/main/9F9C.c:5649	0	WEAPON_LIVE_OFF	wielded_object_live_state != test (last frame's state)	see the enum rows
+site	src/main/9F9C.c:5649	1	WEAPON_LIVE_ON	wielded_object_live_state store (was live)	see the enum rows
+site	src/main/9F9C.c:5649	2	WEAPON_LIVE_FIRST_FRAME	wielded_object_live_state store (was not live)	see the enum rows
+site	src/main/9F9C.c:5652	0	WEAPON_LIVE_OFF	wielded_object_live_state store	see the enum rows
+site	src/main/9F9C.c:5680	0	WEAPON_LIVE_OFF	weapon_live_state == test	see the enum rows
+site	src/main/9F9C.c:5686	0	WEAPON_LIVE_OFF	wielded_object_live_state == test	see the enum rows
+site	src/main/9F9C.c:5697	0	WEAPON_LIVE_OFF	weapon_live_state == test	see the enum rows
+site	src/main/9F9C.c:5704	0	WEAPON_LIVE_OFF	wielded_object_live_state == test	see the enum rows
+site	src/main/9F9C.c:5761	2	WEAPON_LIVE_FIRST_FRAME	wielded_object_live_state == test	see the enum rows
+site	src/main/9F9C.c:5762	1	WEAPON_LIVE_ON	wielded_object_live_state store	see the enum rows
+site	src/main/9F9C.c:5768	2	WEAPON_LIVE_FIRST_FRAME	weapon_live_state == test	see the enum rows
+site	src/main/9F9C.c:5769	1	WEAPON_LIVE_ON	weapon_live_state store	see the enum rows
+site	src/main/17AFC.c:691	0	WEAPON_LIVE_OFF	wielded_object_live_state != test	see the enum rows
+site	src/main/17AFC.c:1293	0	WEAPON_LIVE_OFF	wielded_object_live_state != test	see the enum rows
+site	src/main/17AFC.c:1312	0	WEAPON_LIVE_OFF	wielded_object_live_state != test	see the enum rows
+site	src/main/17AFC.c:1314	0	WEAPON_LIVE_OFF	wielded_object_live_state != test	see the enum rows
+site	src/main/17AFC.c:1345	0	WEAPON_LIVE_OFF	wielded_object_live_state != test	see the enum rows
+site	src/main/17AFC.c:1842	0	WEAPON_LIVE_OFF	weapon_live_state != test	see the enum rows
+site	src/main/17AFC.c:1847	0	WEAPON_LIVE_OFF	wielded_object_live_state != test	see the enum rows
+site	src/main/17AFC.c:1916	0	WEAPON_LIVE_OFF	wielded_object_live_state != test	see the enum rows
+site	src/main/17AFC.c:2221	0	WEAPON_LIVE_OFF	wielded_object_live_state != test	see the enum rows

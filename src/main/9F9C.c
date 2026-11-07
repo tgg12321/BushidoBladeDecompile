@@ -2625,7 +2625,8 @@ void motion_AdjustFighterPose(
         obj->eased_pose_elevation_offset, var_4);
 
     t = obj->character_roster_index;
-    if ((t == 0x1D || t == 0xE) && obj->wielded_object_live_state != 0) {
+    if ((t == 0x1D || t == 0xE) &&
+        obj->wielded_object_live_state != WEAPON_LIVE_OFF) {
         temp = (ratan2(g_fighter_horizontal_separation,
                        obj->other->world_pos.y - obj->world_pos.y) -
                 0x400) &
@@ -3216,7 +3217,7 @@ void fighter_UpdateBoneWorldData(
         o->z += m->t[2];
     }
 
-    if (rec->wielded_object_live_state != 0) {
+    if (rec->wielded_object_live_state != WEAPON_LIVE_OFF) {
         m = bone_matrices[19];
         gte_SetRotMatrix(m);
         v = g_fighter_wielded_object_point_pairs[rec->wielded_object_kind];
@@ -5603,15 +5604,17 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
          fighter_record->move_kind == 0x30 ||
          fighter_record->move_kind == 0x13 ||
          fighter_record->move_kind == 0x31)) {
-        fighter_record->weapon_live_state = 0;
+        fighter_record->weapon_live_state = WEAPON_LIVE_OFF;
     } else {
         fighter_record->weapon_live_state =
-            fighter_record->weapon_live_state != 0 ? 1 : 2;
+            fighter_record->weapon_live_state != WEAPON_LIVE_OFF
+                ? WEAPON_LIVE_ON
+                : WEAPON_LIVE_FIRST_FRAME;
     }
     fighter_record->frame_flags = 0;
     if (fighter_record->character_roster_index != 0x1F &&
         fighter_record->is_defeated == 0 &&
-        fighter_record->weapon_live_state != 0) {
+        fighter_record->weapon_live_state != WEAPON_LIVE_OFF) {
         fighter_record->frame_flags = 1;
     }
     if ((g_fight_mode_selector != FIGHT_MODE_CHANBARA || fighter_index != 1 ||
@@ -5626,10 +5629,12 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
         if (fighter_TestMoveFrameWindowOrMoveKindWithObjectVariant(
                 fighter_record) != 0) {
             fighter_record->wielded_object_live_state =
-                fighter_record->wielded_object_live_state != 0 ? 1 : 2;
+                fighter_record->wielded_object_live_state != WEAPON_LIVE_OFF
+                    ? WEAPON_LIVE_ON
+                    : WEAPON_LIVE_FIRST_FRAME;
             fighter_record->frame_flags |= 4;
         } else {
-            fighter_record->wielded_object_live_state = 0;
+            fighter_record->wielded_object_live_state = WEAPON_LIVE_OFF;
         }
     } else if (
         ((fighter_record->character_roster_index == 0x1D ||
@@ -5647,10 +5652,12 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
          fighter_record->move_frame >= fighter_record->frame_window_start &&
          fighter_record->frame_window_end >= fighter_record->move_frame)) {
         fighter_record->wielded_object_live_state =
-            fighter_record->wielded_object_live_state != 0 ? 1 : 2;
+            fighter_record->wielded_object_live_state != WEAPON_LIVE_OFF
+                ? WEAPON_LIVE_ON
+                : WEAPON_LIVE_FIRST_FRAME;
         fighter_record->frame_flags |= 4;
     } else {
-        fighter_record->wielded_object_live_state = 0;
+        fighter_record->wielded_object_live_state = WEAPON_LIVE_OFF;
     }
     if (g_fight_mode_selector != FIGHT_MODE_CHANBARA || fighter_index != 1 ||
         g_fight_step_row_column == 4) {
@@ -5678,13 +5685,13 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
         }
         if (fighter_record->move_kind != 4 &&
             fighter_record->move_kind != 0x14 &&
-            fighter_record->weapon_live_state == 0) {
+            fighter_record->weapon_live_state == WEAPON_LIVE_OFF) {
             fighter_record->frame_flags |= 0x10;
         }
         if (fighter_record->carried_object_count > 0 &&
             fighter_record->carried_object_kinds[0] ==
                 fighter_record->wielded_object_kind &&
-            fighter_record->wielded_object_live_state == 0) {
+            fighter_record->wielded_object_live_state == WEAPON_LIVE_OFF) {
             fighter_record->frame_flags |= 0x20;
         }
     }
@@ -5695,14 +5702,14 @@ skip_62:
              fighter_record->weapon_id == 1) &&
             fighter_record->move_kind != 4 &&
             fighter_record->move_kind != 0x14 &&
-            fighter_record->weapon_live_state == 0) {
+            fighter_record->weapon_live_state == WEAPON_LIVE_OFF) {
             fighter_record->frame_flags =
                 (fighter_record->frame_flags | 2) & ~0x10;
         }
         if (fighter_record->carried_object_count > 0 &&
             fighter_record->carried_object_kinds[0] ==
                 fighter_record->wielded_object_kind &&
-            fighter_record->wielded_object_live_state == 0) {
+            fighter_record->wielded_object_live_state == WEAPON_LIVE_OFF) {
             fighter_record->frame_flags =
                 (fighter_record->frame_flags | 8) & ~0x20;
             node_QueueTableEntryNodePairUnderSlotNode(
@@ -5759,15 +5766,15 @@ skip_62:
         fighter_record->prev_weapon_points[0] =
             SPAD->weapon_points[fighter_index][0];
     }
-    if (fighter_record->wielded_object_live_state == 2) {
-        fighter_record->wielded_object_live_state = 1;
+    if (fighter_record->wielded_object_live_state == WEAPON_LIVE_FIRST_FRAME) {
+        fighter_record->wielded_object_live_state = WEAPON_LIVE_ON;
         fighter_record->prev_second_weapon_points[0] =
             SPAD->second_weapon_points[fighter_index][0];
         fighter_record->prev_second_weapon_points[1] =
             SPAD->second_weapon_points[fighter_index][1];
     }
-    if (fighter_record->weapon_live_state == 2) {
-        fighter_record->weapon_live_state = 1;
+    if (fighter_record->weapon_live_state == WEAPON_LIVE_FIRST_FRAME) {
+        fighter_record->weapon_live_state = WEAPON_LIVE_ON;
         fighter_record->prev_second_weapon_points[0] =
             SPAD->second_weapon_points[fighter_index][0];
         fighter_record->prev_second_weapon_points[1] =

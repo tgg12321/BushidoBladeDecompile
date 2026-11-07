@@ -91,4 +91,10 @@ enum NodeMatrixState {
     NODE_MATRIX_WORK_SET = 2,
 };
 
+enum WeaponLiveState {
+    WEAPON_LIVE_OFF = 0,
+    WEAPON_LIVE_ON = 1,
+    WEAPON_LIVE_FIRST_FRAME = 2,
+};
+
 #endif /* BB2_CONST_H */

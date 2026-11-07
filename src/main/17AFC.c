@@ -688,7 +688,7 @@ s32 fighter_ResolveWeaponContact(
             d_val = g_fight_weapon_contact_result;
             weapon_set_index = (d_val >> fighter_record->index) & 1;
             other_weapon_set_index = (d_val >> other_record->index) & 1;
-            if (fighter_record->wielded_object_live_state != 0) {
+            if (fighter_record->wielded_object_live_state != WEAPON_LIVE_OFF) {
                 var_s1 = weapon_set_index == 0;
             }
             if (var_s1 != 0) {
@@ -1290,7 +1290,7 @@ s32 fighter_ProcessWeaponContacts(void) {
             weapon_sweep_points[1] = SPAD->weapon_points[i][1];
             weapon_sweep_points[2] = rec->prev_weapon_points[0];
             weapon_sweep_points[3] = rec->prev_weapon_points[1];
-            if (rec->wielded_object_live_state != 0) {
+            if (rec->wielded_object_live_state != WEAPON_LIVE_OFF) {
                 weapon_sweep_points[4] = SPAD->second_weapon_points[i][0];
                 weapon_sweep_points[5] = SPAD->second_weapon_points[i][1];
                 weapon_sweep_points[6] = rec->prev_second_weapon_points[0];
@@ -1309,9 +1309,9 @@ s32 fighter_ProcessWeaponContacts(void) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 i, 0x2D, &scr->unk100[0].x, 0);
             rec->pending_move_event =
-                rec->wielded_object_live_state != 0 ? 0x19 : 0xB;
+                rec->wielded_object_live_state != WEAPON_LIVE_OFF ? 0x19 : 0xB;
             rec->attack_hit_armed = 0;
-        } else if (rec->wielded_object_live_state != 0 &&
+        } else if (rec->wielded_object_live_state != WEAPON_LIVE_OFF &&
                    rec->move_frame >= rec->weapon_hit_start_frames[1] &&
                    rec->move_frame <= rec->weapon_hit_end_frames[1] &&
                    fight_ProcessPositionRecordsInQuad(
@@ -1342,7 +1342,7 @@ s32 fighter_ProcessWeaponContacts(void) {
             dst[2].y = 100000;
             dst[3].y = 100000;
         }
-        if (rec->wielded_object_live_state != 0) {
+        if (rec->wielded_object_live_state != WEAPON_LIVE_OFF) {
             dst[4] = SPAD->second_weapon_points[i][0];
             dst[5] = SPAD->second_weapon_points[i][1];
             dst[6] = rec->prev_second_weapon_points[0];
@@ -1839,12 +1839,12 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         outer_hit_mask = 0;
         inner_hit_mask = 0;
         if (other_record->is_defeated == 0 &&
-            other_record->weapon_live_state != 0 &&
+            other_record->weapon_live_state != WEAPON_LIVE_OFF &&
             other_record->update_count != 0) {
             other_weapon_quad_count =
                 other_record->character_roster_index != 0x1F;
         }
-        if (other_record->wielded_object_live_state != 0) {
+        if (other_record->wielded_object_live_state != WEAPON_LIVE_OFF) {
             other_weapon_quad_count++;
         }
         if (other_weapon_quad_count != 0 &&
@@ -1913,7 +1913,8 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 temp1 = 0;
                 temp2 = 1;
                 test_inner_spheres = 1;
-            } else if (other_record->wielded_object_live_state != 0) {
+            } else if (
+                other_record->wielded_object_live_state != WEAPON_LIVE_OFF) {
                 var_12 = 1;
                 temp1 = 0;
                 temp2 = 1;
@@ -2218,7 +2219,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         if (other_record->weapon_hit_window_open == 0) {
             continue;
         }
-        if (other_record->wielded_object_live_state != 0 &&
+        if (other_record->wielded_object_live_state != WEAPON_LIVE_OFF &&
             (other_record->move_frame <
                  other_record->weapon_hit_start_frames[var_12] ||
              other_record->move_frame >
