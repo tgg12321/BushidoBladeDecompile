@@ -1,0 +1,16 @@
+menu_UpdateRowMenu:arg0=held_buttons
+menu_UpdateOptionMenuChoices:arg0=held_buttons
+menu_HandleOptionMenuChoices:arg0=held_buttons
+func_8006C1FC:a0=held_buttons
+menu_UpdateMemCardChoices:arg0=held_buttons
+menu_HandleMemCardChoices:arg0=held_buttons
+menu_UpdateRowBitMenu:arg0=held_buttons
+menu_HandleRowBitInput:arg0=held_buttons
+menu_UpdateStoredChoice:arg0=held_buttons
+menu_HandleStoredChoice:arg0=held_buttons
+menu_UpdateConfirmMenu:arg0=held_buttons
+menu_HandleConfirmInput:arg0=held_buttons
+gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads:arg2=gpu_db
+menu_DrawMaskedRowList:arg2=cursor_row_mode
+gpu_AddBrownOrBlackPanelGridTile:arg0=handler_index
+menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads:var_15=player

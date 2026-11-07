@@ -1,0 +1,43 @@
+sweep-596cc.3 (naming-a 2026-11-07): 16 local / parameter bindings in 16 functions (28 token substitutions in src/main/596CC.c, 1 in src/main/5ED34.c = 29); no include/ file touched. Research rows 16 of 16 kept, 0 dropped; 0 names changed by the drafter.
+Tree: ln-naming-a = lanes/naming-a e07ab78e2 (tracked tree clean). Run in WSL via a script file (tmp/naming-a-d3/run.sh running dry3.py in the main checkout's tmp, scratch removed afterwards; NAMING_KEYCHECK_ROOT = the worktree, venv active).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs (same tool result as the earlier var-locals waves). Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree (base = naming_keycheck.read_working_tree()); lines are mapped from the token index through naming_keycheck.code_spans.
+The 16 pairs of pairs.txt together were accepted (29 token substitutions). Each pair was also run alone: all accepted (alone counts sum to 29) and every alone line list equals the drafter's own use scan (an independent brace-matched token scan of the function definition, member tokens after . / -> excluded, comments and strings skipped) and the research's lists (5ED34.c line shifted +9 by the const-entry-menu-slide commits).
+Required comment edits: 596CC.c:984 (menu_DrawMaskedRowList's arg2) and the symbol_addrs.txt:986 note, see notes.txt.
+Per-pair substitutions (function:old=new count (lines)):
+  menu_UpdateRowMenu:arg0=held_buttons 1 (296)
+  menu_UpdateOptionMenuChoices:arg0=held_buttons 2 (1489,1498)
+  menu_HandleOptionMenuChoices:arg0=held_buttons 1 (1383)
+  func_8006C1FC:a0=held_buttons 2 (1762,1763)
+  menu_UpdateMemCardChoices:arg0=held_buttons 2 (1750,1759)
+  menu_HandleMemCardChoices:arg0=held_buttons 1 (1501)
+  menu_UpdateRowBitMenu:arg0=held_buttons 2 (2257,2269)
+  menu_HandleRowBitInput:arg0=held_buttons 1 (2056)
+  menu_UpdateStoredChoice:arg0=held_buttons 2 (2368,2378)
+  menu_HandleStoredChoice:arg0=held_buttons 1 (2328)
+  menu_UpdateConfirmMenu:arg0=held_buttons 2 (2597,2606)
+  menu_HandleConfirmInput:arg0=held_buttons 1 (2565)
+  gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads:arg2=gpu_db 1 (503)
+  menu_DrawMaskedRowList:arg2=cursor_row_mode 1 (985)
+  gpu_AddBrownOrBlackPanelGridTile:arg0=handler_index 1 (2208)
+  menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads:var_15=player 8 (1811,1846,1846,1846,1847,1848,1851,1852)
+
+Raw driver output (HEAD e07ab78e2, scoped_plan together then alone per pair; line numbers are working-tree lines):
+Tree: ln-naming-a HEAD e07ab78e2; scoped_plan(read_working_tree(), pairs, {})
+SET 16 pairs ACCEPT {'596CC.c': 28, '5ED34.c': 1} total 29
+ALONE menu_UpdateRowMenu:arg0=held_buttons ACCEPT 1 596CC.c [296]
+ALONE menu_UpdateOptionMenuChoices:arg0=held_buttons ACCEPT 2 596CC.c [1489, 1498]
+ALONE menu_HandleOptionMenuChoices:arg0=held_buttons ACCEPT 1 596CC.c [1383]
+ALONE func_8006C1FC:a0=held_buttons ACCEPT 2 596CC.c [1762, 1763]
+ALONE menu_UpdateMemCardChoices:arg0=held_buttons ACCEPT 2 596CC.c [1750, 1759]
+ALONE menu_HandleMemCardChoices:arg0=held_buttons ACCEPT 1 596CC.c [1501]
+ALONE menu_UpdateRowBitMenu:arg0=held_buttons ACCEPT 2 596CC.c [2257, 2269]
+ALONE menu_HandleRowBitInput:arg0=held_buttons ACCEPT 1 596CC.c [2056]
+ALONE menu_UpdateStoredChoice:arg0=held_buttons ACCEPT 2 596CC.c [2368, 2378]
+ALONE menu_HandleStoredChoice:arg0=held_buttons ACCEPT 1 596CC.c [2328]
+ALONE menu_UpdateConfirmMenu:arg0=held_buttons ACCEPT 2 596CC.c [2597, 2606]
+ALONE menu_HandleConfirmInput:arg0=held_buttons ACCEPT 1 596CC.c [2565]
+ALONE gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads:arg2=gpu_db ACCEPT 1 596CC.c [503]
+ALONE menu_DrawMaskedRowList:arg2=cursor_row_mode ACCEPT 1 596CC.c [985]
+ALONE gpu_AddBrownOrBlackPanelGridTile:arg0=handler_index ACCEPT 1 5ED34.c [2208]
+ALONE menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads:var_15=player ACCEPT 8 596CC.c [1811, 1846, 1846, 1846, 1847, 1848, 1851, 1852]
+ALONE SUM 29
