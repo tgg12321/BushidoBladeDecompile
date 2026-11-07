@@ -150,3 +150,7 @@ O6 as posed at sweep-17afc-r6 (pure refinement of one quantity) -- 4:
 O1 as posed at sweep-17afc-r6 (a byte read only by whole-block copies) -- 1:
 - Unk80017FA0Rec.unk3 (game.h:2487, u8): one store, 0 (2B344.c:2794); read only by the block copy into step_descs (2B344.c:2601), which counts as a read, so not write-only FINAL; no reader of step_desc +3 in the binary. Compare FileRecord.unk_05 under O1.
 (Count: r1 9 + r2 2 + r3 1 + r4 12 + r5 2 + r6 2 + r7 11 = 39 routed, + 23 still the sweep's own = 62 = the homes list, each once.)
+
+## Unit sweep-9f9c.8 (finality, naming-b 2026-11-07): 1 final, 1 FAIL
+- fighter_Update:temp: FINAL two-role on its FAKE label (fresh naming-reviewer PASS): 9F9C.c:4839-4844 says one local reused for four values ($a1): the turn clamp limit (:5159), the folded bearing gap (:5204), the turn step (:5256), the stick side (:5532).
+- math_StoreFloorDiv2000XZOfPointStepTowards:var_7: two-role FAIL (fresh naming-reviewer): the -2 at 9F9C.c:413 is read only by the `&=` at :414 that rounds the leading-zero count sp_tmp (:410) down to even, so the slot holds the operand and the result of one rounding (a refinement, naming-final-classes.md:56-58). No name is true of every use (lzc_even is false of the -2 store, a mask name of the :415 read): the OQ-3 shape. Joins sweep-9f9c-r7 (OQ-3), with the same-shaped lz locals of fighter_CastWeaponSegment (17AFC.c:1637-1639, :1658-1661).
