@@ -2339,7 +2339,7 @@ typedef struct {
     s16 draw_kind;              /* +0x00 */
     s16 cell_reloc_block_id;    /* +0x02 */
     u16 cell_reloc_entry_index; /* +0x04 */
-    u8 unk6;                    /* +0x06 */
+    u8 detail_level;            /* +0x06 */
     u8 draw_flags;              /* +0x07 */
     s32 cell_world_x;           /* +0x08 */
     s32 cell_world_z;           /* +0x0C */

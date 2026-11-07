@@ -2084,7 +2084,7 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
                         record_id = run_entry & 0x7FFF;
                         if (record_id < g_gpu_grid_cell_record_count) {
                             e = &g_gpu_grid_cell_records[record_id];
-                            e->unk6 = cell_attributes & 3;
+                            e->detail_level = cell_attributes & 3;
                             if ((cell_attributes & 8) ||
                                 ((cell_attributes & 4) &&
                                  (e->draw_flags & 8))) {
@@ -2189,7 +2189,7 @@ skip:
                             record_id = run_entry & 0x7FFF;
                             if (record_id < g_gpu_grid_cell_record_count) {
                                 e = &g_gpu_grid_cell_records[record_id];
-                                e->unk6 = cell_attributes & 3;
+                                e->detail_level = cell_attributes & 3;
                                 if ((cell_attributes & 8) ||
                                     ((cell_attributes & 4) &&
                                      (e->draw_flags & 8))) {
@@ -2253,7 +2253,7 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *stream_cursor, s32 block_id) {
             r->draw_flags = 0;
         }
         r->draw_kind = 0xC;
-        r->unk6 = 0;
+        r->detail_level = 0;
         r->cell_reloc_block_id = block_id;
         r->cell_world_x = (w % 32) * 2000 - 32000;
         r->cell_world_z = (w / 32) * 2000 - 32000;
@@ -2630,27 +2630,27 @@ extern s16 g_softbody_face_record_strides[];
  * mode-1 quad record places it off word alignment).
  */
 typedef struct {
-    u16 unk0[6];
+    u16 prim_attrs[6];
     u16 vtx_ids[2];
-    u16 unk8[4];
+    u16 face_normal[4];
 } FaceTri; /* mode 0 */
 
 typedef struct {
-    u16 unk0[7];
+    u16 prim_attrs[7];
     u16 vtx_ids[2];
-    u16 unk9[3];
+    u16 face_normal[3];
 } FaceQuad; /* mode 1 */
 
 typedef struct {
-    u16 unk0[6];
+    u16 prim_attrs[6];
     u16 vtx_ids[2];
-    u16 unk8[10];
+    u16 vertex_normals[10];
 } FaceTriLong; /* mode 2 */
 
 typedef struct {
-    u16 unk0[8];
+    u16 prim_attrs[8];
     u16 vtx_ids[2];
-    u16 unk10[12];
+    u16 vertex_normals[12];
 } FaceQuadLong; /* mode 3 */
 
 s16 *softbody_SetAnchorWeights(
