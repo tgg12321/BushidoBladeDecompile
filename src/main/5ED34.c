@@ -12,6 +12,14 @@
 #include "bb2.h"
 #include "bb2_const.h"
 
+enum EntryMenuSlidePhase {
+    ENTRY_MENU_SLIDE_IDLE = 0,
+    ENTRY_MENU_SLIDE_RIGHT_EXTEND = 1,
+    ENTRY_MENU_SLIDE_RIGHT_RETRACT = 2,
+    ENTRY_MENU_SLIDE_LEFT_EXTEND = 3,
+    ENTRY_MENU_SLIDE_LEFT_RETRACT = 4,
+};
+
 enum EntryMenuHandler {
     ENTRY_MENU_ENTRY_GRID = 0,
     ENTRY_MENU_ROW = 1,
@@ -121,7 +129,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
         g_entry_menu_arena_cursor, g_entry_menu_prim_buffers);
     g_entry_menu_slot_records.word = -1;
     g_entry_menu_slide_displacement = 0;
-    g_entry_menu_slide_phase = 0;
+    g_entry_menu_slide_phase = ENTRY_MENU_SLIDE_IDLE;
     D_800A357C = 0;
     g_entry_menu_handler_index = ENTRY_MENU_ENTRY_GRID;
     g_entry_menu_exit_result = 0;
@@ -299,8 +307,8 @@ s32 StepSlideBuildFrameRecordAndDispatchStateHandler(
 
 void StepSlideProgressCommitPendingStateAndQueueSound(void) {
     switch (g_entry_menu_slide_phase & 0xFF) {
-    case 1:
-    case 3:
+    case ENTRY_MENU_SLIDE_RIGHT_EXTEND:
+    case ENTRY_MENU_SLIDE_LEFT_EXTEND:
         g_entry_menu_slide_displacement += 0x20;
         if (g_entry_menu_slide_displacement >= 0x1E8) {
             g_entry_menu_slide_displacement = 0x1E8;
@@ -310,15 +318,15 @@ void StepSlideProgressCommitPendingStateAndQueueSound(void) {
             }
         }
         break;
-    case 2:
-    case 4:
+    case ENTRY_MENU_SLIDE_RIGHT_RETRACT:
+    case ENTRY_MENU_SLIDE_LEFT_RETRACT:
         if (g_entry_menu_slide_displacement == 0x1E8) {
             snd_QueueSound(5, 0x7F, 0x7F);
         }
         g_entry_menu_slide_displacement -= 0x20;
         if (g_entry_menu_slide_displacement <= 0) {
             g_entry_menu_slide_displacement = 0;
-            g_entry_menu_slide_phase = 0;
+            g_entry_menu_slide_phase = ENTRY_MENU_SLIDE_IDLE;
         }
         break;
     }
@@ -1100,7 +1108,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
                 snd_QueueSound(0xA, 0x7F, 0x7F);
             }
         } else if (g_entry_menu_pressed_buttons & (PADRup << (var_6 * 16))) {
-            if (g_entry_menu_slide_phase == 0) {
+            if (g_entry_menu_slide_phase == ENTRY_MENU_SLIDE_IDLE) {
                 snd_QueueSound(2, 0x7F, 0x7F);
                 if (g_entry_menu_slot_records.rec[slot_index].grid_pick ==
                         0xFF &&
@@ -1158,7 +1166,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
             g_entry_menu_init_extra_slot_count +
                     g_entry_menu_grid_phase_extra_slot_count ==
                 0) {
-            g_entry_menu_slide_phase = 1;
+            g_entry_menu_slide_phase = ENTRY_MENU_SLIDE_RIGHT_EXTEND;
             g_entry_menu_row_phase_extra_slot_count = 0;
             if (g_entry_menu_mode == FIGHT_MODE_PRACTICE) {
                 g_entry_menu_slot_records.rec[1].row_pick = 0xFF;
@@ -1307,7 +1315,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
     for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count +
                         g_entry_menu_row_phase_extra_slot_count;
          i++) {
-        if (g_entry_menu_slide_phase == 0) {
+        if (g_entry_menu_slide_phase == ENTRY_MENU_SLIDE_IDLE) {
             if (g_entry_menu_slot_records.rec[i].grid_pick == 5) {
                 g_entry_menu_slot_records.rec[i].row_pick = 6;
                 flag = 1;
@@ -1443,7 +1451,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                     } else {
                         g_entry_menu_slot_records.rec[1].row_pick = 0xFF;
                         g_entry_menu_slot_records.rec[0].row_pick = 0xFF;
-                        g_entry_menu_slide_phase = 3;
+                        g_entry_menu_slide_phase = ENTRY_MENU_SLIDE_LEFT_EXTEND;
                         g_entry_menu_next_handler_index = ENTRY_MENU_ENTRY_GRID;
                         snd_QueueSound(6, 0x7F, 0x7F);
                         if (g_entry_menu_grid_phase_extra_slot_count == 1) {
@@ -1456,7 +1464,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                 }
             } else {
                 if ((g_entry_menu_pressed_buttons & (PADRup << (var_4 * 16))) &&
-                    g_entry_menu_slide_phase == 0 &&
+                    g_entry_menu_slide_phase == ENTRY_MENU_SLIDE_IDLE &&
                     g_entry_menu_mode != FIGHT_MODE_CHANBARA) {
                     snd_QueueSound(2, 0x7F, 0x7F);
                     g_entry_menu_selection_offset_countdowns[0] = 0xF;
@@ -1486,7 +1494,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                 draw_context->primitive_cursors.sprite_prims =
                     gpu_AddSpriteCells(s);
             }
-            if (g_entry_menu_slide_phase != 3) {
+            if (g_entry_menu_slide_phase != ENTRY_MENU_SLIDE_LEFT_EXTEND) {
                 s->scale_x = 0x100;
                 s->scale_y = 0x100;
                 if (g_entry_menu_work_block->row_countdowns[i] != 0) {
@@ -1518,7 +1526,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                     gpu_AddScaledSpriteQuads(s, 0);
             }
         } else {
-            if (g_entry_menu_slide_phase == 0) {
+            if (g_entry_menu_slide_phase == ENTRY_MENU_SLIDE_IDLE) {
                 if (g_entry_menu_slot_records.rec[i == 0 ? 1 : 0].row_pick !=
                         0xFF &&
                     g_entry_menu_work_block->row_countdowns[i == 0 ? 1 : 0] ==
@@ -1552,7 +1560,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
             }
             if (g_entry_menu_pressed_buttons & (PADRup << (i * 16))) {
                 snd_QueueSound(2, 0x7F, 0x7F);
-                g_entry_menu_slide_phase = 3;
+                g_entry_menu_slide_phase = ENTRY_MENU_SLIDE_LEFT_EXTEND;
                 snd_QueueSound(6, 0x7F, 0x7F);
                 g_entry_menu_next_handler_index = ENTRY_MENU_ENTRY_GRID;
                 g_entry_menu_slot_records.rec[1].row_pick = 0xFF;
@@ -1579,7 +1587,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
          i++) {
         if (g_entry_menu_slot_records.rec[i].grid_pick != 5 &&
             g_entry_menu_slot_records.rec[i].grid_pick != 0x10 &&
-            g_entry_menu_slide_phase != 3) {
+            g_entry_menu_slide_phase != ENTRY_MENU_SLIDE_LEFT_EXTEND) {
             s->table = cells;
             s->x = (g_entry_menu_row_phase_choice_cursors[i] << 6) + 0x80;
             s->y = 0xAC - (g_entry_menu_row_cursor_y_slots[i] << 5);
@@ -1708,7 +1716,7 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
     g_entry_menu_darken_level += 8;
     if (g_entry_menu_darken_level >= 0xFF) {
         g_entry_menu_darken_level = 0xFF;
-        g_entry_menu_slide_phase = 1;
+        g_entry_menu_slide_phase = ENTRY_MENU_SLIDE_RIGHT_EXTEND;
         snd_QueueSound(6, 0x7F, 0x7F);
         if ((u32)g_entry_menu_mode < 2) {
             g_entry_menu_working_record_ptr->stage_index =
@@ -1799,7 +1807,7 @@ void menu_UpdateChoiceGrid(
             draw_context->primitive_cursors.draw_offset_prims);
     draw_context->primitive_cursors.draw_offset_prims++;
 
-    if ((g_entry_menu_slide_phase & 0xFF) == 0) {
+    if ((g_entry_menu_slide_phase & 0xFF) == ENTRY_MENU_SLIDE_IDLE) {
         s.x = -10;
         s.y = -5;
         var_4 = g_entry_menu_resources->cursor_and_choice_cell_sheets;
@@ -1850,8 +1858,8 @@ void menu_UpdateChoiceGrid(
     g_entry_menu_work_block->draw_offset[1] =
         g_entry_menu_gpu_db->draw.ofs[1] -
         g_entry_menu_choice_grid_draw_offsets[mode][1];
-    if (((g_entry_menu_slide_phase & 0xFF) == 1 ||
-         (g_entry_menu_slide_phase & 0xFF) == 3) &&
+    if (((g_entry_menu_slide_phase & 0xFF) == ENTRY_MENU_SLIDE_RIGHT_EXTEND ||
+         (g_entry_menu_slide_phase & 0xFF) == ENTRY_MENU_SLIDE_LEFT_EXTEND) &&
         g_entry_menu_next_handler_index >= 4 &&
         g_entry_menu_next_handler_index < 7 &&
         g_entry_menu_handler_index >= 4 && g_entry_menu_handler_index < 7) {
@@ -1913,7 +1921,7 @@ void menu_UpdateChoiceGrid(
         gpu_AddScaledSpriteQuads(&s, 1);
 
     if (g_entry_menu_pressed_buttons & 0xA000A000) {
-        if ((g_entry_menu_slide_phase & 0xFF) == 0) {
+        if ((g_entry_menu_slide_phase & 0xFF) == ENTRY_MENU_SLIDE_IDLE) {
             snd_QueueSound(0, 0x7F, 0x7F);
             if (((g_entry_menu_pressed_buttons & 0x20002000) &&
                  g_entry_menu_choice_grid_column != 0) ||
@@ -1974,7 +1982,7 @@ void menu_UpdateChoiceGrid(
         for (column_index = 0; column_index < 2; column_index++) {
             if (i == g_entry_menu_choice_grid_row &&
                 column_index == g_entry_menu_choice_grid_column &&
-                (g_entry_menu_slide_phase & 0xFF) == 0) {
+                (g_entry_menu_slide_phase & 0xFF) == ENTRY_MENU_SLIDE_IDLE) {
                 s.has_color = 1;
             } else {
                 s.has_color = 0;
@@ -2000,7 +2008,7 @@ void menu_UpdateChoiceGrid(
     draw_context->primitive_cursors.textured_quad_prims =
         gpu_AddScaledSpriteQuads(&s, 0);
 
-    if (g_entry_menu_slide_phase == 0) {
+    if (g_entry_menu_slide_phase == ENTRY_MENU_SLIDE_IDLE) {
         for (i = 0; i < g_entry_menu_init_extra_slot_count + 1; i++) {
             if (g_entry_menu_pressed_buttons & (PADRup << (i * 16))) {
                 s32 var_11;
