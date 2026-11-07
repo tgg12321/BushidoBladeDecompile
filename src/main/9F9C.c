@@ -4309,61 +4309,73 @@ void fighter_ConfigureCpuControl(void) {
     } while (i < 2);
 }
 
-/* The masked state id is spelled as in its
- * copy-paste sibling fighter_UpdateGroundYByMoveKind (the same masked read of
- * fighter_record->move_kind, same comparison cascade), which
- * keeps the target's `andi $v1,$a0,0xffff`: the raw value stays live for `mode
- * - 0x17`, so combine never folds the mask. A u16 on either side loses it. */
+/* Scratchpad block at 0x1F8001B0 that fighter_ResolveMovement,
+ * fighter_CacheDownwardProbeHit,
+ * fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface and
+ * fighter_UpdateGroundYByMoveKind hand to collision_TestSegmentWithWork /
+ * collision_TestSegmentExtendingShortStartWithWork: the hit point and surface
+ * normal those tests write (their 3rd / 4th arguments), the normal written by
+ * fighter_ResolveMovement's second test (the short step from the hit point
+ * along the first normal; never read), the remaining movement it then
+ * projects onto the surface plane (math_ScaleVectorInDirectionFrame with the
+ * normal component scaled by 0), and the segment end the callers build (2nd
+ * argument). Other functions reuse the same bytes under other layouts. */
+typedef struct {
+    VECTOR hit;            /* 0x00 */
+    SVec4i16 normal;       /* 0x10 */
+    SVec4i16 step_normal;  /* 0x18 */
+    VECTOR remaining_move; /* 0x20 */
+    VECTOR segment_end;    /* 0x30 */
+} SegmentTestScratch;
+
+#define SEGMENT_TEST_SCRATCH ((SegmentTestScratch *)0x1F8001B0)
+
 void fighter_ResolveMovement(Unk80101EC8Record *fighter_record, VECTOR *pos1,
                              VECTOR *pos2, s32 *velocity) {
-    s32 *scratch = (s32 *)0x1F8001B0;
+    SegmentTestScratch *scratch = SEGMENT_TEST_SCRATCH;
     s32 count = 0;
     do {
         if (((pos1->vx != pos2->vx) || (pos1->vy != pos2->vy)) ||
             (pos1->vz != pos2->vz)) {
             if (collision_TestSegmentExtendingShortStartWithWork(
-                    &pos1->vx, &pos2->vx, scratch, (s16 *)(scratch + 4),
+                    &pos1->vx, &pos2->vx, &scratch->hit.vx, &scratch->normal.vx,
                     0x1F8002B8) == 0) {
                 *pos1 = *pos2;
                 break;
             }
             fighter_record->collision_hit_tag = collision_GetHitTag();
-            *pos1 = *(VECTOR *)scratch;
+            *pos1 = scratch->hit;
             math_ScaleVectorInDirectionFrame(
-                velocity, (s16 *)(scratch + 4), velocity, -0x40, 0xE6);
-            scratch[12] =
-                pos1->vx + (*((s16 *)(((u8 *)scratch) + 0x10)) / 1024);
-            scratch[13] =
-                pos1->vy + (*((s16 *)(((u8 *)scratch) + 0x12)) / 1024);
-            scratch[14] =
-                pos1->vz + (*((s16 *)(((u8 *)scratch) + 0x14)) / 1024);
-            pos2->vx += *((s16 *)(((u8 *)scratch) + 0x10)) / 1024;
-            pos2->vy += *((s16 *)(((u8 *)scratch) + 0x12)) / 1024;
-            pos2->vz += *((s16 *)(((u8 *)scratch) + 0x14)) / 1024;
+                velocity, &scratch->normal.vx, velocity, -0x40, 0xE6);
+            scratch->segment_end.vx = pos1->vx + (scratch->normal.vx / 1024);
+            scratch->segment_end.vy = pos1->vy + (scratch->normal.vy / 1024);
+            scratch->segment_end.vz = pos1->vz + (scratch->normal.vz / 1024);
+            pos2->vx += scratch->normal.vx / 1024;
+            pos2->vy += scratch->normal.vy / 1024;
+            pos2->vz += scratch->normal.vz / 1024;
             if (collision_TestSegmentExtendingShortStartWithWork(
-                    &pos1->vx, scratch + 12, scratch, (s16 *)(scratch + 6),
-                    0x1F8002B8) == 0) {
-                *pos1 = *(VECTOR *)(scratch + 12);
-                scratch[8] = pos2->vx - pos1->vx;
-                scratch[9] = pos2->vy - pos1->vy;
-                scratch[10] = pos2->vz - pos1->vz;
+                    &pos1->vx, &scratch->segment_end.vx, &scratch->hit.vx,
+                    &scratch->step_normal.vx, 0x1F8002B8) == 0) {
+                *pos1 = scratch->segment_end;
+                scratch->remaining_move.vx = pos2->vx - pos1->vx;
+                scratch->remaining_move.vy = pos2->vy - pos1->vy;
+                scratch->remaining_move.vz = pos2->vz - pos1->vz;
                 math_ScaleVectorInDirectionFrame(
-                    scratch + 8, (s16 *)(scratch + 4), scratch + 8, 0,
+                    &scratch->remaining_move.vx, &scratch->normal.vx,
+                    &scratch->remaining_move.vx, 0,
                     (fighter_record->move_kind == 0x15) ? 0x80 : 0x100);
-                if (*((s16 *)(((u8 *)scratch) + 0x12)) >= (-0x7FF)) {
-                    s32 mode = fighter_record->move_kind;
-                    s32 m = mode & 0xFFFF;
-                    if (((((m != 8) && (m != 0x22)) &&
-                          (((u32)(mode - 0x17)) >= 2)) &&
-                         (m != 0xA)) &&
+                if (scratch->normal.vy >= (-0x7FF)) {
+                    u16 m = fighter_record->move_kind;
+                    if ((m != 8) && (m != 0x22) && (m != 0x17) && (m != 0x18) &&
+                        (m != 0xA) &&
                         (fighter_record->airborne_until_landing == 0)) {
-                        scratch[9] = 0;
+                        scratch->remaining_move.vy = 0;
                     }
                 }
-                pos2->vx = pos1->vx + scratch[8];
-                pos2->vy = pos1->vy + scratch[9];
+                pos2->vx = pos1->vx + scratch->remaining_move.vx;
+                pos2->vy = pos1->vy + scratch->remaining_move.vy;
                 count++;
-                pos2->vz = pos1->vz + scratch[10];
+                pos2->vz = pos1->vz + scratch->remaining_move.vz;
             } else {
                 break;
             }
@@ -4728,25 +4740,30 @@ void fighter_CacheDownwardProbeHit(Unk80101EC8Record *fighter_record) {
         fighter_record->downward_probe_hit = 0;
         return;
     }
-    ((VECTOR *)0x1F8001E0)->vx = fighter_record->collision_pos.vx;
-    ((VECTOR *)0x1F8001E0)->vy = fighter_record->collision_pos.vy + 0x1F4;
-    ((VECTOR *)0x1F8001E0)->vz = fighter_record->collision_pos.vz;
+    SEGMENT_TEST_SCRATCH->segment_end.vx = fighter_record->collision_pos.vx;
+    SEGMENT_TEST_SCRATCH->segment_end.vy =
+        fighter_record->collision_pos.vy + 0x1F4;
+    SEGMENT_TEST_SCRATCH->segment_end.vz = fighter_record->collision_pos.vz;
     fighter_record->downward_probe_hit =
         collision_TestSegmentExtendingShortStartWithWork(
-            &fighter_record->collision_pos.vx, (s32 *)0x1F8001E0,
-            (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8);
+            &fighter_record->collision_pos.vx,
+            &SEGMENT_TEST_SCRATCH->segment_end.vx,
+            &SEGMENT_TEST_SCRATCH->hit.vx, &SEGMENT_TEST_SCRATCH->normal.vx,
+            0x1F8002B8);
 }
 
 s32 fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface(
     Unk80101EC8Record *fighter_record) {
     s32 result;
-    ((VECTOR *)0x1F8001E0)->vx = fighter_record->collision_pos.vx;
-    ((VECTOR *)0x1F8001E0)->vy = fighter_record->collision_pos.vy + 5;
-    ((VECTOR *)0x1F8001E0)->vz = fighter_record->collision_pos.vz;
+    SEGMENT_TEST_SCRATCH->segment_end.vx = fighter_record->collision_pos.vx;
+    SEGMENT_TEST_SCRATCH->segment_end.vy = fighter_record->collision_pos.vy + 5;
+    SEGMENT_TEST_SCRATCH->segment_end.vz = fighter_record->collision_pos.vz;
     if (collision_TestSegmentExtendingShortStartWithWork(
-            &fighter_record->collision_pos.vx, (s32 *)0x1F8001E0,
-            (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8) != 0) {
-        result = *(s16 *)0x1F8001C2 < -0x800;
+            &fighter_record->collision_pos.vx,
+            &SEGMENT_TEST_SCRATCH->segment_end.vx,
+            &SEGMENT_TEST_SCRATCH->hit.vx, &SEGMENT_TEST_SCRATCH->normal.vx,
+            0x1F8002B8) != 0) {
+        result = SEGMENT_TEST_SCRATCH->normal.vy < -0x800;
     } else {
         result = 0;
     }
@@ -4754,20 +4771,20 @@ s32 fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface(
 }
 
 void fighter_UpdateGroundYByMoveKind(Unk80101EC8Record *fighter_record) {
-    s32 *s1 = (s32 *)0x1F8001B0;
+    SegmentTestScratch *s1 = SEGMENT_TEST_SCRATCH;
     u16 state = fighter_record->move_kind;
 
     if (state == 8 || state == 0x22) {
         return;
     }
     if (state == 0x17 || state == 0x18 || state == 0x28 || state == 0xA) {
-        s1[0xC] = fighter_record->collision_pos.vx;
-        s1[0xD] = fighter_record->collision_pos.vy + 0x1F40;
-        s1[0xE] = fighter_record->collision_pos.vz;
+        s1->segment_end.vx = fighter_record->collision_pos.vx;
+        s1->segment_end.vy = fighter_record->collision_pos.vy + 0x1F40;
+        s1->segment_end.vz = fighter_record->collision_pos.vz;
         if (collision_TestSegmentWithWork(
-                &fighter_record->collision_pos.vx, &s1[0xC], s1, (s16 *)&s1[4],
-                0x1F8002B8) != 0) {
-            fighter_record->ground_y = s1[1];
+                &fighter_record->collision_pos.vx, &s1->segment_end.vx,
+                &s1->hit.vx, &s1->normal.vx, 0x1F8002B8) != 0) {
+            fighter_record->ground_y = s1->hit.vy;
         }
     } else {
         fighter_record->ground_y = fighter_record->collision_pos.vy;

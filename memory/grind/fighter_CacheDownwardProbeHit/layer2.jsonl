@@ -1,0 +1,1 @@
+{"func": "fighter_CacheDownwardProbeHit", "addr": "80023D28", "verdict": "PASS", "body_hash": "91d6c4bdf04f521f", "body_kind": "c", "file": "main/9F9C", "reviewer": "cheat-reviewer-aa0a77e23a23d1f6d", "scope": "match", "date": "2026-11-07T13:04:53Z", "head": "f37c8a68e", "notes": ""}
