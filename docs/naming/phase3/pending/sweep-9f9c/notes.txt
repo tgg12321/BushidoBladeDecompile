@@ -15,3 +15,55 @@
 - Unk80017FA0Rec.unk3: NO_NAME. One constant 0 store (2B344.c:2791), read only by the block copy into step_descs (2B344.c:2598), which counts as a read so it is not write-only FINAL. Missing evidence: a reader of step_desc +3, none in this binary.
 - CamScratch.unk0: FINAL candidate (never-accessed, scratchpad view at 0x1F800000). Goes to the sweep's finality unit for a fresh naming-reviewer to re-derive the class; alias caveat (ScrPad / SPAD51268 overlay) per no_name.tsv:93-110 precedent.
 - CamScratch.unk6: FINAL candidate (never-accessed, same test and caveat as unk0). Goes to the sweep's finality unit.
+
+## Unit sweep-9f9c.4 (locals; research tmp/codex/sweep-9f9c.4-research.md, 2026-11-07; 10 renamed, these 50 NO_NAME; line numbers at b39256394; full reasons in pending/sweep-9f9c.4/notes.txt)
+- pad_Update:arg0 (87A0.c:624): callers pass 1, present_skip_frames and nothing (unprototyped), so not one quantity; the single zero test shows no role. Not final: it is read.
+- softbody_LoadColliders:var_4 (87A0.c:62): the scratchpad base 0x1F800000 advanced one word per collider; no name is true of the biased base rather than only of its [0x2B] slot.
+- softbody_LoadColliders:var_8 (87A0.c:67): byte offset of focus j of collider i; every use sits inside the FAKE goto-loop block 68-79 (FAKE-covered).
+- softbody_LoadColliders:var_9 (87A0.c:72): source pointer ptr + i*0x20 + j*0x10; declared and used only inside the FAKE block 68-79 (FAKE-covered).
+- softbody_PrepareStep:var_3 (87A0.c:140): the squared translation length, then its root in place; no name is true of both (distance FAILed at the squared step in sweep-17afc.3). Not final: one role by the class text.
+- softbody_SolveSprings:var_5 (87A0.c:186): data->dist, the edge's rest length (lead rest_length), pipelined reload after data++; prior records keep it with the FAKE-cited holders and no code name newer than them landed. Not proposed.
+- softbody_Step:temp (87A0.c:445): two values per its Ruling 11 comment (squared length for gte_Lzc, then sqrt-table bytes); no newer record. Not final: both are steps of one root computation.
+- softbody_Step:var_11 (87A0.c:323): `(r - tot) << 17` clamped, the scaled penetration depth (lead penetration, dry-run alone 6 lines); the prior records lack a complete arithmetic proof and nothing newer landed. Not proposed.
+- camera_InitTrackedFighterFocus:a0 (9F9C.c:766): the tracked fighter, overwritten by a1; var-locals-25 :118 left both neutral together and nothing newer landed.
+- camera_InitTrackedFighterFocus:a1 (9F9C.c:766): the other fighter, read only as a0's copy source at 776; left with a0, nothing newer.
+- camera_SetInterpolatedFighterView:arg0 (9F9C.c:1064): the follow-up fighter record; its 1072 use is the FAKE block copy (FAKE-covered).
+- camera_SetInterpolatedFighterView:arg1 (9F9C.c:1064): the weight; its 1081 use is the FAKE div4 staging 1079-1080 (FAKE-covered).
+- camera_UpdateReplayView:var_8 (9F9C.c:937): `(s16)g_camera_replay_low_probe_gap_count >= 0xB`; var-locals-49 :60 not reached by a new name, the gap-count global is older.
+- camera_UpdateReplayViewWithSineYawOffset:var_s3 (9F9C.c:1017): the playback_fraction-derived weight passed as camera_UpdateReplayView's frac (lead followup_weight, alone 4 lines); its role beyond the callee's parameter name (not evidence, N3) is not shown by a newer name.
+- camera_UpdateReplayViewWithSineYawOffset:var_v0 (9F9C.c:1019): Judge[...] * 3 biased then >> 2 (four times the 3/4-sine yaw offset); no clear name, nothing newer.
+- camera_UpdateReplayViewWithSineYawOffset:var_v1 (9F9C.c:1018): playback_fraction plus the round-toward-zero bias; the true name restates playback_fraction, which is taken in f.
+- camera_UpdateTrackedFighterView:var_12 (9F9C.c:878): turn_easing_angle * 3 plus bias, >> 2 stored back, a rounding temp; no name beyond the arithmetic (turn_easing_angle predates p1).
+- camera_UpdateTrackedFighterView:var_3 (9F9C.c:796): the flag (mean ground-probe y - bone_hit_point_0.y) >= 0x391; missing: what a probe gap of 0x391 or more means.
+- camera_UpdateTwoFighterView:var_22 (9F9C.c:538): the sqrt-table shift 0x16 - (lzcr & ~1) (lead table_shift, alone 3 lines); the p1 record is not contradicted but no newer code name landed. Not proposed.
+- fight_SearchRadialFlatSurfacePointOrUseStartPositionPair:temp (9F9C.c:3843): step counter, then start-pair index, then i (var-locals-54 :43, Ruling 11 several roles). Not final: all small integer counters or indices.
+- fight_UpdateModeDisplaysAndMatchProgress:temp (9F9C.c:1578): announcement length in frames, then clock frames left (two values per its comment). Not final: one unit (frames).
+- fighter_BuildCpuOrMappedPadState:temp (9F9C.c:1109): the shift 16 * i, then 4 * i or 0. Not final: both are shift counts.
+- fighter_HandleMissingSupportWhileDescending:var_3 (9F9C.c:4589): the first probe's hit normal or, on the no-hit path, the clamped xz displacement; no name is true of both (first_hit_normal is false when s1 == 0). Not final: one use reads both alike.
+- fighter_Init:var_2 (9F9C.c:4032): a step-table tier (1..9, 9 special) scaling base_move_frame_step / power / cpu_base_level; var-locals-49 :56 not reached by a new name, nothing newer.
+- fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow:var_12 (9F9C.c:4410): one-use Judge sine of the probe angle; var-locals-26 :131 four sine-table reads of one kind, names would need numbering.
+- fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow:var_14 (9F9C.c:4420): one-use Judge cosine of the probe angle; same record as var_12.
+- fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow:var_18 (9F9C.c:4445): one-use Judge sine of the reversed normal heading; same record.
+- fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow:var_20 (9F9C.c:4453): one-use Judge read at normal_heading + 0xC00; same record.
+- fighter_SetTurnDelta:arg1 (9F9C.c:2709): the target heading at entry, then the wrapped delta stored to remaining_turn; var-locals-25 :137, -26 :105, -42 :62, naming-close-final-3 DROP (one angle refined). Nothing newer.
+- fighter_StartMoveScript:v0 (9F9C.c:3713 / 3718): motion-entry pointer in two declarations; var-locals-p1 :26, -49 :61; motion_entries is older, and two bindings need two pairs for one spelling.
+- fighter_StartMoveScript:v1 (9F9C.c:3710): move_script->motion_bank_entry_index copied to motion_entry_index; earlier verdicts, both member names older; research notes it as a possible reopen (one role at HEAD), no newer code evidence.
+- fighter_Update:temp (9F9C.c:4815): four or more roles (metadata nibble * 0x88, folded bearing difference, turn step, held-direction term).
+- fighter_UpdateGroundYByMoveKind:s1 (9F9C.c:4753): the 0x1F8001B0 scratch block (segment end, hit point, normal); var-locals-26 :135 generic name only, naming-close-final-4 DROP; nothing newer.
+- fighter_UpdateInputSteeredForwardMotion:a0 (9F9C.c:4484): 0..2 d-pad index from pad bits 15 / 13, first index of g_fighter_dpad_angle_offsets; which axis it is rests on the PS1 pad bit layout, which no repo constant names; the array global predates p1.
+- fighter_UpdateInputSteeredForwardMotion:a1 (9F9C.c:4483): the second d-pad index from bits 14 / 12; same record and gap as a0.
+- fighter_UpdateInputSteeredForwardMotion:var_13 (9F9C.c:4556): forward_move_rate * move_frame_step, whose >> 12 is the FAKE-staged speed; feeds only the FAKE staging, no name beyond the arithmetic.
+- math_ComputeBallisticVelocityXZ:arg3 (9F9C.c:3008): the vertical acceleration (lead vertical_acceleration, alone 3 lines), but its role rests on reading the formula alone; the one caller passes 0x1F and no gravity constant or global exists. Not proposed.
+- math_ComputeBallisticVelocityXZ:a0 (9F9C.c:3037): the horizontal speed (lead horizontal_speed, alone 9 lines); its 3054 store is inside the FAKE block 3048-3055 and nothing newer landed. Not proposed.
+- math_ComputeBallisticVelocityXZ:a2 (9F9C.c:3042): its 3053 use is the FAKE line `dy = a2 - var_0` (FAKE-covered).
+- math_ComputeBallisticVelocityXZ:var_0 (9F9C.c:3010): the discriminant then its root in place; the FAKE 3048-3052 names it (FAKE-covered). Not final: a refinement.
+- math_StoreFloorDiv2000XZOfPointStepTowards:var_7 (9F9C.c:413): -2, then `&= sp_tmp`, the even leading-zero count; two values (var-locals-48 :26), lzc_even was reset for exactly this.
+- motion_AdjustFighterPose:temp (9F9C.c:2551): six values per its Ruling 11 comment (three wrapped easing deltas, clamped twist, two jitters). Not final: all are angle offsets.
+- motion_AdjustFighterPose:temp2 (9F9C.c:2535): the clamped elevation target, then the clamped twist target. Not final: both are angle targets.
+- motion_AdvanceVariantIfAtNibble4Or5Position:a1 (9F9C.c:3501): a copy of fighter_record->variant_index; scoped_plan still refuses variant_index ('already occurs in f'); missing: another spelling a reviewer accepts.
+- motion_DecodeFrame:temp (9F9C.c:223): four values per its Ruling 11 comment, all GETBITS macro arguments. Not final: steps of one decoded delta.
+- motion_DecodeFrame:var_9 (9F9C.c:118): rec->ctr before the increment; Unk800F1B18Rec.ctr is still the neutral `ctr`, so missing: a name for ctr.
+- motion_LoadCommonData:v1 (9F9C.c:3309): a copy of g_motion_common_buffer used as the section base; var-locals-26 :117, -42 :62 (one value, one name); reopen only on the sweep-17afc.3 precedent, which is not code evidence.
+- motion_LoadFighterData:var_0 (9F9C.c:3344): the u16[130] FAKE frame-layout array (FAKE 3341-3343); FAKE-covered.
+- motion_UpdateFrameStep:var_0 (9F9C.c:2754): the u32 move_kind word beside `kind = var_0 & 0xFFFF`, the pair named by the codegen note; both hold the kind, no word tells them apart without restating the member.
+- motion_UpdateFrameStep:var_9 (9F9C.c:2817): a copy of fighter_record->power_scale_tally; the reviewer's name power_scale_tally is refused by scoped_plan ('already occurs in f'), power_tally FAILed pre-apply (drops scale).
