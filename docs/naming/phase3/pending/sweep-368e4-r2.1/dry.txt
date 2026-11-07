@@ -1,0 +1,8 @@
+sweep-368e4-r2.1 (naming-d 2026-11-07): 1 local in 368E4.c; research: Opus (tmp/codex/sweep-368e4.1-research.md, lead block_base; held by scoped_plan's PTR_OFF refusal, released by scoped-plan-macro-operands 8613aabcc).
+Tree: ln-naming-d = 4817e1c80. Drafting aid (not the gate): naming_keycheck.scoped_plan(read_working_tree(), pairs, {}), run in WSL from a tmp script.
+ALL: scoped_plan ACCEPT, 40 substitutions, only src/main/368E4.c
+  resource_LoadOrReuseSelectedBlock:s0=block_base 40 (42,50,51,60,62,64,84,89,100,104,105,106,108,109,110x2,111x2,112x2,116,127,138,139,144,146x2,147,155x2,157x2,165x2,166x2,167x2,173x2)
+Alone line list equals every whole-word s0 code token in 41-187 (43 tokens, less 3 in comments).
+Required comment edits (hand, line count kept):
+  93-96: "(s0's in the case blocks and below, staging_addr's here)" -> "(block_base's ...)", rewrapped in the same 4 lines.
+  142-143: "pointer to s0[tim_offset_index - 1]; it fixes the sched1 load/store order; s0[tim_offset_index - 1] inline: score 9" -> "pointer to block_base[tim_offset_index - 1]; it fixes the sched1 load/store order; the read inline: score 9", same 2 lines.
