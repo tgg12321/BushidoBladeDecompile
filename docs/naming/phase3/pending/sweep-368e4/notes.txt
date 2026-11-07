@@ -52,3 +52,4 @@ Group owner (no foundation row decides; sweep-368e4-r6, blocked) -- 9 targets
 
 ## Closed (naming-a 2026-11-07, after unit sweep-368e4.8)
 homes for main/368E4,main/3AB48,main/snd lists 30 targets (func 10, data 2, member 0, local 18), every one a NO_NAME recorded above and owned by sweep-368e4-r1..r6; none is still the sweep's own. Row sweep-368e4 -> landed.
+- [sweep-368e4-r2.1, naming-d 2026-11-07] resource_LoadOrReuseSelectedBlock:s0 RENAMEd -> block_base (scoped-plan-macro-operands released it); group scoped-plan-macro-operands closed.
