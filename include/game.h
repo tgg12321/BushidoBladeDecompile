@@ -836,7 +836,7 @@ typedef struct {
 typedef struct {
     u8 pad00[3];
     /* motion_LoadFighterData: g_motion_fighter_sections[slot].move_scripts =
-     * record + 0x6C + (unk_03 - 1) * 6 */
+     * record + 0x6C + (move_id_row_count - 1) * 6 */
     u8 move_id_row_count;
     /* g_motion_fighter_sections[slot].motion_entries .. motion_bitstream =
      * record + section_offsets[k] (motion_LoadFighterData) */
@@ -851,8 +851,8 @@ typedef struct {
 
 /* Five section pointers into a loaded file. g_motion_fighter_sections[i] for
  * the file loaded into g_motion_fighter_buffers[i] (motion_LoadFighterData:
- * move_scripts = record + 0x6C + (unk_03 - 1) * 6,
- * motion_entries..motion_bitstream = record + unk_04[0..3]);
+ * move_scripts = record + 0x6C + (move_id_row_count - 1) * 6,
+ * motion_entries..motion_bitstream = record + section_offsets[0..3]);
  * g_motion_common_sections for the common file (motion_LoadCommonData:
  * move_scripts = file + 0x14, the others file + its header words 1 / 2 / 4;
  * cpu_script_table unset). move_scripts: halfword streams
@@ -2473,7 +2473,8 @@ typedef struct {
  * Unk8003F62CRec.step_descs; 87A0 softbody_UpdateList steps one object per
  * descriptor): the object's g_softbody_slots index (slot_index), its flags
  * (snap; bit 0 picks softbody_SnapToPoints over softbody_Step), the object's
- * matrix, its point table end and its collision-volume block. */
+ * matrix, the start of its softbody nodes/edges buffer (node_buffer) and its
+ * collision-volume block. */
 typedef struct {
     /* 0x00 */ s16 slot_index;
     /* 0x02 */ u8 snap;
