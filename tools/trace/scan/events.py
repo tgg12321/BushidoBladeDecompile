@@ -26,6 +26,7 @@ every row for that capture/target/kind/phase inconclusive. No roles are inferred
 """
 
 import argparse
+import bisect
 from collections import Counter, defaultdict
 import csv
 import hashlib
@@ -88,33 +89,51 @@ def modified(relative, spec, events):
         e["ev"] in ("stub", "poke") for e in events)
 
 
-def limits(spec, events, end, entry, event):
+def limit_tally(events):
+    """One pass over a capture's events for limits(): the first hitmap record and hit counts
+    by (kind, at) and by (kind, normalized at, phase). Hits must already have passed
+    observation() (int kind, str at, str-or-None phase), so a dict lookup equals the
+    per-event comparison it replaces."""
+    hitmap = None
+    recorded = Counter()
+    phased = Counter()
+    for e in events:
+        if hitmap is None and e.get("ev") == "hitmap":
+            hitmap = e
+        if e.get("ev") == "hit":
+            recorded[(e.get("kind"), e.get("at"))] += 1
+            phased[(e.get("kind"), normalized_target(e.get("at", "")), e.get("phase"))] += 1
+    return {"hitmap": {} if hitmap is None else hitmap, "recorded": recorded, "phased": phased}
+
+
+def limits(spec, events, end, entry, event, tally=None):
+    """tally: limit_tally(events), reused across a capture's hits (computed when None)."""
     reasons = set()
     counter = f"Z{event['kind']}:{entry['at']}"
     if end is None:
         return {"missing_end_record", f"hit_count_mismatch:{counter}"}
+    if tally is None:
+        tally = limit_tally(events)
     if end.get("script_ended") is not True:
         reasons.add("script_not_ended")
     max_events = int(spec.get("max_events", 5000))
     if spec.get("hitmap") and "max_events" not in spec:
-        hitmap = next((e for e in events if e["ev"] == "hitmap"), {})
+        hitmap = tally["hitmap"]
         max_events = (len(hitmap.get("targets", [])) *
                       int(spec["hitmap"].get("per_phase", 1)) *
                       (len(spec.get("script", {}).get("phases", [])) + 1) + 5000)
     if end.get("events", 0) >= max_events:
         reasons.add(f"max_events_reached:{max_events}")
     # Runner totals include hm/stub hits and survive phase resets/disarming.
-    recorded = sum(e.get("ev") == "hit" and e.get("kind") == event["kind"]
-                   and e.get("at") == entry["at"] for e in events)
+    recorded = tally["recorded"][(event["kind"], entry["at"])]
     if end.get("hits", {}).get(counter) != recorded:
         reasons.add(f"hit_count_mismatch:{counter}")
     maximum = int(entry.get("max_hits", 1 << 30))
     if end.get("hits", {}).get(counter, 0) >= maximum:
         reasons.add(f"max_hits_reached:{counter}:{maximum}")
     if "per_phase" in entry:
-        count = sum(e.get("ev") == "hit" and e.get("kind") == event["kind"]
-                    and normalized_target(e.get("at", "")) == normalized_target(event["at"])
-                    and e.get("phase") == event.get("phase") for e in events)
+        count = tally["phased"][(event["kind"], normalized_target(event["at"]),
+                                 event.get("phase"))]
         if count >= int(entry["per_phase"]):
             reasons.add(f"per_phase_reached:{entry['per_phase']}")
     return reasons
@@ -176,7 +195,41 @@ def coverage_ranges(rows):
     return functions
 
 
-def resolve_ranges(events, resolved, functions):
+def range_index(functions):
+    """coverage_ranges() sorted by start, with a running maximum of the ends, for covering()."""
+    ordered = sorted(functions, key=lambda f: f[0])
+    ends, high = [], None
+    for _, end, _, _ in ordered:
+        high = end if high is None else max(high, end)
+        ends.append(high)
+    return [f[0] for f in ordered], ends, ordered
+
+
+def covering(index, pc):
+    """(name, attrib) of the smallest range holding pc when exactly one name has that size,
+    else None. Ranges may nest or overlap: every range at or below the last start <= pc is a
+    candidate until the running maximum end shows none further down can reach pc."""
+    starts, ends, ordered = index
+    holding = []
+    i = bisect.bisect_right(starts, pc) - 1
+    while i >= 0 and ends[i] > pc:
+        start, end, name, inferred = ordered[i]
+        if end > pc:
+            holding.append((end - start, name, inferred))
+        i -= 1
+    if not holding:
+        return None
+    smallest = min(size for size, _, _ in holding)
+    names = {name for size, name, _ in holding if size == smallest}
+    if len(names) != 1:
+        return None
+    inferred = any(bound for size, _, bound in holding if size == smallest)
+    return (names.pop(), "coverage_next_start_bound" if inferred else "coverage")
+
+
+def resolve_ranges(events, resolved, functions, deps=None, index=None):
+    """deps: when given, records {pc: covering()} for every pc looked up (cache validation)."""
+    index = range_index(functions) if index is None else index
     for event in events:
         if event["ev"] != "hit":
             continue
@@ -184,22 +237,29 @@ def resolve_ranges(events, resolved, functions):
         key = ((event["at"], event["kind"]), pc)
         if pc is None or key in resolved:
             continue
-        covering = [(end - start, name, inferred) for start, end, name, inferred in functions
-                    if start <= pc < end]
-        if covering:
-            smallest = min(size for size, _, _ in covering)
-            names = {name for size, name, _ in covering if size == smallest}
-            if len(names) == 1:
-                inferred = any(bound for size, _, bound in covering if size == smallest)
-                resolved[key] = (names.pop(), "coverage_next_start_bound" if inferred else "coverage")
+        found = covering(index, pc)
+        if deps is not None:
+            deps[pc] = found
+        if found is not None:
+            resolved[key] = found
 
 
-def report_sites(raw, events, digest, coverage):
+def coverage_starts(coverage):
+    """{capture_name: canonical starts} over the coverage rows (report_sites' offset check)."""
+    starts = {}
+    for row in coverage:
+        if row["capture_name"]:
+            starts.setdefault(row["capture_name"], set()).add(canonical(int(row["addr"], 0)))
+    return starts
+
+
+def report_sites(raw, events, digest, coverage, deps=None):
     """Invert the report's lossless top-site projection, not a symbol guess.
 
     Symbols.name is one-to-one for canonical PCs (its offset is retained).
     Counter preserves first occurrence for ties. Hit-map hits are explicitly
     excluded by gdbtrace.report and therefore have no site list to invert.
+    deps: when given, records {name: coverage start set or None} for every name checked.
     """
     if raw is None:
         return {}
@@ -211,10 +271,8 @@ def report_sites(raw, events, digest, coverage):
         if event.get("ev") == "hit" and not event.get("hm"):
             groups[(event["at"], event["kind"])].append(event)
     resolved = {}
-    starts = {}
-    for row in coverage:
-        if row["capture_name"]:
-            starts.setdefault(row["capture_name"], set()).add(canonical(int(row["addr"], 0)))
+    initial = coverage_starts(coverage)
+    starts = {name: set(addrs) for name, addrs in initial.items()}
     for section in re.split(r"^## ", text, flags=re.M)[1:]:
         heading = re.match(r"(.+?)(?: \(Z([234]) watch\))?: \d+ hits\n", section)
         if not heading:
@@ -242,6 +300,8 @@ def report_sites(raw, events, digest, coverage):
                 continue
             name, _, offset = label.partition("+0x")
             start = pc - int(offset or "0", 16)
+            if deps is not None:
+                deps[name] = initial.get(name)
             if name in starts and starts[name] != {start}:
                 raise ValueError("report named offset disagrees with function start: " + label)
             starts[name] = {start}
@@ -376,10 +436,14 @@ def capture_bytes(blobs, manifest_path, manifest):
     return store.resolve(path.parent, path.name, manifest, allow_local=False).read_bytes()
 
 
-def capture_rows(manifest_path, relative, blobs, coverage, functions):
+def capture_rows(manifest_path, relative, blobs, coverage, functions, deps=None):
     """[(sort key, TSV cells)] for one capture. Every group key starts with the capture, so a
-    capture's rows depend only on its own inputs and the coverage list."""
+    capture's rows depend only on its own inputs and the coverage list. The coverage list is
+    read only by report_sites (each checked name's starts) and resolve_ranges (each looked-up
+    pc's covering()); deps, when given, receives exactly those as {"starts": .., "ranges": ..}."""
     groups = {}
+    if deps is not None:
+        deps.update(starts={}, ranges={})
     try:
         manifest = json.loads(blobs[manifest_path])
         if manifest.get("q124_complete") is not True:
@@ -407,13 +471,15 @@ def capture_rows(manifest_path, relative, blobs, coverage, functions):
         declared = declarations(spec)
         if not any(selected(e, declared) for e in events):
             return []
-        resolved = report_sites(blobs.get(manifest_path.with_name("report.md")), events, digest, coverage)
-        resolve_ranges(events, resolved, functions)
+        resolved = report_sites(blobs.get(manifest_path.with_name("report.md")), events, digest,
+                                coverage, None if deps is None else deps["starts"])
+        resolve_ranges(events, resolved, functions, None if deps is None else deps["ranges"])
         ends = [e for e in events if e["ev"] == "end"]
         if len(ends) > 1:
             raise ValueError("multiple end records")
         end = ends[0] if ends else None
         capture = relative.as_posix() + "@" + digest[:12]
+        tally = limit_tally(events)
         for event in events:
             if not selected(event, declared):
                 continue
@@ -421,7 +487,7 @@ def capture_rows(manifest_path, relative, blobs, coverage, functions):
             key, value, reasons = observation(event, resolved, entry)
             reasons.update(limits(spec, events, end,
                                   declared[(normalized_target(event["at"]), event["kind"])],
-                                  event))
+                                  event, tally))
             group = groups.setdefault((capture, *key), dict(count=0, values=set(),
                                                  captures=set(), reasons=set()))
             group["count"] += 1
@@ -443,15 +509,18 @@ def capture_rows(manifest_path, relative, blobs, coverage, functions):
     return rows
 
 
-# Incremental cache. A capture's rows are a pure function of this file, the coverage list, its
-# runtime-relative path and its manifest, report and (indexed) capture.jsonl blobs: a store
+# Incremental cache. A capture's rows are a pure function of this file, its runtime-relative
+# path, its manifest, report and (indexed) capture.jsonl blobs, and the part of the coverage list
+# capture_rows reads (its deps): the key covers the first four, and an entry is used only when
+# its recorded deps evaluate the same against the current coverage list (deps_hold), so a
+# coverage edit re-renders only the captures with a site or checked name it touches. A store
 # capture's bytes are pinned by the manifest's outputs sha1 (store.resolve verifies it), so a
 # store file is read only on a miss (a hit does not prove the store is reachable: the store's
 # own checks do that). The cache lives outside the repository, so the gate
 # mirror's `git clean` keeps it: $BB2_EVENTS_CACHE, else <$XDG_CACHE_HOME or
 # ~/.cache>/bb2/events-cache.json. An unreadable or malformed cache or entry is a miss;
 # `--no-cache` renders every capture.
-CACHE_VERSION = 1
+CACHE_VERSION = 2
 CACHE_KEEP_SECS = 30 * 86400  # entries no build used for this long are pruned
 KEY_LEN = 9  # the capture, then observation()'s key
 CELL_TYPES = [str] * 8 + [int, str, int, str, int, str]
@@ -466,9 +535,9 @@ def cache_path():
     return base / "bb2" / "events-cache.json"
 
 
-def input_key(source, coverage_raw, relative, blobs, manifest_path):
+def input_key(source, relative, blobs, manifest_path):
     digest = hashlib.sha1(b"events-cache\0%d\0" % CACHE_VERSION)
-    for part in (source, coverage_raw, relative.as_posix().encode("utf-8"), blobs[manifest_path],
+    for part in (source, relative.as_posix().encode("utf-8"), blobs[manifest_path],
                  blobs.get(manifest_path.with_name("report.md")),
                  blobs.get(manifest_path.with_name("capture.jsonl"))):
         if part is None:
@@ -490,6 +559,36 @@ def load_cache(path):
     return data["entries"]
 
 
+def encode_deps(deps):
+    """JSON form of capture_rows' deps (sorted, so equal deps give equal cache text)."""
+    return {"starts": sorted([name, None if addrs is None else sorted(addrs)]
+                             for name, addrs in deps["starts"].items()),
+            "ranges": sorted([pc, *(found or (None, None))] for pc, found in deps["ranges"].items())}
+
+
+def deps_hold(entry, index, starts):
+    """Whether the entry's recorded deps evaluate the same against the current coverage list
+    (index: range_index(functions), starts: coverage_starts(coverage)). Malformed: False."""
+    deps = entry.get("deps")
+    if not (isinstance(deps, dict) and isinstance(deps.get("starts"), list)
+            and isinstance(deps.get("ranges"), list)):
+        return False
+    for item in deps["starts"]:
+        if not (isinstance(item, list) and len(item) == 2 and type(item[0]) is str
+                and (item[1] is None or isinstance(item[1], list) and all(
+                    type(a) is int for a in item[1]))):
+            return False
+        current = starts.get(item[0])
+        if (None if current is None else sorted(current)) != item[1]:
+            return False
+    for item in deps["ranges"]:
+        if not (isinstance(item, list) and len(item) == 3 and type(item[0]) is int):
+            return False
+        if list(covering(index, item[0]) or (None, None)) != item[1:]:
+            return False
+    return True
+
+
 def cached_rows(entry):
     """The entry's rows as capture_rows returns them, or None when it is not well-formed."""
     rows = entry.get("rows") if isinstance(entry, dict) else None
@@ -508,10 +607,11 @@ def cached_rows(entry):
 
 
 def save_cache(path, old, used, now):
+    """used: {key: (rows, encoded deps)} for this build's captures."""
     entries = {k: v for k, v in old.items() if k not in used and isinstance(v, dict)
                and type(v.get("t")) in (int, float) and now - v["t"] < CACHE_KEEP_SECS}
-    entries.update({k: {"t": now, "rows": [[list(key), cells] for key, cells in rows]}
-                    for k, rows in used.items()})
+    entries.update({k: {"t": now, "rows": [[list(key), cells] for key, cells in rows],
+                        "deps": deps} for k, (rows, deps) in used.items()})
     tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -533,6 +633,8 @@ def render(runtime=None, cache=None):
     coverage_raw = blobs.get(runtime / "matrix/coverage.tsv")
     coverage = coverage_rows(coverage_raw)
     functions = coverage_ranges(coverage)
+    index = range_index(functions) if cache else None
+    starts = coverage_starts(coverage) if cache else None
     source = Path(__file__).read_bytes() if cache else b""
     old = load_cache(cache) if cache else {}
     used = {}
@@ -545,12 +647,20 @@ def render(runtime=None, cache=None):
                 continue
             got = None
             if cache:
-                key = input_key(source, coverage_raw, relative, blobs, manifest_path)
-                got = cached_rows(old.get(key))
+                key = input_key(source, relative, blobs, manifest_path)
+                entry = old.get(key)
+                got = cached_rows(entry)
+                if got is not None and deps_hold(entry, index, starts):
+                    deps = entry["deps"]
+                else:
+                    got = None
             if got is None:
-                got = capture_rows(manifest_path, relative, blobs, coverage, functions)
+                deps = {} if cache else None
+                got = capture_rows(manifest_path, relative, blobs, coverage, functions, deps)
+                if cache:
+                    deps = encode_deps(deps)
             if cache:
-                used[key] = got
+                used[key] = (got, deps)
             rows.extend(got)
     finally:  # a failing capture keeps the rows rendered before it for the next build
         if cache:

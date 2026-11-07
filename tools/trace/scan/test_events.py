@@ -560,6 +560,77 @@ class EventsTest(unittest.TestCase):
         self.assertEqual(sorted(rendered), ["a-first", "sample"])
         self.assertEqual(out, self.render())
 
+    def test_coverage_edit_misses_only_the_captures_that_read_it(self):
+        # sample resolves through its report (checks names caller, func_80030000); a-first has
+        # no report, so its sites 0x80020000 / 0x80030010 go through the coverage ranges.
+        other = self.second_capture()
+        (other / "report.md").unlink()
+        matrix = self.runtime / "matrix"
+        matrix.mkdir()
+        rows = [b"addr\tcapture_name\tsize\n", b"0x80050000\tunrelated\t0x10\n"]
+
+        def write():
+            (matrix / "coverage.tsv").write_bytes(b"".join(rows))
+        write()
+        self.cached()
+        rendered = []
+        real = events.capture_rows
+
+        def spy(manifest_path, *a):
+            rendered.append(manifest_path.parent.name)
+            return real(manifest_path, *a)
+        for row, misses in ((b"0x80060000\telsewhere\t0x10\n", []),
+                            (b"0x80030000\twriter\t0x100\n", ["a-first"]),
+                            (b"0x80020000\tcaller\t0x10\n", ["a-first", "sample"])):
+            rows.append(row)
+            write()
+            rendered.clear()
+            with patch.object(events, "capture_rows", side_effect=spy):
+                out = self.cached()
+            self.assertEqual(sorted(rendered), misses, row)
+            self.assertEqual(out, self.render(), row)
+        self.assertIn("\twriter\t", out)
+
+    def test_covering_index_matches_a_scan_of_every_range(self):
+        import random
+        rng = random.Random(1)
+        for _ in range(200):
+            functions = []
+            for _ in range(rng.randrange(0, 12)):
+                start = rng.randrange(0, 64)
+                functions.append((start, start + rng.randrange(1, 40),
+                                  rng.choice("abc"), rng.random() < 0.5))
+            rng.shuffle(functions)
+            index = events.range_index(functions)
+            for pc in range(0, 110):
+                holding = [(e - s, n, i) for s, e, n, i in functions if s <= pc < e]
+                expected = None
+                if holding:
+                    smallest = min(h[0] for h in holding)
+                    names = {n for size, n, _ in holding if size == smallest}
+                    if len(names) == 1:
+                        expected = (names.pop(), "coverage_next_start_bound" if any(
+                            i for size, _, i in holding if size == smallest) else "coverage")
+                self.assertEqual(events.covering(index, pc), expected, (functions, pc))
+
+    def test_limit_tally_counts_match_a_scan_of_every_hit(self):
+        hits = [dict(ev="hit", kind=k, at=at, phase=ph, hm=hm)
+                for k in (0, 2) for at in ("0x80010000", "0xA0010000", "g_x")
+                for ph in ("p", "q", None) for hm in (False, True)][::2] * 3
+        records = [dict(ev="start"), dict(ev="hitmap", targets=[1, 2]), *hits,
+                   dict(ev="hitmap", targets=[]), dict(ev="end")]
+        tally = events.limit_tally(records)
+        self.assertEqual(tally["hitmap"], records[1])
+        for k in (0, 2, 3):
+            for at in ("0x80010000", "0xA0010000", "g_x"):
+                self.assertEqual(tally["recorded"][(k, at)], sum(
+                    e["kind"] == k and e["at"] == at for e in hits))
+                for ph in ("p", "q", None):
+                    self.assertEqual(tally["phased"][(k, events.normalized_target(at), ph)], sum(
+                        e["kind"] == k and events.normalized_target(e["at"]) ==
+                        events.normalized_target(at) and e["phase"] == ph for e in hits))
+        self.assertEqual(events.limit_tally([dict(ev="end")])["hitmap"], {})
+
     def test_corrupt_or_malformed_cache_falls_back_to_a_full_render(self):
         full = self.render()
         path = self.root / "cache" / "events.json"
@@ -574,6 +645,19 @@ class EventsTest(unittest.TestCase):
                                         "entries": {key: {"t": 0, "rows": rows}}}),
                             encoding="utf-8")
             self.assertEqual(self.cached(), full, rows)
+        # well-formed rows with missing, malformed or stale coverage deps are a miss too
+        for deps in (None, [], {"starts": []}, {"starts": [["caller"]], "ranges": []},
+                     {"starts": [["caller", [1]]], "ranges": []},
+                     {"starts": [], "ranges": [[True, None, None]]},
+                     {"starts": [], "ranges": [[0x80020000, "x", "coverage"]]}):
+            bad = dict(entry, rows=[[k, ["poisoned", *c[1:]]] for k, c in entry["rows"]])
+            if deps is None:
+                bad.pop("deps")
+            else:
+                bad["deps"] = deps
+            path.write_text(json.dumps({"version": events.CACHE_VERSION,
+                                        "entries": {key: bad}}), encoding="utf-8")
+            self.assertEqual(self.cached(), full, deps)
         for text in ("not json", "[]", '{"version": 0, "entries": {}}', '{"version": 1}'):
             path.write_text(text, encoding="utf-8")
             self.assertEqual(self.cached(), full, text)
