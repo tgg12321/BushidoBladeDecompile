@@ -2334,7 +2334,7 @@ typedef struct Unk80045878Obj {
  * those (cell_world_x / cell_world_z = the grid cell's column / row * 2000 -
  * 32000); gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
  * and gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes set
- * unk6 and the draw_flags bits and queue them on g_draw_queue. */
+ * detail_level and the draw_flags bits and queue them on g_draw_queue. */
 typedef struct {
     s16 draw_kind;              /* +0x00 */
     s16 cell_reloc_block_id;    /* +0x02 */
