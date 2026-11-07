@@ -1,4 +1,4 @@
-glabel func_80023D08
+glabel fighter_RequestPoseBlendStep512
     /* 14508 80023D08 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 1450C 80023D0C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 14510 80023D10 2D8F000C */  jal        fighter_RequestPoseBlend
@@ -7,4 +7,4 @@ glabel func_80023D08
     /* 1451C 80023D1C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 14520 80023D20 0800E003 */  jr         $ra
     /* 14524 80023D24 00000000 */   nop
-endlabel func_80023D08
+endlabel fighter_RequestPoseBlendStep512

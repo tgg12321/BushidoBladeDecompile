@@ -992,7 +992,7 @@ glabel fighter_Update
     /* 1555C 80024D5C 03006214 */  bne        $v1, $v0, .L80024D6C
     /* 15560 80024D60 00000000 */   nop
   .L80024D64:
-    /* 15564 80024D64 428F000C */  jal        func_80023D08
+    /* 15564 80024D64 428F000C */  jal        fighter_RequestPoseBlendStep512
     /* 15568 80024D68 21202002 */   addu      $a0, $s1, $zero
   .L80024D6C:
     /* 1556C 80024D6C 5800228E */  lw         $v0, 0x58($s1)

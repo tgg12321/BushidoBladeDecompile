@@ -4746,7 +4746,7 @@ void fighter_RequestPoseBlend(
     }
 }
 
-void func_80023D08(Unk80101EC8Record *fighter_record) {
+void fighter_RequestPoseBlendStep512(Unk80101EC8Record *fighter_record) {
     fighter_RequestPoseBlend(fighter_record, 0x200);
 }
 
@@ -5266,7 +5266,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
     fighter_record->remaining_turn -= temp;
     if (fighter_record->move_started != MOVE_START_NONE) {
         if (fighter_record->blend_into_move != 0) {
-            func_80023D08(fighter_record);
+            fighter_RequestPoseBlendStep512(fighter_record);
         } else if (fighter_record->move_kind == 0x1C) {
             fighter_RequestPoseBlend(fighter_record, 0x400);
         } else {
@@ -5276,7 +5276,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
                 fighter_record->move_kind == 0x15 ||
                 fighter_record->move_kind == 0xA ||
                 fighter_record->move_kind == 0x2D) {
-                func_80023D08(fighter_record);
+                fighter_RequestPoseBlendStep512(fighter_record);
             } else {
                 switch ((fighter_record->prev_move_kind << 8) |
                         fighter_record->move_kind) {
@@ -5287,7 +5287,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
                 case 0x3022:
                 case 0x1913:
                 case 0x3122:
-                    func_80023D08(fighter_record);
+                    fighter_RequestPoseBlendStep512(fighter_record);
                     break;
                 }
             }
