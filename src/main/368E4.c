@@ -1760,8 +1760,8 @@ void gpu_QueueVramScroll(s32 scroll_index) {
         s32 sy = y + source_y_offset;
         s32 h1 = scroll_height - scroll_phase;
         /* FAKE: strip two's height taken as an s16 at the top of the level;
-         * rect.h = var_15 directly, an s32 copy or a (s16) cast drops the t1
-         * copy: score 57 */
+         * rect.h = scroll_phase directly, an s32 copy or a (s16) cast drops the
+         * t1 copy: score 57 */
         s16 h2 = scroll_phase;
         rect.x = x + source_x_offset;
         rect.y = sy;
@@ -2167,8 +2167,8 @@ s32 snd_CopySelectedPackSectionsAndLoadVabPacks(
     header_cursor_addr = output_addr;
     tail_off = tbl[count + 1];
     first_section_end_offset = tbl[2];
-    /* FAKE: var_s7 built in two steps; `var_s7 = arg0 + tail_off` swaps
-     * s7 / s8: score 6 (Q129) */
+    /* FAKE: var_s7 built in two steps; `var_s7 = pack_table_addr + tail_off`
+     * swaps s7 / s8: score 6 (Q129) */
     var_s7 = pack_table_addr;
     var_s7 += tail_off;
     first_section_offset = tbl[1];

@@ -388,9 +388,9 @@ s32 snd_MoveVabBody(
 
 /* SPU VAB compaction: sorts the resident VAB slots 1..15 by SPU address, then
  * walks them from the end of slot 0, moving down (snd_MoveVabBody) the first
- * slot that is not already contiguous and every slot after it. `arg0` is never
- * read. `addr` is assigned inside the first (otherwise empty) loop: the target
- * computes it after the loop's `vab_count > 0` guard. */
+ * slot that is not already contiguous and every slot after it. `loading_vab_id`
+ * is never read. `addr` is assigned inside the first (otherwise empty) loop:
+ * the target computes it after the loop's `vab_count > 0` guard. */
 s32 snd_CompactVabBodies(s16 loading_vab_id, s32 base) {
     s16 sorted_vab_ids[16];
     s16 vab_count;
