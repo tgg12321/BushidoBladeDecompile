@@ -3426,7 +3426,8 @@ void motion_LoadFighterData(
             cdrom_WaitIdle();
             g_motion_fighter_sections[i].move_scripts =
                 (u16 *)((s32)g_motion_fighter_buffers[i] + 0x6C +
-                        (g_motion_fighter_buffers[i]->unk_03 - 1) * 6);
+                        (g_motion_fighter_buffers[i]->move_id_row_count - 1) *
+                            6);
             g_motion_fighter_sections[i].motion_entries =
                 (u16 *)((s32)g_motion_fighter_buffers[i] +
                         g_motion_fighter_buffers[i]->section_offsets[0]);

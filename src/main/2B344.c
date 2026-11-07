@@ -2786,7 +2786,7 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *params, u8 *cur) {
     cur = ((u32)cur & 3) ? cur + 2 : cur;
     rec->step_desc.slot_index = rec->slot_index;
     rec->step_desc.object_matrix = &obj->node.xf.mat;
-    rec->step_desc.unk8 = obj->softbody_nodes;
+    rec->step_desc.node_buffer = obj->softbody_nodes;
     rec->step_desc.colliders = &rec->inner.coll;
     rec->step_desc.snap = 0;
     rec->step_desc.unk3 = 0;

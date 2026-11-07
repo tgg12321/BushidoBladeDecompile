@@ -837,7 +837,7 @@ typedef struct {
     u8 pad00[3];
     /* motion_LoadFighterData: g_motion_fighter_sections[slot].move_scripts =
      * record + 0x6C + (unk_03 - 1) * 6 */
-    u8 unk_03;
+    u8 move_id_row_count;
     /* g_motion_fighter_sections[slot].motion_entries .. motion_bitstream =
      * record + section_offsets[k] (motion_LoadFighterData) */
     s32 section_offsets[4];
@@ -2479,7 +2479,7 @@ typedef struct {
     /* 0x02 */ u8 snap;
     /* 0x03 */ u8 unk3;
     /* 0x04 */ MATRIX *object_matrix;
-    /* 0x08 */ u8 *unk8;
+    /* 0x08 */ u8 *node_buffer;
     /* 0x0C */ struct Unk8003F6D8Coll *colliders;
 } Unk80017FA0Rec;
 
