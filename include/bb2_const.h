@@ -97,4 +97,10 @@ enum WeaponLiveState {
     WEAPON_LIVE_FIRST_FRAME = 2,
 };
 
+enum FightChoiceMenuItem {
+    FIGHT_CHOICE_REMATCH = 0,
+    FIGHT_CHOICE_SUB_MENU = 1,
+    FIGHT_CHOICE_TOP_MENU = 2,
+};
+
 #endif /* BB2_CONST_H */

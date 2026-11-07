@@ -2357,8 +2357,8 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
         if ((g_pad_state.pressed & 0x400040) != 0) {
             snd_QueueSound(1, 0x7F, 0x7F);
             g_fight_choice_confirm_delay =
-                (g_fight_choice_menu_cursor == 0) ? 1 : 0x3C;
-            if (g_fight_choice_menu_cursor != 0)
+                (g_fight_choice_menu_cursor == FIGHT_CHOICE_REMATCH) ? 1 : 0x3C;
+            if (g_fight_choice_menu_cursor != FIGHT_CHOICE_REMATCH)
                 return;
             g_fighter_records[g_fight_followup_fighter_index == 0]
                 .draw_move_set = 0;
@@ -2371,7 +2371,7 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
         }
         return;
     }
-    if (g_fight_choice_menu_cursor == 0) {
+    if (g_fight_choice_menu_cursor == FIGHT_CHOICE_REMATCH) {
         g_prim_buf_cursor +=
             gpu_DrawSelectedStretchedSheetPair(0, (s32)g_prim_buf_cursor, 1) /
             4;
@@ -2379,7 +2379,7 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
     g_fight_choice_confirm_delay = g_fight_choice_confirm_delay + 1;
     if (g_fight_choice_confirm_delay < 0x3C)
         return;
-    if (g_fight_choice_menu_cursor == 0) {
+    if (g_fight_choice_menu_cursor == FIGHT_CHOICE_REMATCH) {
         g_fight_reinit_reuses_assets = 1;
         g_fight_menu_restart_count = g_fight_menu_restart_count + 1;
         g_fight_nearest_start_pair_index = fight_FindNearestStartPair(
@@ -2390,14 +2390,14 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
         g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
         return;
     }
-    if (g_fight_choice_menu_cursor == 1) {
+    if (g_fight_choice_menu_cursor == FIGHT_CHOICE_SUB_MENU) {
         cdrom_PauseAndWait();
         snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
         g_menu_mode_subflow_init_pending = 1;
         g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
         return;
     }
-    if (g_fight_choice_menu_cursor == 2) {
+    if (g_fight_choice_menu_cursor == FIGHT_CHOICE_TOP_MENU) {
         cdrom_PauseAndWait();
         snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
         g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;

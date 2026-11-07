@@ -968,7 +968,7 @@ void fight_UpdateTimeRecordPresentation(void) {
 
 void fight_InitRotatingViewThreeOptionChoice(void) {
     gpu_HideResetAndClear();
-    g_fight_choice_menu_cursor = 0;
+    g_fight_choice_menu_cursor = FIGHT_CHOICE_REMATCH;
     g_fight_choice_confirm_delay = 0;
     g_handler_frame_counter = 0;
     g_main_loop_handler_index = MAIN_LOOP_ROTATING_MENU_UPDATE;
@@ -1015,12 +1015,12 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
         if ((g_pad_state.pressed & 0x400040) != 0) {
             snd_QueueSound(1, 0x7F, 0x7F);
             g_fight_choice_confirm_delay =
-                (g_fight_choice_menu_cursor == 0) ? 1 : 0x3C;
+                (g_fight_choice_menu_cursor == FIGHT_CHOICE_REMATCH) ? 1 : 0x3C;
         }
         return;
     }
 
-    if (g_fight_choice_menu_cursor == 0) {
+    if (g_fight_choice_menu_cursor == FIGHT_CHOICE_REMATCH) {
         g_prim_buf_cursor +=
             gpu_DrawSelectedStretchedSheetPair(0, (s32)g_prim_buf_cursor, 1) /
             4;
@@ -1030,7 +1030,7 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
         return;
 
     cdrom_PauseAndWait();
-    if (g_fight_choice_menu_cursor == 0) {
+    if (g_fight_choice_menu_cursor == FIGHT_CHOICE_REMATCH) {
         if (g_fight_mode_selector == FIGHT_MODE_TEAM) {
             gpu_ResetGraphMode1();
             motion_InvalidateMarkedNdataPackAndResetLoadCaches();
@@ -1045,13 +1045,13 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
         g_main_loop_handler_index = MAIN_LOOP_FIGHT_INIT;
         return;
     }
-    if (g_fight_choice_menu_cursor == 1) {
+    if (g_fight_choice_menu_cursor == FIGHT_CHOICE_SUB_MENU) {
         snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
         g_menu_mode_subflow_init_pending = 1;
         g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
         return;
     }
-    if (g_fight_choice_menu_cursor == 2) {
+    if (g_fight_choice_menu_cursor == FIGHT_CHOICE_TOP_MENU) {
         snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
         g_main_loop_handler_index = MAIN_LOOP_ROW_MENU_INIT;
     }
