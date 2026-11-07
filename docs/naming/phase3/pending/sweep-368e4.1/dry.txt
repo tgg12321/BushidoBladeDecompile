@@ -1,0 +1,79 @@
+sweep-368e4.1 (naming-e 2026-11-06): 28 local / parameter bindings in 21 functions across 2 files (368E4.c 140, snd.c 3); research rows 29, 1 dropped by the drafter (snd_CopySelectedPackSectionsAndLoadVabPacks:var_14=pack_count).
+Tree: ln-naming-e = df15e20c9 (clean). Run in WSL via a script file (dry.py + run.sh under main tmp/sweep-368e4.1-draft, since removed; NAMING_KEYCHECK_ROOT = the worktree, venv active).
+SKIPPED as a tree dry run: no unapplied-tree dry mode for f:l=n pairs. Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(read_working_tree(), pairs, {}).
+The 28 pairs of pairs.txt together were accepted (143 token substitutions: 368E4.c 140, snd.c 3; no include/ file touched). Each pair was also run alone: all accepted (alone counts sum to 143) and every pair's alone line list equals the drafter's independent token scan (28/28; comments and strings blanked, ./-> member tokens excluded, signature plus body by brace matching, forward prototype counted when it spells the parameter). Lines are mapped from the working-tree text through the token index over naming_keycheck.code_spans.
+Every destination name was grepped whole-word in src/ include/ symbol_addrs.txt: hits are only other functions' locals / parameters, members, or comment words (screened by hand); scoped_plan accepts all names against bindings, file scope, enums and macros. No name occurs as a token in its own function. Spellings shared across functions (cursor x2, yaw x2, block_id x3) are accepted together.
+Dropped by the drafter (not in pairs.txt): snd_CopySelectedPackSectionsAndLoadVabPacks:var_14=pack_count (scoped_plan alone ACCEPT 5, lines 2160,2214,2217,2219,2221; dropped on evidence, see notes.txt).
+Required comment edits: 368E4.c:1763-1765 (FAKE spells var_15), 368E4.c:2168-2169 (FAKE spells arg0), snd.c:389-393 (header spells arg0); a comment scan of every function range (with 1500 chars of leading comment) finds no other comment spelling an old name.
+Per-pair substitutions (function:old=new count (lines)):
+  camera_CalcAngles:var_1=view_dir 9 (665,673,674,674,675,675,676,678,678)
+  camera_CalcAngles:var_3=yaw 5 (667,674,675,676,679)
+  gpu_LoadTimGroupClutsOffset:arg0=cursor 12 (1300,1304,1305,1307,1308,1309,1322,1323,1324,1325,1326,1327)
+  gpu_LoadTimGroupClutsOffset:arg1=group_index 4 (1300,1304,1304,1306)
+  gpu_QueueVramScroll:var_15=scroll_phase 6 (1742,1745,1762,1766,1771,1785)
+  gpu_ReadTimGroupEntry:arg0=cursor 16 (1368,1370,1371,1374,1375,1376,1379,1380,1381,1382,1383,1384,1385,1386,1387,1388)
+  gpu_TintVramRow:arg4=mr 3 (1510,1542,1551)
+  math_Grayscale3:arg1=green 4 (1502,1504,1504,1506)
+  math_GrayscaleRgb555:var_t0=countdown 5 (1471,1475,1476,1480,1498)
+  math_SetLightPlaneProjection:v0=x_shear 4 (572,582,582,583)
+  math_SetLightPlaneProjection:v1=z_shear 4 (573,576,576,584)
+  math_UnorderedPairIndex:arg0=row_length 3 (1854,1858,1859)
+  math_UnorderedPairIndex:arg1=lo 3 (1854,1857,1861)
+  math_UnorderedPairIndex:arg2=hi 2 (1854,1861)
+  motion_RebasePlaybackBlock:a0=block_id 1 (413)
+  node_OrientAndQueueViewOffsetNode:var_5=horizontal_length 4 (718,732,735,742)
+  node_QueueTableEntryNodePairUnderSlotNode:arg0=entry_index 2 (2075,2087)
+  node_QueueTableEntryNodePairUnderSlotNode:arg2=link_index 2 (2075,2087)
+  node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable:arg0=yaw 4 (1632,1653,1654,1662)
+  resource_RebaseLoadedBlockSections:a0=block_id 1 (267)
+  resource_RebaseNodeAssetBlock:a0=block_id 2 (323,373)
+  resource_SelectRetainedSubblockOrApplyHeaderSections:v0=offset_cursor 14 (230,238,239,240,241,241,242,243,244,245,246,247,248,249)
+  snd_CopySelectedPackSectionsAndLoadVabPacks:arg0=pack_table_addr 5 (2145,2162,2170,2173,2177)
+  wave_Draw:var_3=p 2 (966,1005)
+  wave_Init:a0=column_index 13 (796,815,882,884,886,911,911,911,912,918,921,922,924)
+  wave_Init:a3=row 10 (795,813,822,859,885,887,906,910,915,916)
+  snd_CompactVabBodies:arg0=loading_vab_id 1 (394)
+  snd_FlushSoundQueue:var_0=key_status 2 (566,574)
+
+Line widths after substitution (over 80; python tools/format.py reflows them in the naming commit; token-preserving; per-line deltas of all pairs together):
+  368E4.c 2075 (78->91)
+  368E4.c 2087 (69->82)
+  368E4.c 2145 (76->87)
+0 rows flagged.
+
+Raw driver output (HEAD df15e20c9, scoped_plan together then alone per pair; line numbers are working-tree lines):
+SET 28 pairs ACCEPT total 143
+  SETLINES 368E4.c [230, 238, 239, 240, 241, 241, 242, 243, 244, 245, 246, 247, 248, 249, 267, 323, 373, 413, 572, 573, 576, 576, 582, 582, 583, 584, 665, 667, 673, 674, 674, 674, 675, 675, 675, 676, 676, 678, 678, 679, 718, 732, 735, 742, 795, 796, 813, 815, 822, 859, 882, 884, 885, 886, 887, 906, 910, 911, 911, 911, 912, 915, 916, 918, 921, 922, 924, 966, 1005, 1300, 1300, 1304, 1304, 1304, 1305, 1306, 1307, 1308, 1309, 1322, 1323, 1324, 1325, 1326, 1327, 1368, 1370, 1371, 1374, 1375, 1376, 1379, 1380, 1381, 1382, 1383, 1384, 1385, 1386, 1387, 1388, 1471, 1475, 1476, 1480, 1498, 1502, 1504, 1504, 1506, 1510, 1542, 1551, 1632, 1653, 1654, 1662, 1742, 1745, 1762, 1766, 1771, 1785, 1854, 1854, 1854, 1857, 1858, 1859, 1861, 1861, 2075, 2075, 2087, 2087, 2145, 2162, 2170, 2173, 2177]
+  SETLINES snd.c [394, 566, 574]
+ALONE camera_CalcAngles:var_1=view_dir ACCEPT 9 368E4.c [665, 673, 674, 674, 675, 675, 676, 678, 678]
+ALONE camera_CalcAngles:var_3=yaw ACCEPT 5 368E4.c [667, 674, 675, 676, 679]
+ALONE gpu_LoadTimGroupClutsOffset:arg0=cursor ACCEPT 12 368E4.c [1300, 1304, 1305, 1307, 1308, 1309, 1322, 1323, 1324, 1325, 1326, 1327]
+ALONE gpu_LoadTimGroupClutsOffset:arg1=group_index ACCEPT 4 368E4.c [1300, 1304, 1304, 1306]
+ALONE gpu_QueueVramScroll:var_15=scroll_phase ACCEPT 6 368E4.c [1742, 1745, 1762, 1766, 1771, 1785]
+ALONE gpu_ReadTimGroupEntry:arg0=cursor ACCEPT 16 368E4.c [1368, 1370, 1371, 1374, 1375, 1376, 1379, 1380, 1381, 1382, 1383, 1384, 1385, 1386, 1387, 1388]
+ALONE gpu_TintVramRow:arg4=mr ACCEPT 3 368E4.c [1510, 1542, 1551]
+ALONE math_Grayscale3:arg1=green ACCEPT 4 368E4.c [1502, 1504, 1504, 1506]
+ALONE math_GrayscaleRgb555:var_t0=countdown ACCEPT 5 368E4.c [1471, 1475, 1476, 1480, 1498]
+ALONE math_SetLightPlaneProjection:v0=x_shear ACCEPT 4 368E4.c [572, 582, 582, 583]
+ALONE math_SetLightPlaneProjection:v1=z_shear ACCEPT 4 368E4.c [573, 576, 576, 584]
+ALONE math_UnorderedPairIndex:arg0=row_length ACCEPT 3 368E4.c [1854, 1858, 1859]
+ALONE math_UnorderedPairIndex:arg1=lo ACCEPT 3 368E4.c [1854, 1857, 1861]
+ALONE math_UnorderedPairIndex:arg2=hi ACCEPT 2 368E4.c [1854, 1861]
+ALONE motion_RebasePlaybackBlock:a0=block_id ACCEPT 1 368E4.c [413]
+ALONE node_OrientAndQueueViewOffsetNode:var_5=horizontal_length ACCEPT 4 368E4.c [718, 732, 735, 742]
+ALONE node_QueueTableEntryNodePairUnderSlotNode:arg0=entry_index ACCEPT 2 368E4.c [2075, 2087]
+ALONE node_QueueTableEntryNodePairUnderSlotNode:arg2=link_index ACCEPT 2 368E4.c [2075, 2087]
+ALONE node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable:arg0=yaw ACCEPT 4 368E4.c [1632, 1653, 1654, 1662]
+ALONE resource_RebaseLoadedBlockSections:a0=block_id ACCEPT 1 368E4.c [267]
+ALONE resource_RebaseNodeAssetBlock:a0=block_id ACCEPT 2 368E4.c [323, 373]
+ALONE resource_SelectRetainedSubblockOrApplyHeaderSections:v0=offset_cursor ACCEPT 14 368E4.c [230, 238, 239, 240, 241, 241, 242, 243, 244, 245, 246, 247, 248, 249]
+ALONE snd_CopySelectedPackSectionsAndLoadVabPacks:arg0=pack_table_addr ACCEPT 5 368E4.c [2145, 2162, 2170, 2173, 2177]
+ALONE wave_Draw:var_3=p ACCEPT 2 368E4.c [966, 1005]
+ALONE wave_Init:a0=column_index ACCEPT 13 368E4.c [796, 815, 882, 884, 886, 911, 911, 911, 912, 918, 921, 922, 924]
+ALONE wave_Init:a3=row ACCEPT 10 368E4.c [795, 813, 822, 859, 885, 887, 906, 910, 915, 916]
+ALONE snd_CompactVabBodies:arg0=loading_vab_id ACCEPT 1 snd.c [394]
+ALONE snd_FlushSoundQueue:var_0=key_status ACCEPT 2 snd.c [566, 574]
+
+Independent token scan use lines per pair, equal to the ALONE lines for all 28.
+
+After pre-apply: pair gpu_LoadTimGroupClutsOffset:arg1=group_index removed (FAIL); every other pair was accepted alone above, so the 27-pair set is the 28-pair set less that pair's substitutions.

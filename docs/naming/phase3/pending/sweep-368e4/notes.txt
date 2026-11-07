@@ -1,0 +1,3 @@
+sweep-368e4 record: pre-apply FAILs and NO_NAME / FINAL placeholders (naming-session Sweeps).
+
+- [sweep-368e4.1] gpu_LoadTimGroupClutsOffset:arg1=group_index FAILed pre-apply (naming-reviewer 2026-11-06): N1/R2, at 368E4.c:1304 the binding is overwritten with (index<<2)+base, the address of the group's offset slot, and 1306 `off = *(s32 *)arg1` dereferences it, so 'index' is false at that use (reviewer suggestion, unreviewed: group_slot). Dropped from pairs.txt; comes back only with evidence newer than this record.
