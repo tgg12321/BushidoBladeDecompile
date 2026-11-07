@@ -10,39 +10,50 @@
 #include <psxsdk/inline_o.h>
 #include <psxsdk/gtemac.h>
 
+enum CombHandshakeStep {
+    COMB_HANDSHAKE_START = 0,
+    COMB_HANDSHAKE_PICK_SIDE = 1,
+    COMB_HANDSHAKE_SIDE0_WAIT_CTS = 2,
+    COMB_HANDSHAKE_SIDE1_WAIT_CTS_CLEAR = 3,
+    COMB_HANDSHAKE_LINKED = 4,
+    COMB_HANDSHAKE_DELAY_1 = 5,
+    COMB_HANDSHAKE_DELAY_2 = 6,
+    COMB_HANDSHAKE_DONE = 7,
+};
+
 extern u8 g_comb_handshake_step;
 extern s32 g_comb_handshake_retry_count;
 
 s32 comb_HandshakeStep(void) {
     g_handler_frame_counter++;
     switch (g_comb_handshake_step) {
-    case 0:
-        g_comb_handshake_step = 1;
+    case COMB_HANDSHAKE_START:
+        g_comb_handshake_step = COMB_HANDSHAKE_PICK_SIDE;
         break;
-    case 1:
+    case COMB_HANDSHAKE_PICK_SIDE:
         comb_ReadCtsSetRts();
         g_comb_handshake_retry_count = 0;
         if (g_comb_local_side == 0) {
             SetDispMask(1);
-            g_comb_handshake_step = 2;
+            g_comb_handshake_step = COMB_HANDSHAKE_SIDE0_WAIT_CTS;
         } else {
-            g_comb_handshake_step = 3;
+            g_comb_handshake_step = COMB_HANDSHAKE_SIDE1_WAIT_CTS_CLEAR;
         }
         break;
-    case 2:
+    case COMB_HANDSHAKE_SIDE0_WAIT_CTS:
         if (g_pad_state.pressed & PADRup) {
             comb_ResetClose();
             return -1;
         }
         if (_comb_control(3, 1, 0) != 0) {
             _comb_control(3, 0, 0);
-            g_comb_handshake_step = 4;
+            g_comb_handshake_step = COMB_HANDSHAKE_LINKED;
         }
         break;
-    case 3:
+    case COMB_HANDSHAKE_SIDE1_WAIT_CTS_CLEAR:
         if (_comb_control(3, 1, 0) == 0) {
             _comb_control(3, 0, 0);
-            g_comb_handshake_step = 4;
+            g_comb_handshake_step = COMB_HANDSHAKE_LINKED;
             break;
         }
         g_comb_handshake_retry_count++;
@@ -51,14 +62,14 @@ s32 comb_HandshakeStep(void) {
         }
         comb_ResetClose();
         return -1;
-    case 4:
+    case COMB_HANDSHAKE_LINKED:
         SetDispMask(0);
         /* fall through */
-    case 5:
-    case 6:
+    case COMB_HANDSHAKE_DELAY_1:
+    case COMB_HANDSHAKE_DELAY_2:
         g_comb_handshake_step++;
         break;
-    case 7:
+    case COMB_HANDSHAKE_DONE:
         g_comb_initial_pad_exchange_pending = 1;
         comb_EnableEvents();
         return 1;
@@ -72,7 +83,7 @@ s32 comb_Connect(void) {
     func_80077AE0();
     SetDispMask(0);
     g_handler_frame_counter = 0;
-    g_comb_handshake_step = 0;
+    g_comb_handshake_step = COMB_HANDSHAKE_START;
     g_comb_received_check_mismatch_count = 0;
     g_comb_sent_button_bit_count = 0;
     g_comb_received_button_bit_count = 0;
