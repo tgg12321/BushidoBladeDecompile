@@ -1,0 +1,20 @@
+==============================================================================
+DATA WAVE — 1 addresses, 1 identifiers remapped
+  0x800a36f2: D_800A36F2 -> g_fighter_initial_first_carried_object_kinds
+
+-- file edits (9) --
+  asm/data/93E18.data.s  (3)
+  asm/funcs/object_InitKindQueue.s  (2)
+  asm/funcs/object_PickUpNearby.s  (1)
+  asm/funcs/object_ResolveFighterHits.s  (3)
+  asm/funcs/object_ThrowQueuedKind.s  (2)
+  asm/funcs/object_UpdatePool.s  (3)
+  include/bb2.h  (1)
+  src/main/17AFC.c  (12)
+  symbol_addrs.txt  (2)
+
+-- registry lines --
+  symbol_addrs.txt:277 D_800A36F2 -> g_fighter_initial_first_carried_object_kinds
+  symbol_addrs.txt:876 D_800A36F2 -> g_fighter_initial_first_carried_object_kinds
+
+DRY RUN — nothing written. Re-run with --apply.

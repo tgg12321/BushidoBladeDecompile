@@ -1,0 +1,1 @@
+D_800A36F2=g_fighter_initial_first_carried_object_kinds
