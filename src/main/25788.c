@@ -9,8 +9,8 @@
 
 /* Copies the record at GetWorkingRecord() into the FileRecord g_saved_record:
  * flags bits 0-2 are cleared and re-set from working_record->grayscale,
- * working_record->unk20_1 and working_record->cd_audio_suppressed, then the
- * three bytes at working_record->button_mappings are copied to
+ * working_record->cpu_behavior_adjust and working_record->cd_audio_suppressed,
+ * then the three bytes at working_record->button_mappings are copied to
  * g_saved_record.frec20. */
 void CopyWorkingFlagsAndButtonMappingsToSavedRecord(void) {
     Unk8009BD24Block *working_record;

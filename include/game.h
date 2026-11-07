@@ -308,10 +308,11 @@ typedef struct {
 } Rec_8006C21C;
 
 /* SEL.BIN's selected_entry_header_block, gpu_UploadAndDrawSelectedEntryQuads's:
- * two cell tables (slot_cell_tables[slot_index], one per player), a 0 word,
- * then the 12-byte sheet headers the cells are drawn with (entry_headers[v] for
- * the g_entry_menu_grid_entries entry value v it reads; after its first
- * iteration the values 12, 13, 14, 0 and 3 take entry_headers[22..26]). */
+ * two cell tables (slot_cell_tables[slot_index], one per player), the 0 word
+ * offset_list_terminator, then the 12-byte sheet headers the cells are drawn
+ * with (entry_headers[v] for the g_entry_menu_grid_entries entry value v it
+ * reads; after its first iteration the values 12, 13, 14, 0 and 3 take
+ * entry_headers[22..26]). */
 typedef struct {
     Unk8009B400Record *slot_cell_tables[2];
     s32 offset_list_terminator;
@@ -517,7 +518,9 @@ typedef struct {
 /* 0x8009BD24: two players x five rounds of 2-byte records; byte 0 is an
    index (round_grid_pick; gpu_DrawPackedComparisonRowsAndTotals reads it at
    j * 10 + i * 2 and picks D_8009ADD8 / D_8009B58C by it;
-   gpu_DrawSpriteAtPackedTablePosition reads player 0 round 0).
+   gpu_DrawSpriteAtPackedTablePosition reads player 0 round 0); byte 1 is the
+   weapon id picked for that player and round (round_weapon_id; the 25788.c
+   weapon copies read it at +1 of each 2-byte record).
    Unk8009BD24Block.match_picks. */
 typedef struct {
     u8 round_grid_pick;
@@ -545,13 +548,13 @@ typedef struct {
    menu_UpdateRowMenuStoreResult stores it), stage_index (6 bits),
    match_count_index (the round count - 3; also picks the results-screen
    layout), time_limit_index (`== 2` tests), win_target_index (the win target
-   - 1), unk14_15 (one bit per player), unk14_17, unk14_18 (3 bits); no code
-   reads bits 21-23.
+   - 1), selected_grid_page_bits (one bit per player), unk14_17,
+   toggle_option_bits (3 bits); no code reads bits 21-23.
    - button_mappings / default_button_mappings / committed_button_mappings:
    three byte triples. menu_HandleRowBitInput rebuilds a player's nibble of
    button_mappings from default_button_mappings or committed_button_mappings;
    64FD8 copies button_mappings and committed_button_mappings into each other.
-   - unk20_*: the word at +0x20, bits 0-3 (grayscale, unk20_1,
+   - unk20_*: the word at +0x20, bits 0-3 (grayscale, cpu_behavior_adjust,
    cd_audio_suppressed, view_setting); its upper bytes start the time_records
    records. */
 typedef struct {
